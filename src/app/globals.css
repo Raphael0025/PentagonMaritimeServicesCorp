@@ -3,9 +3,21 @@
 @tailwind utilities;
 
 :root {
+  @apply bg-gray-50;
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --primary-dark-blue: #1A2B56;
+  --primary-blue: #1C437E;
+  --primary-light-blue: #2F67B2;
+  --primary-sky-blue: #85C4ED;
+  --primary-gray: #A1A1A1;
+  --opacity-gray: #333333;
+  --op-gray: #717171;
+  --primary-sand: #D9D9D9;
+  --white: #ffffff;
+  --bg-gray: #E6E6E6;
+  --padding-width: 95px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,18 +28,354 @@
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+html{
+    background-color: transparent !important;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+body {
+    font-size: 12px;
+    font-weight: 600;
+    overflow-x: hidden;
+    background: transparent;
+}
+
+.text-white{
+  color: var(--white)
+}
+.text-db{
+  color: var(--primary-dark-blue)
+}
+
+.text-og{
+  color: var(--opacity-gray)
+}
+
+.text-gray{
+  color: var(--op-gray)
+}
+
+.bg-wave{
+  background-image: url('../../public/waves.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-logo{
+  width: 60%;
+}
+.login-container{
+  width: 40%;
+}
+.bg-banner{
+  position: absolute;
+  bottom: 10px; /* Adjust the distance from the bottom as needed */
+  left: 20%;
+  transform: translateX(-50%);
+}
+/* Hide the div on phones and tablets */
+@media only screen and (max-width: 998px) {
+  .bg-logo {
+    display: none;
   }
+  .login-container{
+    width: 100%;
+  }
+  .bg-banner{
+    position: absolute;
+    bottom: 10px; /* Adjust the distance from the bottom as needed */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.bg-pt{
+  background-image: url('../../public/OfficePics/blurred_crop_old_fmb3.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+.bg-pt::before{
+  content: '';
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #333333;
+  opacity: 0.7;
+  position: absolute;
+}
+
+.circle{
+    width: 40px; /* Adjust the width and height as needed */
+    height: 40px; /* Adjust the width and height as needed */
+    border-radius: 50%; /* Make it a circle */
+}
+
+.step-inactive{
+  background-color: #A1A1A1; /* Set the background color */
+}
+
+.step-active{
+  background-color: #2F67B2; /* Set the background color */
+}
+
+.line {
+  border: none; /* Remove default border */
+  height: 4px; /* Adjust the height as needed */
+}
+
+.btn-primary{
+  padding: 14px 20px;
+  background-color: var(--primary-blue);
+  color: var(--white);
+  transition: all 0.3s ease-in-out 
+}
+
+.btn-primary-outline{
+  padding: 14px 20px;
+  border: 2px solid var(--primary-blue);
+  color: var(--white);
+  transition: all 0.3s ease-in-out 
+}
+
+.btn-primary:hover{
+  background-color: var(--primary-light-blue);
+}
+
+.btn-primary-disable{
+  padding: 14px 20px;
+  background-color: var(--primary-gray);
+  color: var(--white);
+  transition: all 0.3s ease-in-out 
+}
+
+.radio-button {
+  width: 1.4em; /* Adjust the width as needed */
+  height: 1.4em; /* Adjust the height as needed */
+}
+
+.input-grp{
+  position: relative;
+  --x: 15px;
+  --y: 15px;
+}
+
+.form-input {
+  padding: var(--y) var(--x);
+  text-transform: capitalize;
+}
+.form-input:focus{
+  /* border-color: var(--primary-light-blue); */
+  outline: none;
+}
+.form-label{
+  position: absolute;
+  left: var(--x);
+  top: calc(var(--y));
+  padding: 0 0px;
+  color: var(--primary-gray);
+  transition: top 300ms, font 300ms;
+  background-color: var(--white);
+  cursor: text;
+}
+
+.form-label-num{
+  position: absolute;
+  left: calc(var(--x) - 10px);
+  top: calc(var(--y) - 4px);
+  padding: 0 0px;
+  color: var(--primary-gray);
+  transition: top 300ms, font 300ms;
+  background-color: var(--white);
+  cursor: text;
+}
+
+.form-label-login{
+  position: absolute;
+  left: var(--x);
+  top: calc(var(--y));
+  padding: 0 0px;
+  color: var(--primary-gray);
+  transition: top 300ms, font 300ms;
+  background-color: var(--bg-gray);
+  cursor: text;
+}
+
+.form-input:focus ~ label, .form-input:not(:placeholder-shown) ~ label{
+  top: calc(var(--y) * -1);
+  background-color: var(--white);
+  font-size: 10px;
+} 
+
+.form-input:focus ~ .form-label-login, .form-input:not(:placeholder-shown) ~ .form-label-login{
+  top: calc(var(--y) * -1);
+  background-color: var(--bg-gray);
+  font-size: 10px;
+} 
+
+.form-input-login:focus ~ label, .form-input-login:not(:placeholder-shown) ~ label{
+  top: calc(var(--y) * -1);
+  background-color: var(--white);
+  font-size: 10px;
+} 
+
+input[type='date']{
+  border: none;
+  border-bottom: 2px solid var(--primary-gray);
+  outline: none;
+  border-radius: 0px;
+}
+::-webkit-calendar-picker-indicator{
+  background-color: var(--primary-gray);
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+  color: white;
+  transition: all 0.3s ease-in-out
+}
+
+::-webkit-calendar-picker-indicator:hover{
+  background-color: var(--primary-light-blue);
+}
+
+input[type='email']{
+  text-transform: lowercase;
+}
+
+.drop{
+  border-bottom: 2px solid var(--primary-gray);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease-in-out
+}
+.drop:hover{
+  border-bottom: 2px solid var(--primary-blue);
+}
+
+.addCourse{
+  padding: 15px 15px;
+  background-color: var(--primary-blue);
+  color: var(--white);
+  cursor: pointer;
+  border-radius: 5px;
+  width: 100%;
+}
+.addCourse:hover{
+  background-color: var(--primary-light-blue);
+}
+
+.addCourse:disabled {
+  background-color: gray; /* Change the background color */
+  color: #999; /* Change the text color */
+  cursor: not-allowed; /* Change the cursor */
+}
+
+input[type="file"] {
+  /* Input Style */
+  position: relative;
+  padding: 0.9375rem;
+  color: #000;
+  background-color: var(--bg-gray);
+  border: 2px solid var(--primary-gray);
+  border-radius: 0.3125rem;
+  cursor: pointer;
+
+  /* Input Button */
+  &::file-selector-button {
+    padding: 0.625rem 0.9375rem 0.625rem 2.125rem;
+    color: #fff;
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in;
+  }
+
+  /* Button Icon */
+  &::before {
+    position: absolute;
+    top: 50%;
+    left: 1.5625rem;
+    width: 0.9375rem;
+    height: 1.25rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M448 416V352C448 334.326 433.672 320 416 320S384 334.326 384 352V416C384 433.674 369.672 448 352 448H96C78.328 448 64 433.674 64 416V352C64 334.326 49.672 320 32 320S0 334.326 0 352V416C0 469.02 42.98 512 96 512H352C405.02 512 448 469.02 448 416ZM246.625 342.625L374.625 214.625C387.133 202.117 387.117 181.867 374.625 169.375C362.125 156.875 341.875 156.875 329.375 169.375L256 242.75V32C256 14.312 241.688 0 224 0S192 14.312 192 32V242.75L118.625 169.375C106.125 156.875 85.875 156.875 73.375 169.375S60.875 202.125 73.375 214.625L201.375 342.625C213.875 355.125 234.125 355.125 246.625 342.625Z' fill='%23fff' /%3E%3C/svg%3E");
+  }
+}
+
+.sigCanvas{
+  width: 100%;
+  min-height: 200px;
+}
+
+.list_head{
+  font-size: 13px;
+}
+.list-item{
+  font-size: 11px;
+}
+.top-nav{
+  width: 100%;
+}
+.main-container{
+  padding: 60px 20px 20px 105px;
+  background-color: none;
+}
+
+/* Calendar Styles */
+input {
+  @apply px-2;
+}
+  .fc-header-toolbar {
+    padding: 4px 4px;
+    
+    @apply space-x-8;
+}
+
+.fc-day {
+  @apply m-8;
+}
+
+.fc-scrollgrid-sync-table {
+  @apply w-full;
+}
+
+.fc-view {
+  @apply w-full h-full lg:h-3/4 xl:h-2/3 bg-white;
+}
+
+.fc-view-harness fc-view-harness-active{
+  height: 550px;
+}
+
+.fc-h-event {
+  @apply bg-violet-500 border border-violet-600 ;
+  
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+  @apply bg-violet-100 ;
+}
+
+.fc .fc-button{
+  @apply bg-violet-800 hover:bg-violet-900  ;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  @apply bg-violet-600;
+}
+
+.fc .fc-button-primary:disabled {
+  @apply bg-violet-600;
+}
+.fc-v-event {
+  @apply bg-violet-500 border border-violet-600 ;
+  
+}
+
+canvas{
+  width:100% !important;
+  /* height:250px !important; */
+
 }
