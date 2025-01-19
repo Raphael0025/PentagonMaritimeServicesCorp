@@ -246,7 +246,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
             
             const traineeID = await addNewTrainee( trainee, traineeType, validID, validPfp, validSignature, file, pfpFile)
             
-            let regApproach: number = 0
+            const regApproach: number = 0
 
             if(traineeID !== null){
                 onStepChange(4)

@@ -30,7 +30,6 @@ interface Props {
 }
 
 export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {} }: Props){
-    const router = useRouter()
     const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
     const { data: allCategories } = useCategory()
@@ -70,8 +69,6 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
 
     // Str Array States
     const [trainingSched, setTrainingSched] = useState<string[]>([])
-
-    const [preview, setPreview] = useState<string | null>(null)
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -253,13 +250,13 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
 
     const checkTraineeChanges = (): boolean => {
         const changes: Partial<TRAINEE> = {}
-        const {id, ...rest} = oldTrainee
+        const {...rest} = oldTrainee
 
         for (const key in rest) {
             
             const typedKey = key as keyof TRAINEE // Cast `key` to keyof TRAINEE
-            let oldValue = rest[typedKey]
-            let newValue = trainee[typedKey]
+            const oldValue = rest[typedKey]
+            const newValue = trainee[typedKey]
             // Compare values
             if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
                 changes[typedKey] = { old: oldValue, new: newValue } as any;
@@ -299,7 +296,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                 })
             })
             
-            let regApproach: number = 0
+            const regApproach: number = 0
             onStepChange(4)
             setShow('completed')
             
