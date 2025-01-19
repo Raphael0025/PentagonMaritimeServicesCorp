@@ -1,0 +1,550 @@
+[33mcommit 50dd36bef5cf7e8a84114cd5955fb9499678f366[m[33m ([m[1;36mHEAD -> [m[1;32mdevelopment[m[33m)[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Sep 13 00:00:06 2024 +0800
+
+    chore(ONLINE Registration): Refactor code
+    
+    - os and ol changed
+    
+    closes #13
+    Signed-off-by Raphael Pepiton Isla
+
+[33mcommit bbc57831c42b4093c4f1006e0176c8b6295c82bf[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Sep 9 07:49:50 2024 +0800
+
+    refactor(Registration): Admission
+    
+    - Admission completed partially i think
+    
+    Closes #12
+    Signed-off-by Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit 7f7fc2e51e9c58fcfe144f571686aace613bfd86[m[33m ([m[1;31morigin/development[m[33m)[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Sep 9 07:44:28 2024 +0800
+
+    refactor(Registration): Admission
+    
+    - Admission completed partially i think
+    
+    Closes #12
+    Signed-off-by Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit f90a87b249467b8c59449213d71d4183ecb76487[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sun Sep 8 23:48:10 2024 +0800
+
+    refactor(Edit Course Form): Completed task
+    - ReModel UI Completed
+    
+    Closes #12
+    Signed-off-by Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit 9abdddfc7682f617e71f69932abd85690d8bb415[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sun Sep 8 23:20:02 2024 +0800
+
+    refactor(Course & Batches): Re-Code this files
+    
+    - Course Batches in alphabetical order completed
+    - Migrate all Data in Courses completed
+    - Promo Form completed
+    
+    Closes #11
+    Signed-off-by Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit 305a721513706a9654809713d4828b672ed84084[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sun Sep 8 19:44:06 2024 +0800
+
+    refactor(NewCourseForm): Redo algorithm of this form
+    
+    - proper way for adding a course
+    - proper way for error handling
+    - proper way for course duplication
+    - proper way for handling data types
+    
+    Closes #10
+    Signed-off-by Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit 9d9900f2126b35fe0b8588fc94c074841ca699dd[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sun Sep 8 18:27:11 2024 +0800
+
+    docs(PromoForm): Deleted
+    
+    - Deleted now the old  PromoForm
+    
+    Closes #9
+    Related to #8
+    Signed-off-by Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit 44940afbde7d2f9d808e977c0ccea7abede8af67[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sun Sep 8 18:21:04 2024 +0800
+
+    feat | chore | docs | refactor(Course Promo): Redo Logic of Promo Algorithm
+    
+    - Added new files for the Course Promo
+    - re-styled Date Picker
+    - added new function in handling.ts
+    - added a course_Handler.ts
+    - redo some functions in course_controller.ts
+    - Added new data in CourseContext.tsx
+    
+    ===== BREAKING CHANGE =====
+    - This PR or push will have an error relating to registration file for trainee in regards for new changes
+    
+    Closes #8
+    Signed-off-by: Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit c96df63dfe1192cf3b511f0dbcce1d8dda25baba[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Sep 6 18:54:23 2024 +0800
+
+    chore(EditCompanyCharge): Not Needed anymore
+    
+    - Recently removed EditCompanyChargeForm for it will not be needed anymore.
+    
+    Closes #8
+    See also #7
+    Signed-off-by: Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit 208a117ceeac3041af3fe1522f5dd2ccbbf2609d[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Sep 6 18:49:51 2024 +0800
+
+    feat(CompanyChargeForm): An Improved form for company charges
+    
+    - **courses.ts**: new interfaces have been added here and some will be remove soon
+    - **CourseContext.tsx**: new approach was used to get data and store it locally
+    - **CompanyChargeForm.tsx**: this new file will now be used for the main page file for courses.
+    - **course_controller.ts**: New functions was added here specifically for company charges.
+    
+    Closes #7
+    Signed-off-by: Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit b6a67225717492ee862145f4d1cbd46202e5dcef[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Thu Sep 5 09:50:31 2024 +0800
+
+    docs(ToDo): Added Commit and Footer Types
+    
+    - I've Added these types to remember by when making commit messages.
+    
+    Closes #6
+    Fixes #5
+    Related to #5
+    Signed-off-by: Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit 6f8329bde8714b5af2b7acd39fcf01935868e392[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Thu Sep 5 09:40:43 2024 +0800
+
+    Fix:(CompanyChargeForm): Bug Fix in CompanyChargeForm
+    
+    - Just removed an unwanted function inside button component in line 90
+    - I've notived there was an error by noticing the email vercel sent me.
+    Closes #5
+    Signed-off-by: Raphael Pepiton B. Isla <rpbisla0025@gmail.com>
+
+[33mcommit f733566079d1d293783a37845c5738cc2596bc4f[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Thu Sep 5 09:16:50 2024 +0800
+
+    docs(ToDo): Completed a Task in High Priority
+    
+    - Client Company Context created
+    - Client company interfaces created
+    - marketing page partially created
+    - client company data created and stored in database
+    
+    Closes #4
+    Related to #3
+    Signed-off-by: Raphael pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit fd8d6d67a507a215d4782d4c9e1a02942ad0ef4d[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Tue Sep 3 16:07:26 2024 +0800
+
+    docs(ToDo): Updated the TODO.md file
+    
+    - Added some more items related to the last meeting conducted last friday.
+    - These items related to registration dept. that is why it is on High Prio.
+    
+    Closes #3
+    Related to #2
+    Signed-off-by: Raphael Pepiton Isla <rpbisla0025@gmail.com>
+
+[33mcommit b55417877e3ad36b847d361e79731fa0fe5cb212[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Tue Sep 3 15:28:01 2024 +0800
+
+    docs(TODO): ToDo Tasks added
+    
+    - Todo tasks items were added in order to have a controlled development
+    - To ensure that all necesarry tasks are completed
+    
+    close #2
+    signed-off-by: Raphael Pepiton Isla rpbisla0025@gmail.com
+
+[33mcommit fe90e65b862d2627c0b22fe654d3fefd77d2f2dd[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Aug 31 20:55:55 2024 +0800
+
+    Commit Message(TODO): Added a reminder on how to commit beautifully
+    
+    - texts were added as a reminder on how to beautifully commit messages of  a project to github
+    - soon to be tested on other instances like feat or fix or style
+    
+    Closes #1
+    Signed-off-by: Raphael Pepiton Isla
+
+[33mcommit 0d884520bd1f2d241a6701eeece6856d8499e2cd[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Aug 31 20:40:19 2024 +0800
+
+    docs(TODO): create new markdown file for task management and README
+    
+    - More detailed content md file
+    
+    Closes #125
+
+[33mcommit f24434f786daa2403a26d9fd044400f2d09fb5f6[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Aug 31 20:39:48 2024 +0800
+
+    docs(TODO): create new markdown file for task management and README
+    
+    - More detailed content md file
+    
+    Closes #124
+
+[33mcommit 3a12f0e05569b7cc6963b46467b8758bedddf815[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Aug 31 20:38:13 2024 +0800
+
+    docs(TODO): create new markdown file for task management
+    
+    - Added a new TODO.md file to track project tasks and improvements
+    - Included sections for ongoing tasks, completed tasks, and future considerations
+    - Updated README to reference the new TODO file
+    
+    Closes #123
+
+[33mcommit 30aa93627fed99813daaaf1d2a1e2d71a474d91b[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Aug 31 20:36:56 2024 +0800
+
+    <docs>(README | TODO): created a descriptive and new md file for my todo tasks
+
+[33mcommit 2dee98308c12e114af9585b5facea4c6e164aa7b[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:39:45 2024 +0800
+
+    Update Big One
+
+[33mcommit c0852b744786e008656e77befed6537a3b473343[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:35:58 2024 +0800
+
+    Update Big One
+
+[33mcommit 300bfa762cb847914c220cc6c99840593a7abf21[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:31:08 2024 +0800
+
+    Update Big One
+
+[33mcommit 383ef8163625a11580995a21eb13405c9e3416a1[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:23:49 2024 +0800
+
+    Update Big One
+
+[33mcommit 9956d0676cb16c9b059c08640715d723a0ab4a3b[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:20:25 2024 +0800
+
+    Update Big One
+
+[33mcommit 86ab912052ead408d8d1eacc02e1231a62e17ba0[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:13:59 2024 +0800
+
+    Update Big One
+
+[33mcommit a078ff1f073df47c6e1123c71b6453a556687d79[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:07:15 2024 +0800
+
+    Update Big One
+
+[33mcommit 1d4710e6da4c5ffcd9aef14ebf6e51284716a152[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:03:59 2024 +0800
+
+    Update Big One
+
+[33mcommit 5cb505c02fd359553c29ab007fa57c377680b6c6[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri Aug 30 10:00:47 2024 +0800
+
+    Update Big One
+
+[33mcommit defcb3eb1761d229f1748fe0cb4b4dbf0539b22f[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jul 1 20:10:26 2024 +0800
+
+    System Update(Adjustments to current update): Overview and slug names
+    - Overview: Top Courses Enrolled issue has been resolve, Cancelled trainings are not to be counted
+    - Slug Names issue has also been resolve, a mix of initials and document id did the trick
+    Closed #4
+
+[33mcommit 9653991ec8e31a4d89a3cf037371b7594e989355[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jul 1 15:31:27 2024 +0800
+
+    Update(System UI and UX): Filtering, Search bar, Edit features
+    - Added a filtering feature
+    - Added a Search bar
+    - Fix the edit feature
+    - Fixed issue on Edit Company Charges file
+    Closed #3
+
+[33mcommit 45f7ecc9a4037d1b96efc3e10131ce042884c962[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jul 1 15:27:20 2024 +0800
+
+    Update(System UI and UX): Filtering, Search bar, Edit features
+    - Added a filtering feature
+    - Added a Search bar
+    - Fix the edit feature
+    - Fixed issue on Edit Company Charges file
+    Closed #3
+
+[33mcommit 3f91c155bd6db83519f3e60a633f1c51e5ab520e[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jul 1 15:20:28 2024 +0800
+
+    Update(System UI and UX): Filtering, Search bar, Edit features
+    - Added a filtering feature
+    - Added a Search bar
+    - Fix the edit feature
+    - Fixed issue on Edit Company Charges file
+    Closed #3
+
+[33mcommit d237d005ea9eb0cb0a8241a4d77094a3abf92aa2[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jul 1 15:10:12 2024 +0800
+
+    Update(System UI and UX): Filtering, Search bar, Edit features
+    - Added a filtering feature
+    - Added a Search bar
+    - Fix the edit feature
+    - Fixed issue on Edit Company Charges file
+    Closed #2
+
+[33mcommit aa0c5129d65923cf7e5f3c86838a815f0d7df245[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jul 1 15:06:40 2024 +0800
+
+    Update(System UI and UX): Filtering, Search bar, Edit features
+    - Added a filtering feature
+    - Added a Search bar
+    - Fix the edit feature
+    Closed #1
+
+[33mcommit 26c8df1944ffc5dbba9936bccb190380264dd0ee[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jul 1 15:02:27 2024 +0800
+
+    Update(System UI and UX): Filtering, Search bar, Edit features
+    - Added a filtering feature
+
+[33mcommit 0439cea5e99d6dc2772d1e538422181b026a7fa4[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sun Jun 16 19:57:25 2024 +0800
+
+    lol
+
+[33mcommit f22336f378def04cec63a784289364c547c5fd0d[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Jun 8 13:04:12 2024 +0800
+
+    pop
+
+[33mcommit 4e85a477fc6a05fc17583b25d69acc2b08577f48[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Jun 8 13:00:44 2024 +0800
+
+    pop
+
+[33mcommit d22ef3a30996bea0b5242eb3e5aff994765b96b2[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Jun 8 12:49:03 2024 +0800
+
+    pop
+
+[33mcommit 213ed59ecb209c730a806780a393ffa35754580c[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Jun 8 12:39:10 2024 +0800
+
+    pop
+
+[33mcommit d8143a1ad617febdc6014f18e19e10c71d6121bb[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Jun 8 12:31:27 2024 +0800
+
+    pop
+
+[33mcommit dfcdc0d8902486b8ea72ea1f55cfccd8b7fc2cf7[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Jun 8 12:28:41 2024 +0800
+
+    pop
+
+[33mcommit 7de5fc7b42143537e09430ce3b6d6b233284a63f[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Sat Jun 8 12:15:30 2024 +0800
+
+    survey
+
+[33mcommit 485c374ebfa3e4eb34781790c329171cfd8fc615[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Thu Jun 6 21:03:56 2024 +0800
+
+    notif
+
+[33mcommit f284391a4a989125db9a27d9d505c7b310d75244[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Thu Jun 6 20:58:41 2024 +0800
+
+    notif
+
+[33mcommit d0a0db3b078d35565b3ba60c8f028fbd549e6543[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 18:51:32 2024 +0800
+
+    real-time v2 and search bar
+
+[33mcommit ae7555205018762dffb4e6aad24188c67e0e1ba2[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 18:49:16 2024 +0800
+
+    real-time v2 and search bar
+
+[33mcommit 2462f97aeb05472fbea4993f4011f49c110a357c[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 18:46:16 2024 +0800
+
+    real-time v2 and search bar
+
+[33mcommit 1ee5c38561e6b69c18ea062f7c115fcc505c405d[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 18:36:29 2024 +0800
+
+    real-time v2 and search bar
+
+[33mcommit dab32a1c7b74dc059b02ed8dc3e473957b81fafe[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 18:03:47 2024 +0800
+
+    real-time v2 and search bar
+
+[33mcommit 437a29f0b692a4cdea6dbdf1729560f4c15dc549[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 14:18:48 2024 +0800
+
+    pop
+
+[33mcommit bb4fdca8308b389a33c2fa484a17db8aa565f0bd[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 10:21:38 2024 +0800
+
+    added save to image
+
+[33mcommit 6f778ff5afb53e1bfabe5518ec01631ee8b8928b[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Mon Jun 3 10:17:04 2024 +0800
+
+    added save to image
+
+[33mcommit da2fe966590f9a5cb43823deea9ec144c19c36ea[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 21:06:24 2024 +0800
+
+    pop
+
+[33mcommit 15f5b57804311c806309db4eb7cdd748c695dc93[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 18:36:24 2024 +0800
+
+    pop
+
+[33mcommit f2839b1f5a46d9cd953e77904761c9a1522f1d4d[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 17:52:15 2024 +0800
+
+    pop
+
+[33mcommit ab6c57a0d0c3718388ef9e74f737180f83117a0b[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 17:47:07 2024 +0800
+
+    pop
+
+[33mcommit 962d5fcf4e53e686761091ce95faf0e49c50d460[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 17:42:24 2024 +0800
+
+    pop
+
+[33mcommit c02db5e4ae855f1c0aae40b5b15401026d8db6c2[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 17:37:42 2024 +0800
+
+    pop
+
+[33mcommit a6a11b25c9707d44debaf268700680e4be389179[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 17:35:17 2024 +0800
+
+    pop
+
+[33mcommit ed4e4961caffab4d4c58439ebd48b010044fbf32[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 17:25:29 2024 +0800
+
+    pop
+
+[33mcommit 7a58be83d03dc7543788b6e97bd70e999b5ebdb7[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 17:18:07 2024 +0800
+
+    pop
+
+[33mcommit 7e1f12d084383ae0af99eda04a27ac3878f1d301[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 07:40:28 2024 +0800
+
+    pop
+
+[33mcommit 9fd5dfb148fdb65569eefa89e1f4ec4725860096[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Fri May 31 07:37:12 2024 +0800
+
+    pop
+
+[33mcommit 5da7996aae8a7c988e6c7c219e06cb311855dae3[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Wed May 29 20:46:18 2024 +0800
+
+    forms
+
+[33mcommit 7fda893a766e8b0104519fee9ba32fead574ee75[m
+Author: Raphael0025 <rpbisla0025@gmail.com>
+Date:   Wed May 29 20:37:23 2024 +0800
+
+    forms
