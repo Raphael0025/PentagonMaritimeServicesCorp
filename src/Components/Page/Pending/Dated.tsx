@@ -39,6 +39,7 @@ export default function Page() {
     const [loadBtn, setLoadBtn] = useState<boolean>(true)
     const [search, setSearch] = useState<string>('')
     const [regID, setRegID] = useState<string>('')
+    const [cID, setCID] = useState<string>('')
     const [ts, setTS] = useState<string>('')
     const [td, setTD] = useState<string>('')
 
@@ -261,7 +262,7 @@ export default function Page() {
                                                                 <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
                                                                 <span className='ps-2' style={{fontSize: '14px'}}>View Registration</span>
                                                             </MenuItem>
-                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenReg(); setRegID(registration.id);}}>
+                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenReg(); setCID(traineeFound.company); setRegID(registration.id);}}>
                                                                 <span className='ps-2'><PlusIcon size={'24'} color={'#0D70AB'} /></span>
                                                                 <span className='ps-2' style={{fontSize: '14px'}}>Add Training</span>
                                                             </MenuItem>

@@ -40,6 +40,8 @@ export default function Page() {
     const [loadBtn, setLoadBtn] = useState<boolean>(true)
     const [search, setSearch] = useState<string>('')
     const [regID, setRegID] = useState<string>('')
+    const [cID, setCID] = useState<string>('')
+    const [account_type, setAccType] = useState<number>(0)
     const [ts, setTS] = useState<string>('')
     const [td, setTD] = useState<string>('')
 
@@ -262,7 +264,7 @@ export default function Page() {
                                                                 <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
                                                                 <span className='ps-2' style={{fontSize: '14px'}}>View Registration</span>
                                                             </MenuItem>
-                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenTraining(); setRegID(registration.id);}}>
+                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenTraining(); setAccType(registration.reg_accountType); setCID(traineeFound.company); setRegID(registration.id);}}>
                                                                 <span className='ps-2'><PlusIcon size={'24'} color={'#0D70AB'} /></span>
                                                                 <span className='ps-2' style={{fontSize: '14px'}}>Add Training</span>
                                                             </MenuItem>
@@ -339,7 +341,7 @@ export default function Page() {
             <ModalOverlay />
             <ModalContent bgColor='#00000099'>
                 <ModalBody px={{base: '5%', md: '10%', lg: '30%'}} py='2%'>
-                    <InsertTraining onClose={onCloseTraining} reg_id={regID} />
+                    <InsertTraining c_id={cID} accountType={account_type} onClose={onCloseTraining} reg_id={regID} />
                 </ModalBody>
             </ModalContent>
         </Modal>

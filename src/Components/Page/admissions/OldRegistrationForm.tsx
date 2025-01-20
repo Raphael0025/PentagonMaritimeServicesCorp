@@ -22,7 +22,7 @@ import { useRank } from '@/context/RankContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourses } from '@/context/CourseContext'
 import { useTypes } from '@/context/TypeContext'
-import {useCategory} from '@/context/CategoryContext'
+import {useCategory} from '@/context/CategoryContext' 
 
 interface Props {
     oldTrainee: TRAINEE_BY_ID;

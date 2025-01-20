@@ -160,3 +160,7 @@ export interface TEMP_COURSES {
     numOfDays: number;
     accountType: number; 
 }
+
+export interface TEMP_COURSES_WITH_PM extends TEMP_COURSES{
+    payment_mode: number;
+}
