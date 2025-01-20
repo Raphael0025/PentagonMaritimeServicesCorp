@@ -332,7 +332,7 @@ export default function InsertTraining({ onClose, c_id, accountType, reg_id }: M
                             if (!matchingCourseCodes || matchingCourseCodes.length === 0) return null;
 
                             return(
-                                <Box>
+                                <Box key={index}>
                                     {matchingCourseCodes.filter((courseC) => courseC.company_course_code.toUpperCase().includes(search.toUpperCase()) || course.course_name.toUpperCase().includes(search.toUpperCase())).map((courseCode) => (
                                         <Box key={courseCode.id}>
                                             <Text bgColor={`${tempSelectCourse === courseCode.id ? 'blue.100' : ''}`} borderLeftWidth={`${tempSelectCourse === courseCode.id ? '6px' : ''}`} borderColor={tempSelectCourse === courseCode.id ? 'blue.600' : ''} _hover={{ bgColor: 'gray.100',}} onClick={() => setTempCourse(courseCode.id)} className='hover:cursor-pointer' borderRadius='5px' p='4' fontSize='lg' textTransform='uppercase' key={courseCode.id}>
