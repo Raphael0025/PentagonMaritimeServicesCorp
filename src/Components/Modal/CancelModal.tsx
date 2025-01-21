@@ -65,7 +65,7 @@ export default function CancelModal({onClose, reg_id = '', course = '', training
                     </Box>
                     <Box display='flex' justifyContent='center'>
                         <Button onClick={onClose} shadow='md' mr={3}>No</Button>
-                        <Button colorScheme='red' shadow='md' onClick={() => {setSure(!isSure)}}>Yes, I'm sure</Button>
+                        <Button colorScheme='red' shadow='md' onClick={() => {setSure(!isSure)}}>{`Yes, I'm sure`}</Button>
                     </Box>
                 </Box>
             ) : (
