@@ -15,7 +15,8 @@ import { useCourseBatch } from '@/context/BatchContext'
 
 import RegistrationForm from '@/Components/Page/Pending/RegistrationForm'
 import EditTrainingSched from '@/Components/Page/Pending/EditTrainingSched'
-import InsertTraining from '@/Components/Modal/InsertTraining';
+import InsertTraining from '@/Components/Modal/InsertTraining'
+import CancelModal from '@/Components/Modal/CancelModal'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
@@ -40,6 +41,8 @@ export default function Page() {
     const [loadBtn, setLoadBtn] = useState<boolean>(true)
     const [search, setSearch] = useState<string>('')
     const [regID, setRegID] = useState<string>('')
+    const [t_id, setTID] = useState<string>('')
+    const [training, setTraining] = useState<string>('')
     const [cID, setCID] = useState<string>('')
     const [account_type, setAccType] = useState<number>(0)
     const [ts, setTS] = useState<string>('')
@@ -51,6 +54,7 @@ export default function Page() {
     const { isOpen: isOpenTS, onOpen: onOpenTS, onClose: onCloseTS } = useDisclosure()
     const { isOpen: isOpenCF, onOpen: onOpenCF, onClose: onCloseCF } = useDisclosure()
     const { isOpen: isOpenTraining, onOpen: onOpenTraining, onClose: onCloseTraining } = useDisclosure()
+    const { isOpen: isOpenCancel, onOpen: onOpenCancel, onClose: onCloseCancel } = useDisclosure()
     
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -268,7 +272,7 @@ export default function Page() {
                                                                 <span className='ps-2'><PlusIcon size={'24'} color={'#0D70AB'} /></span>
                                                                 <span className='ps-2' style={{fontSize: '14px'}}>Add Training</span>
                                                             </MenuItem>
-                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenTraining(); setRegID(registration.id);}}>
+                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenCancel(); setTID(''); setRegID(registration.id);}}>
                                                                 <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
                                                                 <span className='ps-2' style={{fontSize: '14px'}}>Cancel Registration</span>
                                                             </MenuItem>
@@ -318,7 +322,7 @@ export default function Page() {
                                                                         <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
                                                                         <span className='ps-2' style={{fontSize: '14px'}}>Edit Course Fee</span>
                                                                     </MenuItem>
-                                                                    <MenuItem onClick={(e) => {e.stopPropagation(); setTD('cf'); setTS(training.id); onOpenCF();}}>
+                                                                    <MenuItem onClick={(e) => {e.stopPropagation(); setTID(training.id); setTraining(allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''); setRegID(''); onOpenCancel();}}>
                                                                         <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
                                                                         <span className='ps-2' style={{fontSize: '14px'}}>Cancel Training</span>
                                                                     </MenuItem>
@@ -342,6 +346,14 @@ export default function Page() {
             <ModalContent bgColor='#00000099'>
                 <ModalBody px={{base: '5%', md: '10%', lg: '30%'}} py='2%'>
                     <InsertTraining c_id={cID} accountType={account_type} onClose={onCloseTraining} reg_id={regID} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenCancel} onClose={onCloseCancel} scrollBehavior='inside' >
+            <ModalOverlay />
+            <ModalContent >
+                <ModalBody >
+                    <CancelModal onClose={onCloseCancel} course={training} reg_id={regID} training_id={t_id}/>
                 </ModalBody>
             </ModalContent>
         </Modal>

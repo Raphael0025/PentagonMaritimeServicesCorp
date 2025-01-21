@@ -137,6 +137,20 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
 }
 
 // UPDATE FUNCTIONS
+export const PROCESS_CANCELLATION = async (val_id: string, type: number, reason: string, actor: string | null) => {
+    try{
+        const docRef = doc(firestore, type === 0 ? 'REGISTRATION' : 'TRAINING', val_id)
+        if(type === 0){
+            await updateDoc(docRef, {regType: 3})
+            await addLog(actor, reason, 'REGISTRATION', val_id)
+        } else {
+            await updateDoc(docRef, {reg_status: 7})
+            await addLog(actor, reason, 'TRAINING', val_id)
+        }
+    }catch(error){
+        throw error
+    }
+}
 
 export const addRegTypeField = async () => {
     const trainingRef = collection(firestore, 'TRAINING'); // Adjust the collection name as needed

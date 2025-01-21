@@ -123,14 +123,14 @@ export interface REGISTRATION {
     
     date_registered: Timestamp;
     reg_remarks: string;
-    regType: number; // 2 - def | 0 - dated | 1 - bd
+    regType: number; // 2 - def | 0 - dated | 1 - bd | 3 - cancel
     reg_accountType: number; // 0 - crew | 1 - company
 }
 
 export interface TRAINING {
     reg_ref_id: string;
 
-    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad
+    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel
     course_fee: number;
     course: string;
     start_date: string;

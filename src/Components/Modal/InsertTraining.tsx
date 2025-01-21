@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Box, Text, Input, FormControl, FormLabel, InputLeftAddon, InputGroup, useDisclosure, Button, Radio, RadioGroup, useToast, Modal, ModalHeader, ModalContent, ModalBody, ModalFooter, ModalOverlay, Alert, AlertTitle, AlertDescription, AlertIcon } from '@chakra-ui/react'
+import { Box, Text, Input, FormControl, FormLabel, InputLeftAddon, InputGroup, useDisclosure, Button, Radio, RadioGroup, useToast, Modal, ModalHeader, ModalContent, ModalBody, ModalFooter, ModalOverlay } from '@chakra-ui/react'
 import DatePicker from 'react-datepicker'
 
 import { PlusIcon } from '@/Components/SideIcons'
@@ -14,10 +14,9 @@ import { TEMP_COURSES } from '@/types/trainees'
 
 import { addTrainingDetails } from '@/lib/trainee_controller'
 
-import { getFormattedDateRange, formatPromoPeriod, ToastStatus } from '@/types/handling'
+import { ToastStatus } from '@/types/handling'
 
 import { HoliDates } from '@/handlers/course_handler'
-import { courseCodes } from '@/lib/client-controller'
 
 interface ModalProp{
     onClose: () => void;
@@ -80,7 +79,7 @@ export default function InsertTraining({ onClose, c_id, accountType, reg_id }: M
                 weekday: 'short',
                 month: 'short',
                 day: '2-digit',
-              }).format(start_date)
+            }).format(start_date)
             : '';
 
         const endDateStr = end_date
@@ -117,7 +116,7 @@ export default function InsertTraining({ onClose, c_id, accountType, reg_id }: M
 
     const handleCourses = async () => {
         setLoading(true)
-       for(const course of tempCourses){
+        for(const course of tempCourses){
             try{
                 if(reg_id){
                     await addTrainingDetails(course, reg_id)
