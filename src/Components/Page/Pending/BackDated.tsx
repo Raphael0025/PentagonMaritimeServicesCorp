@@ -63,7 +63,7 @@ export default function Page() {
     })
 
     // Function to filter registrations based on search
-    const filteredRegistrations = allRegistrations?.filter((registration) => {
+    const filteredRegistrations = allRegistrations?.filter((reg) => reg.regType !== 3).filter((registration) => {
         const traineeFound = allTrainee?.find((trainee) => trainee.id === registration.trainee_ref_id);
 
         // Check if any field matches the search query
@@ -135,7 +135,7 @@ export default function Page() {
         new Promise<void>((res,rej) => {
             setTimeout(async () => {
                 try{
-                    const training = allTraining?.find((t) => t.id === training_id)
+                    const training = allTraining?.find((t) => t.id === training_id) // Get training doc using training_id === t.id
                     if(!training){
                         return
                     }

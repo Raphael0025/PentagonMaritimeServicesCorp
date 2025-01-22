@@ -63,7 +63,7 @@ export default function Page() {
     })
 
     // Function to filter registrations based on search
-    const filteredRegistrations = allRegistrations?.filter((registration) => {
+    const filteredRegistrations = allRegistrations?.filter((reg) => reg.regType !== 3).filter((registration) => {
         const traineeFound = allTrainee?.find((trainee) => trainee.id === registration.trainee_ref_id);
 
         // Check if any field matches the search query
