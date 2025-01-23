@@ -4,11 +4,13 @@ import { usePathname, useRouter  } from 'next/navigation';
 import Link from 'next/link'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Center, Heading, Text, Wrap, WrapItem, useDisclosure, List, ListItem, Tooltip, Avatar, AvatarBadge, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
+import { Box, Button, Center, Text, Wrap, WrapItem, useDisclosure, List, ListItem, Tooltip, Avatar, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import 'animate.css';
 import {HelpIcon, BellIcon, SysAdIcon, RADIcon } from '@/Components/Icons'
-import {CalendarIcon, CashIcon, DeBugIcon, CatalogIcon, FeedbackIcon, UserIcon, HomeIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, SupportIcon, TrainingIcon, BankIcon, AdminFolderIcon, ListIcon } from '@/Components/SideIcons'
+import {CalendarIcon, CashIcon, DeBugIcon, FeedbackIcon, UserIcon, HomeIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, SupportIcon, TrainingIcon, BankIcon, AdminFolderIcon, ListIcon } from '@/Components/SideIcons'
 import { useCompanyUsers } from '@/context/CompanyUserContext'
+import TicketingModal from '@/Components/Modal/TicketingModal'
+
 
 export default function TopWithSideNav() {
     const pathname = usePathname()
@@ -16,6 +18,7 @@ export default function TopWithSideNav() {
     const [customToken, setCustomToken] = useState<string>();
     const [pfp, setPfp] = useState<string | null>(null);
     const { isOpen, onOpen, onClose} = useDisclosure()
+    const { isOpen: isOpenTicket, onOpen: onOpenTicket, onClose: onCloseTicket} = useDisclosure()
     const router = useRouter()
 
     const [current, setCurrent] = useState<string>('')
@@ -171,7 +174,14 @@ export default function TopWithSideNav() {
                     </List>
                 </Box>
             </aside>
-            
+            <Modal onClose={onCloseTicket} isOpen={isOpenTicket} size='xl'>
+                <ModalOverlay />
+                <ModalContent p={4}>
+                    <ModalBody>
+                        <TicketingModal onClose={onCloseTicket} />
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
             <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={onClose} size={'xl'}>
                 <ModalOverlay />
                 <ModalContent p={4}>
@@ -193,8 +203,8 @@ export default function TopWithSideNav() {
                                     </Center>
                                 </Link>
                             </WrapItem>
-                            <WrapItem>
-                                <Link href='/enterprise-portal/tech-support'>
+                            <WrapItem onClick={onOpenTicket}>
+                                <Text >
                                     <Center className='flex space-x-5 p-3 rounded border border-solid border-slate-300' w='235px'>
                                         <SupportIcon size={'60'} color={'#0D70AB'} />
                                         <Box>
@@ -202,7 +212,7 @@ export default function TopWithSideNav() {
                                             <Text className='font-normal'>Contact Support to assist your needs.</Text>
                                         </Box>
                                     </Center>
-                                </Link>
+                                </Text>
                             </WrapItem>
                             <WrapItem>
                                 <Link href='/enterprise-portal/user-feedback'>

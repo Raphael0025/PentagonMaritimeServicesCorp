@@ -1,7 +1,11 @@
 import Swal from 'sweetalert2'
 import { GetAllCompanyUsers, GetCompanyUserSpecificData, Role} from '@/types/company_users'
-import { format } from 'date-fns'
-import { Timestamp } from 'firebase/firestore'
+
+export function generateTicketID(): string {
+    const timestamp = Date.now().toString(36); // Converts current time to base-36 (shorter format)
+    const randomString = Math.random().toString(36).substring(2, 6).toUpperCase(); // Random 4-character alphanumeric string
+    return `TKT-${timestamp}-${randomString}`;
+}
 
 export const countCompanyUsersByCategoryStatusAndType = async (company_users: GetAllCompanyUsers[] | null) => {
     if(!company_users){

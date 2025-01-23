@@ -1,4 +1,4 @@
-import { addDoc, deleteDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp } from 'firebase/firestore'
+import { addDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage'
 import { storage } from './firebase'
 import { app } from './firebase'
