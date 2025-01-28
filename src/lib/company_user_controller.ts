@@ -2,7 +2,7 @@ import { addDoc, deleteDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orde
 import { ref, uploadBytes, getDownloadURL, uploadString,} from 'firebase/storage'
 import { storage } from './firebase'
 import { generateUserCode, } from '@/types/handling'
-import { NewStaffValues, GetAllCompanyUsers, TICKET } from '@/types/company_users'
+import { NewStaffValues, GetAllCompanyUsers } from '@/types/company_users'
 import { firestore } from './controller'
 import { addLog } from '@/lib/history_log_controller'
 
