@@ -26,15 +26,15 @@ export default function Page (){
             <Box mt='5' display='flex' gap='4' flexWrap={'wrap'}>
             {allTickets && allTickets.length > 0 ? (
                 allTickets && allTickets.filter((ticket) => ticket.actor === actor).map((ticket: TICKET_BY_ID) => (
-                <Box key={ticket.id} p="4" w='500px' borderWidth="1px" borderRadius="lg" shadow="md" mb="4">
+                <Box key={ticket.id} p="4" w='550px' borderWidth="1px" borderRadius="lg" shadow="md" mb="4">
                     <Box h='100%' display='flex' flexDir='column' justifyContent={'space-between'}>
-                        <Box display='flex' fontSize="lg" color="blue.700" alignItems='center' justifyContent='space-between'>
+                        <Box display='flex' fontSize="base" textTransform='uppercase' color="blue.700" alignItems='center' justifyContent='space-between'>
                             <Text>{`Ticket ID: ${ticket.ticket_id}`}</Text>
                             <Text>Subject: {ticket.title}</Text>
                         </Box>
-                        <Text px='6' color='gray.500'>{ticket.issue}</Text>
-                        <Box display='flex' alignItems='center' justifyContent='space-between'>
-                            <Text fontSize="md" color={getBorderTextColor(ticket.status, 'status')}>{`Status: ${convertVal(ticket.status, 'status')}`}</Text>
+                        <Text px='6' my='3' color='gray.500'>{ticket.issue}</Text>
+                        <Box display='flex' textTransform='uppercase' alignItems='center' justifyContent='space-between'>
+                            <Text fontSize="sm" color={getBorderTextColor(ticket.status, 'status')}>{`Status: ${convertVal(ticket.status, 'status')}`}</Text>
                             <Text fontSize="sm" color={getBorderTextColor(ticket.prio, 'prio')}>{`Priority: ${convertVal(ticket.prio, 'prio')}`}</Text>
                         </Box>
                     </Box>
