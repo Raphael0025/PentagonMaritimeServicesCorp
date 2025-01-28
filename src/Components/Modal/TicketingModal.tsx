@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Box, Text, Textarea, Button, useToast } from '@chakra-ui/react'
+import { Box, Text, Textarea, Input, Button, useToast } from '@chakra-ui/react'
 
 import { ToastStatus } from '@/types/handling'
 
@@ -15,6 +15,7 @@ export default function TicketingModal({onClose}: ModalProp){
     const toast = useToast()
     
     const [issue, setIssue] = useState<string>('')
+    const [subject, setSubject] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
     
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
@@ -33,7 +34,7 @@ export default function TicketingModal({onClose}: ModalProp){
         setLoading(true)
         const getActor = localStorage.getItem('customToken')
 
-        await AddTicket(issue, getActor)
+        await AddTicket(issue, subject, getActor)
         handleToast('Successfully Submitted Ticket!', `Your ticket has been submitted, please await for the support to resolve your problem.`, 6000, 'success')
         setIssue('')   
 
@@ -46,6 +47,10 @@ export default function TicketingModal({onClose}: ModalProp){
             <Box>
                 <Text fontWeight='bold' color='blue.700' fontSize='2xl' textAlign='center'>IT SUPPORT TICKET FORM</Text>
                 <Text fontSize='lg' color='gray.500' textAlign='center'>Please provide the issue of the problem</Text>
+            </Box>
+            <Box mt='3' className='space-y-4'>
+                <Text fontSize='lg'>Subject:</Text>
+                <Input onChange={(e) => {setSubject(e.target.value)}} shadow='md' placeholder='Type the Subject here...' />
             </Box>
             <Box mt='3' className='space-y-4'>
                 <Text fontSize='lg'>Message:</Text>

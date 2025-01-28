@@ -22,12 +22,13 @@ export const UpdateTicket = async (id: string, val: number, type: string) => {
     }
 }
 
-export const AddTicket = async (issue: string, actor: string | null) => {
+export const AddTicket = async (issue: string, subject: string, actor: string | null) => {
     try{
         const ticketDesc = {
             status: 3,
             prio: 0,
             actor,
+            title: subject,
             issue,
             category: 0,
             createdAt: Timestamp.now(),
