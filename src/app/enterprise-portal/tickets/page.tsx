@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Box, Text, Textarea, Select } from '@chakra-ui/react'
 import { useTickets } from '@/context/TicketContext'
 import { TICKET_BY_ID } from '@/types/utils' 
@@ -8,8 +8,15 @@ import { convertVal, getBorderTextColor } from '@/handlers/util_handler'
 
 export default function Page (){
     const {data: allTickets} = useTickets();
+    const [actor, setActor] = useState<string | null>('')
 
-    const actor: string | null = localStorage.getItem('customToken')
+    useEffect(() => {
+        const fetchData = () => {
+            const getActor = localStorage.getItem('customToken')
+            setActor(getActor)
+        } 
+        fetchData()
+    }, [actor])
     
     return(
     <>
