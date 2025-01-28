@@ -6,7 +6,7 @@ import Image from 'next/image'
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Center, Text, Wrap, WrapItem, useDisclosure, List, ListItem, Tooltip, Avatar, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import 'animate.css';
-import {HelpIcon, BellIcon, SysAdIcon, RADIcon } from '@/Components/Icons'
+import {HelpIcon, BellIcon, SysAdIcon, TicketIcon, RADIcon } from '@/Components/Icons'
 import {CalendarIcon, CashIcon, DeBugIcon, FeedbackIcon, UserIcon, HomeIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, SupportIcon, TrainingIcon, BankIcon, AdminFolderIcon, ListIcon } from '@/Components/SideIcons'
 import { useCompanyUsers } from '@/context/CompanyUserContext'
 import TicketingModal from '@/Components/Modal/TicketingModal'
@@ -237,6 +237,8 @@ export default function TopWithSideNav() {
 // default staff navigation
 const navigateStaff = [
 
+    {name: 'Tickets', href: 'tickets', activeIcon: <TicketIcon size={'34'} color={'#0D70AB'} />, inActive: <TicketIcon size={'26'} color={'#a1a1a1'} />},
+    
     {name: 'Purchase Request', href: 'accounting/pr', activeIcon: <PurchaseIcon size={'34'} color={'#0D70AB'} />, inActive: <PurchaseIcon size={'26'} color={'#a1a1a1'} />},
     
     {name: 'Cash Advance', href: 'accounting/ca', activeIcon: <CashIcon size={'34'} color={'#0D70AB'} />, inActive: <CashIcon size={'26'} color={'#a1a1a1'} />},
@@ -261,7 +263,7 @@ const navigateDepartments = [
     
     {name: 'R&D', href: 'research-development', activeIcon: <RADIcon size={'34'} color={'#0D70AB'} />, inActive: <RADIcon size={'26'} color={'#a1a1a1'} />},
     
-    {name: 'System Admin', href: 'sys-admin', activeIcon: <SysAdIcon size={'34'} color={'#0D70AB'} />, inActive: <SysAdIcon size={'26'} color={'#a1a1a1'} />},
+    {name: 'System Admin', href: 'sys-admin/tickets', activeIcon: <SysAdIcon size={'34'} color={'#0D70AB'} />, inActive: <SysAdIcon size={'26'} color={'#a1a1a1'} />},
     
 ]
 

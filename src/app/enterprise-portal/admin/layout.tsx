@@ -1,4 +1,4 @@
-import TabAdmin from '@/Components/TabAdmin'
+import {TabAdmin} from@/Components/Tabs/TabAdmin
 
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
 

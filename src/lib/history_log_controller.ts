@@ -2,7 +2,7 @@ import { addDoc, getDocs, deleteDoc, where, query, collection, getFirestore } fr
 import { app } from './firebase'
 
 import { getCurrentFormattedDateTime } from '@/types/handling'
-import { HistoryLog, HistoryLogWithID } from '@/types/utils'
+import { HistoryLogWithID } from '@/types/utils'
 
 export const firestore = getFirestore(app)
 

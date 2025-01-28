@@ -5,7 +5,7 @@ import { Box, Text, Textarea, Button, useToast } from '@chakra-ui/react'
 
 import { ToastStatus } from '@/types/handling'
 
-import { AddTicket } from '@/lib/company_user_controller'
+import { AddTicket } from '@/lib/ticket_controller'
 
 interface ModalProp{
     onClose: () => void;

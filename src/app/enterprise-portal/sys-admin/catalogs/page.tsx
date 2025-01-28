@@ -1,10 +1,9 @@
 'use client'
 
-import React, {useState, useEffect} from 'react'
-import { Box, Text, Tooltip, Input, InputLeftAddon, InputGroup, useDisclosure, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel, AlertDialog, AlertDialogCloseButton, AlertDialogBody, AlertDialogHeader, AlertDialogOverlay, AlertDialogFooter, AlertDialogContent, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter } from '@chakra-ui/react'
+import React, {useState} from 'react'
+import { Box, Text, Input, InputLeftAddon, InputGroup, useDisclosure, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react'
 import { addType } from '@/lib/type-controller'
 import { useTypes } from '@/context/TypeContext'
-import { initType } from '@/types/type'
 import { ToastStatus, } from '@/types/handling'
 
 export default function Page(){

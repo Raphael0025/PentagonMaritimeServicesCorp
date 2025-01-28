@@ -6,6 +6,7 @@ import {ReminderProvider} from '@/context/ReminderContext'
 import {RegistrationProvider} from '@/context/RegistrationContext'
 import {TrainingProvider} from '@/context/TrainingContext'
 import {HistoryLogProvider} from '@/context/HistoryLogContext'
+import {TicketProvider} from '@/context/TicketContext'
 
 export const metadata: Metadata = {
     title: "Enterprise Portal | Pentagon Maritime Services Corp.",
@@ -19,12 +20,14 @@ export default function RootLayout({ children, }: { children: React.ReactNode })
                 <RegistrationProvider>
                     <TrainingProvider>
                         <CourseBatchProvider>
-                            <HistoryLogProvider>
-                                <TopWithSideNav />
-                                <main className='main-container h-dvh z-0 enterprise-bg'>
-                                    {children}
-                                </main>
-                            </HistoryLogProvider>
+                            <TicketProvider>
+                                <HistoryLogProvider>
+                                    <TopWithSideNav />
+                                    <main className='main-container h-dvh z-0 enterprise-bg'>
+                                        {children}
+                                    </main>
+                                </HistoryLogProvider>
+                            </TicketProvider>
                         </CourseBatchProvider>
                     </TrainingProvider>
                 </RegistrationProvider>

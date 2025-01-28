@@ -1,19 +1,5 @@
 import { Timestamp } from 'firebase/firestore'
 
-export interface TICKET {
-    issue: string;
-    createdAt: Timestamp;
-    actor: string;
-    prio: number; // 0 - low | 1 - med | 2 - high
-    status: number; // 0 - open | 1 - in progress | 2 - resolved | 3 - closed
-    ticket_id: string;
-    category: number; // 0 - soft | 1 - hard
-}
-
-export interface TICKET_ID extends TICKET {
-    id: string;
-}
-
 export interface NewStaffValues{
     full_name: string;
     gender: string;

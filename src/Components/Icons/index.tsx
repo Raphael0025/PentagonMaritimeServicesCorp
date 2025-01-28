@@ -44,9 +44,11 @@ import ClockIconCustom from './ClockIconCustom'
 import BullsEyeIcon from './BullsEyeIcon'
 import LightBulbIcon from './LightBulbIcon'
 import StopIcon from './StopIcon'
+import TicketIcon from './TicketIcon'
 
 export {BellIcon, 
     StopIcon, 
+    TicketIcon, 
     UsersIcon,
     LightBulbIcon,
     BullsEyeIcon,

@@ -75,7 +75,7 @@ const getFormattedDate = (date: Date): string => {
     const weekday = daysOfWeek[date.getDay()] // Get the year, though it's not used in the final string
     
     return `${weekday}, ${month} ${day}`; // Return in "Month Day" format (e.g., "Nov 11")
-};
+}
 
 // Helper function to calculate the end of a range given the start date and duration
 const getEndOfWeek = (startDate: Date, days: number): Date => {

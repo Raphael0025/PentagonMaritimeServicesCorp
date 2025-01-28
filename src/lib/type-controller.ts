@@ -1,4 +1,4 @@
-import { Firestore, addDoc, deleteDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orderBy, where, collection, getFirestore, serverTimestamp, Timestamp, DocumentReference } from 'firebase/firestore'
+import { addDoc, deleteDoc, updateDoc, doc, getDocs, query, orderBy, collection, getFirestore, Timestamp, DocumentReference } from 'firebase/firestore'
 import { TypeWithID, RanksByID, CatalogTypeById, AREAS, AREA_BY_ID, SUB_AREAS, SUBAREA_BY_ID } from '@/types/type'
 import { app } from './firebase'
 import { addLog } from '@/lib/history_log_controller'

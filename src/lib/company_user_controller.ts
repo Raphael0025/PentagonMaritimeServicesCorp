@@ -2,30 +2,11 @@ import { addDoc, deleteDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orde
 import { ref, uploadBytes, getDownloadURL, uploadString,} from 'firebase/storage'
 import { storage } from './firebase'
 import { generateUserCode, } from '@/types/handling'
-import { generateTicketID, } from '@/handlers/company_user_handler'
 import { NewStaffValues, GetAllCompanyUsers, TICKET } from '@/types/company_users'
 import { firestore } from './controller'
 import { addLog } from '@/lib/history_log_controller'
 
 export const companyUsers = collection(firestore, 'company_users')
-export const companyTickets = collection(firestore, 'TICKETS')
-
-export const AddTicket = async (issue: string, actor: string | null) => {
-    try{
-        const ticketDesc = {
-            status: 3,
-            prio: 0,
-            actor,
-            issue,
-            category: 0,
-            createdAt: Timestamp.now(),
-            ticket_id: generateTicketID()
-        }
-        await addDoc(companyTickets, ticketDesc)
-    }catch(error){
-        throw error
-    }
-}
 
 // Get All Company User Accounts
 export const getAllCompanyUsers = async (): Promise<GetAllCompanyUsers[]> => {
