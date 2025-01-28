@@ -1,4 +1,4 @@
-import {TabRegistration} from@/Components/Tabs/TabRegistration
+import {TabRegistration} from '@/Components/Tabs'
 
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
 

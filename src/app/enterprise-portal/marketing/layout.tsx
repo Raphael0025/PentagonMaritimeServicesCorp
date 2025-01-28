@@ -1,4 +1,4 @@
-import {TabMarketing} from@/Components/Tabs/TabMarketing
+import {TabMarketing} from '@/Components/Tabs'
 
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
 
