@@ -2,8 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { Box, Text, Input, Textarea, Button, InputLeftAddon, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
-import { DotsIcon, SearchIcon } from '@/Components/Icons';
-import { Timestamp } from 'firebase/firestore';
+import { SearchIcon } from '@/Components/Icons';
+import { ChevronDownIcon } from '@chakra-ui/icons'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -16,15 +16,15 @@ import {useRank} from '@/context/RankContext'
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
-import { TRAINING_BY_ID } from '@/types/trainees'
-
 import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
 import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
 
-import { SAVE_REMARKS, addRegTypeField } from '@/lib/trainee_controller'
+import { SAVE_REMARKS } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
 import './Registration.css'
+import { deployYDate } from '@/types/utils' 
+import { fullMonth } from '@/handlers/util_handler'
 
 export default function Page(){
     const toast = useToast()
@@ -32,9 +32,9 @@ export default function Page(){
     const { data: allRanks } = useRank()
     const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
-    const { data: allTraining } = useTraining()
+    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations } = useRegistrations()
+    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [searchTerm, setSearch] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
@@ -42,10 +42,13 @@ export default function Page(){
     const [remarks, setRemarks] = useState<string>('')
     const [regNum, setRegNum] = useState<string>('')
     const [traineeName, setTrainee] = useState<string>('')
+    const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
+    const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
     const { isOpen: isOpenRm, onOpen: onOpenRm, onClose: onCloseRm } = useDisclosure()
     const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
     const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
+    const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -91,28 +94,41 @@ export default function Page(){
     }
 
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth(); // 0-11 (Jan-Dec)
-    const currentYear = currentDate.getFullYear();
+    const currentYear = currentDate.getFullYear()
+    const startYear = parseInt(deployYDate, 10)
+
+    const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+
+    const handleData = () => {
+        setTMonth(monthSelected + 1) 
+        setTYear(yearSelected)
+        setRMonth(monthSelected + 1) 
+        setRYear(yearSelected)
+        setMonthSelected(new Date().getMonth())
+        setYearSelected(new Date().getFullYear())
+        onCloseDate()
+    }
     
     return(
         <>
             <main className="w-full space-y-3">
-                <Box className="w-full flex justify-between">
+            <Box className="w-full flex justify-between">
                     <Box className="w-full flex">
                         <InputGroup w="30%" className="shadow-md rounded-lg">
-                        <InputLeftAddon>
-                            <SearchIcon color="#a1a1a1" size="18" />
-                        </InputLeftAddon>
-                        <Input
-                            placeholder="Name, Enrolled Date, Registration No..."
-                            value={searchTerm}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                            <InputLeftAddon>
+                                <SearchIcon color="#a1a1a1" size="18" />
+                            </InputLeftAddon>
+                            <Input
+                                placeholder="Name, Enrolled Date, Registration No..."
+                                value={searchTerm}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </InputGroup>
                     </Box>
-                    <Button onClick={
-                        onOpenSForm
-                    } bgColor='#1C437E' colorScheme='blue' size='sm'>Print Forms</Button>
+                    <Box display='flex' >
+                        <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm'>Filter Date</Button>
+                        <Button bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm'>Print Forms</Button>
+                    </Box>
                 </Box>
                 <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto'}}>
                     <Box w='100%' h='700px' className='custom-scrollbar' style={{ scrollbarWidth: 'thin',}}>
@@ -169,8 +185,7 @@ export default function Page(){
                             </Box>
                             {allTraining && allTraining.sort((a, b) => {
                                     return a.date_enrolled.toMillis() - b.date_enrolled.toMillis();
-                                }).filter((t) => t.reg_status >= 3 && t.regType === 0 && new Date(t.date_enrolled.toMillis()).getMonth() === currentMonth && 
-                                new Date(t.date_enrolled.toMillis()).getFullYear() === currentYear).map((training) => {
+                                }).filter((t) => t.reg_status >= 3 && t.regType === 0 ).map((training) => {
                                 
                                 const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                                 const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
@@ -261,6 +276,41 @@ export default function Page(){
                     </Box>
                 </Box>
             </main>
+            <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
+                <ModalOverlay />
+                <ModalContent px={4}>
+                    <ModalHeader className='text-sky-700' fontWeight='800'>Select Month & Year</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody display='flex'>
+                        <Box w='50%' mr={4}>
+                            <Text fontSize='xl' color='blue.700'>Months</Text>
+                            <Box>
+                            {fullMonth.map((month, index) => (
+                                <Text borderRadius={'10px'} color='gray.500' fontSize='xl' p={2} _hover={{bg: 'gray.100'}} onClick={() => {setMonthSelected(index)}} key={index}>
+                                    {month}
+                                </Text>
+                            ))}
+                            </Box>
+                        </Box>
+                        <Box w='50%'>
+                            <Text fontSize='xl' color='blue.700'>Years</Text>
+                            <Box h='550px' overflowY='auto'>
+                            {years.map((year) => (
+                                <Text  borderRadius="10px"  color="gray.500"  fontSize="xl"  p={2}  _hover={{ bg: "gray.100" }}  onClick={() => setYearSelected(year)}  key={year}>
+                                    {year}
+                                </Text>
+                            ))}
+                            </Box>
+                        </Box>
+                    </ModalBody>
+                    <ModalFooter display='flex' justifyContent='space-between' borderTopWidth='1px'>
+                        <Text fontSize='lg'>{`Date: ${fullMonth[monthSelected]} ${yearSelected}`}</Text>
+                        <Box> 
+                            <Button onClick={handleData} colorScheme='blue'>Select</Button>
+                        </Box>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
             <Modal isOpen={isOpenRm} size='xl' scrollBehavior='inside' onClose={onCloseRm}>
                 <ModalOverlay />
                 <ModalContent px={4}>
@@ -294,32 +344,52 @@ export default function Page(){
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-            <Modal isOpen={isOpenSForm} size='md' scrollBehavior='inside' onClose={onCloseSForm}>
+            <Modal isOpen={isOpenSForm} size='md' scrollBehavior='inside' onClose={() => {onCloseSForm(); setSearch('')}}>
                 <ModalOverlay />
                 <ModalContent px={4}>
                     <ModalHeader className='text-sky-700' fontWeight='800'>Select Registration Number</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody display='flex' alignItems='center' flexDir='column'>
                         <Box className='space-y-3 w-full'>
-                        {allRegistrations && allRegistrations?.filter((r) => r.regType === 0 && allTraining?.some((training) => training.reg_ref_id === r.id && training.reg_status >= 3))
-                            .sort((a, b) => {
-                                const [yearA, numA] = a.reg_no.split('-').map(Number);
-                                const [yearB, numB] = b.reg_no.split('-').map(Number);
-                    
-                                // Compare by year first, then by the number part
-                                if (yearA !== yearB) return yearB - yearA;
-                                return numB - numA;
-                            })
-                            .map((reg) => (
-                                <Box key={reg.id} onClick={() => {setRegNum(reg.id); onOpenForm(); onCloseSForm();}} className='hover:bg-sky-300 transition ease-in-out duration-75 delay-75 p-4 border rounded shadow-md text-center'>
-                                    <Text className='text-lg'>{`REG-${reg.reg_no}`}</Text>
-                                </Box>
-                            ))
-                        }
+                            <Box>
+                                <InputGroup className="shadow-md rounded-lg">
+                                    <InputLeftAddon>
+                                        <SearchIcon color="#a1a1a1" size="18" />
+                                    </InputLeftAddon>
+                                    <Input
+                                        placeholder="Name, Enrolled Date, Registration No..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                </InputGroup>
+                            </Box>
+                            <Box className='space-y-3 w-full' overflowY='auto' h='550px'>
+                            {allRegistrations && allRegistrations?.filter((r) => r.regType === 0 && allTraining?.some((training) => training.reg_ref_id === r.id && training.reg_status >= 3))
+                                .filter((reg) => {
+                                    const searchLower = searchTerm.toLowerCase();
+                                    return (
+                                        `REG-${reg.reg_no}`?.toLowerCase().includes(searchLower)
+                                    )
+                                })
+                                .sort((a, b) => {
+                                    const [yearA, numA] = a.reg_no.split('-').map(Number);
+                                    const [yearB, numB] = b.reg_no.split('-').map(Number);
+                        
+                                    // Compare by year first, then by the number part
+                                    if (yearA !== yearB) return yearB - yearA;
+                                    return numB - numA;
+                                })
+                                .map((reg) => (
+                                    <Box key={reg.id} onClick={() => {setRegNum(reg.id); onOpenForm(); onCloseSForm();}} className='hover:bg-sky-300 transition ease-in-out duration-75 delay-75 p-4 border rounded shadow-md text-center'>
+                                        <Text className='text-lg'>{`REG-${reg.reg_no}`}</Text>
+                                    </Box>
+                                ))
+                            }
+                            </Box>
                         </Box>
                     </ModalBody>
                     <ModalFooter borderTopWidth='1px'>
-                            <Button onClick={onCloseSForm} mr={3}>Close</Button>
+                            <Button onClick={() => {onCloseSForm(); setSearch('');}} mr={3}>Close</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

@@ -23,7 +23,7 @@ import { SAVE_REMARKS } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
 import './Registration.css'
-import { deployMDate, deployYDate } from '@/types/utils' 
+import { deployYDate } from '@/types/utils' 
 import { fullMonth } from '@/handlers/util_handler'
 
 export default function Page(){
@@ -32,9 +32,9 @@ export default function Page(){
     const { data: allRanks } = useRank()
     const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
-    const { data: allTraining, setMonth, setYear } = useTraining()
+    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
+    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations } = useRegistrations()
 
     const [searchTerm, setSearch] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
@@ -94,17 +94,16 @@ export default function Page(){
     }
 
     const currentDate = new Date();
-    // const currentMonth = currentDate.getMonth(); // 0-11 (Jan-Dec)
-    const currentMonth = 0 // 0-11 (Jan-Dec)
-    
     const currentYear = currentDate.getFullYear()
     const startYear = parseInt(deployYDate, 10)
 
     const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
 
     const handleData = () => {
-        setMonth(monthSelected + 1) 
-        setYear(yearSelected)
+        setTMonth(monthSelected + 1) 
+        setTYear(yearSelected)
+        setRMonth(monthSelected + 1) 
+        setRYear(yearSelected)
         setMonthSelected(new Date().getMonth())
         setYearSelected(new Date().getFullYear())
         onCloseDate()
@@ -127,7 +126,7 @@ export default function Page(){
                         </InputGroup>
                     </Box>
                     <Box display='flex' >
-                        <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm'>Date</Button>
+                        <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm'>Filter Date</Button>
                         <Button bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm'>Print Forms</Button>
                     </Box>
                 </Box>
@@ -345,37 +344,55 @@ export default function Page(){
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-            <Modal isOpen={isOpenSForm} size='md' scrollBehavior='inside' onClose={onCloseSForm}>
+            <Modal isOpen={isOpenSForm} size='md' scrollBehavior='inside' onClose={() => {onCloseSForm(); setSearch('')}}>
                 <ModalOverlay />
                 <ModalContent px={4}>
                     <ModalHeader className='text-sky-700' fontWeight='800'>Select Registration Number</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody display='flex' alignItems='center' flexDir='column'>
                         <Box className='space-y-3 w-full'>
-                        {allRegistrations && allRegistrations?.filter((r) => r.regType === 1 && allTraining?.some((training) => training.reg_ref_id === r.id && training.reg_status >= 3))
-                            .sort((a, b) => {
-                                const [yearA, numA] = a.reg_no.split('-').map(Number);
-                                const [yearB, numB] = b.reg_no.split('-').map(Number);
-                    
-                                // Compare by year first, then by the number part
-                                if (yearA !== yearB) return yearB - yearA;
-                                return numB - numA;
-                            })
-                            .map((reg) => {
-                                const traineeFound = allTrainee?.find((t) => t.id === reg.trainee_ref_id)
-                                if(traineeFound){
-                                    return(
-                                        <Box key={reg.id} onClick={() => {setTrainee(`${traineeFound.last_name}, ${traineeFound.first_name} ${traineeFound.middle_name}`); setRegNum(reg.id); onOpenForm(); onCloseSForm();}} className='hover:bg-sky-300 transition ease-in-out duration-75 delay-75 p-4 border rounded shadow-md text-center'>
-                                            <Text className='text-lg'>{`REG-${reg.reg_no}`}</Text>
-                                        </Box>
+                            <InputGroup className="shadow-md rounded-lg">
+                                <InputLeftAddon>
+                                    <SearchIcon color="#a1a1a1" size="18" />
+                                </InputLeftAddon>
+                                <Input
+                                    placeholder="Registration No..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </InputGroup>
+                            <Box className='space-y-3 w-full' overflowY='auto' h='550px'>
+                            {allRegistrations && allRegistrations?.filter((r) => r.regType === 1 && allTraining?.some((training) => training.reg_ref_id === r.id && training.reg_status >= 3))
+                                .filter((reg) => {
+                                    const searchLower = searchTerm.toLowerCase();
+                                    return (
+                                        `REG-${reg.reg_no}`?.toLowerCase().includes(searchLower)
                                     )
-                                }
-                            })
-                        }
+                                })
+                                .sort((a, b) => {
+                                    const [yearA, numA] = a.reg_no.split('-').map(Number);
+                                    const [yearB, numB] = b.reg_no.split('-').map(Number);
+                        
+                                    // Compare by year first, then by the number part
+                                    if (yearA !== yearB) return yearB - yearA;
+                                    return numB - numA;
+                                })
+                                .map((reg) => {
+                                    const traineeFound = allTrainee?.find((t) => t.id === reg.trainee_ref_id)
+                                    if(traineeFound){
+                                        return(
+                                            <Box key={reg.id} onClick={() => {setTrainee(`${traineeFound.last_name}, ${traineeFound.first_name} ${traineeFound.middle_name}`); setRegNum(reg.id); onOpenForm(); onCloseSForm();}} className='hover:bg-sky-300 transition ease-in-out duration-75 delay-75 p-4 border rounded shadow-md text-center'>
+                                                <Text className='text-lg'>{`REG-${reg.reg_no}`}</Text>
+                                            </Box>
+                                        )
+                                    }
+                                })
+                            }
+                            </Box>
                         </Box>
                     </ModalBody>
                     <ModalFooter borderTopWidth='1px'>
-                            <Button onClick={onCloseSForm} mr={3}>Close</Button>
+                            <Button onClick={() => {onCloseSForm(); setSearch('');}} mr={3}>Close</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

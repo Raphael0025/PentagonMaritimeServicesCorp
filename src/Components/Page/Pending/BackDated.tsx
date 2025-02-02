@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Box, Text, Input, Button, InputLeftAddon, Menu, MenuList, MenuButton, IconButton, MenuItem, MenuGroup, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionItem, Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent, ModalFooter, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
 import { DotsIcon, ViewDocIcon, SearchIcon, StopIcon, } from '@/Components/Icons';
+import { ChevronDownIcon } from '@chakra-ui/icons'
 import { PlusIcon } from '@/Components/SideIcons';
 import { Timestamp } from 'firebase/firestore';
 
@@ -27,15 +28,17 @@ import { GENERATE_BATCH } from '@/lib/course_batches_controller'
 import { TRAINING_BY_ID } from '@/types/trainees'
 
 import { useReactToPrint } from 'react-to-print'
+import { deployYDate } from '@/types/utils' 
+import { fullMonth } from '@/handlers/util_handler'
 
 export default function Page() {
     const toast = useToast()
     const { data: courseBatch } = useCourseBatch()
     const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
-    const { data: allTraining } = useTraining()
+    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations } = useRegistrations()
+    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [activeBtn, setActiveBtn] = useState<string>('')
     const [loadBtn, setLoadBtn] = useState<boolean>(true)
@@ -47,6 +50,8 @@ export default function Page() {
     const [account_type, setAccType] = useState<number>(0)
     const [ts, setTS] = useState<string>('')
     const [td, setTD] = useState<string>('')
+    const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
+    const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
     const [traineeName, setTrainee] = useState<string>('')
 
@@ -55,6 +60,7 @@ export default function Page() {
     const { isOpen: isOpenCF, onOpen: onOpenCF, onClose: onCloseCF } = useDisclosure()
     const { isOpen: isOpenTraining, onOpen: onOpenTraining, onClose: onCloseTraining } = useDisclosure()
     const { isOpen: isOpenCancel, onOpen: onOpenCancel, onClose: onCloseCancel } = useDisclosure()
+    const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -86,7 +92,7 @@ export default function Page() {
         new Promise<void>((res,rej) => {
             setTimeout(async () => {
                 try{
-                    const { id, ...rest } = reg
+                    const { ...rest } = reg
                     await ACKNOWLEDGE_REGISTRATION(reg_id, rest, actor)
                     await fetch('/api/mail-verification', {
                         method: 'POST',
@@ -199,6 +205,22 @@ export default function Page() {
         })
     }
 
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear()
+    const startYear = parseInt(deployYDate, 10)
+
+    const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+
+    const handleData = () => {
+        setTMonth(monthSelected + 1) 
+        setTYear(yearSelected)
+        setRMonth(monthSelected + 1) 
+        setRYear(yearSelected)
+        setMonthSelected(new Date().getMonth())
+        setYearSelected(new Date().getFullYear())
+        onCloseDate()
+    }
+
     return (
     <>
         <main className="w-full space-y-3">
@@ -214,6 +236,7 @@ export default function Page() {
                     />
                 </InputGroup>
                 <Box>
+                    <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md'>Filter Date</Button>
                     <Button colorScheme='blue' size='md'>Register</Button>
                 </Box>
             </Box>
@@ -344,6 +367,41 @@ export default function Page() {
                 </Box>
             </Box>
         </main>
+        <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
+            <ModalOverlay />
+            <ModalContent px={4}>
+                <ModalHeader className='text-sky-700' fontWeight='800'>Select Month & Year</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody display='flex'>
+                    <Box w='50%' mr={4}>
+                        <Text fontSize='xl' color='blue.700'>Months</Text>
+                        <Box>
+                        {fullMonth.map((month, index) => (
+                            <Text borderRadius={'10px'} color='gray.500' fontSize='xl' p={2} _hover={{bg: 'gray.100'}} onClick={() => {setMonthSelected(index)}} key={index}>
+                                {month}
+                            </Text>
+                        ))}
+                        </Box>
+                    </Box>
+                    <Box w='50%'>
+                        <Text fontSize='xl' color='blue.700'>Years</Text>
+                        <Box h='550px' overflowY='auto'>
+                        {years.map((year) => (
+                            <Text  borderRadius="10px"  color="gray.500"  fontSize="xl"  p={2}  _hover={{ bg: "gray.100" }}  onClick={() => setYearSelected(year)}  key={year}>
+                                {year}
+                            </Text>
+                        ))}
+                        </Box>
+                    </Box>
+                </ModalBody>
+                <ModalFooter display='flex' justifyContent='space-between' borderTopWidth='1px'>
+                    <Text fontSize='lg'>{`Date: ${fullMonth[monthSelected]} ${yearSelected}`}</Text>
+                    <Box> 
+                        <Button onClick={handleData} colorScheme='blue'>Select</Button>
+                    </Box>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         <Modal isOpen={isOpenTraining} onClose={onCloseTraining} scrollBehavior='inside' size='full'>
             <ModalOverlay />
             <ModalContent bgColor='#00000099'>

@@ -1,14 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Box, Text, Input, Button, InputLeftAddon, Menu, MenuList, MenuButton, MenuItem, MenuGroup, MenuDivider, MenuOptionGroup, MenuItemOption, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionIcon, AccordionItem,  } from '@chakra-ui/react';
+import React, { useState } from 'react'
+import { Box, Text, Button, useToast, Accordion, AccordionButton, AccordionPanel, AccordionItem,  } from '@chakra-ui/react';
 import { Timestamp } from 'firebase/firestore';
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
-import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
@@ -54,7 +53,7 @@ export default function Page() {
         new Promise<void>((res,rej) => {
             setTimeout(async () => {
                 try{
-                    const { id, ...rest } = reg
+                    const { ...rest } = reg
                     await ACKNOWLEDGE_REGISTRATION(reg_id, rest, actor)
                     await fetch('/api/mail-verification', {
                         method: 'POST',
@@ -178,7 +177,7 @@ export default function Page() {
                 </Box>
                 <Box style={{maxHeight: '700px', overflowY: 'auto'}}>
                     <Accordion allowToggle className='space-y-3'>
-                    {filteredRegistrations?.filter((registration) => allTraining?.some((training) => training.reg_ref_id === registration.id && training.reg_status < 3)
+                    {filteredRegistrations?.filter((reg) => reg.regType !== 3).filter((registration) => allTraining?.some((training) => training.reg_ref_id === registration.id && training.reg_status < 3 && training.reg_status !== 7)
                         )?.sort((a, b) => {
                             const dateA =
                                 a.date_registered instanceof Timestamp

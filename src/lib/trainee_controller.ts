@@ -112,7 +112,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
             currentDate.setDate(currentDate.getDate() - 1);  // Subtract one day
             
             // Convert the new date (previous day) to Firestore Timestamp
-            const previousDayTimestamp = Timestamp.fromDate(currentDate);
+            // const previousDayTimestamp = Timestamp.fromDate(currentDate);
             const newTraining: TRAINING = {
                 ...tempCourses,
                 reg_ref_id: id,
@@ -127,7 +127,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
                 train_remarks: '',
                 regType: 2,
                 batch: 1,
-                date_enrolled: previousDayTimestamp,
+                date_enrolled: Timestamp.now(),
             }
             await addDoc(training, {...newTraining})
         }
@@ -457,11 +457,16 @@ export const getAllTrainees = async (): Promise<TRAINEE_BY_ID[]> => {
     }
 }
 
-export const getRegistrationData = async (): Promise<REGISTRATION_BY_ID[]> => {
+export const getRegistrationData = async (month: number, year: number): Promise<REGISTRATION_BY_ID[]> => {
     try {
+        const startDate = new Date(year, month - 1, 1, 12, 0, 0)
+        const endDate = new Date(year, month, 0, 23, 59, 59)
+
         // Query to fetch all trainees
-        const registrationQuery = query(registration);
-        const querySnapshot = await getDocs(registrationQuery);
+        const regRef = collection(firestore, "REGISTRATION")
+        const registrationQuery = query(regRef, where("date_registered", ">=", startDate), where("date_registered", "<=", endDate))
+        const querySnapshot = await getDocs(registrationQuery)
+
         const data: REGISTRATION_BY_ID[] = [];
 
         if (!querySnapshot.empty) {
@@ -481,20 +486,12 @@ export const getRegistrationData = async (): Promise<REGISTRATION_BY_ID[]> => {
 
 export const getTrainingData = async (month: number, year: number): Promise<TRAINING_BY_ID[]> => {
     try{
-        const startDate = new Date(year, month - 1, 1, 12, 0, 0);
-        const endDate = new Date(year, month, 0, 12, 0, 0); 
+        const startDate = new Date(year, month - 1, 1, 12, 0, 0)
+        const endDate = new Date(year, month, 0, 23, 59, 59)
 
-        console.log("Fetching training data...");
-        console.log(`Start Date: ${startDate.toISOString()}`);
-        console.log(`End Date: ${endDate.toISOString()}`);
-
-        const trainingRef = collection(firestore, "training"); 
-
+        const trainingRef = collection(firestore, "TRAINING")
         const tQuery = query(trainingRef, where("date_enrolled", ">=", startDate), where("date_enrolled", "<=", endDate))
-        console.log("Firestore Query:", tQuery); 
-
         const qSnapshot = await getDocs(tQuery)
-        console.log("Query Snapshot Size:", qSnapshot.size)
 
         const data: TRAINING_BY_ID[] = []
         

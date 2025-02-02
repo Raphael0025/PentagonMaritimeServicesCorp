@@ -21,8 +21,8 @@ interface TrainingProvderProps {
 
 export const TrainingProvider: React.FC<TrainingProvderProps>= ({ children }) => {
     const [data, setData] = useState<TRAINING_BY_ID[] | null>(null)
-    const [month, setMonth] = useState<number>(0)
-    const [year, setYear] = useState<number>(0)
+    const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
+    const [year, setYear] = useState<number>(new Date().getFullYear())
     
     useEffect(() => {
         const currentDate = new Date();

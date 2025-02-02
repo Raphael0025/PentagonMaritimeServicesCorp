@@ -1,6 +1,5 @@
 import { Timestamp } from 'firebase/firestore'
 
-export const deployMDate = 'Dec'
 export const deployYDate = '2024'
 
 export interface TICKET {

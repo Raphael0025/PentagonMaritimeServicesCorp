@@ -105,7 +105,7 @@ export default function Page({regNum, traineeName}: UIProps){
                             <Box className='content-child'>
                                 <Text className='label-text'>Position/Rank:</Text>
                                 <Text className='value-text capitalize'>
-                                    {allRanks?.find((rank) => rank.code === traineeInfo.rank)?.rank || '--'}
+                                    {allRanks?.find((rank) => rank.code === traineeInfo.rank)?.rank || traineeInfo.rank}
                                 </Text>
                             </Box>
                             <div className='content-child'>
