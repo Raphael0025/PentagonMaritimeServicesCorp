@@ -2,7 +2,8 @@
 import { Timestamp } from 'firebase/firestore'
 
 // Helper function to get the formatted date string
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+export const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+export const fullMonth = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export const getFormattedDate = (date: Date): string => {
@@ -57,7 +58,6 @@ export const getBGColor = (val: number, type: string): string => {
     return bgColorMap[type]?.[val] || 'No Value';
 };
 
-
 export const getFormattedDateYear = (date: Date): string => {
     const currYear = date.getFullYear()
     const day = date.getDate().toString().padStart(2, '0') // Ensure day is 2 digits
@@ -65,6 +65,21 @@ export const getFormattedDateYear = (date: Date): string => {
     const weekday = daysOfWeek[date.getDay()] // Get the year, though it's not used in the final string
     
     return `${weekday}, ${month} ${day}, ${currYear}`; // Return in "Month Day" format (e.g., "Nov 11")
+}
+
+export const getFormatTimeDate = (date: Date): string => {
+    const currYear = date.getFullYear()
+    const day = date.getDate().toString().padStart(2, '0') // Ensure day is 2 digits
+    const month = months[date.getMonth()] // Get month name from the `months` array
+    const weekday = daysOfWeek[date.getDay()] // Get the year, though it's not used in the final string
+    
+    let hours = date.getHours()
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+
+    const period = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+
+    return `${weekday}, ${month} ${day}, ${currYear} at ${hours}:${minutes} ${period}`; // Return in "Month Day" format (e.g., "Nov 11")
 }
 
 export function generateTicketID(): string {

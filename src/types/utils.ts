@@ -1,5 +1,8 @@
 import { Timestamp } from 'firebase/firestore'
 
+export const deployMDate = 'Dec'
+export const deployYDate = '2024'
+
 export interface TICKET {
     actor: string | null;
     category: number; // 0 - soft | 1 - hard

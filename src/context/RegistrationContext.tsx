@@ -19,6 +19,8 @@ interface RegistrationProvderProps {
 
 export const RegistrationProvider: React.FC<RegistrationProvderProps>= ({ children }) => {
     const [data, setData] = useState<REGISTRATION_BY_ID[] | null>(null)
+    const [month, setMonth] = useState<number>(0)
+    
     useEffect(() => {
         const fetchData = async () => {
             try{

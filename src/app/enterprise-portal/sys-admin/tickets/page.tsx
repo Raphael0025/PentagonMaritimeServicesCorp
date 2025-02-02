@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Box, Text, Textarea, Select } from '@chakra-ui/react'
-import { getFormattedDateYear, convertVal, getBorderTextColor, getBGColor } from '@/handlers/util_handler' 
+import { Box, Text, Select } from '@chakra-ui/react'
+import { getFormatTimeDate, convertVal, getBorderTextColor, getBGColor } from '@/handlers/util_handler' 
 import { useTickets } from '@/context/TicketContext'
 import { UpdateTicket } from '@/lib/ticket_controller'
 
@@ -79,7 +79,7 @@ export default function Tickets(){
                         <Text textAlign='center' w='20%'>Priority</Text>
                         <Text textAlign='center' w='20%'>Created At</Text>
                     </Box>
-                    <Box maxH='600px' overflowY='auto'>
+                    <Box maxH='550px' overflowY='auto'>
                     {allTickets && allTickets.map((ticket, index) => (
                         <Box key={index} display='flex' color='gray.600' borderColor='gray.400' borderBottomWidth='1px' justifyContent='space-between' px='6' py='3'>
                             <Text w='20%'>{ticket.ticket_id}</Text>
@@ -109,7 +109,7 @@ export default function Tickets(){
                                     <option value={2}>{`High`}</option>
                                 </Select>
                             </Box>
-                            <Text textAlign='center' w='20%'>{getFormattedDateYear(ticket.createdAt.toDate())}</Text>
+                            <Text textAlign='center' w='20%'>{getFormatTimeDate(ticket.createdAt.toDate())}</Text>
                         </Box>
                     ))}
                     </Box>

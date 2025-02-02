@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Box, Text, Input, Textarea, Button, InputLeftAddon, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
+import { ChevronDownIcon } from '@chakra-ui/icons'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -21,13 +22,17 @@ import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
 import { SAVE_REMARKS } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
+import './Registration.css'
+import { deployMDate, deployYDate } from '@/types/utils' 
+import { fullMonth } from '@/handlers/util_handler'
+
 export default function Page(){
     const toast = useToast()
     const { data: courseBatch } = useCourseBatch()
     const { data: allRanks } = useRank()
     const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
-    const { data: allTraining } = useTraining()
+    const { data: allTraining, setMonth, setYear } = useTraining()
     const { data: allCourses } = useCourses()
     const { data: allRegistrations } = useRegistrations()
 
@@ -37,10 +42,13 @@ export default function Page(){
     const [remarks, setRemarks] = useState<string>('')
     const [regNum, setRegNum] = useState<string>('')
     const [traineeName, setTrainee] = useState<string>('')
+    const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
+    const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
     const { isOpen: isOpenRm, onOpen: onOpenRm, onClose: onCloseRm } = useDisclosure()
     const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
     const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
+    const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -86,9 +94,22 @@ export default function Page(){
     }
 
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth(); // 0-11 (Jan-Dec)
-    const currentYear = currentDate.getFullYear();
+    // const currentMonth = currentDate.getMonth(); // 0-11 (Jan-Dec)
+    const currentMonth = 0 // 0-11 (Jan-Dec)
     
+    const currentYear = currentDate.getFullYear()
+    const startYear = parseInt(deployYDate, 10)
+
+    const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+
+    const handleData = () => {
+        setMonth(monthSelected + 1) 
+        setYear(yearSelected)
+        setMonthSelected(new Date().getMonth())
+        setYearSelected(new Date().getFullYear())
+        onCloseDate()
+    }
+
     return(
         <>
             <main className="w-full space-y-3">
@@ -105,62 +126,24 @@ export default function Page(){
                         />
                         </InputGroup>
                     </Box>
-                    <Button bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm'>Print Forms</Button>
-                </Box>
-                <Box className="w-full flex pr-4" style={{maxHeight: '700px', overflowY: 'auto'}}>
-                    {/* Left Side */}
-                    <Box w="50%" className="space-y-3">
-                        <Box h='60px' className="flex items-center bg-sky-700 rounded rounded-r-none uppercase shadow-md p-3 pr-1 text-white">
-                            <Text w="80%" className="text-center wrap">Enrolled Date</Text>
-                            <Text w="80%" className="text-center wrap">Trainee Type</Text>
-                            <Text w="100%" className="text-center">Registration No.</Text>
-                            <Text w="100%" className="text-center">Batch</Text>
-                            <Text w="100%" className="text-center">Course</Text>
-                            <Text w="100%" className="text-center">status</Text>
-                        </Box>
-                        {allTraining && allTraining.sort((a, b) => {
-                                return a.date_enrolled.toMillis() - b.date_enrolled.toMillis();
-                            }).filter((t) => t.reg_status >= 3 && t.regType === 1 && new Date(t.date_enrolled.toMillis()).getMonth() === currentMonth && 
-                            new Date(t.date_enrolled.toMillis()).getFullYear() === currentYear).map((training) => {
-                                const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
-                                const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
-                                
-                            if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm) ||
-                                trainee.first_name.toLowerCase().includes(searchTerm) ||
-                                trainee.rank?.toLowerCase().includes(searchTerm) ||
-                                trainee.srn?.toLowerCase().includes(searchTerm) ||
-                                `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm) ||
-                                parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm)
-                            )
-                            ){
-                                return(
-                                    <Box key={training.id} className="flex shadow items-center text-center uppercase border-b p-3 pr-1">
-                                        <Text w="80%">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
-                                        <Text w="80%">
-                                            {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
-                                        </Text>                                        
-                                        <Text w="100%">
-                                            {`Reg-${allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no}`}
-                                        </Text>                                        
-                                        <Text w="100%">
-                                            {`${courseBatch?.find((batch) => batch.id === training.batch.toString())?.batch_no || ''}`}
-                                        </Text>                                        
-                                        <Text w="100%">
-                                            {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
-                                        </Text>                                        
-                                        <Text w='100%' className={`${training.reg_status >= 3 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>                                     
-                                    </Box>
-                                )
-                            }
-                        })}
+                    <Box display='flex' >
+                        <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm'>Date</Button>
+                        <Button bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm'>Print Forms</Button>
                     </Box>
-                    {/* Right Side */}
-                    <Box w='50%' style={{ scrollbarWidth: 'thin', }}>
-                        <Box w="100%" className="space-y-3 ps-0" style={{ maxWidth: '1600px', overflowX: 'auto', paddingRight: '1rem', boxSizing: 'border-box', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-                            <Box w="3500px" h='60px' className="flex bg-sky-700 ps-0 p-3 rounded-r justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
+                </Box>
+                <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto'}}>
+                    <Box w='100%' h='700px' className='custom-scrollbar' style={{ scrollbarWidth: 'thin',}}>
+                        <Box w="100%" h='100%' className="custom-scrollbar rounded space-y-3" style={{  overflowX: 'auto', boxSizing: 'border-box',  msOverflowStyle: 'none'}}>
+                            <Box w="6000px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Text className='pb-3'>{`Trainee's Info.`}</Text>
                                     <Box className="space-x-3 flex w-full">
+                                        <Text w="150px" className="text-center">Enrolled Date</Text>
+                                        <Text w="150px" className="text-center">Trainee Type</Text>
+                                        <Text w="150px" className="text-center">Registration No.</Text>
+                                        <Text w="150px" className="text-center">Batch</Text>
+                                        <Text w="150px" className="text-center">Course</Text>
+                                        <Text w="150px" className="text-center">status</Text>
                                         <Text w="150px" className="text-center">Last Name</Text>
                                         <Text w="150px" className="text-center">First Name</Text>
                                         <Text w="150px" className="text-center">Middle Name</Text>
@@ -203,24 +186,37 @@ export default function Page(){
                             </Box>
                             {allTraining && allTraining.sort((a, b) => {
                                     return a.date_enrolled.toMillis() - b.date_enrolled.toMillis();
-                                }).filter((t) => t.reg_status >= 3 && t.regType === 1 && new Date(t.date_enrolled.toMillis()).getMonth() === currentMonth && 
-                                new Date(t.date_enrolled.toMillis()).getFullYear() === currentYear).map((training) => {
+                                }).filter((t) => t.reg_status >= 3 && t.regType === 1 ).map((training) => {
                                 
                                 const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                                 const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                                 
-                                if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm) ||
-                                    trainee.first_name.toLowerCase().includes(searchTerm) ||
-                                    trainee.rank?.toLowerCase().includes(searchTerm) ||
-                                    trainee.srn?.toLowerCase().includes(searchTerm) ||
-                                    `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm) ||
-                                    parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm)
+                                if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
                                 )
                                 ){
                                     return(
-                                        <Box key={training.id} w="3500px" className="flex text-center justify-between p-3 ps-0 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                                        <Box key={training.id} w='6000px' className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
+                                                    <Text w="150px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
+                                                    <Text w="150px">
+                                                        {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
+                                                    </Text>                                        
+                                                    <Text w="150px">
+                                                        {`Reg-${allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no}`}
+                                                    </Text>                                        
+                                                    <Text w="150px">
+                                                        {`${courseBatch?.find((batch) => batch.id === training.batch.toString())?.batch_no || ''}`}
+                                                    </Text>                                        
+                                                    <Text w="150px">
+                                                        {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
+                                                    </Text>                                        
+                                                    <Text w='150px' className={`${training.reg_status >= 3 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
                                                     <Text w="150px">{`${trainee.last_name}`}</Text>                                        
                                                     <Text w="150px">{`${trainee.first_name}`}</Text>                                        
                                                     <Text w="150px">{trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''}</Text>                                        
@@ -281,6 +277,41 @@ export default function Page(){
                     </Box>
                 </Box>
             </main>
+            <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
+                <ModalOverlay />
+                <ModalContent px={4}>
+                    <ModalHeader className='text-sky-700' fontWeight='800'>Select Month & Year</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody display='flex'>
+                        <Box w='50%' mr={4}>
+                            <Text fontSize='xl' color='blue.700'>Months</Text>
+                            <Box>
+                            {fullMonth.map((month, index) => (
+                                <Text borderRadius={'10px'} color='gray.500' fontSize='xl' p={2} _hover={{bg: 'gray.100'}} onClick={() => {setMonthSelected(index)}} key={index}>
+                                    {month}
+                                </Text>
+                            ))}
+                            </Box>
+                        </Box>
+                        <Box w='50%'>
+                            <Text fontSize='xl' color='blue.700'>Years</Text>
+                            <Box h='550px' overflowY='auto'>
+                            {years.map((year) => (
+                                <Text  borderRadius="10px"  color="gray.500"  fontSize="xl"  p={2}  _hover={{ bg: "gray.100" }}  onClick={() => setYearSelected(year)}  key={year}>
+                                    {year}
+                                </Text>
+                            ))}
+                            </Box>
+                        </Box>
+                    </ModalBody>
+                    <ModalFooter display='flex' justifyContent='space-between' borderTopWidth='1px'>
+                        <Text fontSize='lg'>{`Date: ${fullMonth[monthSelected]} ${yearSelected}`}</Text>
+                        <Box> 
+                            <Button onClick={handleData} colorScheme='blue'>Select</Button>
+                        </Box>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
             <Modal isOpen={isOpenRm} size='xl' scrollBehavior='inside' onClose={onCloseRm}>
                 <ModalOverlay />
                 <ModalContent px={4}>

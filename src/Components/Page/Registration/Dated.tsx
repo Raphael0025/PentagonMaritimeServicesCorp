@@ -24,6 +24,8 @@ import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
 import { SAVE_REMARKS, addRegTypeField } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
+import './Registration.css'
+
 export default function Page(){
     const toast = useToast()
     const { data: courseBatch } = useCourseBatch()
@@ -112,60 +114,19 @@ export default function Page(){
                         onOpenSForm
                     } bgColor='#1C437E' colorScheme='blue' size='sm'>Print Forms</Button>
                 </Box>
-                <Box className="w-full flex pr-4" style={{maxHeight: '700px', overflowY: 'auto'}}>
-                    {/* Left Side */}
-                    <Box w="50%" className="space-y-3">
-                        <Box h='60px' className="flex items-center bg-sky-700 rounded rounded-r-none uppercase shadow-md p-3 pr-1 text-white">
-                            <Text w="80%" className="text-center wrap">Enrolled Date</Text>
-                            <Text w="80%" className="text-center wrap">Trainee Type</Text>
-                            <Text w="100%" className="text-center">Registration No.</Text>
-                            <Text w="100%" className="text-center">Batch</Text>
-                            <Text w="100%" className="text-center">Course</Text>
-                            <Text w="100%" className="text-center">status</Text>
-                        </Box>
-                        {allTraining && allTraining.sort((a, b) => {
-                                return a.date_enrolled.toMillis() - b.date_enrolled.toMillis();
-                            }).filter((t) => t.reg_status >= 3 && t.regType === 0 && new Date(t.date_enrolled.toMillis()).getMonth() === currentMonth && 
-                            new Date(t.date_enrolled.toMillis()).getFullYear() === currentYear).map((training) => {
-                                const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
-                                const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
-                                
-                            if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm) ||
-                                trainee.first_name.toLowerCase().includes(searchTerm) ||
-                                trainee.rank?.toLowerCase().includes(searchTerm) ||
-                                trainee.srn?.toLowerCase().includes(searchTerm) ||
-                                `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm) ||
-                                parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm)
-                            )
-                            ){
-                                return(
-                                    <Box key={training.id} className="flex shadow items-center text-center uppercase border-b p-3 pr-1">
-                                        <Text w="80%">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
-                                        <Text w="80%">
-                                            {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
-                                        </Text>                                        
-                                        <Text w="100%">
-                                            {`Reg-${allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no}`}
-                                        </Text>                                        
-                                        <Text w="100%">
-                                            {`${courseBatch?.find((batch) => batch.id === training.batch.toString())?.batch_no || ''}`}
-                                        </Text>                                        
-                                        <Text w="100%">
-                                            {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
-                                        </Text>                                        
-                                        <Text w='100%' className={`${training.reg_status >= 3 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>                                     
-                                    </Box>
-                                )
-                            }
-                        })}
-                    </Box>
-                    {/* Right Side */}
-                    <Box w='50%' >
-                        <Box w="100%" className="space-y-3 ps-0" style={{ maxWidth: '1600px', overflowX: 'auto', paddingRight: '1rem', boxSizing: 'border-box', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-                            <Box w="3500px" h='60px' className="flex bg-sky-700 ps-0 p-3 rounded-r justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
+                <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto'}}>
+                    <Box w='100%' h='700px' className='custom-scrollbar' style={{ scrollbarWidth: 'thin',}}>
+                        <Box w="100%" h='100%' className="custom-scrollbar rounded space-y-3" style={{  overflowX: 'auto', boxSizing: 'border-box',  msOverflowStyle: 'none'}}>
+                            <Box w="6000px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Text className='pb-3'>{`Trainee's Info.`}</Text>
                                     <Box className="space-x-3 flex w-full">
+                                        <Text w="150px" className="text-center">Enrolled Date</Text>
+                                        <Text w="150px" className="text-center">Trainee Type</Text>
+                                        <Text w="150px" className="text-center">Registration No.</Text>
+                                        <Text w="150px" className="text-center">Batch</Text>
+                                        <Text w="150px" className="text-center">Course</Text>
+                                        <Text w="150px" className="text-center">status</Text>
                                         <Text w="150px" className="text-center">Last Name</Text>
                                         <Text w="150px" className="text-center">First Name</Text>
                                         <Text w="150px" className="text-center">Middle Name</Text>
@@ -214,18 +175,32 @@ export default function Page(){
                                 const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                                 const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                                 
-                                if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm) ||
-                                    trainee.first_name.toLowerCase().includes(searchTerm) ||
-                                    trainee.rank?.toLowerCase().includes(searchTerm) ||
-                                    trainee.srn?.toLowerCase().includes(searchTerm) ||
-                                    `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm) ||
-                                    parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm)
+                                if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
                                 )
                                 ){
                                     return(
-                                        <Box key={training.id} w="3500px" className="flex text-center justify-between p-3 ps-0 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                                        <Box key={training.id} w='6000px' className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
+                                                    <Text w="150px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
+                                                    <Text w="150px">
+                                                        {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
+                                                    </Text>                                        
+                                                    <Text w="150px">
+                                                        {`Reg-${allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no}`}
+                                                    </Text>                                        
+                                                    <Text w="150px">
+                                                        {`${courseBatch?.find((batch) => batch.id === training.batch.toString())?.batch_no || ''}`}
+                                                    </Text>                                        
+                                                    <Text w="150px">
+                                                        {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
+                                                    </Text>                                        
+                                                    <Text w='150px' className={`${training.reg_status >= 3 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
                                                     <Text w="150px">{`${trainee.last_name}`}</Text>                                        
                                                     <Text w="150px">{`${trainee.first_name}`}</Text>                                        
                                                     <Text w="150px">{trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''}</Text>                                        
@@ -236,11 +211,11 @@ export default function Page(){
                                                     <Text w="100px">{trainee.srn}</Text>                                        
                                                     <Text w='150px' >{parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}</Text>
                                                     <Text w="200px">{trainee.birthPlace}</Text>
-                                                    <Tooltip label={trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}>
-                                                        <Text noOfLines={1} w='250px' >
+                                                    <Tooltip w='250px' label={trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}>
+                                                        <Text noOfLines={1} w='250px'>
                                                             {trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}
                                                         </Text>                                        
-                                                    </Tooltip>                                      
+                                                    </Tooltip>
                                                 </Box>
                                             </Box>
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
@@ -256,7 +231,7 @@ export default function Page(){
                                             </Tooltip>    
                                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
                                                 <Text w="350px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
-                                            </Tooltip>    
+                                            </Tooltip>     
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex uppercase space-x-3'>
                                                     <Text w="150px">{training.start_date}</Text>    

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Textarea, Select } from '@chakra-ui/react'
+import { Box, Text } from '@chakra-ui/react'
 import { useTickets } from '@/context/TicketContext'
 import { TICKET_BY_ID } from '@/types/utils' 
 import { convertVal, getBorderTextColor } from '@/handlers/util_handler'
@@ -21,7 +21,7 @@ export default function Page (){
     return(
     <>
         <Box p='8'>
-            <Text fontSize='2xl' color='blue.700' >Your Tickets</Text>    
+            <Text fontSize='2xl' color='blue.700' >Ticket Monitoring</Text>    
             <Text fontSize='md' fontWeight='normal' color='gray.500' >{`This page allows you to view and track the status of your submitted tickets. Monitor updates, check progress, and stay informed about resolutions provided by the system administrator.`}</Text>    
             <Box mt='5' display='flex' gap='4' flexWrap={'wrap'}>
             {allTickets && allTickets.length > 0 ? (

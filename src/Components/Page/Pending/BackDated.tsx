@@ -202,7 +202,7 @@ export default function Page() {
     return (
     <>
         <main className="w-full space-y-3">
-            <Box className="w-full flex">
+            <Box className="w-full flex" justifyContent='space-between'>
                 <InputGroup w="30%" className="shadow-md rounded-lg">
                     <InputLeftAddon>
                         <SearchIcon color="#a1a1a1" size="18" />
@@ -213,6 +213,9 @@ export default function Page() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </InputGroup>
+                <Box>
+                    <Button colorScheme='blue' size='md'>Register</Button>
+                </Box>
             </Box>
             <Box className="w-full px-5 space-y-3">
                 <Box className="flex justify-between items-center bg-sky-700 rounded uppercase shadow-md p-3 px-8 text-white">

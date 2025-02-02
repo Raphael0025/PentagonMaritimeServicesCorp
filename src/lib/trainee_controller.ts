@@ -479,16 +479,30 @@ export const getRegistrationData = async (): Promise<REGISTRATION_BY_ID[]> => {
     }
 }
 
-export const getTrainingData = async (): Promise<TRAINING_BY_ID[]> => {
+export const getTrainingData = async (month: number, year: number): Promise<TRAINING_BY_ID[]> => {
     try{
-        const tQuery = query(training)
+        const startDate = new Date(year, month - 1, 1, 12, 0, 0);
+        const endDate = new Date(year, month, 0, 12, 0, 0); 
+
+        console.log("Fetching training data...");
+        console.log(`Start Date: ${startDate.toISOString()}`);
+        console.log(`End Date: ${endDate.toISOString()}`);
+
+        const trainingRef = collection(firestore, "training"); 
+
+        const tQuery = query(trainingRef, where("date_enrolled", ">=", startDate), where("date_enrolled", "<=", endDate))
+        console.log("Firestore Query:", tQuery); 
+
         const qSnapshot = await getDocs(tQuery)
+        console.log("Query Snapshot Size:", qSnapshot.size)
+
         const data: TRAINING_BY_ID[] = []
         
         if(!qSnapshot.empty){
             qSnapshot.forEach((doc) => {
                 const docData = doc.data() as TRAINING_BY_ID
                 docData.id = doc.id
+                console.log("Document Data:", docData)
                 data.push(docData)
             })
             return data
@@ -499,6 +513,7 @@ export const getTrainingData = async (): Promise<TRAINING_BY_ID[]> => {
         throw error
     }
 }
+
 // READ FUNCTIONS
 export const verifyTrainee = async (last_name: string, given_name: string,) => {
     try{

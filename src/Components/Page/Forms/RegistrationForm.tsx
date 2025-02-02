@@ -185,7 +185,7 @@ export default function Page({regNum, traineeName}: UIProps){
                                         <Text className='label-text text-center p-1' w='50%' color='#1A2B56' style={{borderWidth: '1px', borderColor: '#00000060'}}>Course Fee</Text>
                                     </Box>
                                     {trainings && trainings.length > 0 ? (
-                                        trainings.map((training, index) => (
+                                        trainings.filter((training) => training.reg_status === 3).map((training, index) => (
                                             <Box key={index} className='content-one'>
                                                 <Box className='training-content-child flex justify-center items-center'>
                                                     <Text className='uppercase'>
