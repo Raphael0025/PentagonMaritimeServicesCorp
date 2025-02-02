@@ -13,7 +13,7 @@ interface TrainingContextType {
     setYear: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const TrainingContext = createContext<TrainingContextType>({data: null, setTraining: () => {}, setMonth: 0, setYear: 0})
+const TrainingContext = createContext<TrainingContextType>({data: null, setTraining: () => {}, setMonth: () => {}, setYear: () => {}})
 
 interface TrainingProvderProps {
     children: ReactNode;
