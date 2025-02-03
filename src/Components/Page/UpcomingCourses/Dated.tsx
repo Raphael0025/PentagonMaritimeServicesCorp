@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Box, Text, Button, useToast, Accordion, AccordionButton, AccordionPanel, AccordionItem,  } from '@chakra-ui/react';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'

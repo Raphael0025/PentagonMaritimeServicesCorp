@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react';
-import { Box, Text, Input, Button, InputLeftAddon, Menu, MenuList, MenuButton, MenuItem, MenuGroup, MenuDivider, MenuOptionGroup, MenuItemOption, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionIcon, AccordionItem,  } from '@chakra-ui/react';
-import { DotsIcon, SearchIcon } from '@/Components/Icons';
-import { Timestamp } from 'firebase/firestore';
+import { Box, Text, Input, Button, InputLeftAddon, useDisclosure, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionItem, Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent, ModalFooter, ModalCloseButton, } from '@chakra-ui/react';
+import { SearchIcon } from '@/Components/Icons'
+import { ChevronDownIcon } from '@chakra-ui/icons'
+import { Timestamp } from 'firebase/firestore'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -16,17 +17,23 @@ import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
 import { ACKNOWLEDGE_REGISTRATION } from '@/lib/trainee_controller'
 import { TRAINING_BY_ID } from '@/types/trainees'
+import { deployYDate } from '@/types/utils' 
+import { fullMonth } from '@/handlers/util_handler'
 
 export default function Page() {
     const toast = useToast()
     const { data: allClients } = useClients()
     const { data: allTrainee } = useTrainees()
-    const { data: allTraining } = useTraining()
+    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations } = useRegistrations()
+    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [activeBtn, setActiveBtn] = useState<string>('')
-    const [search, setSearch] = useState<string>('');
+    const [search, setSearch] = useState<string>('')
+    const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
+    const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
+
+    const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
 
     // Function to filter registrations based on search
     const filteredRegistrations = allRegistrations?.filter((registration) => {
@@ -94,12 +101,25 @@ export default function Page() {
     }
 
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth(); // 0-11 (Jan-Dec)
-    const currentYear = currentDate.getFullYear();
+    const currentYear = currentDate.getFullYear()
+    const startYear = parseInt(deployYDate, 10)
+
+    const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+
+    const handleData = () => {
+        setTMonth(monthSelected + 1) 
+        setTYear(yearSelected)
+        setRMonth(monthSelected + 1) 
+        setRYear(yearSelected)
+        setMonthSelected(new Date().getMonth())
+        setYearSelected(new Date().getFullYear())
+        onCloseDate()
+    }
 
     return (
+        <>
         <main className="w-full space-y-3">
-            <Box className="w-full flex">
+            <Box className="w-full flex" justifyContent='space-between'>
                 <InputGroup w="30%" className="shadow-md rounded-lg">
                     <InputLeftAddon>
                         <SearchIcon color="#a1a1a1" size="18" />
@@ -110,6 +130,9 @@ export default function Page() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </InputGroup>
+                <Box>
+                    <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md'>Filter Date</Button>
+                </Box>
             </Box>
             <Box className="w-full px-5 space-y-3">
                 <Box className="flex justify-between items-center bg-sky-700 rounded uppercase shadow-md p-3 px-8 text-white">
@@ -188,5 +211,41 @@ export default function Page() {
                 </Box>
             </Box>
         </main>
-    );
+        <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
+            <ModalOverlay />
+            <ModalContent px={4}>
+                <ModalHeader className='text-sky-700' fontWeight='800'>Select Month & Year</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody display='flex'>
+                    <Box w='50%' mr={4}>
+                        <Text fontSize='xl' color='blue.700'>Months</Text>
+                        <Box>
+                        {fullMonth.map((month, index) => (
+                            <Text borderRadius={'10px'} color='gray.500' fontSize='xl' p={2} _hover={{bg: 'gray.100'}} onClick={() => {setMonthSelected(index)}} key={index}>
+                                {month}
+                            </Text>
+                        ))}
+                        </Box>
+                    </Box>
+                    <Box w='50%'>
+                        <Text fontSize='xl' color='blue.700'>Years</Text>
+                        <Box h='550px' overflowY='auto'>
+                        {years.map((year) => (
+                            <Text  borderRadius="10px"  color="gray.500"  fontSize="xl"  p={2}  _hover={{ bg: "gray.100" }}  onClick={() => setYearSelected(year)}  key={year}>
+                                {year}
+                            </Text>
+                        ))}
+                        </Box>
+                    </Box>
+                </ModalBody>
+                <ModalFooter display='flex' justifyContent='space-between' borderTopWidth='1px'>
+                    <Text fontSize='lg'>{`Date: ${fullMonth[monthSelected]} ${yearSelected}`}</Text>
+                    <Box> 
+                        <Button onClick={handleData} colorScheme='blue'>Select</Button>
+                    </Box>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        </>
+    )
 }
