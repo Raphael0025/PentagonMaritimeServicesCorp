@@ -457,6 +457,32 @@ export const getAllTrainees = async (): Promise<TRAINEE_BY_ID[]> => {
     }
 }
 
+export const GET_TRAINING_REGISTRAION = async (month: number, year: number): Promise<REGISTRATION_BY_ID[]> => {
+    try{
+        const startDate = new Date(year, month - 1, -4, 12, 0, 0)
+        const endDate = new Date(year, month, 0, 23, 59, 59)
+
+        const regRef = collection(firestore, "REGISTRATION")
+        const registrationQuery = query(regRef, where("date_registered", ">=", startDate), where("date_registered", "<=", endDate))
+        const querySnapshot = await getDocs(registrationQuery)
+
+        const data: REGISTRATION_BY_ID[] = [];
+
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach((doc) => {
+                const docData = doc.data() as REGISTRATION_BY_ID;
+                docData.id = doc.id
+                data.push(docData);
+            })
+            return data
+        } else {
+            return data
+        }
+    }catch(error){
+        throw error
+    }
+}
+
 export const getRegistrationData = async (month: number, year: number): Promise<REGISTRATION_BY_ID[]> => {
     try {
         const startDate = new Date(year, month - 1, 1, 12, 0, 0)

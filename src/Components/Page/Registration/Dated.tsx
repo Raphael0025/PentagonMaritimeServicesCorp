@@ -34,7 +34,7 @@ export default function Page(){
     const { data: allTrainee } = useTrainees()
     const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { lastMonthReg: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [searchTerm, setSearch] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
