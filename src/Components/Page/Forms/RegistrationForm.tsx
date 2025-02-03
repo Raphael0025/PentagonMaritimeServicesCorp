@@ -40,7 +40,7 @@ export default function Page({regNum, traineeName}: UIProps){
     const { data: allTrainee } = useTrainees()
     const { data: allTraining } = useTraining()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations } = useRegistrations()
+    const { lastMonthReg: allRegistrations } = useRegistrations()
 
     const reg = allRegistrations?.find((r) => r.id === regNum);
     if (!reg) {
