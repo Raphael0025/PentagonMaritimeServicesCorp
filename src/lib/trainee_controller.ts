@@ -459,7 +459,7 @@ export const getAllTrainees = async (): Promise<TRAINEE_BY_ID[]> => {
 
 export const GET_TRAINING_REGISTRAION = async (month: number, year: number): Promise<REGISTRATION_BY_ID[]> => {
     try{
-        const startDate = new Date(year, month - 1, -4, 12, 0, 0)
+        const startDate = new Date(year, month - 1, -15, 12, 0, 0)
         const endDate = new Date(year, month, 0, 23, 59, 59)
 
         const regRef = collection(firestore, "REGISTRATION")
