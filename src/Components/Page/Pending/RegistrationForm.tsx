@@ -140,7 +140,7 @@ export default function Page({ reg_id }:PageProps) {
                     <Text className='text-xs text-gray-400'>course fee</Text>
                 </Box>
                 {training && training.length > 0 ? (
-                    training.map((training, index) => (
+                    training.filter((training) => training.reg_status !== 7).map((training, index) => (
                         <Box key={index} className='flex items-center border border-gray-400 p-2 rounded justify-between'>
                             <Text className='text-base uppercase'>
                                 {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
