@@ -215,7 +215,7 @@ export default function Page({params}: PageProps){
                         <Input id='srn' onChange={handleOnChange} value={traineeInfo.srn} className='w-full shadow-md' placeholder='' />
                     </FormControl>
                     <FormControl className='flex flex-col items-start border-2 rounded shadow-md p-2' >
-                        <label className='text-gray-400'>RANK:<span className='text-red-700'>*</span></label>
+                        <label className='text-gray-400'>RANK</label>
                         <Button w='100%' className='uppercase' onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}} variant='ghost' colorScheme='blue'>
                         {allRanks?.find((rank) => rank.code === traineeInfo.rank)?.rank || (traineeInfo.rank === '' ? 'SELECT RANK' : traineeInfo.rank)}
                         </Button>

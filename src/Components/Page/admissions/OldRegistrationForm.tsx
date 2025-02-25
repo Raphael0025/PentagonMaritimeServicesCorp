@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation'
 import { Timestamp } from 'firebase/firestore'
 import Image from 'next/image'
-import React, { useEffect, useState, } from 'react'
+import React, { useEffect, useState, } from 'react' 
 import DatePicker from 'react-datepicker'
 
 import {TrashIcon, Loading, DownloadIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 import {NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon} from '@/Components/SideIcons'
 
-import { Box, Text, Link, Tooltip, Switch, FormControl, Input, Alert, AlertTitle, AlertDescription, AlertIcon, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
+import { Box, Text, Link, Tooltip, Switch, FormControl, FormLabel, Input, Alert, AlertTitle, AlertDescription, AlertIcon, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
 
 //types
 import { TRAINEE, initTRAINEE, TEMP_COURSES, TRAINEE_BY_ID, TRAINING } from '@/types/trainees'
@@ -482,11 +482,13 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                     </FormControl>
                 </Box>
                 <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl className='flex flex-col space-y-2 items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center'>
-                        <label className='text-gray-400'>Address:</label>
-                        <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
+                    <FormControl className='flex flex-col space-y-2 items-start '>
+                        <label className='text-gray-400'>Address:<span className='text-red-700'>*</span></label>
+                        {/* <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
                         {otherAddress ? trainee.otherAddress !== '' ? trainee.otherAddress : 'Add Address' : trainee.house_no !== '' || trainee.street !== '' || trainee.brgy !== '' || trainee.city !== '' ? `${trainee.house_no} ${trainee.street} ${`Brgy. ${trainee.brgy}`} ${`${trainee.city} City`}` : 'Add Address'}
-                        </Button>
+                        </Button> */}
+                        <Input id='otherAddress' isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChange} className='uppercase shadow-md'/>
+                        <FormLabel color='gray.600' fontSize='xs' fontWeight='700'>{`Note: Kindly indicate your complete address including City, and Province`}</FormLabel>
                     </FormControl>
                 </Box>
                 <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >

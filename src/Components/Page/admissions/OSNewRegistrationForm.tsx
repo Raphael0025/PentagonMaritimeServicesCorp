@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { Timestamp } from 'firebase/firestore'
 import Image from 'next/image'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react' 
 import DatePicker from 'react-datepicker'
 
 import {TrashIcon, Loading, DownloadIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 import {NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon} from '@/Components/SideIcons'
 
-import { Box, Text, Link, Tooltip, Switch, FormControl, Input, Alert, AlertTitle, AlertDescription, AlertIcon, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
+import { Box, Text, Link, Tooltip, Switch, FormControl, FormLabel, Input, Alert, AlertTitle, AlertDescription, AlertIcon, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
 
 //types
 import { TRAINEE, initTRAINEE, TEMP_COURSES, TRAINING } from '@/types/trainees'
@@ -396,19 +396,14 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                     <p>{trainee.contact_no === '' ? `* Contact no.` : ''}</p>
                                     <p>{trainee.email === '' ? `* Email.` : ''}</p>
                                     <p>{trainee.gender === '' ? `* Gender.` : ''}</p>
-                                    <p>{trainee.house_no === '' ? `* House No.` : ''}</p>
-                                    <p>{trainee.street === '' ? `* Street.` : ''}</p>
-                                    <p>{trainee.brgy === '' ? `* Brgy.` : ''}</p>
-                                    <p>{trainee.city === '' ? `* City.` : ''}</p>
-                                    <p>{trainee.area === '' ? `* Area.` : ''}</p>
+                                    <p>{trainee.birthPlace === '' ? `* Birth Place.` : ''}</p>
+                                    <p>{trainee.endorser === '' ? `* Endorser.` : ''}</p>
                                 </Box>
                             </Box>
                         </AlertDescription>
                         <AlertDescription className='flex w-full'>
                             <Box className='w-full flex'>
                                 <Box className='flex flex-col w-full'>
-                                    <p>{trainee.birthPlace === '' ? `* Birth Place.` : ''}</p>
-                                    <p>{trainee.endorser === '' ? `* Endorser.` : ''}</p>
                                     <p>{trainee.nationality === '' ? `* Nationality.` : ''}</p>
                                     <p>{trainee.company === '' ? `* Company.` : ''}</p>
                                     <p>{trainee.vessel === '' ? `* Vessel.` : ''}</p>
@@ -494,11 +489,13 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     </FormControl>
                 </Box>
                 <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl className='flex flex-col space-y-2 px-8 py-2 rounded border-2 shadow-md items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center'>
+                    <FormControl className='flex flex-col space-y-2 items-start '>
                         <label className='text-gray-400'>Address:<span className='text-red-700'>*</span></label>
-                        <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
+                        {/* <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
                         {otherAddress ? trainee.otherAddress !== '' ? trainee.otherAddress : 'Add Address' : trainee.house_no !== '' || trainee.street !== '' || trainee.brgy !== '' || trainee.city !== '' ? `${trainee.house_no} ${trainee.street} ${`Brgy. ${trainee.brgy}`} ${`${trainee.city} City`}` : 'Add Address'}
-                        </Button>
+                        </Button> */}
+                        <Input id='otherAddress' isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChange} className='uppercase shadow-md'/>
+                        <FormLabel color='gray.600' fontSize='xs' fontWeight='700'>{`Note: Kindly indicate your complete address including City, and Province`}</FormLabel>
                     </FormControl>
                 </Box>
                 <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
@@ -563,7 +560,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     </Box>
                 </Box>
                 <Box className='flex justify-end'>
-                    <Button className='w-full md:w-1/4' onClick={() => {handleNextStep('step1')}} colorScheme='blue'>Proceed to Next Step</Button>
+                    <Button className='w-full md:w-1/4' onClick={() => {handleNextStep('step1'); scrollToTop();}} colorScheme='blue'>Proceed to Next Step</Button>
                 </Box>
             </Box>
         </Box>

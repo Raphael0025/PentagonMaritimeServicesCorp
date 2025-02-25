@@ -340,7 +340,7 @@ export default function Page() {
                                                             <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
                                                             <MenuList className='space-y-1 text-start'>
                                                                 <MenuGroup title='Training Details'>
-                                                                    <MenuItem onClick={(e) => {e.stopPropagation(); setTD('cf'); setTS(training.id); onOpenCF();}}>
+                                                                    <MenuItem onClick={(e) => {e.stopPropagation(); setTD('ts'); setCID(traineeFound.company); setTS(training.id); onOpenTS();}}>
                                                                         <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
                                                                         <span className='ps-2' style={{fontSize: '14px'}}>Edit Training Details</span>
                                                                     </MenuItem>
