@@ -37,8 +37,12 @@ export default function Page({params}: PageProps){
 
     const { isOpen: isOpenAddress, onOpen: onOpenAddress, onClose: onCloseAddress } = useDisclosure()
     const { isOpen: isOpenCompany, onOpen: onOpenCompany, onClose: onCloseCompany } = useDisclosure()
+    const {isOpen: isOpenRank, onOpen: onOpenRank, onClose: onCloseRank} = useDisclosure()
 
     const [traineeInfo, setTraineeInfo] = useState<TRAINEE_BY_ID>(initTRAINEE_BY_ID)
+
+    const [rankRef, setRankRef] = useState<string>('')
+    const [selectedRank, setSelectedRank] = useState<string>('')
 
     const [loading, setLoading] = useState<boolean>(false)
     const [otherAddress, setAddress] = useState<boolean>(false)
@@ -161,6 +165,24 @@ export default function Page({params}: PageProps){
         onCloseCompany()
     }
 
+    const handleRank = (rank: string) => {
+        setSelectedRank(rank)
+    }
+
+    const handleSelectedRank = () => {
+        let tempRank: string
+        if(selectedRank === ''){
+            tempRank = rankRef
+        } else {
+            tempRank = selectedRank
+        }
+        setTraineeInfo((prev) => ({
+            ...prev,
+            rank: tempRank
+        }))
+        onCloseRank()
+    }
+
     return(
     <>
         <main className='px-2 space-y-2'>
@@ -192,14 +214,11 @@ export default function Page({params}: PageProps){
                         <label className='text-gray-400'>srn</label>
                         <Input id='srn' onChange={handleOnChange} value={traineeInfo.srn} className='w-full shadow-md' placeholder='' />
                     </FormControl>
-                    <FormControl className='uppercase w-full'>
-                        <label className='text-gray-400'>rank</label>
-                        <Select id='rank' onChange={handleSelect} value={traineeInfo.rank} className='uppercase shadow-md'>
-                            <option hidden >Select Rank</option>
-                            {allRanks && allRanks.sort((a, b) => a.code.localeCompare(b.code)).map((rank) => (
-                                <option key={rank.id} value={rank.code}>{rank.code}</option>
-                            ))}
-                        </Select>
+                    <FormControl className='flex flex-col items-start border-2 rounded shadow-md p-2' >
+                        <label className='text-gray-400'>RANK:<span className='text-red-700'>*</span></label>
+                        <Button w='100%' className='uppercase' onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}} variant='ghost' colorScheme='blue'>
+                        {allRanks?.find((rank) => rank.code === traineeInfo.rank)?.rank || (traineeInfo.rank === '' ? 'SELECT RANK' : traineeInfo.rank)}
+                        </Button>
                     </FormControl>
                     <FormControl className='uppercase w-full'>
                         <label className='text-gray-400'>email</label>
@@ -270,7 +289,7 @@ export default function Page({params}: PageProps){
                     </FormControl>
                     <FormControl className='uppercase w-full'>
                         <label className='text-gray-400'>contact</label>
-                        <Input id='e_contact_no' onChange={handleOnChange} value={traineeInfo.e_contact} type='text' className='w-full shadow-md' placeholder='' />
+                        <Input id='e_contact' onChange={handleOnChange} value={traineeInfo.e_contact} type='text' className='w-full shadow-md' placeholder='' />
                     </FormControl>
                     <FormControl className='uppercase w-full'>
                         <label className='text-gray-400'>relationship</label>
@@ -367,6 +386,30 @@ export default function Page({params}: PageProps){
                 <ModalFooter borderTopWidth='1px'>
                     <Button onClick={onCloseCompany} mr={3} >Close</Button>
                     <Button isDisabled={companyRef.trim() === '' && selectCompany.trim() === ''} onClick={handleSelectedCompany} colorScheme='blue'>Done</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenRank} onClose={onCloseRank} size='xl' scrollBehavior='inside' motionPreset='scale'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader fontWeight='700' className='text-sky-700'>Rank Type</ModalHeader>
+                <ModalBody>
+                    <Box className='flex flex-col space-y-2'>
+                        <Box>
+                            <Input onChange={(e) => setRankRef(e.target.value)} className='shadow-md uppercase' placeholder='type your rank here...'/>
+                        </Box>
+                        <Box className='py-2 space-y-2'>
+                            <Text className='text-gray-400 text-base'>Select your Rank below</Text>
+                            {allRanks && allRanks.sort((a, b) => a.code.localeCompare(b.code)).map((rank) =>(
+                                <Text key={rank.id} onClick={() => handleRank(rank.code)} className={`${rank.id === selectedRank ? 'bg-sky-700 text-white' : ''} hover:bg-sky-200 transition-all ease-in-out delay-75 duration-75 border p-3 rounded text-lg uppercase text-center shadow-md`}>{rank.code}</Text>
+                            ))}
+                        </Box>
+                        <Text className='text-gray-400 text-center text-base'>{`Tip: If your rank is not provided here, you can type it on the text box at the top and click done.`}</Text>
+                    </Box>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={onCloseRank} mr={3}>Close</Button>
+                    <Button isDisabled={rankRef.trim() === '' && selectedRank.trim() === ''} onClick={handleSelectedRank} colorScheme='blue'>Done</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

@@ -157,28 +157,28 @@ export default function Page(){
                                 <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                     <Text className='pb-3'>{`Contact Details`}</Text>
                                     <Box className='flex w-full space-x-3'>
-                                        <Text w="200px" className="text-center">Contact No.</Text>
-                                        <Text w="200px" className="text-center">Email Add.</Text>
+                                        <Text w="100px" className="text-center">Contact No.</Text>
+                                        <Text w="180px" className="text-center">Email Add.</Text>
                                     </Box>
                                 </Box>
-                                <Text w="350px" className="text-center">Company</Text>
-                                <Text w="350px" className="text-center">Endorser</Text>
+                                <Text w="200px" className="text-center">Company</Text>
+                                <Text w="150px" className="text-center">Endorser</Text>
                                 <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                     <Text className='pb-3'>{`Training Schedule`}</Text>
                                     <Box className='flex w-full space-x-3'>
-                                        <Text w="150px" className="text-center">From</Text>
-                                        <Text w="150px" className="text-center">To</Text>
+                                        <Text w="100px" className="text-center">From</Text>
+                                        <Text w="100px" className="text-center">To</Text>
                                     </Box>
                                 </Box>
-                                <Text w="200px" className="text-center">Payment Mode</Text>
-                                <Text w="200px" className="text-center">Course Fee</Text>
-                                <Text w="200px" className="text-center">Vessel</Text>
+                                <Text w="100px" className="text-center">Payment Mode</Text>
+                                <Text w="100px" className="text-center">Course Fee</Text>
+                                <Text w="100px" className="text-center">Vessel</Text>
                                 <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                     <Text className='pb-3'>{`In case of Emergency`}</Text>
                                     <Box className='flex w-full space-x-3'>
-                                        <Text w="300px" className="text-center">Name</Text>
-                                        <Text w="100px" className="text-center">Contact No</Text>
-                                        <Text w="150px" className="text-center">Relationship</Text>
+                                        <Text w="150px" className="text-center">Name</Text>
+                                        <Text w="80px" className="text-center">Contact No</Text>
+                                        <Text w="100px" className="text-center">Relationship</Text>
                                     </Box>
                                 </Box>
                                 <Text w="300px" className="text-center pr-5">Remarks</Text>
@@ -235,32 +235,32 @@ export default function Page(){
                                             </Box>
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
-                                                    <Text w="200px">{trainee.contact_no}</Text>    
-                                                    <Text w="200px" className='lowercase'>{trainee.email}</Text>    
+                                                    <Text w="100px">{trainee.contact_no}</Text>    
+                                                    <Text w="180px" className='lowercase'>{trainee.email}</Text>    
                                                 </Box>
                                             </Box>
                                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
-                                                <Text w="350px" noOfLines={1} className='text-wrap'>
+                                                <Text w="250px" noOfLines={1} className='text-wrap'>
                                                     {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
                                                 </Text>    
                                             </Tooltip>    
                                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
-                                                <Text w="350px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
+                                                <Text w="150px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
                                             </Tooltip>     
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex uppercase space-x-3'>
-                                                    <Text w="150px">{training.start_date}</Text>    
-                                                    <Text w="150px">{training.end_date === '' ? '--' : training.end_date}</Text>    
+                                                    <Text w="100px">{training.start_date}</Text>    
+                                                    <Text w="100px">{training.end_date === '' ? '--' : training.end_date}</Text>    
                                                 </Box>
                                             </Box>
-                                            <Text w="200px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>    
-                                            <Text w="200px" >{`Php ${training.course_fee}`}</Text>    
-                                            <Text w="200px" >{trainee.vessel}</Text>    
+                                            <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>    
+                                            <Text w="100px" >{`Php ${training.course_fee}`}</Text>    
+                                            <Text w="100px" >{trainee.vessel}</Text>    
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='flex w-full space-x-3'>
-                                                    <Text w="300px" className="text-center">{trainee.e_contact_person}</Text>
-                                                    <Text w="100px" className="text-center">{trainee.e_contact}</Text>
-                                                    <Text w="150px" className="text-center">{trainee.relationship}</Text>
+                                                    <Text w="150px" className="text-center">{trainee.e_contact_person}</Text>
+                                                    <Text w="80px" className="text-center">{trainee.e_contact}</Text>
+                                                    <Text w="100px" className="text-center">{trainee.relationship}</Text>
                                                 </Box>
                                             </Box>
                                             <Button onClick={() => {setID(training.id); setRemarks(training.train_remarks); onOpenRm();}} size='sm' p={0} variant='link' w='300px'>
