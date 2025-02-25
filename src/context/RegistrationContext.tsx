@@ -46,7 +46,8 @@ export const RegistrationProvider: React.FC<RegistrationProvderProps>= ({ childr
                 )
                 const unsubscribe = onSnapshot(filteredQuery, (snapshot) => {
                     const updatedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as REGISTRATION_BY_ID[];
-                    setData(updatedData);
+                    setData(updatedData)
+                    setLastMonthReg(updatedData)
                 })
                 // Cleanup subscription on unmount
                 return () => {

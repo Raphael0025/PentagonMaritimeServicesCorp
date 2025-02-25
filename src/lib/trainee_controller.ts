@@ -192,6 +192,15 @@ export const addRegTypeField = async () => {
     }
 };
 
+export const UPDATE_TRAINING = async (training_id: string, updateTrainingDoc: Partial<TRAINING>, actor: string | null) => {
+    try{
+        const trainingRef = doc(firestore, 'TRAINING', training_id)
+        await updateDoc(trainingRef, updateTrainingDoc)
+    }catch(error){
+        throw error
+    }
+}
+
 export const UPDATE_TS = async (training_id: string, startDate: string, endDate: string, actor: string | null) => {
     try{
         const trainingRef = doc(firestore, 'TRAINING', training_id)
@@ -525,7 +534,6 @@ export const getTrainingData = async (month: number, year: number): Promise<TRAI
             qSnapshot.forEach((doc) => {
                 const docData = doc.data() as TRAINING_BY_ID
                 docData.id = doc.id
-                console.log("Document Data:", docData)
                 data.push(docData)
             })
             return data

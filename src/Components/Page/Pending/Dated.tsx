@@ -4,8 +4,8 @@ import { useState, useRef } from 'react';
 import { Box, Text, Input, Button, InputLeftAddon, Menu, MenuList, MenuButton, IconButton, MenuItem, MenuGroup, MenuDivider, MenuOptionGroup, MenuItemOption, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionIcon, AccordionItem, Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent, ModalFooter, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
 import { DotsIcon, ViewDocIcon, SearchIcon, StopIcon, } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
-import { PlusIcon } from '@/Components/SideIcons';
-import { Timestamp } from 'firebase/firestore';
+import { PlusIcon } from '@/Components/SideIcons'
+import { Timestamp } from 'firebase/firestore'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -15,7 +15,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 
 import RegistrationForm from '@/Components/Page/Pending/RegistrationForm'
-import EditTrainingSched from '@/Components/Page/Pending/EditTrainingSched'
+import EditTrainingDetails from '@/Components/Page/Pending/EditTrainingDetails'
 import InsertTraining from '@/Components/Modal/InsertTraining'
 import CancelModal from '@/Components/Modal/CancelModal'
 
@@ -340,13 +340,9 @@ export default function Page() {
                                                             <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
                                                             <MenuList className='space-y-1 text-start'>
                                                                 <MenuGroup title='Training Details'>
-                                                                    <MenuItem onClick={(e) => {e.stopPropagation(); setTD('ts'); setTS(training.id); onOpenTS();}}>
-                                                                        <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
-                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Edit Training Schedule</span>
-                                                                    </MenuItem>
                                                                     <MenuItem onClick={(e) => {e.stopPropagation(); setTD('cf'); setTS(training.id); onOpenCF();}}>
                                                                         <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
-                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Edit Course Fee</span>
+                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Edit Training Details</span>
                                                                     </MenuItem>
                                                                     <MenuItem onClick={(e) => {e.stopPropagation(); setTID(training.id); setTraining(allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''); setRegID(''); onOpenCancel();}}>
                                                                         <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
@@ -433,26 +429,14 @@ export default function Page() {
                 </ModalFooter>
             </ModalContent>
         </Modal>
-        <Modal isOpen={isOpenTS} onClose={onCloseTS} size='md'>
+        <Modal isOpen={isOpenTS} onClose={onCloseTS} >
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader fontSize='lg' fontWeight='700' className='text-sky-700 uppercase'>Edit Training Details</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <Box w='100%' display='flex' justifyContent='center'>
-                        <EditTrainingSched training_id={ts} td={td} onClose={onCloseTS}/>
-                    </Box>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
-        <Modal isOpen={isOpenCF} onClose={onCloseCF} size='md'>
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader fontSize='lg' fontWeight='700' className='text-sky-700 uppercase'>Edit Course Fee</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    <Box w='100%' display='flex' justifyContent='center'>
-                        <EditTrainingSched training_id={ts} td={td} onClose={onCloseCF}/>
+                        <EditTrainingDetails training_id={ts} company_id={cID} onClose={onCloseTS}/>
                     </Box>
                 </ModalBody>
             </ModalContent>

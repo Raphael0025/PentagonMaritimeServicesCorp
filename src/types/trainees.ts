@@ -152,6 +152,32 @@ export interface TRAINING {
     train_remarks: string;
 }
 
+export const initTraining = {
+    id: '',
+    reg_ref_id: '',
+
+    reg_status: 0, // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel
+    course_fee: 0,
+    course: '',
+    start_date: '',
+    numOfDays: 0,
+    end_date: '',
+    accountType: 0, // 0 - crew | 1 - company
+    
+    date_enrolled: Timestamp.now(),
+    batch: 0,
+    regType: 0, // 2 - def | 0 - dated | 1 - bd
+    
+    isCertified: false,
+    cert_released: Timestamp.now(),
+    cert_status: 0, // 0 - pending | 1 - released
+    cert_no: '',
+    practical: 0,
+    written: 0,
+    result: 0,
+    train_remarks: '',
+}
+
 export interface TEMP_COURSES {
     course_fee: number;
     course: string;
