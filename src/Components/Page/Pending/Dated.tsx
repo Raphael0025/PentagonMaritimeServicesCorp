@@ -141,55 +141,57 @@ export default function Page() {
         new Promise<void>((res,rej) => {
             setTimeout(async () => {
                 try{
-                    const training = allTraining?.find((t) => t.id === training_id)
-                    if(!training){
-                        return
-                    }
-                    const courseTraining = allCourses?.find((c) => c.id === training.course)
-                    if(!courseTraining){
-                        return
-                    }
-                    
-                    const start_date = training.start_date
-                    const tArr = allTraining?.filter((t) => t.regType === 0 && t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)
-                    const realBN = tArr?.some((t) => t.batch !== 1)
-
                     let batch: string = '1'
+                    const actorType: number = 0
+                    await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 0, reg_account_type, actorType, actor)
+                    
+                    // const training = allTraining?.find((t) => t.id === training_id)
+                    // if(!training){
+                    //     return
+                    // }
+                    // const courseTraining = allCourses?.find((c) => c.id === training.course)
+                    // if(!courseTraining){
+                    //     return
+                    // }
+                    
+                    // const start_date = training.start_date
+                    // const tArr = allTraining?.filter((t) => t.regType === 0 && t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)
+                    // const realBN = tArr?.some((t) => t.batch !== 1)
 
-                    if((tArr?.length ?? 0) > 0 && realBN){ // if there are more and if batch num is not equal to one (1)
-                        const batch_num = allTraining?.find((t) => t.regType === 0 && t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)?.batch
-                        if(batch_num){
-                            batch = batch_num.toString()
-                        }
-                    } else {
-                        // generate new batch number in this block, get the latest batch number and increment it
-                        // generate first the training schedules from courses and get the date before the training start_date
-                        const lastMonth = generateDateBefore(courseTraining.day, 15, courseTraining.numOfDays.toString())
+                    // if((tArr?.length ?? 0) > 0 && realBN){ // if there are more and if batch num is not equal to one (1)
+                    //     const batch_num = allTraining?.find((t) => t.regType === 0 && t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)?.batch
+                    //     if(batch_num){
+                    //         batch = batch_num.toString()
+                    //     }
+                    // } else {
+                    //     // generate new batch number in this block, get the latest batch number and increment it
+                    //     // generate first the training schedules from courses and get the date before the training start_date
+                    //     const lastMonth = generateDateBefore(courseTraining.day, 15, courseTraining.numOfDays.toString())
                         
-                        let tempArr: string[] = []
-                        let trainingDates: string[] = []
+                    //     let tempArr: string[] = []
+                    //     let trainingDates: string[] = []
                         
-                        if(training.numOfDays !== 1){
-                            tempArr = lastMonth
-                        }else{
-                            trainingDates = lastMonth
-                        }
-                        for(const date of tempArr){
-                            const [startDate, endDate] = date.split(" to ").map((date) => date.trim())
-                            trainingDates.push(startDate); // Add to the end of the array
-                        }
-                        const dateIndx = trainingDates.indexOf(training.start_date)
-                        const dayBefore = trainingDates[dateIndx - 1]
-                        const lastCurrentCourseBatch = courseBatch?.find((b) => b.start_date === dayBefore && b.course === training.course)
+                    //     if(training.numOfDays !== 1){
+                    //         tempArr = lastMonth
+                    //     }else{
+                    //         trainingDates = lastMonth
+                    //     }
+                    //     for(const date of tempArr){
+                    //         const [startDate, endDate] = date.split(" to ").map((date) => date.trim())
+                    //         trainingDates.push(startDate); // Add to the end of the array
+                    //     }
+                    //     const dateIndx = trainingDates.indexOf(training.start_date)
+                    //     const dayBefore = trainingDates[dateIndx - 1]
+                    //     const lastCurrentCourseBatch = courseBatch?.find((b) => b.start_date === dayBefore && b.course === training.course)
                         
-                        if(lastCurrentCourseBatch){
-                            const nextBatch = Number(lastCurrentCourseBatch?.batch_no) + 1
-                            batch = await GENERATE_BATCH(nextBatch.toString(), training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
-                        } else {
-                            batch = await GENERATE_BATCH('1', training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
-                        }
-                    }
-                    await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 0, reg_account_type, actor)
+                    //     if(lastCurrentCourseBatch){
+                    //         const nextBatch = Number(lastCurrentCourseBatch?.batch_no) + 1
+                    //         batch = await GENERATE_BATCH(nextBatch.toString(), training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
+                    //     } else {
+                    //         batch = await GENERATE_BATCH('1', training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
+                    //     }
+                    // }
+    
                     res()
                 }catch(error){
                     rej(error)

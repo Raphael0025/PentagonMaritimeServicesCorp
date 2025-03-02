@@ -44,6 +44,9 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
     const {isOpen: isOpenRank, onOpen: onOpenRank, onClose: onCloseRank} = useDisclosure()
 
     const [birth_date, setBirthDate] = useState<Date | null>(new Date())
+    const [month, setMonth] = useState<number>(0)
+    const [day, setDay] = useState<number>(0)
+    const [year, setYear] = useState<number>(0)
 
     const [show, setShow] = useState<string>('info')
     const [showAlert1, setShowAlert1] = useState<boolean>(false)
@@ -101,6 +104,11 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
             setValidSig(oldTrainee.e_sig)
 
             setBirthDate(oldTrainee.birthDate.toDate())
+            
+            const birthDate = oldTrainee.birthDate.toDate()
+            setMonth(birthDate.getUTCMonth() + 1)
+            setDay(birthDate.getUTCDate())
+            setYear(birthDate.getUTCFullYear())
         } 
         fetchData()
     }, [])
@@ -407,6 +415,28 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
         onCloseVessel()
     }
 
+    const handleDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value , id } = e.target
+        if(id === 'month'){
+            setMonth(Number(value))
+        }
+        if(id === 'day'){
+            setDay(Number(value))
+        }
+        if(id === 'year'){
+            setYear(Number(value))
+        }
+    }
+
+    const handleCombineBirthDate = () => {
+        const birth_date = new Date(year, month - 1, day);
+        console.log(birth_date)
+        setTrainee((prev) => ({
+            ...prev,
+            birthDate: birth_date ? Timestamp.fromDate(birth_date) : Timestamp.now()
+        }))
+    }
+
     return(
     <>
     <Box className='space-y-3'>
@@ -473,12 +503,30 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                         <label className='text-gray-400'>nationality:</label>
                         <Input id='nationality' value={trainee.nationality} onChange={handleOnChange} className='shadow-md uppercase' />
                     </FormControl>
-                    <FormControl className='flex flex-col' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                    {/* <FormControl className='flex flex-col' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
                         <label className='text-gray-400'>Birth Date:</label>
                         <DatePicker showPopperArrow={false} selected={birth_date} onChange={(date) => setBirthDate(date)} showMonthDropdown useShortMonthInDropdown dateFormat='E, MMM. dd, yyyy'
                             customInput={<Input id='birth_date' textAlign='center' className='shadow-md' /> } />
                         <Text className='mt-2 text-black' style={{fontSize: '9px'}}>You can select a date from the calendar or type it directly in the field above</Text>
-                    </FormControl>
+                    </FormControl> */}
+                    <Box display='flex' flexDir={{md:'column', base:'column'}} >
+                        <label className='text-gray-400'>Birth Date:<span className='text-red-700'>*</span></label>
+                        <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                <label className='text-gray-400'>MM:</label>
+                                <Input id='month' type='number' value={month} ms='3' w='110px' placeholder='e.g. 01-12' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                            </FormControl>
+                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                <label className='text-gray-400'>DD:</label>
+                                <Input id='day' type='number' value={day} ms='3' w='100px' placeholder='e.g. 01' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                            </FormControl>
+                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                <label className='text-gray-400'>YYYY:</label>
+                                <Input id='year' type='number' value={year} ms='3' w='150px' placeholder='e.g. (2002)' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                            </FormControl>
+                        </Box>
+                        <FormLabel color='gray.600' fontSize='xs'>{`Note: Please enter your birth date using digits (01/01/2001)`}</FormLabel>
+                    </Box>
                     <FormControl isInvalid={trainee.birthPlace === '' && showAlert1}>
                         <label className='text-gray-400'>birth place:</label>
                         <Input id='birthPlace' value={trainee.birthPlace} onChange={handleOnChange} className='shadow-md uppercase' />
@@ -490,7 +538,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                         {/* <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
                         {otherAddress ? trainee.otherAddress !== '' ? trainee.otherAddress : 'Add Address' : trainee.house_no !== '' || trainee.street !== '' || trainee.brgy !== '' || trainee.city !== '' ? `${trainee.house_no} ${trainee.street} ${`Brgy. ${trainee.brgy}`} ${`${trainee.city} City`}` : 'Add Address'}
                         </Button> */}
-                        <Input id='otherAddress' isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChange} className='uppercase shadow-md'/>
+                        <Input id='otherAddress' value={trainee.otherAddress} isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChange} className='uppercase shadow-md'/>
                         <FormLabel color='gray.600' fontSize='xs' fontWeight='700'>{`Note: Kindly indicate your complete address including City, and Province`}</FormLabel>
                     </FormControl>
                 </Box>
@@ -565,7 +613,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                     </Box>
                 </Box>
                 <Box className='flex justify-end'>
-                    <Button className='w-full md:w-1/4' onClick={() => {handleNextStep(1)}} colorScheme='blue'>Proceed to Next Step</Button>
+                    <Button className='w-full md:w-1/4' onClick={() => {handleNextStep(1); handleCombineBirthDate(); scrollToTop();}} colorScheme='blue'>Proceed to Next Step</Button>
                 </Box>
             </Box>
         </Box>

@@ -27,16 +27,16 @@ export const RegistrationProvider: React.FC<RegistrationProvderProps>= ({ childr
     const [year, setYear] = useState<number>(new Date().getFullYear())
 
     useEffect(() => {
-        const fetchData = async () => {
+        // const fetchData = async () => {
             try{
-                const startDate = new Date(year, month - 1, 1)
+                const startDate = new Date(year, month - 1, -15, 12, 0, 0)
                 const endDate = new Date(year, month, 0, 23, 59, 59)
                 
-                const last_month_registrations = await GET_TRAINING_REGISTRAION(month, year)
-                setLastMonthReg(last_month_registrations)
+                // const last_month_registrations = await GET_TRAINING_REGISTRAION(month, year)
+                // setLastMonthReg(last_month_registrations)
 
-                const initData = await getRegistrationData(month, year)
-                setData(initData)
+                // const initData = await getRegistrationData(month, year)
+                // setData(initData)
 
                 const registrationRef = collection(firestore, 'REGISTRATION')
                 const filteredQuery = query(
@@ -56,10 +56,10 @@ export const RegistrationProvider: React.FC<RegistrationProvderProps>= ({ childr
             } catch(error){
                 throw error
             } 
-        }
-        if (month > 0 && year > 0) {  // Ensure valid values
-            fetchData();
-        }
+        // }
+        // if (month > 0 && year > 0) {  // Ensure valid values
+        //     fetchData();
+        // }
     }, [month, year])
 
     return (

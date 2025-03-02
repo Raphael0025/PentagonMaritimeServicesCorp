@@ -43,6 +43,9 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         const {isOpen: isOpenRank, onOpen: onOpenRank, onClose: onCloseRank} = useDisclosure()
 
     const [birth_date, setBirthDate] = useState<Date | null>(new Date())
+    const [month, setMonth] = useState<number>(0)
+    const [day, setDay] = useState<number>(0)
+    const [year, setYear] = useState<number>(0)
 
     const [show, setShow] = useState<string>('info')
     const [showAlert1, setShowAlert1] = useState<boolean>(false)
@@ -54,7 +57,8 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     const [tempCourses, setTempCourses] = useState<TEMP_COURSES[]>([])
 
     const [sched, setSched] = useState<string>('')
-    const [payment, setPayment] = useState<number>(0)
+    const [payment, setPayment] = useState<number>(2)
+    const [invalid, setInvalid] = useState<boolean>(false)
     const [courseRef, setCourseRef] = useState<string>('')
     const [companyRef, setCompanyRef] = useState<string>('')
     const [selectCompany, setSelectCompany] = useState<string>('')
@@ -173,32 +177,40 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     }
 
     const handleTempCourses = (courseData: string, courseFee: number, numOfDays: number) => {
-        let templateData;
-        if (numOfDays > 1) {
-            const [startDate, endDate] = sched.split(" to ").map((date) => date.trim()); // Split into start_date and end_date
-    
-            templateData = {
-                course: courseData,
-                course_fee: courseFee,
-                start_date: startDate,
-                end_date: endDate,
-                numOfDays,
-                accountType: payment, // 0 - crew | 1 - company
-                payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
-            };
-        } else {
-            templateData = {
-                course: courseData,
-                course_fee: courseFee,
-                start_date: sched,
-                end_date: '',
-                numOfDays,
-                accountType: payment, // 0 - crew | 1 - company
-                payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
-            };
-        }
+        let isComplete: boolean = sched !== '' && payment !== 2
+        setInvalid(isComplete)
         
-        setTempCourses((prev) => [...prev, templateData])
+        if(isComplete){
+            let templateData
+
+            if (numOfDays > 1) {
+                const [startDate, endDate] = sched?.split(" to ").map((date) => date.trim()); // Split into start_date and end_date
+        
+                templateData = {
+                    course: courseData,
+                    course_fee: courseFee,
+                    start_date: startDate,
+                    end_date: endDate,
+                    numOfDays,
+                    accountType: payment, // 0 - crew | 1 - company
+                    payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
+                };
+            } else {
+                templateData = {
+                    course: courseData,
+                    course_fee: courseFee,
+                    start_date: sched,
+                    end_date: '',
+                    numOfDays,
+                    accountType: payment, // 0 - crew | 1 - company
+                    payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
+                };
+            }
+            // setCourses((prev) => [...prev, templateData])
+            isComplete = false
+            setSched('')
+            setPayment(2)
+        }
     }
 
     const handleCourses = () => {
@@ -373,6 +385,28 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         onCloseVessel()
     }
 
+    const handleDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value , id } = e.target
+        if(id === 'month'){
+            setMonth(Number(value))
+        }
+        if(id === 'day'){
+            setDay(Number(value))
+        }
+        if(id === 'year'){
+            setYear(Number(value))
+        }
+    }
+
+    const handleCombineBirthDate = () => {
+        const birth_date = new Date(year, month - 1, day);
+        console.log(birth_date)
+        setTrainee((prev) => ({
+            ...prev,
+            birthDate: birth_date ? Timestamp.fromDate(birth_date) : Timestamp.now()
+        }))
+    }
+
     return(
     <>
     <Box>
@@ -477,12 +511,30 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                         <label className='text-gray-400'>nationality:<span className='text-red-700'>*</span></label>
                         <Input id='nationality' onChange={handleOnChange} className='shadow-md uppercase' />
                     </FormControl>
-                    <FormControl className='flex flex-col' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                    {/* <FormControl className='flex flex-col' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
                         <label className='text-gray-400'>Birth Date:<span className='text-red-700'>*</span></label>
                         <DatePicker showPopperArrow={false} selected={birth_date} onChange={(date) => setBirthDate(date)} showMonthDropdown useShortMonthInDropdown dateFormat='E, MMM. dd, yyyy'
                             customInput={<Input id='birth_date' textAlign='center' className='shadow-md' /> } />
                         <Text className='mt-2 text-black' style={{fontSize: '9px'}}>You can select a date from the calendar or type it directly in the field above</Text>
-                    </FormControl>
+                    </FormControl> */}
+                    <Box display='flex' flexDir={{md:'column', base:'column'}} >
+                        <label className='text-gray-400'>Birth Date:<span className='text-red-700'>*</span></label>
+                        <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                <label className='text-gray-400'>MM:</label>
+                                <Input id='month' type='number' ms='3' w='110px' placeholder='e.g. 01-12' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                            </FormControl>
+                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                <label className='text-gray-400'>DD:</label>
+                                <Input id='day' type='number' ms='3' w='100px' placeholder='e.g. 01' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                            </FormControl>
+                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                <label className='text-gray-400'>YYYY:</label>
+                                <Input id='year' type='number' ms='3' w='150px' placeholder='e.g. (2002)' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                            </FormControl>
+                        </Box>
+                        <FormLabel color='gray.600' fontSize='xs'>{`Note: Please enter your birth date using digits (01/01/2001)`}</FormLabel>
+                    </Box>
                     <FormControl isInvalid={trainee.birthPlace === '' && showAlert1}>
                         <label className='text-gray-400'>birth place:<span className='text-red-700'>*</span></label>
                         <Input id='birthPlace' onChange={handleOnChange} className='shadow-md uppercase' />
@@ -494,7 +546,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                         {/* <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
                         {otherAddress ? trainee.otherAddress !== '' ? trainee.otherAddress : 'Add Address' : trainee.house_no !== '' || trainee.street !== '' || trainee.brgy !== '' || trainee.city !== '' ? `${trainee.house_no} ${trainee.street} ${`Brgy. ${trainee.brgy}`} ${`${trainee.city} City`}` : 'Add Address'}
                         </Button> */}
-                        <Input id='otherAddress' isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChange} className='uppercase shadow-md'/>
+                        <Input id='otherAddress' value={trainee.otherAddress} isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChange} className='uppercase shadow-md'/>
                         <FormLabel color='gray.600' fontSize='xs' fontWeight='700'>{`Note: Kindly indicate your complete address including City, and Province`}</FormLabel>
                     </FormControl>
                 </Box>
@@ -560,7 +612,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     </Box>
                 </Box>
                 <Box className='flex justify-end'>
-                    <Button className='w-full md:w-1/4' onClick={() => {handleNextStep('step1'); scrollToTop();}} colorScheme='blue'>Proceed to Next Step</Button>
+                    <Button className='w-full md:w-1/4' onClick={() => {handleNextStep('step1'); handleCombineBirthDate(); scrollToTop();}} colorScheme='blue'>Proceed to Next Step</Button>
                 </Box>
             </Box>
         </Box>
@@ -1047,7 +1099,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                             if (!matchingCourseCodes || matchingCourseCodes.length === 0) return null;
 
                             return (
-                                <AccordionItem key={index} border='2px' borderColor={`${ tempCourses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
+                                <AccordionItem key={index} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
                                     {matchingCourseCodes.map((courseCode) => (
                                         <div key={courseCode.id}>
                                             <AccordionButton className="flex uppercase justify-between" onClick={() => { handleSchedule(matchingCharges[0].id, "cc"); }} >
@@ -1058,7 +1110,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                                 <Box className="flex flex-col justify-between space-y-4">
                                                     <Box>
                                                         <Text className="text-gray-400 w-full">Training Schedule</Text>
-                                                        <Select isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm" >
+                                                        <Select isInvalid={!invalid && sched === ''} isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm" >
                                                             <option hidden>Select Schedule</option>
                                                             {trainingSched.map((date, index) => (
                                                                 <option key={index}>{date}</option>
@@ -1067,7 +1119,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                                     </Box>
                                                     <Box>
                                                         <Text className="text-gray-400 w-full">Payment Mode</Text>
-                                                        <Select isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setPayment(Number(e.target.value))} className="uppercase" size="sm" >
+                                                        <Select isInvalid={!invalid && payment === 2} isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setPayment(Number(e.target.value))} className="uppercase" size="sm" >
                                                             <option hidden>Select Payment</option>
                                                             <option value={0}>Crew Charge</option>
                                                             <option value={1}>Company Charge</option>
@@ -1075,10 +1127,10 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                                     </Box>
                                                 </Box>
                                                 <Box className="flex w-full">
-                                                    {tempCourses.some((temp) => temp.course === course.id) ? (
+                                                    {courses.some((temp) => temp.course === course.id) ? (
                                                         <Text bg='teal.500' className="text-sm rounded p-2 text-white" textAlign='center'  w='100%' fontWeight="700" > SELECTED </Text>
                                                     ) : (
-                                                        <Button isDisabled={tempCourses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
+                                                        <Button isDisabled={courses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > SELECT COURSE </Button>
                                                     )}
                                                 </Box>
                                             </AccordionPanel>
@@ -1095,7 +1147,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                         <Box>
                             <Accordion allowToggle className="space-y-3">
                             {allCourses && allCourses .sort((a, b) => a.course_code.localeCompare(b.course_code)) .map((course) => (
-                                <AccordionItem key={course?.id} border='2px' borderColor={`${ tempCourses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
+                                <AccordionItem key={course?.id} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
                                     <AccordionButton className="flex justify-between" onClick={() => { handleSchedule(course.id, "crew"); }} >
                                         <Text className="text-lg text-start uppercase">
                                             {course?.course_code || "Unknown Code"} -{" "}
@@ -1107,7 +1159,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                         <Box className="flex flex-col justify-between space-y-4">
                                             <Box>
                                                 <Text className="text-gray-400 w-full">Training Schedule</Text>
-                                                <Select isDisabled={courseRef !== course?.id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm">
+                                                <Select isInvalid={!invalid && sched === ''} isDisabled={courseRef !== course?.id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm">
                                                     <option hidden>Select Schedule</option>
                                                     {trainingSched.map((date, index) => (
                                                         <option key={index}>{date}</option>
@@ -1116,7 +1168,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                             </Box>
                                             <Box>
                                                 <Text className="text-gray-400 w-full">Payment Mode</Text>
-                                                <Select isDisabled={courseRef !== course?.id} onChange={(e) => setPayment(Number(e.target.value)) } className="uppercase" size="sm" >
+                                                <Select isInvalid={!invalid && payment === 2} isDisabled={courseRef !== course?.id} onChange={(e) => setPayment(Number(e.target.value)) } className="uppercase" size="sm" >
                                                     <option hidden>Select Payment</option>
                                                     <option value={0}>Crew Charge</option>
                                                     <option value={1}>Company Charge</option>
@@ -1124,10 +1176,10 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                             </Box>
                                         </Box>
                                         <Box className="flex w-full">
-                                            {tempCourses.some((temp) => temp.course === course.id) ? (
+                                            {courses.some((temp) => temp.course === course.id) ? (
                                                 <Text bg='teal.500' className="text-sm rounded p-2 text-white" textAlign='center'  w='100%' fontWeight="700" > SELECTED </Text>
                                             ) : (
-                                                <Button isDisabled={tempCourses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
+                                                <Button isDisabled={courses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > SELECT COURSE </Button>
                                             )}
                                         </Box>
                                     </AccordionPanel>
@@ -1140,7 +1192,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
             </ModalBody>
             <ModalFooter borderTopWidth="1px">
                 <Button mr={3} onClick={onCloseModal}> Close </Button>
-                <Button onClick={handleCourses} colorScheme="blue" isLoading={loading} loadingText="Selecting..."> Select </Button>
+                {/* <Button onClick={handleCourses} colorScheme="blue" isLoading={loading} loadingText="Selecting..."> Select </Button> */}
             </ModalFooter>
         </ModalContent>
     </Modal>

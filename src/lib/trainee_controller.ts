@@ -116,7 +116,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
             const newTraining: TRAINING = {
                 ...tempCourses,
                 reg_ref_id: id,
-                reg_status: 0,
+                reg_status: 2,
                 isCertified: false,
                 cert_released: Timestamp.now(),
                 cert_status: 0,
@@ -242,18 +242,18 @@ export const SAVE_REMARKS = async (training_id: string, remarks: string, actor: 
     }
 }
 
-export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
+export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actorType: number, actor: string | null) => {
     try{
         // this part fetches the latest registration number then increments it, 
         // but if no data is found it initializes a registration number
         let maxRegNo: string = ''
-        const qSnapshot = await getDocs(registration)
+        const reg_Collection_Snapshot = await getDocs(registration)
         
         // Filter documents with the matching reg_type
-        const filteredDocs = qSnapshot.docs.filter(
+        const filteredDocs = reg_Collection_Snapshot.docs.filter(
             (doc) => doc.data().regType === reg_type
         )
-    
+        
         // If there are matching documents, find the one with the highest reg_no
         if (filteredDocs.length > 0) {
             const latestRegDoc = filteredDocs.reduce((prev, current) =>

@@ -31,13 +31,13 @@ export const TrainingProvider: React.FC<TrainingProvderProps>= ({ children }) =>
     }, [])
 
     useEffect(() => {
-        const fetchData = async () => {
+        // const fetchData = async () => {
             try{
                 const startDate = new Date(year, month - 1, 1);
                 const endDate = new Date(year, month, 0, 23, 59, 59);
 
-                const initData = await getTrainingData(month, year);
-                setData(initData);
+                // const initData = await getTrainingData(month, year);
+                // setData(initData);
                 const registrationRef = collection(firestore, 'TRAINING');
                 const filteredQuery = query(
                     registrationRef,
@@ -55,10 +55,10 @@ export const TrainingProvider: React.FC<TrainingProvderProps>= ({ children }) =>
             } catch(error){
                 throw error
             } 
-        };
-        if (month > 0 && year > 0) {  // Ensure valid values
-            fetchData();
-        }
+        // };
+        // if (month > 0 && year > 0) {  // Ensure valid values
+        //     fetchData();
+        // }
     }, [month, year])
     
     return (
