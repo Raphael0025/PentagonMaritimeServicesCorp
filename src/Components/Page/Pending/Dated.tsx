@@ -143,7 +143,7 @@ export default function Page() {
                 try{
                     let batch: string = '1'
                     const actorType: number = 0
-                    await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 0, reg_account_type, actorType, actor)
+                    await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 0, reg_account_type, actor)
                     
                     // const training = allTraining?.find((t) => t.id === training_id)
                     // if(!training){

@@ -242,7 +242,7 @@ export const SAVE_REMARKS = async (training_id: string, remarks: string, actor: 
     }
 }
 
-export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actorType: number, actor: string | null) => {
+export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
     try{
         // this part fetches the latest registration number then increments it, 
         // but if no data is found it initializes a registration number
