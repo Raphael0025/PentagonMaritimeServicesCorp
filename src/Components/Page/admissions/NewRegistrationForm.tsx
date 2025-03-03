@@ -6,7 +6,7 @@ import Image from 'next/image'
 import React, { useEffect, useState, useRef } from 'react'
 import DatePicker from 'react-datepicker'
 
-import {TrashIcon, Loading, DownloadIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
+import {TrashIcon, Loading, DownloadIcon, PinIcon, MailIcon, PhoneIcon, SearchIcon, FacebookIcon } from '@/Components/Icons'
 import {NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon} from '@/Components/SideIcons'
 
 import { Box, Text, Link, Tooltip, FormLabel, Switch, FormControl, Input, Alert, AlertTitle, AlertDescription, AlertIcon, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
@@ -47,7 +47,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     const [day, setDay] = useState<number>(0)
     const [year, setYear] = useState<number>(0)
 
-
+    const [search, setSearch] = useState<string>('')
     const [show, setShow] = useState<string>('info')
     const [showAlert1, setShowAlert1] = useState<boolean>(false)
     const [showAlert2, setShowAlert2] = useState<boolean>(false)
@@ -156,7 +156,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
             [id]: value.trim()
         }))
     }
-    
+
     const handleOnChangeAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
         
@@ -581,11 +581,11 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                 </Box>
                 <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
                     <FormControl isInvalid={trainee.e_contact_person === '' && showAlert1}>
-                        <label className='text-gray-400'>Name of Contact Person:<span className='text-red-700'>*</span></label>
+                        <label className='text-gray-400'>Emergency Contact Person:<span className='text-red-700'>*</span></label>
                         <Input id='e_contact_person' onChange={handleOnChange} className='shadow-md uppercase' />
                     </FormControl>
                     <FormControl isInvalid={trainee.e_contact === '' && showAlert1}>
-                        <label className='text-gray-400'>Contact No.:<span className='text-red-700'>*</span></label>
+                        <label className='text-gray-400'>Emergency Contact No.:<span className='text-red-700'>*</span></label>
                         <Input id='e_contact' onChange={handleOnChange} className='shadow-md uppercase' />
                     </FormControl>
                     <FormControl isInvalid={trainee.relationship === '' && showAlert1}>
@@ -1088,10 +1088,23 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                         <AlertDescription>{`Select the desired course, click "Select" to save, then click "Close."`}</AlertDescription>
                     </Alert>
                 </Box>
+                <Box >
+                    <InputGroup className="shadow-md rounded-lg">
+                        <InputLeftAddon>
+                            <SearchIcon color="#a1a1a1" size="18" />
+                        </InputLeftAddon>
+                        <Input
+                            textTransform='uppercase' 
+                            placeholder="type course here..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </InputGroup>
+                </Box> 
                 <Box>
                     {trainee.company && companyCharges?.some((charge) => charge.company_ref === trainee.company) ? (
-                    <Box className="p-3 pt-0">
-                        <Text className="text-gray-400 text-lg">Course For you:</Text>
+                    <Box className="p-3 pt-0" overflowY='auto' maxH='350px'>
+                        <Text className="text-gray-400 text-lg">Courses For you:</Text>
                         <Accordion allowToggle className="space-y-3">
                         {allCourses?.slice().sort((a, b) => a.course_code.localeCompare(b.course_code)).map((course, index) => {
                             // Find matching company charges
@@ -1111,7 +1124,8 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
 
                             return (
                                 <AccordionItem key={index} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
-                                    {matchingCourseCodes.map((courseCode) => (
+                                    {matchingCourseCodes.filter((courseC) => courseC.company_course_code.toUpperCase().includes(search.toUpperCase()) || course.course_name.toUpperCase().includes(search.toUpperCase()))
+                                    .map((courseCode) => (
                                         <div key={courseCode.id}>
                                             <AccordionButton className="flex uppercase justify-between" onClick={() => { handleSchedule(matchingCharges[0].id, "cc"); }} >
                                                 <Text> {courseCode.company_course_code} - {course.course_name} </Text>
@@ -1157,7 +1171,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                         <Text className="text-lg text-gray-400">Courses Offered:</Text>
                         <Box>
                             <Accordion allowToggle className="space-y-3">
-                            {allCourses && allCourses .sort((a, b) => a.course_code.localeCompare(b.course_code)) .map((course) => (
+                            {allCourses && allCourses.filter((course) => course.course_code.toUpperCase().includes(search.toUpperCase()) || course.course_name.toUpperCase().includes(search.toUpperCase())).sort((a,b) => a.course_code.localeCompare(b.course_code)) .sort((a, b) => a.course_code.localeCompare(b.course_code)) .sort((a, b) => a.course_code.localeCompare(b.course_code)) .map((course) => (
                                 <AccordionItem key={course?.id} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
                                     <AccordionButton className="flex justify-between" onClick={() => { handleSchedule(course.id, "crew"); }} >
                                         <Text className="text-lg text-start uppercase">
