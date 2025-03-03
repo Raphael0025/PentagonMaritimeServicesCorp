@@ -206,7 +206,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
                 };
             }
-            // setCourses((prev) => [...prev, templateData])
+            setCourses((prev) => [...prev, templateData])
             isComplete = false
             setSched('')
             setPayment(2)
@@ -1150,7 +1150,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                 <AccordionItem key={course?.id} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
                                     <AccordionButton className="flex justify-between" onClick={() => { handleSchedule(course.id, "crew"); }} >
                                         <Text className="text-lg text-start uppercase">
-                                            {course?.course_code || "Unknown Code"} -{" "}
+                                            {course?.course_code || "Unknown Code"} - {" "}
                                             {course?.course_name || "Unknown Name"}
                                         </Text>
                                         <AccordionIcon />

@@ -59,6 +59,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
 
     const [sched, setSched] = useState<string>('')
     const [payment, setPayment] = useState<number>(0)
+        const [invalid, setInvalid] = useState<boolean>(false)
     const [courseRef, setCourseRef] = useState<string>('')
     const [companyRef, setCompanyRef] = useState<string>('')
     const [selectCompany, setSelectCompany] = useState<string>('')
@@ -177,34 +178,40 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     }
 
     const handleTempCourses = (courseData: string, courseFee: number, numOfDays: number) => {
-        let templateData;
-        const isComplete: boolean = false
-
-        if (numOfDays > 1) {
-            const [startDate, endDate] = sched.split(" to ").map((date) => date.trim()); // Split into start_date and end_date
-    
-            templateData = {
-                course: courseData,
-                course_fee: courseFee,
-                start_date: startDate,
-                end_date: endDate,
-                numOfDays,
-                accountType: payment, // 0 - crew | 1 - company
-                payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
-            };
-        } else {
-            templateData = {
-                course: courseData,
-                course_fee: courseFee,
-                start_date: sched,
-                end_date: '',
-                numOfDays,
-                accountType: payment, // 0 - crew | 1 - company
-                payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
-            };
-        }
+        let isComplete: boolean = sched !== '' && payment !== 2
+        setInvalid(isComplete)
         
-        setCourses((prev) => [...prev, templateData])
+        if(isComplete){
+            let templateData;
+
+            if (numOfDays > 1) {
+                const [startDate, endDate] = sched.split(" to ").map((date) => date.trim()); // Split into start_date and end_date
+                
+                templateData = {
+                    course: courseData,
+                    course_fee: courseFee,
+                    start_date: startDate,
+                    end_date: endDate,
+                    numOfDays,
+                    accountType: payment, // 0 - crew | 1 - company
+                    payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
+                };
+            } else {
+                templateData = {
+                    course: courseData,
+                    course_fee: courseFee,
+                    start_date: sched,
+                    end_date: '',
+                    numOfDays,
+                    accountType: payment, // 0 - crew | 1 - company
+                    payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
+                };
+            }
+            setCourses((prev) => [...prev, templateData])
+            isComplete = false
+            setSched('')
+            setPayment(2)
+        }
     }
 
     const handleCourses = () => {
@@ -1145,7 +1152,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                 <AccordionItem key={course?.id} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
                                     <AccordionButton className="flex justify-between" onClick={() => { handleSchedule(course.id, "crew"); }} >
                                         <Text className="text-lg text-start uppercase">
-                                            {course?.course_code || "Unknown Code"} -{" "}
+                                            {course?.course_code || "Unknown Code"} - {" "}
                                             {course?.course_name || "Unknown Name"}
                                         </Text>
                                         <AccordionIcon />

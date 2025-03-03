@@ -60,6 +60,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
     const [idRef, setIDRef] = useState<string>('')
     const [sched, setSched] = useState<string>('')
     const [payment, setPayment] = useState<number>(0)
+    const [invalid, setInvalid] = useState<boolean>(false)
     const [courseRef, setCourseRef] = useState<string>('')
     const [companyRef, setCompanyRef] = useState<string>('')
     const [selectCompany, setSelectCompany] = useState<string>('')
@@ -199,32 +200,40 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
     }
 
     const handleTempCourses = (courseData: string, courseFee: number, numOfDays: number) => {
-        let templateData;
-        if (numOfDays > 1) {
-            const [startDate, endDate] = sched.split(" to ").map((date) => date.trim()); // Split into start_date and end_date
-    
-            templateData = {
-                course: courseData,
-                course_fee: courseFee,
-                start_date: startDate,
-                end_date: endDate,
-                numOfDays,
-                accountType: payment, // 0 - crew | 1 - company
-                payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
-            };
-        } else {
-            templateData = {
-                course: courseData,
-                course_fee: courseFee,
-                start_date: sched,
-                end_date: '',
-                numOfDays,
-                accountType: payment, // 0 - crew | 1 - company
-                payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
-            };
-        }
+        let isComplete: boolean = sched !== '' && payment !== 2
+        setInvalid(isComplete)
+
+        if(isComplete){
+            let templateData;
+            if (numOfDays > 1) {
+                const [startDate, endDate] = sched.split(" to ").map((date) => date.trim()); // Split into start_date and end_date
         
-        setTempCourses((prev) => [...prev, templateData])
+                templateData = {
+                    course: courseData,
+                    course_fee: courseFee,
+                    start_date: startDate,
+                    end_date: endDate,
+                    numOfDays,
+                    accountType: payment, // 0 - crew | 1 - company
+                    payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
+                };
+            } else {
+                templateData = {
+                    course: courseData,
+                    course_fee: courseFee,
+                    start_date: sched,
+                    end_date: '',
+                    numOfDays,
+                    accountType: payment, // 0 - crew | 1 - company
+                    payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
+                };
+            }
+            
+            setCourses((prev) => [...prev, templateData])
+            isComplete = false
+            setSched('')
+            setPayment(2)
+        }
     }
 
     const handleCourses = () => {
@@ -1100,7 +1109,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                             if (!matchingCourseCodes || matchingCourseCodes.length === 0) return null;
 
                             return (
-                                <AccordionItem key={index} border='2px' borderColor={`${ tempCourses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
+                                <AccordionItem key={index} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
                                     {matchingCourseCodes.map((courseCode) => (
                                         <div key={courseCode.id}>
                                             <AccordionButton className="flex uppercase justify-between" onClick={() => { handleSchedule(matchingCharges[0].id, "cc"); }} >
@@ -1111,7 +1120,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                                 <Box className="flex flex-col justify-between space-y-4">
                                                     <Box>
                                                         <Text className="text-gray-400 w-full">Training Schedule</Text>
-                                                        <Select isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm" >
+                                                        <Select isInvalid={!invalid && sched === ''} isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm" >
                                                             <option hidden>Select Schedule</option>
                                                             {trainingSched.map((date, index) => (
                                                                 <option key={index}>{date}</option>
@@ -1120,7 +1129,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                                     </Box>
                                                     <Box>
                                                         <Text className="text-gray-400 w-full">Payment Mode</Text>
-                                                        <Select isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setPayment(Number(e.target.value))} className="uppercase" size="sm" >
+                                                        <Select isInvalid={!invalid && payment === 2} isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setPayment(Number(e.target.value))} className="uppercase" size="sm" >
                                                             <option hidden>Select Payment</option>
                                                             <option value={0}>Crew Charge</option>
                                                             <option value={1}>Company Charge</option>
@@ -1128,10 +1137,10 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                                     </Box>
                                                 </Box>
                                                 <Box className="flex w-full">
-                                                    {tempCourses.some((temp) => temp.course === course.id) ? (
+                                                    {courses.some((temp) => temp.course === course.id) ? (
                                                         <Text bg='teal.500' className="text-sm rounded p-2 text-white" textAlign='center'  w='100%' fontWeight="700" > SELECTED </Text>
                                                     ) : (
-                                                        <Button isDisabled={tempCourses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
+                                                        <Button isDisabled={courses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
                                                     )}
                                                 </Box>
                                             </AccordionPanel>
@@ -1148,7 +1157,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                         <Box>
                             <Accordion allowToggle className="space-y-3">
                             {allCourses && allCourses .sort((a, b) => a.course_code.localeCompare(b.course_code)) .map((course) => (
-                                <AccordionItem key={course?.id} border='2px' borderColor={`${ tempCourses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
+                                <AccordionItem key={course?.id} border='2px' borderColor={`${ courses.some((temp) => temp.course === course.id) ? "green.500" : "gray.50" }`} className={`uppercase rounded shadow-md`}>
                                     <AccordionButton className="flex justify-between" onClick={() => { handleSchedule(course.id, "crew"); }} >
                                         <Text className="text-lg text-start uppercase">
                                             {course?.course_code || "Unknown Code"} -{" "}
@@ -1160,7 +1169,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                         <Box className="flex flex-col justify-between space-y-4">
                                             <Box>
                                                 <Text className="text-gray-400 w-full">Training Schedule</Text>
-                                                <Select isDisabled={courseRef !== course?.id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm">
+                                                <Select isInvalid={!invalid && sched === ''} isDisabled={courseRef !== course?.id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm">
                                                     <option hidden>Select Schedule</option>
                                                     {trainingSched.map((date, index) => (
                                                         <option key={index}>{date}</option>
@@ -1169,7 +1178,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                             </Box>
                                             <Box>
                                                 <Text className="text-gray-400 w-full">Payment Mode</Text>
-                                                <Select isDisabled={courseRef !== course?.id} onChange={(e) => setPayment(Number(e.target.value)) } className="uppercase" size="sm" >
+                                                <Select isInvalid={!invalid && payment === 2} isDisabled={courseRef !== course?.id} onChange={(e) => setPayment(Number(e.target.value)) } className="uppercase" size="sm" >
                                                     <option hidden>Select Payment</option>
                                                     <option value={0}>Crew Charge</option>
                                                     <option value={1}>Company Charge</option>
@@ -1177,10 +1186,10 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                             </Box>
                                         </Box>
                                         <Box className="flex w-full">
-                                            {tempCourses.some((temp) => temp.course === course.id) ? (
+                                            {courses.some((temp) => temp.course === course.id) ? (
                                                 <Text className="text-sm rounded p-2 bg-teal-700 text-white" fontWeight="700" > SELECTED </Text>
                                             ) : (
-                                                <Button isDisabled={tempCourses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
+                                                <Button isDisabled={courses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
                                             )}
                                         </Box>
                                     </AccordionPanel>
@@ -1193,7 +1202,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
             </ModalBody>
             <ModalFooter borderTopWidth="1px">
                 <Button mr={3} onClick={onCloseModal}> Close </Button>
-                <Button onClick={handleCourses} colorScheme="blue" isLoading={loading} loadingText="Selecting..."> Select </Button>
+                {/* <Button onClick={handleCourses} colorScheme="blue" isLoading={loading} loadingText="Selecting..."> Select </Button> */}
             </ModalFooter>
         </ModalContent>
     </Modal>
