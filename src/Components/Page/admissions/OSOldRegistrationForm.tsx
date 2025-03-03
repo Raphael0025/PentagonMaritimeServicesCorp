@@ -179,6 +179,15 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
         }))
     }
 
+    const handleOnChangeAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target
+        
+        setTrainee((prev) => ({
+            ...prev,
+            [id]: value
+        }))
+    }
+
     const handleSchedule = (id: string, type: string) => {
         if(type==='crew'){
             const courseFound = allCourses && allCourses.find((course) => course.id === id)
@@ -547,7 +556,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                         {/* <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
                         {otherAddress ? trainee.otherAddress !== '' ? trainee.otherAddress : 'Add Address' : trainee.house_no !== '' || trainee.street !== '' || trainee.brgy !== '' || trainee.city !== '' ? `${trainee.house_no} ${trainee.street} ${`Brgy. ${trainee.brgy}`} ${`${trainee.city} City`}` : 'Add Address'}
                         </Button> */}
-                        <Input id='otherAddress' value={trainee.otherAddress} isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChange} className='uppercase shadow-md'/>
+                        <Input id='otherAddress' value={trainee.otherAddress} isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChangeAddress} className='uppercase shadow-md'/>
                         <FormLabel color='gray.600' fontSize='xs' fontWeight='700'>{`Note: Kindly indicate your complete address including City, and Province`}</FormLabel>
                     </FormControl>
                 </Box>
