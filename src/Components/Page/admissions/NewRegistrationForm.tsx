@@ -321,7 +321,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     }, 
                     body: JSON.stringify({
                         to: trainee.email,
-                        subject: 'Pentagon Maritime Services Corp.',
+                        subject: 'ENROLLMENT TO PENTAGON MARITIME SERVICES CORP.',
                         text: 'Thank you for submitting your online registration form, someone will assist you once your registration is verified. Thank you have a nice day!',
                         last_name: trainee.last_name,
                         first_name: trainee.first_name,
