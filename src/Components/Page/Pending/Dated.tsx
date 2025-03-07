@@ -238,8 +238,8 @@ export default function Page() {
                     />
                 </InputGroup>
                 <Box>
-                    <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md'>Filter Date</Button>
-                    <Button colorScheme='blue' size='md'>Register</Button>
+                    <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md' shadow='md'>Filter Date</Button>
+                    <Button colorScheme='blue' size='md' shadow='md'>Register</Button>
                 </Box>
             </Box>
             <Box className="w-full px-5 space-y-3">

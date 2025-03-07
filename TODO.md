@@ -11,6 +11,16 @@ This document outlines the tasks and improvements planned for the project. Each 
 - [-] **Start developing Accounting Dept.**: Begin developing Accounting Dept. for some reasons.
     - **Details**: This the beginning of the development of accounting department, this will serve as the connection of accounting and registration to generate acknowledgement receipts.
 
+- [] **Feature Test**: Change Account Type Testing on Pending Tab
+    - **Details**: 
+        [-] Detect if there are any registration of same date
+        [] Identify if the checker detects different registration but not the same date
+        [-] Transfer the selected training doc from the current registration to the different reg doc with a different account Type
+        [-] Try to revert back to the original reg
+        [-] Create New Reg doc if there is no existing or other reg doc detected
+        [*] Delete Reg, If training doc is the last one child of the reg and decided to change AT
+            Note: If this happens, old reg cannot be rollback, it will only create a new One
+            Note: Tell Reg Dept. to refrain from making mistakes before enrolling
 
 ### Medium Priority
 
@@ -89,9 +99,11 @@ This document outlines the tasks and improvements planned for the project. Each 
 - [*] **New Filter**: A new filter is requested by this department to improve search and data display.
     - **Details**: By adding this new filter to the Filters prompt for **incoming courses** will improve efficiency
     - however, it must be research on what kind of incoming courses filter shall be.
-    
-## Notes
-This note is for testing 2.
+
+## System Errors/Issues
+    [] different enrolled date but same reg_no, fix this
+    [] reg number problem | created a new reg doc but it musn't supposed to happen
+
 
 ### How to commit beautifully 
 
@@ -105,17 +117,38 @@ Footer Title #[control number]"
 
 ### Commit Types
 
-- **feat**
-- **fix**
-- **chore**
-- **refactor**
-- **docs**
-- **style**
-- **test**
-- **perf**
-- **ci**
-- **build**
-- **revert**
+- **feat** - Introduces a new feature to the codebase.
+    git commit -m "feat: add user authentication"
+
+- **fix** - Fixes a bug or an issue in the codebase.
+    git commit -m "fix: resolve login button not working"
+
+- **chore** - Updates that do not affect application behavior (e.g., dependency updates, build scripts, config changes).
+    git commit -m "chore: update dependencies"
+
+- **refactor** - Improves existing code without changing functionality.
+    git commit -m "refactor: simplify registration form logic"
+
+- **docs**- Changes related to documentation (README, inline comments, API docs).
+    git commit -m "docs: update API usage in README"
+
+- **style** - Changes that do not affect functionality but improve code formatting (e.g., linting, spacing, semicolons).
+    git commit -m "style: fix indentation in utils.js"
+
+- **test** - Adding, updating, or fixing tests.
+    git commit -m "test: add unit test for login function"
+
+- **perf** - Improves performance without changing features.
+    git commit -m "perf: optimize database query execution time"
+
+- **ci** - Updates related to CI/CD (e.g., GitHub Actions, Travis CI, Jenkins).
+    git commit -m "ci: fix GitHub Actions deploy workflow"
+
+- **build** - Changes affecting the build process (webpack, npm/yarn scripts, package.json, dependencies).
+    git commit -m "build: update webpack config for production"
+
+- **revert** - Reverts a previous commit.
+    git commit -m "revert: undo feature X due to issues"
 
 ### Footer Types
 

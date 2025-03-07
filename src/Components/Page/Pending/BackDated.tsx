@@ -18,6 +18,7 @@ import RegistrationForm from '@/Components/Page/Pending/RegistrationForm'
 import EditTrainingDetails from '@/Components/Page/Pending/EditTrainingDetails'
 import InsertTraining from '@/Components/Modal/InsertTraining'
 import CancelModal from '@/Components/Modal/CancelModal'
+import ChangeAccountType from '@/Components/Modal/ChangeAccountType'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
@@ -37,8 +38,8 @@ export default function Page() {
     const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
     const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
-    const { data: allCourses } = useCourses()
     const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { data: allCourses } = useCourses()
 
     const [activeBtn, setActiveBtn] = useState<string>('')
     const [loadBtn, setLoadBtn] = useState<boolean>(true)
@@ -61,6 +62,7 @@ export default function Page() {
     const { isOpen: isOpenTraining, onOpen: onOpenTraining, onClose: onCloseTraining } = useDisclosure()
     const { isOpen: isOpenCancel, onOpen: onOpenCancel, onClose: onCloseCancel } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
+    const { isOpen: isOpenAT, onOpen: onOpenAT, onClose: onCloseAT } = useDisclosure()
     
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -238,8 +240,8 @@ export default function Page() {
                     />
                 </InputGroup>
                 <Box>
-                    <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md'>Filter Date</Button>
-                    <Button colorScheme='blue' bgColor='#1c437e' size='md'>Register</Button>
+                    <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md' shadow='md'>Filter Date</Button>
+                    <Button colorScheme='blue' bgColor='#1c437e' size='md' shadow='md'>Register</Button>
                 </Box>
             </Box>
             <Box className="w-full px-5 space-y-3">
@@ -346,6 +348,10 @@ export default function Page() {
                                                                         <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
                                                                         <span className='ps-2' style={{fontSize: '14px'}}>Edit Training Details</span>
                                                                     </MenuItem>
+                                                                    <MenuItem onClick={(e) => {e.stopPropagation();  setRegID(registration.id); setTS(training.id); onOpenAT();}}>
+                                                                        <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
+                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Change Account Type</span>
+                                                                    </MenuItem>
                                                                     <MenuItem onClick={(e) => {e.stopPropagation(); setTID(training.id); setTraining(allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''); setRegID(''); onOpenCancel();}}>
                                                                         <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
                                                                         <span className='ps-2' style={{fontSize: '14px'}}>Cancel Training</span>
@@ -405,6 +411,14 @@ export default function Page() {
             <ModalContent bgColor='#00000099'>
                 <ModalBody px={{base: '5%', md: '10%', lg: '30%'}} py='2%'>
                     <InsertTraining c_id={cID} accountType={account_type} onClose={onCloseTraining} reg_id={regID} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenAT} onClose={onCloseAT} >
+            <ModalOverlay />
+            <ModalContent >
+                <ModalBody >
+                    <ChangeAccountType training_id={ts} reg_id={regID} onClose={onCloseAT}  />
                 </ModalBody>
             </ModalContent>
         </Modal>

@@ -242,6 +242,41 @@ export const SAVE_REMARKS = async (training_id: string, remarks: string, actor: 
     }
 }
 
+export const CHANGE_AT = async (training_id: string, reg_doc: REGISTRATION_BY_ID | null, curr_reg: REGISTRATION_BY_ID | null, reg: string) => {
+    try{
+        // Get first the document of training ID
+        const traineeRef = doc(firestore, 'TRAINING', training_id)
+        if(!reg_doc){
+            if(curr_reg){
+                // Create new Reg Doc
+                const newReg: REGISTRATION = {
+                    // Just get the values of the curr_reg fields
+                    trainee_ref_id: curr_reg.trainee_ref_id,
+                    reg_no: '',
+                    regApproach: curr_reg.regApproach,
+                    traineeType: curr_reg.traineeType,
+                    payment_status: curr_reg.payment_status,
+                    payment_mode: curr_reg.payment_mode,
+                    payment_balance: curr_reg.payment_balance,
+                    date_registered: curr_reg.date_registered,
+                    reg_remarks: '',
+                    regType: curr_reg.regType,
+                    reg_accountType: curr_reg.reg_accountType === 0 ? 1 : 0, // Use the current reg's reg_accountType value and take the opposite of it
+                }
+                const reg_id: DocumentReference = await addDoc(registration, {...newReg}) // Take reg doc id
+                await updateDoc(traineeRef, {reg_ref_id: reg_id.id, accountType: curr_reg.reg_accountType === 0 ? 1 : 0})
+                // Update the training doc with the newly created reg doc
+            }
+            return
+        }
+        await updateDoc(traineeRef, {reg_ref_id: reg_doc.id, accountType: reg_doc.reg_accountType})
+        // if condition is not met, straight update the training document
+        
+    }catch(error){
+        throw error
+    }
+} 
+
 export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
     try{
         // this part fetches the latest registration number then increments it, 

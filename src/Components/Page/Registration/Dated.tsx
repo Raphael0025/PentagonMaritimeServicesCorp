@@ -126,8 +126,8 @@ export default function Page(){
                         </InputGroup>
                     </Box>
                     <Box display='flex' >
-                        <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm'>Filter Date</Button>
-                        <Button bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm'>Print Forms</Button>
+                        <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
+                        <Button bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm' shadow='md'>Print Forms</Button>
                     </Box>
                 </Box>
                 <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto'}}>
