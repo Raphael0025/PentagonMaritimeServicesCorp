@@ -10,17 +10,17 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 - [] **Registration Tab**: Features in Registration Tab
     - **Details**:
-        [] Create Transfer from BD to Dated or vice versa
-        [] Change Training Date
-        [] Edit Course Fee
-        [] Edit Course Name/Company Course Code
-        [] Edit Account Type
-        [] Implement Add New Training using current registration doc
+        - [] Create Transfer from BD to Dated or vice versa
+        - [] Change Training Date
+        - [] Edit Course Fee
+        - [] Edit Course Name/Company Course Code
+        - [] Edit Account Type
+        - [] Implement Add New Training using current registration doc
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:
-        [] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
-        [] Implement Add New Training using current registration doc
+        - [] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
+        - [] Implement Add New Training using current registration doc
 
 
 - [-] **Start developing Accounting Dept.**: Begin developing Accounting Dept. for some reasons.
@@ -28,12 +28,12 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 - [] **Feature Test**: Change Account Type Testing on Pending Tab
     - **Details**: 
-        [-] Detect if there are any registration of same date
-        [] Identify if the checker detects different registration but not the same date
-        [-] Transfer the selected training doc from the current registration to the different reg doc with a different account Type
-        [-] Try to revert back to the original reg
-        [-] Create New Reg doc if there is no existing or other reg doc detected
-        [*] Delete Reg, If training doc is the last one child of the reg and decided to change AT
+        - [-] Detect if there are any registration of same date
+        - [] Identify if the checker detects different registration but not the same date
+        - [-] Transfer the selected training doc from the current registration to the different reg doc with a different account Type
+        - [-] Try to revert back to the original reg
+        - [-] Create New Reg doc if there is no existing or other reg doc detected
+        - [*] Delete Reg, If training doc is the last one child of the reg and decided to change AT
             Note: If this happens, old reg cannot be rollback, it will only create a new One
             Note: Tell Reg Dept. to refrain from making mistakes before enrolling
 
@@ -116,8 +116,8 @@ This document outlines the tasks and improvements planned for the project. Each 
     - however, it must be research on what kind of incoming courses filter shall be.
 
 ## System Errors/Issues
-    [] different enrolled date but same reg_no, fix this
-    [] reg number problem | created a new reg doc but it musn't supposed to happen
+    - [] different enrolled date but same reg_no, fix this
+    - [] reg number problem | created a new reg doc but it musn't supposed to happen
 
 
 ### How to commit beautifully 
