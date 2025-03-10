@@ -8,6 +8,21 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 ### High Priority
 
+- [] **Registration Tab**: Features in Registration Tab
+    - **Details**:
+        [] Create Transfer from BD to Dated or vice versa
+        [] Change Training Date
+        [] Edit Course Fee
+        [] Edit Course Name/Company Course Code
+        [] Edit Account Type
+        [] Implement Add New Training using current registration doc
+
+- [] **Pending Tab**: Features in Registration Tab
+    - **Details**:
+        [] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
+        [] Implement Add New Training using current registration doc
+
+
 - [-] **Start developing Accounting Dept.**: Begin developing Accounting Dept. for some reasons.
     - **Details**: This the beginning of the development of accounting department, this will serve as the connection of accounting and registration to generate acknowledgement receipts.
 
