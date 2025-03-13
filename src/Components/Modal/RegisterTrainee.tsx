@@ -457,7 +457,7 @@ export default function RegisterTrainee({onClose}: PageProps){
                 </ModalBody>
                 <ModalFooter>
                     <Button onClick={onCloseC} mr={4}>Close</Button>
-                    <Button onClick={() => {setSelectedCourse(tempSelectCourse); handleSelectedCourse(tempSelectCourse); onCloseC()}} bgColor='#1c437e' colorScheme='blue'>Select</Button>
+                    <Button isDisabled={traineeId === ''} onClick={() => {setSelectedCourse(tempSelectCourse); handleSelectedCourse(tempSelectCourse); onCloseC()}} bgColor='#1c437e' colorScheme='blue'>Select</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
