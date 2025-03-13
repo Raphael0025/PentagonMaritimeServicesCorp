@@ -18,6 +18,7 @@ import RegistrationForm from '@/Components/Page/Pending/RegistrationForm'
 import EditTrainingDetails from '@/Components/Page/Pending/EditTrainingDetails'
 import InsertTraining from '@/Components/Modal/InsertTraining'
 import CancelModal from '@/Components/Modal/CancelModal'
+import RegisterTrainee from '@/Components/Modal/RegisterTrainee'
 import ChangeAccountType from '@/Components/Modal/ChangeAccountType'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
@@ -58,7 +59,7 @@ export default function Page() {
 
     const { isOpen: isOpenReg, onOpen: onOpenReg, onClose: onCloseReg } = useDisclosure()
     const { isOpen: isOpenTS, onOpen: onOpenTS, onClose: onCloseTS } = useDisclosure()
-    const { isOpen: isOpenCF, onOpen: onOpenCF, onClose: onCloseCF } = useDisclosure()
+    const { isOpen: isOpenRegister, onOpen: onOpenRegister, onClose: onCloseRegister } = useDisclosure()
     const { isOpen: isOpenTraining, onOpen: onOpenTraining, onClose: onCloseTraining } = useDisclosure()
     const { isOpen: isOpenCancel, onOpen: onOpenCancel, onClose: onCloseCancel } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
@@ -241,7 +242,7 @@ export default function Page() {
                 </InputGroup>
                 <Box>
                     <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md' shadow='md'>Filter Date</Button>
-                    <Button colorScheme='blue' bgColor='#1c437e' size='md' shadow='md'>Register</Button>
+                    <Button colorScheme='blue' onClick={onOpenRegister} bgColor='#1c437e' size='md' shadow='md'>Register</Button>
                 </Box>
             </Box>
             <Box className="w-full px-5 space-y-3">
@@ -404,6 +405,14 @@ export default function Page() {
                         <Button onClick={handleData} colorScheme='blue'>Select</Button>
                     </Box>
                 </ModalFooter>
+            </ModalContent>
+        </Modal>
+        <Modal size='full' scrollBehavior='inside' isOpen={isOpenRegister} onClose={onCloseRegister}>
+            <ModalOverlay />
+            <ModalContent bgColor='#00000099'>
+                <ModalBody px={{base: '5%', md: '10%', lg: '20%'}} py='2%'>
+                    <RegisterTrainee onClose={onCloseRegister} />
+                </ModalBody>
             </ModalContent>
         </Modal>
         <Modal isOpen={isOpenTraining} onClose={onCloseTraining} scrollBehavior='inside' size='full'>

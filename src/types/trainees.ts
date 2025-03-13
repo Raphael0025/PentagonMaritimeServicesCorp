@@ -190,3 +190,14 @@ export interface TEMP_COURSES {
 export interface TEMP_COURSES_WITH_PM extends TEMP_COURSES{
     payment_mode: number;
 }
+
+export interface NewTraineeProps {
+    setTraineeInfo: React.Dispatch<React.SetStateAction<TRAINEE>>;
+}
+
+export interface OldTraineeProps {
+    setTrainee: (value: string) => void;
+    trainee: string;
+    allTrainee: TRAINEE_BY_ID[] | null;
+    setTraineeID: (value: string) => void;
+}

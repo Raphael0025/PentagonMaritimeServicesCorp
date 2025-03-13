@@ -138,7 +138,7 @@ export default function Page({regNum, traineeName}: UIProps){
                             </Box>
                             <Box className='content-child' >
                                 <Text className='label-text' color='#1A2B56'>Email:</Text>
-                                <Text className='value-text'>{traineeInfo.email}</Text>
+                                <Text className='email-text'>{traineeInfo.email}</Text>
                             </Box>
                             <Box className='content-child' >
                                 <Text className='label-text' color='#1A2B56'>Nationality:</Text>

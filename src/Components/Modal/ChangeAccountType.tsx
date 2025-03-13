@@ -51,7 +51,7 @@ export default function ChangeAccountType({training_id, onClose, reg_id}: PagePr
                 }
             }, 500)
         }).then(() => {
-            handleToast('Change Account Type Successfully!', `Thsi Training's account type was changed into ${GetOtherReg?.reg_accountType == 0 ? 'CREW' : 'COMPANY'}.`, 5000, 'success')
+            handleToast('Change Account Type Successfully!', `This Training's account type was changed into ${GetOtherReg?.reg_accountType == 0 ? 'CREW' : 'COMPANY'}.`, 5000, 'success')
         }).catch((error) => {
             console.log('Error: ', error)
         }).finally(() => {

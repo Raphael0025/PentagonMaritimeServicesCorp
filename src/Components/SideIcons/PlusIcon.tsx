@@ -1,6 +1,6 @@
 interface IconProps {
-    size: string;
-    color: string;
+    size?: string;
+    color?: string;
 }
 export default function PlusIcon({size, color}: IconProps){
     return(

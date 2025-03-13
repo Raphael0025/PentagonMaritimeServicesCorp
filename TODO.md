@@ -16,12 +16,21 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [] Edit Course Name/Company Course Code
         - [] Edit Account Type
         - [] Implement Add New Training using current registration doc
+        - [] Delete/Cancel Reg | Training
+        - [] Rollback training doc and reg doc  to Pending
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:
-        - [] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
-        - [] Implement Add New Training using current registration doc
+        - [-] Deleted TransferAccountType.tsx file
+        - [-] Transform email from uppercase into lowercase
+        - [-] Implement Add New Training using current registration doc
+        - [*] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
+        - [] Implement New Collection for Prev. companies of crew
+        - [] make email optional for sending
 
+- [] **Attachment**: Implement this feature
+    - **Details**:
+        - [] Payment Attachments - new page for sending online payments
 
 - [-] **Start developing Accounting Dept.**: Begin developing Accounting Dept. for some reasons.
     - **Details**: This the beginning of the development of accounting department, this will serve as the connection of accounting and registration to generate acknowledgement receipts.
