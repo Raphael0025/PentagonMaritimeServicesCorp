@@ -1,4 +1,7 @@
 import { Timestamp } from 'firebase/firestore'
+import { ClientCompanyByID } from './client_company';
+import { RanksByID } from './type';
+import React from 'react';
 
 export interface TRAINEE_BY_ID extends TRAINEE{
     id: string
@@ -192,7 +195,28 @@ export interface TEMP_COURSES_WITH_PM extends TEMP_COURSES{
 }
 
 export interface NewTraineeProps {
+    // Trainee Info
+    traineeInfo: TRAINEE;
     setTraineeInfo: React.Dispatch<React.SetStateAction<TRAINEE>>;
+    // Rank Ref
+    rankRef: string;
+    selectedRank: string;
+    setRankRef: React.Dispatch<React.SetStateAction<string>>
+    setSelectedRank: React.Dispatch<React.SetStateAction<string>>;
+    // Vessel Ref
+    vesselRef: string;
+    selectedVessel: string;
+    setVesselRef: React.Dispatch<React.SetStateAction<string>>
+    setSelectVessel: React.Dispatch<React.SetStateAction<string>>;
+    // Company Ref
+    companyRef: string;
+    selectCompany: string;
+    setCompanyRef: React.Dispatch<React.SetStateAction<string>>;
+    setSelectCompany: React.Dispatch<React.SetStateAction<string>>;
+    setCompanyID: React.Dispatch<React.SetStateAction<string>>;
+    // Contexts
+    allClients: ClientCompanyByID[] | null;
+    allRanks: RanksByID[] | null;
 }
 
 export interface OldTraineeProps {

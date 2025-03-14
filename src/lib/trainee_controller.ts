@@ -18,6 +18,31 @@ export const training = collection(firestore, 'TRAINING')
 export const trainingCollection = collection(firestore, 'training')
 
 // INSERT FUNCTIONS
+export const INSERT_TRAINEE = async (traineeDetails: TRAINEE, ) => {
+    try{
+        const traineeQuery = query(trainees, where('last_name', '==', traineeDetails.last_name), where('first_name', '==', traineeDetails.first_name))
+        const querySnapshot = await getDocs(traineeQuery)
+
+        if(!querySnapshot.empty){
+            Swal.fire({
+                title: `Oops, looks like you've already submitted a form to Pentagon...`,
+                text: `If you want to re-enroll at Pentagon please select the "Re-Enrolled" trainee type.`,
+                icon: 'error',
+            })
+            return null
+        }
+
+        const newDetails = {
+            ...traineeDetails,
+        }
+        
+        const docRef: DocumentReference = await addDoc(trainees, {...newDetails})
+        return docRef.id
+    } catch(error){
+        throw error
+    }
+}
+
 export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string,) => {
     try{
         const traineeQuery = query(trainees, where('last_name', '==', traineeDetails.last_name), where('first_name', '==', traineeDetails.first_name))

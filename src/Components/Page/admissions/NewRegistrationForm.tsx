@@ -59,7 +59,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
 
     const [sched, setSched] = useState<string>('')
     const [payment, setPayment] = useState<number>(0)
-        const [invalid, setInvalid] = useState<boolean>(false)
+    const [invalid, setInvalid] = useState<boolean>(false)
     const [courseRef, setCourseRef] = useState<string>('')
     const [companyRef, setCompanyRef] = useState<string>('')
     const [selectCompany, setSelectCompany] = useState<string>('')
@@ -406,7 +406,6 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
 
     const handleCombineBirthDate = () => {
         const birth_date = new Date(year, month - 1, day);
-        console.log(birth_date)
         setTrainee((prev) => ({
             ...prev,
             birthDate: birth_date ? Timestamp.fromDate(birth_date) : Timestamp.now()

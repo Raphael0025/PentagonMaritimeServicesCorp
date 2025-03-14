@@ -1,19 +1,22 @@
 'use client'
 
+import { Timestamp } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { Box, Text, Input, Button, FormLabel, useToast, Switch, Select, Stack, RadioGroup, Radio, useDisclosure, FormControl, Modal, ModalOverlay, InputLeftAddon, InputGroup, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
 import DatePicker from 'react-datepicker'
 
+// Context States
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useTrainees } from '@/context/TraineeContext';
+import { useRank } from '@/context/RankContext'
 
 import { ToastStatus } from '@/types/handling';
 import { TEMP_COURSES, TRAINEE, initTRAINEE, TRAINEE_BY_ID, NewTraineeProps, OldTraineeProps } from '@/types/trainees';
 import { HoliDates } from '@/handlers/course_handler';
 import { TrashIcon, SearchIcon } from '../Icons';
 import { PlusIcon } from '../SideIcons';
-import { addRegistrationDetails, addNewTrainee, addTrainingDetails } from '@/lib/trainee_controller';
+import { addRegistrationDetails, INSERT_TRAINEE, addTrainingDetails } from '@/lib/trainee_controller';
 
 interface PageProps {
     onClose: () => void;
@@ -23,36 +26,52 @@ export default function RegisterTrainee({onClose}: PageProps){
     const toast = useToast()
     const { data: allTrainee } = useTrainees()
     const { data: allCourses } = useCourses()
+    const { data: allRanks } = useRank()
     const { data: allClients, companyCharge: companyCharges, courseCodes: companyCourseCodes} = useClients()
 
+    // States for loading conditions
     const [loading, setLoading] = useState<boolean>(false)
     const [isNewTrainee, setNewTrainee] = useState<boolean>(false)
+    // search State
     const [search, setSearch] = useState<string>('')
-    const [c_id, setCompanyID] = useState<string>('')
+    
+    // State for courses selected
     const [tempCourses, setTempCourses] = useState<TEMP_COURSES[]>([])
-    const [traineeInfo, setTraineeInfo] = useState<TRAINEE>(initTRAINEE)
-
-    const [start_date, setStartDate] = useState<Date | null>(new Date())
-    const [end_date, setEndDate] = useState<Date | null>(new Date())
-
-    // temp storage for Course Selection
     const [selectCourse, setSelectedCourse] = useState<string>('')
     const [tempSelectCourse, setTempCourse] = useState<string>('')
     const [previewCourse, setPreviewCourse] = useState<string>('')
-
+    const [start_date, setStartDate] = useState<Date | null>(new Date())
+    const [end_date, setEndDate] = useState<Date | null>(new Date())
+    
+    // States for Courses
     const [days, setDays] = useState<string>('')
     const [courseFee, setCFee] = useState<number>(0)
     const [account_type, setAT] = useState<string>('')
-
-    const { isOpen: isOpenC, onOpen: onOpenC, onClose: onCloseC } = useDisclosure()
-
+    
+    // States for Existing Trainee
+    const [c_id, setCompanyID] = useState<string>('')
     const [trainee, setTrainee] = useState<string>('')
     const [traineeId, setTraineeID] = useState<string>('')
+    
+    // States for New Trainee
+    const [traineeInfo, setTraineeInfo] = useState<TRAINEE>(initTRAINEE)
+    // Company
+    const [companyRef, setCompanyRef] = useState<string>('')
+    const [selectCompany, setSelectCompany] = useState<string>('')
+    // Vessel
+    const [vesselRef, setVesselRef] = useState<string>('')
+    const [selectedVessel, setSelectVessel] = useState<string>('')
+    // Rank
+    const [rankRef, setRankRef] = useState<string>('')
+    const [selectedRank, setSelectedRank] = useState<string>('')
+    
+    // Modal States
+    const { isOpen: isOpenC, onOpen: onOpenC, onClose: onCloseC } = useDisclosure()
 
     useEffect(() => {
         const fetchData = () => {
-                const traineeFound = allTrainee?.find((t) => t.id === traineeId)
-                setCompanyID(traineeFound?.company ?? '')
+            const traineeFound = allTrainee?.find((t) => t.id === traineeId)
+            setCompanyID(traineeFound?.company ?? '')
         }
         fetchData()
     }, [traineeId])
@@ -76,9 +95,6 @@ export default function RegisterTrainee({onClose}: PageProps){
         setDays('')
         setAT('')
         setCFee(0)
-        if(isNewTrainee){
-            setTraineeInfo(initTRAINEE)
-        }
     }
 
     const handleTempCourses = () => {
@@ -128,32 +144,6 @@ export default function RegisterTrainee({onClose}: PageProps){
         clearData()
     }
 
-    // export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string,) => {
-    //     try{
-    //         const traineeQuery = query(trainees, where('last_name', '==', traineeDetails.last_name), where('first_name', '==', traineeDetails.first_name))
-    //         const querySnapshot = await getDocs(traineeQuery)
-    
-    //         if(!querySnapshot.empty){
-    //             Swal.fire({
-    //                 title: `Oops, looks like you've already submitted a form to Pentagon...`,
-    //                 text: `If you want to re-enroll at Pentagon please select the "Re-Enrolled" trainee type.`,
-    //                 icon: 'error',
-    //             })
-    //             return null
-    //         }
-    
-    //         const newDetails = {
-    //             ...traineeDetails,
-    //         }
-            
-    //         const docRef: DocumentReference = await addDoc(trainees, {...newDetails})
-    //         await addAttachments(docRef.id, traineeDetails.last_name, traineeDetails.first_name, trainee_type, validID, profileID, validSignature, file, pfpFile)
-    //         return docRef.id
-    //     } catch(error){
-    //         throw error
-    //     }
-    // }
-
     const handleRegister = async () => {
         setLoading(true)
 
@@ -167,22 +157,51 @@ export default function RegisterTrainee({onClose}: PageProps){
                     }
 
                     if(isNewTrainee){
-                        //const newTrainee = await addNewTrainee()
-                        //trainee_ref_id = newTrainee ?? ''
+                        const newTrainee = await INSERT_TRAINEE(traineeInfo)
+                        trainee_ref_id = newTrainee ?? ''
 
                     } else {
                         trainee_ref_id = traineeId
                     }
                     
                     if(trainee_ref_id){
-                        const regID = await addRegistrationDetails(trainee_ref_id, totalFee, 1, traineeType, Number(account_type))
-                        
-                        reg_id = regID ?? null
-                        if(reg_id){
-                            for(const course of tempCourses){
+                        const ccArr = []
+                        const crewArr = []
+                        for(const course of tempCourses){
+                            if(course.accountType === 0){
+                                crewArr.push(course)
+                            }else{
+                                ccArr.push(course)
+                            }
+                        }
+                        let regCCID, regCrewID
+                        if(ccArr.length !== 0){
+                            let fee: number = 0
+                            for(const course of ccArr){
+                                fee = course.course_fee + fee
+                            }
+                            regCCID = await addRegistrationDetails(trainee_ref_id, fee, 1, traineeType, 1)
+                            for(const course of ccArr){
                                 try{
-                                    if(reg_id){
-                                        await addTrainingDetails(course, reg_id)
+                                    if(regCCID){
+                                        await addTrainingDetails(course, regCCID)
+                                    }
+                                }catch(error){
+                                    console.error('Failed to process this: ', error)
+                                }
+                            }
+                        }
+        
+                        if(crewArr.length !== 0){
+                            let fee: number = 0
+                            for(const course of crewArr){
+                                fee = course.course_fee + fee
+                            }
+                            regCrewID = await addRegistrationDetails(trainee_ref_id, fee, 1, traineeType, 0)
+                            for(const course of crewArr){
+                                try{
+                                    if(regCrewID){
+                                        await addTrainingDetails(course, regCrewID)
                                     }
                                 }catch(error){
                                     console.error('Failed to process this: ', error)
@@ -202,6 +221,7 @@ export default function RegisterTrainee({onClose}: PageProps){
         }).finally(() => {
             setLoading(false)
             setTempCourses([])
+            setTraineeInfo(initTRAINEE)
             onClose()
         })
     }
@@ -267,7 +287,25 @@ export default function RegisterTrainee({onClose}: PageProps){
             </Box>
             <Box mt={3}>
                 {isNewTrainee ? (
-                    <NewTrainee setTraineeInfo={setTraineeInfo} />
+                    <NewTrainee 
+                        setCompanyID={setCompanyID}
+                        traineeInfo={traineeInfo}
+                        setTraineeInfo={setTraineeInfo} 
+                        allClients={allClients} 
+                        allRanks={allRanks} 
+                        rankRef={rankRef}
+                        selectedRank={selectedRank}
+                        setRankRef={setRankRef}
+                        vesselRef={vesselRef}
+                        selectedVessel={selectedVessel}
+                        setVesselRef={setVesselRef}
+                        setCompanyRef={setCompanyRef}
+                        companyRef={companyRef}
+                        selectCompany={selectCompany}
+                        setSelectCompany={setSelectCompany}
+                        setSelectVessel={setSelectVessel}
+                        setSelectedRank={setSelectedRank}
+                    />
                 ) : (
                     <OldTrainee setTrainee={setTrainee} trainee={trainee} allTrainee={allTrainee} setTraineeID={setTraineeID} />
                 )}
@@ -393,7 +431,7 @@ export default function RegisterTrainee({onClose}: PageProps){
             </Box>
             <Box display='flex' mt={4} justifyContent='flex-end'>
                 <Button mr={3} onClick={onClose} colorScheme='red' variant='outline' shadow='md'>Cancel</Button>
-                <Button isLoading={loading} onClick={handleRegister} loadingText='Processing...' bgColor='#1c437e' colorScheme='blue' shadow='md'>Register</Button>
+                <Button isLoading={loading} onClick={handleRegister} loadingText='Processing...' isDisabled={ tempCourses.length === 0} bgColor='#1c437e' colorScheme='blue' shadow='md'>Register</Button>
             </Box>
         </Box>
         <Modal isOpen={isOpenC} closeOnOverlayClick={false} scrollBehavior='inside' size='xl' onClose={onCloseC}>
@@ -457,7 +495,7 @@ export default function RegisterTrainee({onClose}: PageProps){
                 </ModalBody>
                 <ModalFooter>
                     <Button onClick={onCloseC} mr={4}>Close</Button>
-                    <Button isDisabled={traineeId === ''} onClick={() => {setSelectedCourse(tempSelectCourse); handleSelectedCourse(tempSelectCourse); onCloseC()}} bgColor='#1c437e' colorScheme='blue'>Select</Button>
+                    <Button onClick={() => {setSelectedCourse(tempSelectCourse); handleSelectedCourse(tempSelectCourse); onCloseC()}} bgColor='#1c437e' colorScheme='blue'>Select</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
@@ -465,7 +503,29 @@ export default function RegisterTrainee({onClose}: PageProps){
     )
 }
 
-const NewTrainee = ({setTraineeInfo}: NewTraineeProps) => {
+const NewTrainee = ({
+    setTraineeInfo, 
+    traineeInfo,
+    rankRef,
+    selectedRank,
+    setRankRef,
+    vesselRef,
+    selectedVessel,
+    setVesselRef,
+    setCompanyRef,
+    companyRef,
+    selectCompany, 
+    allClients, 
+    allRanks,
+    setSelectCompany,
+    setSelectVessel,
+    setSelectedRank,
+    setCompanyID,
+}: NewTraineeProps) => {
+
+    const { isOpen: isOpenRank, onOpen: onOpenRank, onClose: onCloseRank } = useDisclosure()
+    const { isOpen: isOpenCompany, onOpen: onOpenCompany, onClose: onCloseCompany } = useDisclosure()
+    const { isOpen: isOpenVessel, onOpen: onOpenVessel, onClose: onCloseVessel } = useDisclosure()
 
     const handleSetInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {id, value} = e.target
@@ -475,28 +535,107 @@ const NewTrainee = ({setTraineeInfo}: NewTraineeProps) => {
         }))
     }
 
+    const handleSetSelectInfo = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const {id, value} = e.target
+        setTraineeInfo((prev) => ({
+            ...prev,
+            [id]: value,
+        }))
+    }
+
+    const handleSelectedCompany = () => {
+        let tempCompany: string
+        if(selectCompany === ''){
+            tempCompany = companyRef
+        } else {
+            tempCompany = selectCompany
+            setCompanyID(selectCompany)
+        }
+        setTraineeInfo((prev) => ({
+            ...prev,
+            company: tempCompany
+        }))
+        onCloseCompany()
+    }
+
+    const handleSelectedRank = () => {
+        let tempRank: string
+        if(selectedRank === ''){
+            tempRank = rankRef
+        } else {
+            tempRank = selectedRank
+        }
+        setTraineeInfo((prev) => ({
+            ...prev,
+            rank: tempRank
+        }))
+        onCloseRank()
+    }
+
+    const handleSelectedVessel = () => {
+        let tempVessel: string
+        if(selectedVessel === ''){
+            tempVessel = vesselRef
+        } else {
+            tempVessel = selectedVessel
+        }
+        setTraineeInfo((prev) => ({
+            ...prev,
+            vessel: tempVessel
+        }))
+        onCloseVessel()
+    }
+
+    const handleVessel = (ves: string) => {
+        setSelectVessel(ves)
+    }
+
+    const handleRank = (rank: string) => {
+        setSelectedRank(rank)
+    }
+
+    const handleCompany = (id: string) => {
+        setSelectCompany(id)
+    }
+
+    const handleDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputDate = e.target.value; 
+        const birth_date = new Date(inputDate);
+
+        if (isNaN(birth_date.getTime())) {
+            console.warn("Invalid date format");
+            return;
+        }
+
+        setTraineeInfo((prev) => ({
+            ...prev,
+            birthDate: Timestamp.fromDate(birth_date),
+        }));
+    }
+
     return(
+    <>
         <Box>
             <Text fontSize='lg' fontWeight='600' color='gray.600'>{`Trainee Information`}</Text>
             <Box mt='2' display='flex' flexDir={{base: 'column', md: 'row'}}>
                 <Box w={{base: '100%', md: '50%'}} display='flex' flexDir={{base: 'column', md: 'row'}}>
                     <FormControl px={{base: '0', md: '2'}} >
                         <FormLabel fontWeight='600' color='gray.500'>{`Last Name`}</FormLabel>
-                        <Input id='last_name' textTransform='uppercase' shadow='md'  />
+                        <Input id='last_name' type='text' onChange={handleSetInfo} value={traineeInfo.last_name} textTransform='uppercase' shadow='md'  />
                     </FormControl>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>{`First Name`}</FormLabel>
-                        <Input id='first_name' textTransform='uppercase' shadow='md'  />
+                        <Input id='first_name' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md'  />
                     </FormControl>
                 </Box>
                 <Box w={{base: '100%', md: '50%'}} display='flex' flexDir={{base: 'column', md: 'row'}}>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>{`Middle Name`}</FormLabel>
-                        <Input id='middle_name' textTransform='uppercase' shadow='md'  />
+                        <Input id='middle_name' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md'  />
                     </FormControl>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>{`Suffix`}</FormLabel>
-                        <Input id='suffix' textTransform='uppercase' shadow='md'  />
+                        <Input id='suffix' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md'  />
                     </FormControl>
                 </Box>
             </Box>
@@ -504,21 +643,24 @@ const NewTrainee = ({setTraineeInfo}: NewTraineeProps) => {
                 <Box w={{base: '100%', md: '50%'}} display='flex' flexDir={{base: 'column', md: 'row'}}>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>SRN</FormLabel>
-                        <Input id='srn' textTransform='uppercase' shadow='md' />
+                        <Input id='srn' type='number' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                     </FormControl>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>Rank</FormLabel>
-                        <Input id='rank' isReadOnly onClick={() => {alert('click');}} textTransform='uppercase' shadow='md' />
+                        <Input id='rank' type='text'
+                            value={allRanks?.find((rank) => rank.code === traineeInfo.rank)?.rank || (traineeInfo.rank === '' ? 'SELECT RANK' : traineeInfo.rank)}
+                            isReadOnly onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}} textTransform='uppercase' shadow='md' 
+                        />
                     </FormControl>
                 </Box>
                 <Box w={{base: '100%', md: '50%'}} display='flex' flexDir={{base: 'column', md: 'row'}}>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>Email</FormLabel>
-                        <Input id='email' textTransform='uppercase' shadow='md' />
+                        <Input id='email' type='email' onChange={handleSetInfo} shadow='md' />
                     </FormControl>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>Contact No#.</FormLabel>
-                        <Input id='contact_no' textTransform='uppercase' shadow='md' />
+                        <Input id='contact_no' type='tel' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                     </FormControl>
                 </Box>
             </Box>
@@ -526,7 +668,7 @@ const NewTrainee = ({setTraineeInfo}: NewTraineeProps) => {
                 <Box w={{base: '100%', md: '50%'}} display='flex' flexDir={{base: 'column', md: 'row'}}>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>Gender</FormLabel>
-                        <Select id='gender' shadow='md' textTransform='uppercase'>
+                        <Select id='gender' shadow='md' onChange={handleSetSelectInfo} textTransform='uppercase'>
                             <option hidden>Select Gender</option>
                             <option value='male'>Male</option>
                             <option value='female'>Female</option>
@@ -534,56 +676,138 @@ const NewTrainee = ({setTraineeInfo}: NewTraineeProps) => {
                     </FormControl>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>Nationality</FormLabel>
-                        <Input id='nationality' textTransform='uppercase' shadow='md' />
+                        <Input id='nationality' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                     </FormControl>
                 </Box>
                 <Box w={{base: '100%', md: '50%'}} display='flex' flexDir={{base: 'column', md: 'row'}}>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>Birth Date</FormLabel>
-                        <Input id='birthDate' textTransform='uppercase' shadow='md' />
-                        <FormLabel fontSize='sm' color='gray.500'>{`Format: mm/dd/yyyy`}</FormLabel>
+                        <Input id='birthDate' type='text' onChange={handleDate} textTransform='uppercase' shadow='md' />
+                        <FormLabel fontSize='sm' color='gray.500'>{`Format: yyyy/mm/dd`}</FormLabel>
                     </FormControl>
                     <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                         <FormLabel fontWeight='600' color='gray.500'>Birth Place</FormLabel>
-                        <Input id='birthPlace' textTransform='uppercase' shadow='md' />
+                        <Input id='birthPlace' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                     </FormControl>
                 </Box>
             </Box>
             <FormControl mt='2' px={{base: '0', md: '2'}}>
                 <FormLabel fontWeight='600' color='gray.500'>Address</FormLabel>
-                <Input id='otherAddress' shadow='md' textTransform='uppercase' />
+                <Input id='otherAddress' type='text' onChange={handleSetInfo} shadow='md' textTransform='uppercase' />
             </FormControl>
             <Box w='100%' mt='2' display='flex' flexDir={{base: 'column', md: 'row'}}>
                 <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                     <FormLabel fontWeight='600' color='gray.500'>Vessel Type</FormLabel>
-                    <Input id='vessel' isReadOnly onClick={() => {alert('click');}} textTransform='uppercase' shadow='md' />
+                    <Input id='vessel' type='text'
+                        value={traineeInfo.vessel === '' ? 'ADD VESSEL' : traineeInfo.vessel}
+                        isReadOnly onClick={() => {onOpenVessel(); setVesselRef(''); setSelectVessel('');}} textTransform='uppercase' shadow='md' 
+                    />
                 </FormControl>
                 <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                     <FormLabel fontWeight='600' color='gray.500'>Company</FormLabel>
-                    <Input id='company' isReadOnly onClick={() => {alert('click');}} textTransform='uppercase' shadow='md' />
+                    <Input id='company' isReadOnly type='text'
+                        value={allClients?.find((client) => client.id === traineeInfo.company)?.company || (traineeInfo.company === '' ? 'ADD COMPANY' : traineeInfo.company)} 
+                        onClick={() => {onOpenCompany(); setCompanyRef(''); setSelectCompany('');}} textTransform='uppercase' shadow='md' 
+                    />
                 </FormControl>
                 <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                     <FormLabel fontWeight='600' color='gray.500'>Endorser</FormLabel>
-                    <Input id='endorser' textTransform='uppercase' shadow='md' />
+                    <Input id='endorser' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                 </FormControl>
             </Box>
-
             <Text mt='2' fontSize='lg' fontWeight='600' color='gray.600'>{`In case of emergency:`}</Text>
             <Box w='100%' mt='2' display='flex' flexDir={{base: 'column', md: 'row'}}>
                 <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                     <FormLabel fontWeight='600' color='gray.500'>Emergency Contact Person</FormLabel>
-                    <Input id='nationality' textTransform='uppercase' shadow='md' />
+                    <Input id='e_contact_person' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                 </FormControl>
                 <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                     <FormLabel fontWeight='600' color='gray.500'>Emergency Contact No#.</FormLabel>
-                    <Input id='nationality' textTransform='uppercase' shadow='md' />
+                    <Input id='e_contact' type='tel' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                 </FormControl>
                 <FormControl px={{base: '0', md: '2'}} mt={{base: '2', md: '0'}}>
                     <FormLabel fontWeight='600' color='gray.500'>Relationship</FormLabel>
-                    <Input id='birthDate' textTransform='uppercase' shadow='md' />
+                    <Input id='relationship' type='text' onChange={handleSetInfo} textTransform='uppercase' shadow='md' />
                 </FormControl>
             </Box>
         </Box>
+        {/** Company-modal */}
+        <Modal isOpen={isOpenCompany} onClose={onCloseCompany} size='xl' scrollBehavior='inside' motionPreset='slideInTop'>
+            <ModalOverlay/>
+            <ModalContent className='px-3'>
+                <ModalHeader fontWeight='700px' className='uppercase text-sky-700'>Specify your Company</ModalHeader>
+                <ModalBody>
+                    <Box className='flex flex-col space-y-2'>
+                        <Box>
+                            <Input onChange={(e) => setCompanyRef(e.target.value)} className='shadow-md uppercase' placeholder='type your company here...'/>
+                        </Box>
+                        <Box className='py-2 space-y-2'>
+                            <Text className='text-gray-400 text-base'>Select your company below</Text>
+                            {allClients && allClients.filter((company) => !companyRef || company.company.toLowerCase().includes(companyRef.toLowerCase())).sort((a, b) => a.company.localeCompare(b.company)).map((company) => (
+                                <Text key={company.id} onClick={() => handleCompany(company.id)} className={`${company.id === selectCompany ? 'bg-sky-700 text-white' : ''} hover:bg-sky-200 transition-all ease-in-out delay-75 duration-75 border p-3 rounded text-lg uppercase text-center shadow-md`}>{company.company}</Text>
+                            ))}
+                        </Box>
+                        <Text className='text-gray-400 text-center text-base'>{`Tip: If your company is not provided here, you can type it on the text box at the top and click done.`}</Text>
+                    </Box>
+                </ModalBody>
+                <ModalFooter borderTopWidth='1px'>
+                    <Button onClick={onCloseCompany} mr={3} >Close</Button>
+                    <Button isDisabled={companyRef.trim() === '' && selectCompany.trim() === ''} onClick={handleSelectedCompany} colorScheme='blue'>Done</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        {/** Vessel Modal */}
+        <Modal isOpen={isOpenVessel} onClose={onCloseVessel} size='xl' scrollBehavior='inside' motionPreset='scale'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader fontWeight='700' className='text-sky-700'>Vessels</ModalHeader>
+                <ModalBody>
+                    <Box className='flex flex-col space-y-2'>
+                        <Box>
+                            <Input onChange={(e) => setVesselRef(e.target.value)} className='shadow-md uppercase' placeholder='type your vessel here...'/>
+                        </Box>
+                        <Box className='py-2 space-y-2'>
+                            <Text className='text-gray-400 text-base'>Select your company below</Text>
+                            <Text onClick={() => handleVessel('container')} className={`${'container' === selectedVessel ? 'bg-sky-700 text-white' : ''} hover:bg-sky-200 transition-all ease-in-out delay-75 duration-75 border p-3 rounded text-lg uppercase text-center shadow-md`}>{'Container'}</Text>
+                            <Text onClick={() => handleVessel('bulk')} className={`${'bulk' === selectedVessel ? 'bg-sky-700 text-white' : ''} hover:bg-sky-200 transition-all ease-in-out delay-75 duration-75 border p-3 rounded text-lg uppercase text-center shadow-md`}>{'Bulk'}</Text>
+                            <Text onClick={() => handleVessel('tanker')} className={`${'tanker' === selectedVessel ? 'bg-sky-700 text-white' : ''} hover:bg-sky-200 transition-all ease-in-out delay-75 duration-75 border p-3 rounded text-lg uppercase text-center shadow-md`}>{'Tanker'}</Text>
+                            <Text onClick={() => handleVessel('passenger')} className={`${'passenger' === selectedVessel ? 'bg-sky-700 text-white' : ''} hover:bg-sky-200 transition-all ease-in-out delay-75 duration-75 border p-3 rounded text-lg uppercase text-center shadow-md`}>{'Passenger'}</Text>
+                        </Box>
+                        <Text className='text-gray-400 text-center text-base'>{`Tip: If your vessel is not provided here, you can type it on the text box at the top and click done.`}</Text>
+                    </Box>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={onCloseVessel} mr={3}>Close</Button>
+                    <Button isDisabled={vesselRef.trim() === '' && selectedVessel.trim() === ''} onClick={handleSelectedVessel} colorScheme='blue'>Done</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        {/** Rank Modal */}
+        <Modal isOpen={isOpenRank} onClose={onCloseRank} size='xl' scrollBehavior='inside' motionPreset='scale'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader fontWeight='700' className='text-sky-700'>Rank Type</ModalHeader>
+                <ModalBody>
+                    <Box className='flex flex-col space-y-2'>
+                        <Box>
+                            <Input onChange={(e) => setRankRef(e.target.value)} className='shadow-md uppercase' placeholder='type your rank here...'/>
+                        </Box>
+                        <Box className='py-2 space-y-2'>
+                            <Text className='text-gray-400 text-base'>Select your Rank below</Text>
+                            {allRanks && allRanks.sort((a, b) => a.code.localeCompare(b.code)).map((rank) =>(
+                                <Text key={rank.id} onClick={() => handleRank(rank.code)} className={`${rank.id === selectedRank ? 'bg-sky-700 text-white' : ''} hover:bg-sky-200 transition-all ease-in-out delay-75 duration-75 border p-3 rounded text-lg uppercase text-center shadow-md`}>{rank.code}</Text>
+                            ))}
+                        </Box>
+                        <Text className='text-gray-400 text-center text-base'>{`Tip: If your rank is not provided here, you can type it on the text box at the top and click done.`}</Text>
+                    </Box>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={onCloseRank} mr={3}>Close</Button>
+                    <Button isDisabled={rankRef.trim() === '' && selectedRank.trim() === ''} onClick={handleSelectedRank} colorScheme='blue'>Done</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    </>
     )
 } 
 
