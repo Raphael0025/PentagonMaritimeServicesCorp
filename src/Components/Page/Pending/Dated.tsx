@@ -30,6 +30,7 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { useReactToPrint } from 'react-to-print'
 import { deployYDate } from '@/types/utils' 
 import { fullMonth } from '@/handlers/util_handler'
+import RegisterTrainee from '@/Components/Modal/RegisterTrainee';
 
 export default function Page() {
     const toast = useToast()
@@ -57,10 +58,11 @@ export default function Page() {
 
     const { isOpen: isOpenReg, onOpen: onOpenReg, onClose: onCloseReg } = useDisclosure()
     const { isOpen: isOpenTS, onOpen: onOpenTS, onClose: onCloseTS } = useDisclosure()
-    const { isOpen: isOpenCF, onOpen: onOpenCF, onClose: onCloseCF } = useDisclosure()
+    const { isOpen: isOpenRegister, onOpen: onOpenRegister, onClose: onCloseRegister } = useDisclosure()
     const { isOpen: isOpenTraining, onOpen: onOpenTraining, onClose: onCloseTraining } = useDisclosure()
     const { isOpen: isOpenCancel, onOpen: onOpenCancel, onClose: onCloseCancel } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
+    const { isOpen: isOpenAT, onOpen: onOpenAT, onClose: onCloseAT } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -239,7 +241,7 @@ export default function Page() {
                 </InputGroup>
                 <Box>
                     <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md' shadow='md'>Filter Date</Button>
-                    <Button colorScheme='blue' size='md' shadow='md'>Register</Button>
+                    <Button colorScheme='blue' onClick={onOpenRegister} bgColor='#1c437e' size='md' shadow='md'>Register</Button>
                 </Box>
             </Box>
             <Box className="w-full px-5 space-y-3">
@@ -346,6 +348,10 @@ export default function Page() {
                                                                         <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
                                                                         <span className='ps-2' style={{fontSize: '14px'}}>Edit Training Details</span>
                                                                     </MenuItem>
+                                                                    <MenuItem onClick={(e) => {e.stopPropagation();  setRegID(registration.id); setTS(training.id); onOpenAT();}}>
+                                                                        <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
+                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Change Account Type</span>
+                                                                    </MenuItem>
                                                                     <MenuItem onClick={(e) => {e.stopPropagation(); setTID(training.id); setTraining(allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''); setRegID(''); onOpenCancel();}}>
                                                                         <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
                                                                         <span className='ps-2' style={{fontSize: '14px'}}>Cancel Training</span>
@@ -398,6 +404,14 @@ export default function Page() {
                         <Button onClick={handleData} colorScheme='blue'>Select</Button>
                     </Box>
                 </ModalFooter>
+            </ModalContent>
+        </Modal>
+        <Modal size='full' scrollBehavior='inside' isOpen={isOpenRegister} onClose={onCloseRegister}>
+            <ModalOverlay />
+            <ModalContent bgColor='#00000099'>
+                <ModalBody px={{base: '5%', md: '10%', lg: '20%'}} py='2%'>
+                    <RegisterTrainee onClose={onCloseRegister} />
+                </ModalBody>
             </ModalContent>
         </Modal>
         <Modal isOpen={isOpenTraining} onClose={onCloseTraining} scrollBehavior='inside' size='full'>

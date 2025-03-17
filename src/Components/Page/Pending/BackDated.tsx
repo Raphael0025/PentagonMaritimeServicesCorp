@@ -427,7 +427,7 @@ export default function Page() {
             <ModalOverlay />
             <ModalContent >
                 <ModalBody >
-                    <ChangeAccountType training_id={ts} reg_id={regID} onClose={onCloseAT}  />
+                    <ChangeAccountType training_id={ts} reg_id={regID} onClose={onCloseAT} />
                 </ModalBody>
             </ModalContent>
         </Modal>

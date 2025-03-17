@@ -24,9 +24,8 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Deleted TransferAccountType.tsx file
         - [-] Transform email from uppercase into lowercase
         - [-] Implement Add New Training using current registration doc
-        - [*] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
+        - [-] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
         - [] Implement New Collection for Prev. companies of crew
-        - [] make email optional for sending
 
 - [] **Attachment**: Implement this feature
     - **Details**:
