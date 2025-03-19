@@ -15,11 +15,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 
 import RegistrationForm from '@/Components/Page/Pending/RegistrationForm'
-import EditTrainingDetails from '@/Components/Page/Pending/EditTrainingDetails'
-import InsertTraining from '@/Components/Modal/InsertTraining'
-import CancelModal from '@/Components/Modal/CancelModal'
-import RegisterTrainee from '@/Components/Modal/RegisterTrainee'
-import ChangeAccountType from '@/Components/Modal/ChangeAccountType'
+import { InsertTraining, EditTrainingDetails, CancelModal, RegisterTrainee, ChangeAccountType } from '@/Components/Modal/Pending'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'

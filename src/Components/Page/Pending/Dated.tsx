@@ -15,9 +15,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 
 import RegistrationForm from '@/Components/Page/Pending/RegistrationForm'
-import EditTrainingDetails from '@/Components/Page/Pending/EditTrainingDetails'
-import InsertTraining from '@/Components/Modal/InsertTraining'
-import CancelModal from '@/Components/Modal/CancelModal'
+import { InsertTraining, CancelModal, RegisterTrainee, EditTrainingDetails, ChangeAccountType } from '@/Components/Modal/Pending'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
@@ -30,7 +28,6 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { useReactToPrint } from 'react-to-print'
 import { deployYDate } from '@/types/utils' 
 import { fullMonth } from '@/handlers/util_handler'
-import RegisterTrainee from '@/Components/Modal/RegisterTrainee';
 
 export default function Page() {
     const toast = useToast()
@@ -427,6 +424,14 @@ export default function Page() {
             <ModalContent >
                 <ModalBody >
                     <CancelModal onClose={onCloseCancel} course={training} reg_id={regID} training_id={t_id} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenAT} onClose={onCloseAT} >
+            <ModalOverlay />
+            <ModalContent >
+                <ModalBody >
+                    <ChangeAccountType training_id={ts} reg_id={regID} onClose={onCloseAT} />
                 </ModalBody>
             </ModalContent>
         </Modal>

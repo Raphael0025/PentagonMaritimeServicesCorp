@@ -226,6 +226,15 @@ export const UPDATE_TRAINING = async (training_id: string, updateTrainingDoc: Pa
     }
 }
 
+export const UPDATE_REGISTRATION = async (reg_id: string, updateRegDoc: Partial<REGISTRATION>, actor: string | null) => {
+    try{
+        const regRef = doc(firestore, 'REGISTRATION', reg_id)
+        await updateDoc(regRef, updateRegDoc)
+    }catch(error){
+        throw error
+    }
+}
+
 export const UPDATE_TS = async (training_id: string, startDate: string, endDate: string, actor: string | null) => {
     try{
         const trainingRef = doc(firestore, 'TRAINING', training_id)

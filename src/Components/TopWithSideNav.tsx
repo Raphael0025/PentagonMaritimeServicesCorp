@@ -9,7 +9,7 @@ import 'animate.css';
 import {HelpIcon, BellIcon, SysAdIcon, TicketIcon, RADIcon } from '@/Components/Icons'
 import {CalendarIcon, CashIcon, DeBugIcon, FeedbackIcon, UserIcon, HomeIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, SupportIcon, TrainingIcon, BankIcon, AdminFolderIcon, ListIcon } from '@/Components/SideIcons'
 import { useCompanyUsers } from '@/context/CompanyUserContext'
-import TicketingModal from '@/Components/Modal/TicketingModal'
+import TicketingModal from '@/Components/Modal/System/TicketingModal'
 
 
 export default function TopWithSideNav() {

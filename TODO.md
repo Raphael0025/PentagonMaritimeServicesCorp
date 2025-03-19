@@ -10,18 +10,18 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 - [] **Registration Tab**: Features in Registration Tab
     - **Details**:
+        - [-] Change Training Date
+        - [-] Edit Course Fee
+        - [-] Edit Course Name/Company Course Code
+        - [-] Edit Account Type
+        - [*] Rollback training doc and reg doc  to Pending
         - [] Create Transfer from BD to Dated or vice versa
-        - [] Change Training Date
-        - [] Edit Course Fee
-        - [] Edit Course Name/Company Course Code
-        - [] Edit Account Type
         - [] Implement Add New Training using current registration doc
-        - [] Delete/Cancel Reg | Training
-        - [] Rollback training doc and reg doc  to Pending
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:
         - [-] Deleted TransferAccountType.tsx file
+        - [-] Delete/Cancel Reg | Training
         - [-] Transform email from uppercase into lowercase
         - [-] Implement Add New Training using current registration doc
         - [-] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings

@@ -14,8 +14,8 @@ import { useRank } from '@/context/RankContext'
 import { ToastStatus } from '@/types/handling';
 import { TEMP_COURSES, TRAINEE, initTRAINEE, TRAINEE_BY_ID, NewTraineeProps, OldTraineeProps } from '@/types/trainees';
 import { HoliDates } from '@/handlers/course_handler';
-import { TrashIcon, SearchIcon } from '../Icons';
-import { PlusIcon } from '../SideIcons';
+import { TrashIcon, SearchIcon } from '../../Icons';
+import { PlusIcon } from '../../SideIcons';
 import { addRegistrationDetails, INSERT_TRAINEE, addTrainingDetails } from '@/lib/trainee_controller';
 
 interface PageProps {

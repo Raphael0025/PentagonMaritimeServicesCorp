@@ -18,6 +18,7 @@ import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
 import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
 import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
+import { EditRegistration } from '@/Components/Modal/Registration'
 
 import { SAVE_REMARKS } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
@@ -49,6 +50,7 @@ export default function Page(){
     const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
     const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
+    const { isOpen: isOpenReg, onOpen: onOpenReg, onClose: onCloseReg } = useDisclosure()
     
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -276,6 +278,14 @@ export default function Page(){
                     </Box>
                 </Box>
             </main>
+            <Modal isOpen={isOpenReg} size='xl' onClose={onCloseReg}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalBody >
+                        <EditRegistration onClose={onCloseReg} reg_id={regNum} reg_Type={0}/>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
             <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
                 <ModalOverlay />
                 <ModalContent px={4}>

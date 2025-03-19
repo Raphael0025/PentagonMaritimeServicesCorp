@@ -11,13 +11,14 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
-import {useRank} from '@/context/RankContext'
+import { useRank } from '@/context/RankContext'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
 import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
 import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
+import { EditRegistration } from '@/Components/Modal/Registration'
 
 import { SAVE_REMARKS } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
@@ -49,6 +50,7 @@ export default function Page(){
     const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
     const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
+    const { isOpen: isOpenReg, onOpen: onOpenReg, onClose: onCloseReg } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -189,7 +191,9 @@ export default function Page(){
                                 
                                 const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                                 const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
-                                
+                                const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
+                                const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
+
                                 if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -206,8 +210,8 @@ export default function Page(){
                                                     <Text w="150px">
                                                         {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
                                                     </Text>                                        
-                                                    <Text w="150px">
-                                                        {`Reg-${allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no}`}
+                                                    <Text w="150px" _hover={{color: 'blue.700'}} onClick={() => {setRegNum(reg_id); onOpenReg();}} className='hover:cursor-pointer'>
+                                                        {`Reg-${reg_num}`}
                                                     </Text>                                        
                                                     <Text w="150px">
                                                         {`${courseBatch?.find((batch) => batch.id === training.batch.toString())?.batch_no || ''}`}
@@ -276,6 +280,14 @@ export default function Page(){
                     </Box>
                 </Box>
             </main>
+            <Modal isOpen={isOpenReg} size='xl' onClose={onCloseReg}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalBody >
+                        <EditRegistration onClose={onCloseReg} reg_id={regNum} reg_Type={1}/>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
             <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
                 <ModalOverlay />
                 <ModalContent px={4}>
