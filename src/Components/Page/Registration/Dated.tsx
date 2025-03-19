@@ -191,6 +191,8 @@ export default function Page(){
                                 
                                 const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                                 const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
+                                const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
+                                const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
                                 
                                 if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -208,9 +210,9 @@ export default function Page(){
                                                     <Text w="150px">
                                                         {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
                                                     </Text>                                        
-                                                    <Text w="150px">
-                                                        {`Reg-${allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no}`}
-                                                    </Text>                                        
+                                                    <Text w="150px" _hover={{color: 'blue.700'}} onClick={() => {setRegNum(reg_id); onOpenReg();}} className='hover:cursor-pointer'>
+                                                        {`Reg-${reg_num}`}
+                                                    </Text>                                       
                                                     <Text w="150px">
                                                         {`${courseBatch?.find((batch) => batch.id === training.batch.toString())?.batch_no || ''}`}
                                                     </Text>                                        
