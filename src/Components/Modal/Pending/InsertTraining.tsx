@@ -12,7 +12,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 
 import { TEMP_COURSES } from '@/types/trainees'
 
-import { addTrainingDetails } from '@/lib/trainee_controller'
+import { addTrainingDetails, EnrolledTraining } from '@/lib/trainee_controller'
 
 import { ToastStatus } from '@/types/handling'
 
@@ -23,9 +23,10 @@ interface ModalProp{
     reg_id: string;
     accountType: number;
     c_id: string;
+    tab: number;
 }
 
-export default function InsertTraining({ onClose, c_id, accountType, reg_id }: ModalProp){
+export default function InsertTraining({ onClose, c_id, accountType, reg_id, tab }: ModalProp){
     const toast = useToast()
     const { data: allCourses } = useCourses()
     const { data: allClients, companyCharge: companyCharges, courseCodes: companyCourseCodes} = useClients()
@@ -119,7 +120,11 @@ export default function InsertTraining({ onClose, c_id, accountType, reg_id }: M
         for(const course of tempCourses){
             try{
                 if(reg_id){
-                    await addTrainingDetails(course, reg_id)
+                    if(tab === 0){
+                        await addTrainingDetails(course, reg_id)
+                    } else {
+                        await EnrolledTraining(course, reg_id)
+                    }
                 }
             }catch(error){
                 console.error('Failed to process this: ', error)

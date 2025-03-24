@@ -161,6 +161,38 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
     }
 }
 
+export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string) => {
+    try{
+        if(tempCourses){
+            // Get the current date and subtract one day
+            const currentDate = new Date();
+            currentDate.setDate(currentDate.getDate() - 1);  // Subtract one day
+            
+            // Convert the new date (previous day) to Firestore Timestamp
+            // const previousDayTimestamp = Timestamp.fromDate(currentDate);
+            const newTraining: TRAINING = {
+                ...tempCourses,
+                reg_ref_id: id,
+                reg_status: 3,
+                isCertified: false,
+                cert_released: Timestamp.now(),
+                cert_status: 0,
+                cert_no: '',
+                practical: 0,
+                written: 0,
+                result: 0,
+                train_remarks: '',
+                regType: 2,
+                batch: 1,
+                date_enrolled: Timestamp.now(),
+            }
+            await addDoc(training, {...newTraining})
+        }
+    }catch(error){
+        throw error
+    }
+}
+
 // UPDATE FUNCTIONS
 export const PROCESS_CANCELLATION = async (val_id: string, type: number, reason: string, actor: string | null) => {
     try{

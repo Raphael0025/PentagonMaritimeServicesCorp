@@ -415,7 +415,7 @@ export default function Page() {
             <ModalOverlay />
             <ModalContent bgColor='#00000099'>
                 <ModalBody px={{base: '5%', md: '10%', lg: '30%'}} py='2%'>
-                    <InsertTraining c_id={cID} accountType={account_type} onClose={onCloseTraining} reg_id={regID} />
+                    <InsertTraining c_id={cID} accountType={account_type} onClose={onCloseTraining} reg_id={regID} tab={0} />
                 </ModalBody>
             </ModalContent>
         </Modal>

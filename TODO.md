@@ -14,9 +14,9 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Edit Course Fee
         - [-] Edit Course Name/Company Course Code
         - [-] Edit Account Type
-        - [*] Rollback training doc and reg doc  to Pending
+        - [-] Implement Add New Training using current registration doc
+        - [-] Rollback training doc and reg doc  to Pending
         - [] Create Transfer from BD to Dated or vice versa
-        - [] Implement Add New Training using current registration doc
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:
