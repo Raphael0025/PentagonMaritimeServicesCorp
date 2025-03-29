@@ -48,7 +48,7 @@ export default function TrainingCalendar({setSched}: TabProps){
 
     return(
     <>
-        <Box w='100%' >
+        <Box w="100%" p={4}>
             <FormControl 
                 display='flex' flexDir='column' w='100%' alignItems='center' justifyContent={'center'}
             >

@@ -50,7 +50,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     const [year, setYear] = useState<number>(0)
 
     const [search, setSearch] = useState<string>('')
-    const [show, setShow] = useState<string>('info') // info
+    const [show, setShow] = useState<string>('train') // info
     const [showAlert1, setShowAlert1] = useState<boolean>(false)
     const [showAlert2, setShowAlert2] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
@@ -416,6 +416,14 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
             birthDate: birth_date ? Timestamp.fromDate(birth_date) : Timestamp.now()
         }))
     }
+
+    const modalRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+    if (isOpenModal && modalRef.current) {
+        modalRef.current.focus(); // Focus the modal when it opens
+    }
+    }, [isOpenModal]);
 
     return(
     <>
@@ -1081,9 +1089,9 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         </ModalContent>
     </Modal>
     {/** Course Selection */}
-    <Modal isOpen={isOpenModal} onClose={onCloseModal} scrollBehavior="inside" motionPreset="slideInTop" size="xl">
+    <Modal blockScrollOnMount={false} isOpen={isOpenModal} onClose={onCloseModal} scrollBehavior="inside" motionPreset="slideInTop" size="xl">
         <ModalOverlay />
-        <ModalContent className="px-3">
+        <ModalContent ref={modalRef} tabIndex={-1}  className="px-3">
             <ModalHeader className="text-sky-700 font-bold">Courses Selection</ModalHeader>
             <ModalBody>
                 <Box className='pb-3 text-center text-sm flex space-x-3'>
@@ -1265,9 +1273,23 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         </ModalContent>
     </Modal>
     {/** Training Schedule Modal */}
-    <Modal isOpen={isOpenSched} size='xl' onClose={onCloseSched} scrollBehavior='outside' motionPreset='scale'>
+    <Modal blockScrollOnMount={false}  isOpen={isOpenSched} size='xl' onClose={onCloseSched} scrollBehavior='inside' motionPreset='scale'>
         <ModalOverlay />
-        <TrainingScheduleModal onClose={onCloseSched} selectedCourse={courseSelect} courseID={courseRef} trainingSched={trainingSched} setSched={setSched} />
+        <ModalContent ref={modalRef} tabIndex={-1} >
+            <ModalHeader color='blue.700' fontWeight='700' fontSize='xl'>Select Training Date</ModalHeader>
+            <Alert status='info' variant='subtle'>
+                <AlertIcon />
+                <AlertDescription>
+                    {`If schedule is not available, kindly click "Select Preferred Dates" to select preferred training schedule.`}
+                </AlertDescription>
+            </Alert>
+            <ModalBody my='4' flex="1">
+                <TrainingScheduleModal onClose={onCloseSched} selectedCourse={courseSelect} courseID={courseRef} trainingSched={trainingSched} setSched={setSched} />
+            </ModalBody>
+            <ModalFooter>
+                <Button colorScheme='blue' shadow='md' bgColor='blue.700' onClick={onCloseSched}>Done</Button>
+            </ModalFooter>
+        </ModalContent>               
     </Modal>
     </>
     )
