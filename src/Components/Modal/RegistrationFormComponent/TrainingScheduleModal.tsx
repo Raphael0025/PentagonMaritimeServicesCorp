@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Box, Text, Input, FormControl, FormLabel, Tabs, TabList, TabPanels, Tab, TabPanel, Alert, AlertIcon, AlertTitle, AlertDescription, InputLeftAddon, InputGroup, useDisclosure, Button, Radio, RadioGroup, useToast, Modal, ModalHeader, ModalContent, ModalBody, ModalFooter, ModalOverlay } from '@chakra-ui/react'
+import React from 'react'
+import { Tabs, TabList, TabPanels, Tab, TabPanel, Alert, AlertIcon, AlertDescription, Button, ModalHeader, ModalContent, ModalBody, ModalFooter } from '@chakra-ui/react'
 
 import {DropdownSchedule, TrainingCalendar} from './Tabs'
 
@@ -13,7 +13,7 @@ interface ModalProps {
     onClose: () => void;
 }
 
-export default function ({setSched, courseID, trainingSched, selectedCourse, onClose}: ModalProps){
+export default function TrainingScheduleModal({setSched, courseID, trainingSched, selectedCourse, onClose}: ModalProps){
     return(
     <>
         <ModalContent p='5'>
