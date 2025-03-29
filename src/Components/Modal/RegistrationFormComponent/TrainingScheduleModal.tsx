@@ -21,7 +21,7 @@ export default function ({setSched, courseID, trainingSched, selectedCourse, onC
             <Alert status='info' variant='subtle'>
                 <AlertIcon />
                 <AlertDescription>
-                    If schedule is not available, kindly click "Select Preferred Dates" to select preferred training schedule.
+                    {`If schedule is not available, kindly click "Select Preferred Dates" to select preferred training schedule.`}
                 </AlertDescription>
             </Alert>
             <ModalBody my='4'>
