@@ -23,6 +23,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourses } from '@/context/CourseContext'
 import { useTypes } from '@/context/TypeContext'
 import {useCategory} from '@/context/CategoryContext'
+import TrainingScheduleModal from '@/Components/Modal/RegistrationFormComponent/TrainingScheduleModal';
 
 interface Props {
     oldTrainee: TRAINEE_BY_ID;
@@ -42,6 +43,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
     const {isOpen: isOpenCompany, onOpen: onOpenCompany, onClose: onCloseCompany} = useDisclosure()
     const {isOpen: isOpenVessel, onOpen: onOpenVessel, onClose: onCloseVessel} = useDisclosure()
     const {isOpen: isOpenRank, onOpen: onOpenRank, onClose: onCloseRank} = useDisclosure()
+        const {isOpen: isOpenSched, onOpen: onOpenSched, onClose: onCloseSched} = useDisclosure()
 
     const [birth_date, setBirthDate] = useState<Date | null>(new Date())
     const [month, setMonth] = useState<number>(0)
@@ -60,13 +62,14 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
 
     const [idRef, setIDRef] = useState<string>('')
     const [sched, setSched] = useState<string>('')
-    const [payment, setPayment] = useState<number>(0)
+    const [payment, setPayment] = useState<number>(3)
     const [invalid, setInvalid] = useState<boolean>(false)
     const [courseRef, setCourseRef] = useState<string>('')
     const [companyRef, setCompanyRef] = useState<string>('')
     const [selectCompany, setSelectCompany] = useState<string>('')
     const [vesselRef, setVesselRef] = useState<string>('')
     const [selectedVessel, setSelectVessel] = useState<string>('')
+        const [courseSelect, selectCourse] = useState<string>('')
 
     const [rankRef, setRankRef] = useState<string>('')
     const [selectedRank, setSelectedRank] = useState<string>('')
@@ -190,6 +193,8 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
     }
 
     const handleSchedule = (id: string, type: string) => {
+        setPayment(3)
+        setSched('')
         if(type==='crew'){
             const courseFound = allCourses && allCourses.find((course) => course.id === id)
             let dateRange: string[] = []
@@ -1144,12 +1149,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                                 <Box className="flex flex-col justify-between space-y-4">
                                                     <Box>
                                                         <Text className="text-gray-400 w-full">Training Schedule</Text>
-                                                        <Select isInvalid={!invalid && sched === ''} isDisabled={courseRef !== matchingCharges[0].id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm" >
-                                                            <option hidden>Select Schedule</option>
-                                                            {trainingSched.map((date, index) => (
-                                                                <option key={index}>{date}</option>
-                                                            ))}
-                                                        </Select>
+                                                        <Input className='hover:cursor-pointer' value={sched} textTransform='uppercase' placeholder='Select Schedule' readOnly onClick={() => {onOpenSched(); selectCourse(matchingCharges[0].id);}} />
                                                     </Box>
                                                     <Box>
                                                         <Text className="text-gray-400 w-full">Payment Mode</Text>
@@ -1164,7 +1164,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                                     {courses.some((temp) => temp.course === course.id) ? (
                                                         <Text bg='teal.500' className="text-sm rounded p-2 text-white" textAlign='center'  w='100%' fontWeight="700" > SELECTED </Text>
                                                     ) : (
-                                                        <Button isDisabled={courses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
+                                                        <Button isDisabled={courses.some((temp) => temp.course === course.id) || (payment === 3 || sched === '')} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
                                                     )}
                                                 </Box>
                                             </AccordionPanel>
@@ -1193,12 +1193,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                         <Box className="flex flex-col justify-between space-y-4">
                                             <Box>
                                                 <Text className="text-gray-400 w-full">Training Schedule</Text>
-                                                <Select isInvalid={!invalid && sched === ''} isDisabled={courseRef !== course?.id} onChange={(e) => setSched(e.target.value)} className="uppercase" size="sm">
-                                                    <option hidden>Select Schedule</option>
-                                                    {trainingSched.map((date, index) => (
-                                                        <option key={index}>{date}</option>
-                                                    ))}
-                                                </Select>
+                                                <Input className='hover:cursor-pointer' value={sched} textTransform='uppercase' placeholder='Select Schedule' readOnly onClick={() => {onOpenSched(); selectCourse(course?.id);}} />
                                             </Box>
                                             <Box>
                                                 <Text className="text-gray-400 w-full">Payment Mode</Text>
@@ -1213,7 +1208,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                                             {courses.some((temp) => temp.course === course.id) ? (
                                                 <Text className="text-sm rounded p-2 bg-teal-700 text-white" fontWeight="700" > SELECTED </Text>
                                             ) : (
-                                                <Button isDisabled={courses.some( (temp) => temp.course === course.id )} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
+                                                <Button isDisabled={courses.some((temp) => temp.course === course.id) || (payment === 3 || sched === '')} colorScheme="blue" onClick={() => { handleTempCourses( course.id, course.course_fee, course.numOfDays ); }} size="lg" w='100%' > INSERT COURSE </Button>
                                             )}
                                         </Box>
                                     </AccordionPanel>
@@ -1225,7 +1220,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                 </Box>
             </ModalBody>
             <ModalFooter borderTopWidth="1px">
-                <Button mr={3} onClick={onCloseModal}> Close </Button>
+                <Button mr={3} variant='outline' onClick={onCloseModal} shadow='md'> Close </Button>
                 {/* <Button onClick={handleCourses} colorScheme="blue" isLoading={loading} loadingText="Selecting..."> Select </Button> */}
             </ModalFooter>
         </ModalContent>
@@ -1278,6 +1273,11 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                 <Button isDisabled={rankRef.trim() === '' && selectedRank.trim() === ''} onClick={handleSelectedRank} colorScheme='blue'>Done</Button>
             </ModalFooter>
         </ModalContent>
+    </Modal>
+    {/** Training Schedule Modal */}
+    <Modal isOpen={isOpenSched} size='xl' onClose={onCloseSched}>
+        <ModalOverlay />
+        <TrainingScheduleModal onClose={onCloseSched} selectedCourse={courseSelect} courseID={courseRef} trainingSched={trainingSched} setSched={setSched} />
     </Modal>
     </>
     )

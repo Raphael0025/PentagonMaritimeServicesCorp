@@ -20,6 +20,8 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 import {useRank} from '@/context/RankContext'
 
+import { CreateBatch } from '@/Components/Modal/Batches'
+
 import { useReactToPrint } from 'react-to-print'
 
 interface PageProps {
@@ -34,7 +36,9 @@ export default function Page({params}: PageProps){
     const { data: allTrainee } = useTrainees()
     const { data: allTraining } = useTraining()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations } = useRegistrations()
+    const { lastMonthReg: allRegistrations } = useRegistrations()
+
+    const { isOpen: isOpenMod, onOpen: onOpenMod, onClose: onCloseMod } = useDisclosure()
 
     const [searchTerm, setSearch] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
@@ -62,13 +66,17 @@ export default function Page({params}: PageProps){
     <>
         <main>
             <Box className='space-x-4 flex'>
-                <Text className='text-lg text-gray-400'>Course:</Text>
+                <Text className='text-lg text-gray-400'>Course Code:</Text>
                 <Text className='text-lg'>{course?.course_code}</Text>
+                <Text className='text-lg text-gray-400'>Course:</Text>
                 <Text className='text-lg'>{course?.course_name}</Text>
             </Box>
             <Box className='p-3 flex space-x-3'>
                 <Box w='30%'>
-                    <Text className='text-lg'>Batches</Text>
+                    <Box display='flex' justifyContent='space-between'>
+                        <Text className='text-lg'>Batches</Text>
+                        <Button onClick={onOpenMod} size='xs' py='4' colorScheme='blue' bgColor='blue.700' shadow='md'>Create Batch</Button>
+                    </Box>
                     <Box className='p-4 space-y-3 w-full'>
                         <Box className='w-full flex border-b p-3 space-x-4 items-center text-gray-400'>
                             <Text w='30%'>Batch #</Text>
@@ -117,6 +125,10 @@ export default function Page({params}: PageProps){
                 </Box>
             </Box>
         </main>
+        <Modal isOpen={isOpenMod} size='xl' onClose={onCloseMod} >
+            <ModalOverlay />
+            <CreateBatch onClose={onCloseMod} />
+        </Modal>
     </>
     )
     
