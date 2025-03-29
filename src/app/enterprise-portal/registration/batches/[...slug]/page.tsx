@@ -127,7 +127,7 @@ export default function Page({params}: PageProps){
         </main>
         <Modal isOpen={isOpenMod} size='xl' onClose={onCloseMod} >
             <ModalOverlay />
-            <CreateBatch onClose={onCloseMod} />
+            {/* <CreateBatch onClose={onCloseMod} /> */}
         </Modal>
     </>
     )
