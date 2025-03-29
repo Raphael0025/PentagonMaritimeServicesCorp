@@ -50,7 +50,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     const [year, setYear] = useState<number>(0)
 
     const [search, setSearch] = useState<string>('')
-    const [show, setShow] = useState<string>('train') // info
+    const [show, setShow] = useState<string>('info') // info
     const [showAlert1, setShowAlert1] = useState<boolean>(false)
     const [showAlert2, setShowAlert2] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
