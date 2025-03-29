@@ -1265,7 +1265,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         </ModalContent>
     </Modal>
     {/** Training Schedule Modal */}
-    <Modal isOpen={isOpenSched} size='xl' onClose={onCloseSched}>
+    <Modal isOpen={isOpenSched} size='xl' onClose={onCloseSched} scrollBehavior='inside' motionPreset='scale'>
         <ModalOverlay />
         <TrainingScheduleModal onClose={onCloseSched} selectedCourse={courseSelect} courseID={courseRef} trainingSched={trainingSched} setSched={setSched} />
     </Modal>
