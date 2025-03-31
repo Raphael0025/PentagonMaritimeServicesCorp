@@ -16,9 +16,6 @@ import { Box } from '@chakra-ui/react'
 export default function NewTrainee() {
     
     const [path, setPath] = useState<number>(0)
-    
-    // New Process
-    const [trainee, setTrainee] = useState<TRAINEE>(initTRAINEE)
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -31,7 +28,7 @@ export default function NewTrainee() {
     return (
         <>
         <Stepper step={path} onStepChange={handleStepChange} />
-        <Box className='h-full flex py-5 justify-center '>
+        <Box h='auto' className=' flex py-5 justify-center '>
             <Box className='w-full md:w-3/4'>
                 <NewRegistrationForm onStepChange={setPath} />
             </Box>

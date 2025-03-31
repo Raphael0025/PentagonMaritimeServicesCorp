@@ -78,11 +78,9 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     const [trainingSched, setTrainingSched] = useState<string[]>([])
 
     const [preview, setPreview] = useState<string | null>(null)
+    const trainSectionRef = useRef<HTMLDivElement>(null);
+    const reviewSectionRef = useRef<HTMLDivElement>(null);
 
-    const scrollToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    
     // File States
     const [validID, setValidID] = useState<File[]>([])
     const [valid, setValid] = useState<string >('')
@@ -240,7 +238,21 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         setCourses((prev) => prev.filter((_, i) => i !== index))
     }
 
+    const scrollToTop = (val: string) => {
+        if(val === 'step1'){
+            if (trainSectionRef.current) {
+                trainSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        } else if (val === 'step2'){
+            if (reviewSectionRef.current) {
+                reviewSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+    }
+    
     const handleNextStep = (step: string) => {
+        scrollToTop(step)
         if(step === 'step1'){
             if(trainee.last_name === '' || trainee.first_name === '' || trainee.rank === '' || trainee.srn === '' || trainee.birthPlace === '' || trainee.contact_no === '' || trainee.email === '' || trainee.nationality === '' || trainee.gender === '' || trainee.endorser === '' || trainee.company === '' || trainee.vessel === '' || trainee.e_contact === '' || trainee.e_contact_person === '' || trainee.relationship === '' || ((trainee.house_no === '' || trainee.street === '' || trainee.brgy === '' || trainee.city === '' || trainee.area === '') && (trainee.otherAddress === ''))){
                 setShowAlert1(true)
@@ -262,7 +274,6 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                 onStepChange(2); 
             }
         }
-        scrollToTop()
     }
 
     const handleSubmit = async () => {
@@ -422,216 +433,226 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         }))
     }
 
+    const modalRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+    if (isOpenModal && modalRef.current) {
+        modalRef.current.focus(); // Focus the modal when it opens
+    }
+    }, [isOpenModal]);
+
     return(
     <>
     <Box>
-        <Box className={`${show === 'info' ? '' : 'hidden'} rounded border outline-0 uppercase shadow-md space-y-8 p-7 animate__animated animate__fadeInRight`}>
-            {showAlert1 && (
-                <Alert status='info' variant='left-accent' className='flex-col mb-4 items-center justify-center'>
-                    <Box className='flex w-full items-center justify-center'>
-                        <AlertIcon />
-                        <AlertTitle fontSize='18px' fontWeight='700'>
-                            <p>Please provide Required Fields</p>
-                        </AlertTitle>
-                    </Box>
-                    <Box className='flex justify-between space-x-5 w-full'>
-                        <AlertDescription className='flex w-full'>
-                            <Box className='w-full flex'>
-                                <Box className='flex flex-col w-full'>
-                                    <p>{trainee.last_name === ''  ? `* Last Name` : ''}</p>
-                                    <p>{trainee.first_name === '' ? `* First Name` : ''}</p>
-                                    <p>{trainee.rank === '' ? `* Rank.` : ''}</p>
-                                    <p>{trainee.srn === '' ? `* SRN.` : ''}</p>
-                                    <p>{trainee.contact_no === '' ? `* Contact no.` : ''}</p>
-                                    <p>{trainee.email === '' ? `* Email.` : ''}</p>
-                                    <p>{trainee.gender === '' ? `* Gender.` : ''}</p>
-                                    <p>{trainee.birthPlace === '' ? `* Birth Place.` : ''}</p>
-                                    <p>{trainee.endorser === '' ? `* Endorser.` : ''}</p>
-                                </Box>
-                            </Box>
-                        </AlertDescription>
-                        <AlertDescription className='flex w-full'>
-                            <Box className='w-full flex'>
-                                <Box className='flex flex-col w-full'>
-                                    <p>{trainee.nationality === '' ? `* Nationality.` : ''}</p>
-                                    <p>{trainee.company === '' ? `* Company.` : ''}</p>
-                                    <p>{trainee.vessel === '' ? `* Vessel.` : ''}</p>
-                                    <p>{trainee.e_contact === '' ? `* Emergency Contact.` : ''}</p>
-                                    <p>{trainee.e_contact_person === '' ? `* Emergency Contact Person.` : ''}</p>
-                                    <p>{trainee.relationship === '' ? `* Relationship.` : ''}</p>
-                                </Box>
-                            </Box>
-                        </AlertDescription>
-                    </Box>
-                </Alert>
-            )}
-            <Box className='flex flex-col items-center w-full md:w-auto'>
-                <Box className='flex items-center w-full space-x-2 '>
-                    <ListIcon size={'24'} color={'#a1a1a1'} />
-                    <Heading as='h4' size='sm' fontWeight='bold' className='text-gray'>{`Trainee's Information`}</Heading>
-                </Box>
-                <Box className='flex items-center w-full'>
-                    <Text size='xs' color='red' className='font-normal'>{`Fields marked with (*) must be filled out`}</Text>
-                </Box>
-            </Box>
-            <Box className='space-y-6'>
-                <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl isInvalid={trainee.last_name === '' && showAlert1}>
-                        <label className='text-gray-400'>Last Name:<span className='text-red-700'>*</span></label>
-                        <Input id='last_name' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
-                    </FormControl>
-                    <FormControl isInvalid={trainee.first_name === '' && showAlert1}>
-                        <label className='text-gray-400'>First Name:<span className='text-red-700'>*</span></label>
-                        <Input id='first_name' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
-                    </FormControl>
-                    <FormControl >
-                        <label className='text-gray-400'>Middle Name:</label>
-                        <Input id='middle_name' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
-                    </FormControl>
-                    <FormControl w={{md: '30%', base: '100%'}} className='w-full'>
-                        <label className='text-gray-400'>Suffix:</label>
-                        <Input id='suffix' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
-                    </FormControl>
-                </Box>
-                <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl isInvalid={trainee.srn === '' && showAlert1}>
-                        <label className='text-gray-400'>srn:<span className='text-red-700'>*</span></label>
-                        <Input id='srn' onChange={handleOnChange} className='shadow-md uppercase' />
-                    </FormControl>
-                    <FormControl className='flex flex-col space-y-2 items-start border-2 rounded shadow-md px-8 py-2 md: space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.rank === '' && showAlert1}>
-                        <label className='text-gray-400'>rank:<span className='text-red-700'>*</span></label>
-                        <Button className='uppercase' onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}} variant='ghost' colorScheme='blue'>
-                        {allRanks?.find((rank) => rank.code === trainee.rank)?.rank || (trainee.rank === '' ? 'SELECT RANK' : trainee.rank)}
-                        </Button>
-                    </FormControl>
-                    <FormControl isInvalid={trainee.email === '' && showAlert1}>
-                        <label className='text-gray-400'>email:<span className='text-red-700'>*</span></label>
-                        <Input id='email' onChange={handleOnChange} className='shadow-md' />
-                    </FormControl>
-                    <FormControl isInvalid={trainee.contact_no === '' && showAlert1}>
-                        <label className='text-gray-400'>contact no.:<span className='text-red-700'>*</span></label>
-                        <Input id='contact_no' type='tel' onChange={handleOnChange} className='shadow-md' />
-                    </FormControl>
-                </Box>
-                <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl isInvalid={trainee.gender === '' && showAlert1}>
-                        <label className='text-gray-400'>Gender:<span className='text-red-700'>*</span></label>
-                        <Select id='gender' onChange={handleSelect} className='shadow-md uppercase'>
-                            <option hidden>Select Gender</option>
-                            <option value={'male'}>Male</option>
-                            <option value={'female'}>Female</option>
-                        </Select>
-                    </FormControl>
-                    <FormControl isInvalid={trainee.nationality === '' && showAlert1}>
-                        <label className='text-gray-400'>nationality:<span className='text-red-700'>*</span></label>
-                        <Input id='nationality' onChange={handleOnChange} className='shadow-md uppercase' />
-                    </FormControl>
-                    {/* <FormControl className='flex flex-col' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
-                        <label className='text-gray-400'>Birth Date:<span className='text-red-700'>*</span></label>
-                        <DatePicker showPopperArrow={false} selected={birth_date} onChange={(date) => setBirthDate(date)} showMonthDropdown useShortMonthInDropdown dateFormat='E, MMM. dd, yyyy'
-                            customInput={<Input id='birth_date' textAlign='center' className='shadow-md' /> } />
-                        <Text className='mt-2 text-black' style={{fontSize: '9px'}}>You can select a date from the calendar or type it directly in the field above</Text>
-                    </FormControl> */}
-                    <Box display='flex' flexDir={{md:'column', base:'column'}} >
-                        <label className='text-gray-400'>Birth Date:<span className='text-red-700'>*</span></label>
-                        <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
-                                <label className='text-gray-400'>MM:</label>
-                                <Input id='month' type='number' ms='3' w='110px' placeholder='e.g. 01-12' onChange={(e) => {handleDate(e)}} className='shadow-md' />
-                            </FormControl>
-                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
-                                <label className='text-gray-400'>DD:</label>
-                                <Input id='day' type='number' ms='3' w='100px' placeholder='e.g. 01' onChange={(e) => {handleDate(e)}} className='shadow-md' />
-                            </FormControl>
-                            <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
-                                <label className='text-gray-400'>YYYY:</label>
-                                <Input id='year' type='number' ms='3' w='150px' placeholder='e.g. (2002)' onChange={(e) => {handleDate(e)}} className='shadow-md' />
-                            </FormControl>
+        <Box maxH={{base: '580px', md: `100%`}} overflowY={'auto'}>
+            <Box ref={trainSectionRef} className={`${show === 'info' ? '' : 'hidden'} rounded border outline-0 uppercase shadow-md space-y-8 p-7 animate__animated animate__fadeInRight`}>
+                {showAlert1 && (
+                    <Alert status='info' variant='left-accent' className='flex-col mb-4 items-center justify-center'>
+                        <Box className='flex w-full items-center justify-center'>
+                            <AlertIcon />
+                            <AlertTitle fontSize='18px' fontWeight='700'>
+                                <p>Please provide Required Fields</p>
+                            </AlertTitle>
                         </Box>
-                        <FormLabel color='gray.600' fontSize='xs'>{`Note: Please enter your birth date using digits (01/01/2001)`}</FormLabel>
+                        <Box className='flex justify-between space-x-5 w-full'>
+                            <AlertDescription className='flex w-full'>
+                                <Box className='w-full flex'>
+                                    <Box className='flex flex-col w-full'>
+                                        <p>{trainee.last_name === ''  ? `* Last Name` : ''}</p>
+                                        <p>{trainee.first_name === '' ? `* First Name` : ''}</p>
+                                        <p>{trainee.rank === '' ? `* Rank.` : ''}</p>
+                                        <p>{trainee.srn === '' ? `* SRN.` : ''}</p>
+                                        <p>{trainee.contact_no === '' ? `* Contact no.` : ''}</p>
+                                        <p>{trainee.email === '' ? `* Email.` : ''}</p>
+                                        <p>{trainee.gender === '' ? `* Gender.` : ''}</p>
+                                        <p>{trainee.birthPlace === '' ? `* Birth Place.` : ''}</p>
+                                        <p>{trainee.endorser === '' ? `* Endorser.` : ''}</p>
+                                    </Box>
+                                </Box>
+                            </AlertDescription>
+                            <AlertDescription className='flex w-full'>
+                                <Box className='w-full flex'>
+                                    <Box className='flex flex-col w-full'>
+                                        <p>{trainee.nationality === '' ? `* Nationality.` : ''}</p>
+                                        <p>{trainee.company === '' ? `* Company.` : ''}</p>
+                                        <p>{trainee.vessel === '' ? `* Vessel.` : ''}</p>
+                                        <p>{trainee.e_contact === '' ? `* Emergency Contact.` : ''}</p>
+                                        <p>{trainee.e_contact_person === '' ? `* Emergency Contact Person.` : ''}</p>
+                                        <p>{trainee.relationship === '' ? `* Relationship.` : ''}</p>
+                                    </Box>
+                                </Box>
+                            </AlertDescription>
+                        </Box>
+                    </Alert>
+                )}
+                <Box className='flex flex-col items-center w-full md:w-auto'>
+                    <Box className='flex items-center w-full space-x-2 '>
+                        <ListIcon size={'24'} color={'#a1a1a1'} />
+                        <Heading as='h4' size='sm' fontWeight='bold' className='text-gray'>{`Trainee's Information`}</Heading>
                     </Box>
-                    <FormControl isInvalid={trainee.birthPlace === '' && showAlert1}>
-                        <label className='text-gray-400'>birth place:<span className='text-red-700'>*</span></label>
-                        <Input id='birthPlace' onChange={handleOnChange} className='shadow-md uppercase' />
-                    </FormControl>
+                    <Box className='flex items-center w-full'>
+                        <Text size='xs' color='red' className='font-normal'>{`Fields marked with (*) must be filled out`}</Text>
+                    </Box>
                 </Box>
-                <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl className='flex flex-col space-y-2 items-start '>
-                        <label className='text-gray-400'>Address:<span className='text-red-700'>*</span></label>
-                        {/* <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
-                        {otherAddress ? trainee.otherAddress !== '' ? trainee.otherAddress : 'Add Address' : trainee.house_no !== '' || trainee.street !== '' || trainee.brgy !== '' || trainee.city !== '' ? `${trainee.house_no} ${trainee.street} ${`Brgy. ${trainee.brgy}`} ${`${trainee.city} City`}` : 'Add Address'}
-                        </Button> */}
-                        <Input id='otherAddress' value={trainee.otherAddress} isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChangeAddress} className='uppercase shadow-md'/>
-                        <FormLabel color='gray.600' fontSize='xs' fontWeight='700'>{`Note: Kindly indicate your complete address including City, and Province`}</FormLabel>
-                    </FormControl>
-                </Box>
-                <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl className='flex flex-col space-y-2 border-2 rounded shadow-md px-6 items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.vessel === '' && showAlert1}>
-                        <label className='text-gray-400'>Verssel Type:<span className='text-red-700'>*</span></label>
-                        <Button className='uppercase' onClick={() => {onOpenVessel(); setVesselRef(''); setSelectVessel('');}} variant='ghost' colorScheme='blue'>
-                            {trainee.vessel === '' ? 'ADD VESSEL' : trainee.vessel}
-                        </Button>
-                    </FormControl>
-                    {/** Company-modal */}
-                    <FormControl className='flex flex-col space-y-2 px-6 shadow-md border-2 rounded items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.company === '' && showAlert1}>
-                        <label className='text-gray-400'>Company:<span className='text-red-700'>*</span></label>
-                        <Button className='uppercase' onClick={() => {onOpenCompany(); setCompanyRef(''); setSelectCompany('');}} variant='ghost' colorScheme='blue'>
-                        {allClients?.find((client) => client.id === trainee.company)?.company || (trainee.company === '' ? 'ADD COMPANY' : trainee.company)}
-                        </Button>
-                    </FormControl>
-                    <FormControl isInvalid={trainee.endorser === '' && showAlert1}>
-                        <label className='text-gray-400'>Endorser:<span className='text-red-700'>*</span></label>
-                        <Input id='endorser' onChange={handleOnChange} className='shadow-md uppercase' />
-                    </FormControl>
-                </Box>
-                <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                    <FormControl isInvalid={trainee.e_contact_person === '' && showAlert1}>
-                        <label className='text-gray-400'>Emergency Contact Person:<span className='text-red-700'>*</span></label>
-                        <Input id='e_contact_person' onChange={handleOnChange} className='shadow-md uppercase' />
-                    </FormControl>
-                    <FormControl isInvalid={trainee.e_contact === '' && showAlert1}>
-                        <label className='text-gray-400'>Emergency Contact No.:<span className='text-red-700'>*</span></label>
-                        <Input id='e_contact' onChange={handleOnChange} className='shadow-md uppercase' />
-                    </FormControl>
-                    <FormControl isInvalid={trainee.relationship === '' && showAlert1}>
-                        <label className='text-gray-400'>Relationship:<span className='text-red-700'>*</span></label>
-                        <Input id='relationship' onChange={handleOnChange} className='shadow-md uppercase' />
-                    </FormControl>
-                </Box>
-                <Box className='flex space-y-3 flex-col'>
-                    <Box>
-                        <Text className='uppercase text-gray-400'>Attachments:</Text>
+                <Box className='space-y-6'>
+                    <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                        <FormControl isInvalid={trainee.last_name === '' && showAlert1}>
+                            <label className='text-gray-400'>Last Name:<span className='text-red-700'>*</span></label>
+                            <Input id='last_name' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
+                        </FormControl>
+                        <FormControl isInvalid={trainee.first_name === '' && showAlert1}>
+                            <label className='text-gray-400'>First Name:<span className='text-red-700'>*</span></label>
+                            <Input id='first_name' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
+                        </FormControl>
+                        <FormControl >
+                            <label className='text-gray-400'>Middle Name:</label>
+                            <Input id='middle_name' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
+                        </FormControl>
+                        <FormControl w={{md: '30%', base: '100%'}} className='w-full'>
+                            <label className='text-gray-400'>Suffix:</label>
+                            <Input id='suffix' onChange={handleOnChange} type='text' className='shadow-md uppercase' />
+                        </FormControl>
                     </Box>
                     <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                        <FormControl className='flex-col'>
-                            <Box className='flex-col w-full'>
-                                <Text className='w- w-fullfull'>Please upload Valid ID</Text>
-                                <Text className='w-full'><span className='italic' style={{fontSize: '9px'}}>(Preferably: Passport ID)</span></Text>
-                            </Box>
-                            <Input id='valid_id' onChange={handleValidID} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
+                        <FormControl isInvalid={trainee.srn === '' && showAlert1}>
+                            <label className='text-gray-400'>srn:<span className='text-red-700'>*</span></label>
+                            <Input id='srn' onChange={handleOnChange} className='shadow-md uppercase' />
                         </FormControl>
-                        <FormControl className='flex-col'>
-                            <Box className='flex-col w-full'>
-                                <Text className='w- w-fullfull'>Please upload a 2x2 ID photo. </Text>
-                                <Text className='w-full'><span className='italic' style={{fontSize: '9px'}}>(Note: Ensure photo is clear, and wear your uniform.)</span></Text>
-                            </Box>
-                            <Input id='photo' onChange={handleValid2x2} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
+                        <FormControl className='flex flex-col space-y-2 items-start border-2 rounded shadow-md px-8 py-2 md: space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.rank === '' && showAlert1}>
+                            <label className='text-gray-400'>rank:<span className='text-red-700'>*</span></label>
+                            <Button className='uppercase' onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}} variant='ghost' colorScheme='blue'>
+                            {allRanks?.find((rank) => rank.code === trainee.rank)?.rank || (trainee.rank === '' ? 'SELECT RANK' : trainee.rank)}
+                            </Button>
                         </FormControl>
-                        <FormControl className='flex-col'>
-                            <Box className='flex-col w-full'>
-                                <Text className='w- w-fullfull'>Please attach your written signature here.</Text>
-                                <Text className='w-full'><span className='italic' style={{fontSize: '9px'}}>(Note: photo must be clear.)</span></Text>
-                            </Box>
-                            <Input id='e_sig' onChange={handleValidSignature} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
+                        <FormControl isInvalid={trainee.email === '' && showAlert1}>
+                            <label className='text-gray-400'>email:<span className='text-red-700'>*</span></label>
+                            <Input id='email' onChange={handleOnChange} className='shadow-md' />
+                        </FormControl>
+                        <FormControl isInvalid={trainee.contact_no === '' && showAlert1}>
+                            <label className='text-gray-400'>contact no.:<span className='text-red-700'>*</span></label>
+                            <Input id='contact_no' type='tel' onChange={handleOnChange} className='shadow-md' />
                         </FormControl>
                     </Box>
-                </Box>
-                <Box className='flex justify-end'>
-                    <Button className='w-full md:w-1/4' onClick={() => {handleNextStep('step1'); handleCombineBirthDate(); scrollToTop();}} colorScheme='blue'>Proceed to Next Step</Button>
+                    <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                        <FormControl isInvalid={trainee.gender === '' && showAlert1}>
+                            <label className='text-gray-400'>Gender:<span className='text-red-700'>*</span></label>
+                            <Select id='gender' onChange={handleSelect} className='shadow-md uppercase'>
+                                <option hidden>Select Gender</option>
+                                <option value={'male'}>Male</option>
+                                <option value={'female'}>Female</option>
+                            </Select>
+                        </FormControl>
+                        <FormControl isInvalid={trainee.nationality === '' && showAlert1}>
+                            <label className='text-gray-400'>nationality:<span className='text-red-700'>*</span></label>
+                            <Input id='nationality' onChange={handleOnChange} className='shadow-md uppercase' />
+                        </FormControl>
+                        {/* <FormControl className='flex flex-col' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                            <label className='text-gray-400'>Birth Date:<span className='text-red-700'>*</span></label>
+                            <DatePicker showPopperArrow={false} selected={birth_date} onChange={(date) => setBirthDate(date)} showMonthDropdown useShortMonthInDropdown dateFormat='E, MMM. dd, yyyy'
+                                customInput={<Input id='birth_date' textAlign='center' className='shadow-md' /> } />
+                            <Text className='mt-2 text-black' style={{fontSize: '9px'}}>You can select a date from the calendar or type it directly in the field above</Text>
+                        </FormControl> */}
+                        <Box display='flex' flexDir={{md:'column', base:'column'}} >
+                            <label className='text-gray-400'>Birth Date:<span className='text-red-700'>*</span></label>
+                            <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                                <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                    <label className='text-gray-400'>MM:</label>
+                                    <Input id='month' type='number' ms='3' w='110px' placeholder='e.g. 01-12' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                                </FormControl>
+                                <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                    <label className='text-gray-400'>DD:</label>
+                                    <Input id='day' type='number' ms='3' w='100px' placeholder='e.g. 01' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                                </FormControl>
+                                <FormControl display='flex' alignItems='center' isInvalid={trainee.birthDate === Timestamp.now() && showAlert1}>
+                                    <label className='text-gray-400'>YYYY:</label>
+                                    <Input id='year' type='number' ms='3' w='150px' placeholder='e.g. (2002)' onChange={(e) => {handleDate(e)}} className='shadow-md' />
+                                </FormControl>
+                            </Box>
+                            <FormLabel color='gray.600' fontSize='xs'>{`Note: Please enter your birth date using digits (01/01/2001)`}</FormLabel>
+                        </Box>
+                        <FormControl isInvalid={trainee.birthPlace === '' && showAlert1}>
+                            <label className='text-gray-400'>birth place:<span className='text-red-700'>*</span></label>
+                            <Input id='birthPlace' onChange={handleOnChange} className='shadow-md uppercase' />
+                        </FormControl>
+                    </Box>
+                    <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                        <FormControl className='flex flex-col space-y-2 items-start '>
+                            <label className='text-gray-400'>Address:<span className='text-red-700'>*</span></label>
+                            {/* <Button onClick={onOpenAddress} className='uppercase' variant='ghost' colorScheme='blue' >
+                            {otherAddress ? trainee.otherAddress !== '' ? trainee.otherAddress : 'Add Address' : trainee.house_no !== '' || trainee.street !== '' || trainee.brgy !== '' || trainee.city !== '' ? `${trainee.house_no} ${trainee.street} ${`Brgy. ${trainee.brgy}`} ${`${trainee.city} City`}` : 'Add Address'}
+                            </Button> */}
+                            <Input id='otherAddress' value={trainee.otherAddress} isInvalid={trainee.otherAddress === '' && showAlert1} placeholder='Type here your address...' shadow='md' onChange={handleOnChangeAddress} className='uppercase shadow-md'/>
+                            <FormLabel color='gray.600' fontSize='xs' fontWeight='700'>{`Note: Kindly indicate your complete address including City, and Province`}</FormLabel>
+                        </FormControl>
+                    </Box>
+                    <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                        <FormControl className='flex flex-col space-y-2 border-2 rounded shadow-md px-6 items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.vessel === '' && showAlert1}>
+                            <label className='text-gray-400'>Verssel Type:<span className='text-red-700'>*</span></label>
+                            <Button className='uppercase' onClick={() => {onOpenVessel(); setVesselRef(''); setSelectVessel('');}} variant='ghost' colorScheme='blue'>
+                                {trainee.vessel === '' ? 'ADD VESSEL' : trainee.vessel}
+                            </Button>
+                        </FormControl>
+                        {/** Company-modal */}
+                        <FormControl className='flex flex-col space-y-2 px-6 shadow-md border-2 rounded items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.company === '' && showAlert1}>
+                            <label className='text-gray-400'>Company:<span className='text-red-700'>*</span></label>
+                            <Button className='uppercase' onClick={() => {onOpenCompany(); setCompanyRef(''); setSelectCompany('');}} variant='ghost' colorScheme='blue'>
+                            {allClients?.find((client) => client.id === trainee.company)?.company || (trainee.company === '' ? 'ADD COMPANY' : trainee.company)}
+                            </Button>
+                        </FormControl>
+                        <FormControl isInvalid={trainee.endorser === '' && showAlert1}>
+                            <label className='text-gray-400'>Endorser:<span className='text-red-700'>*</span></label>
+                            <Input id='endorser' onChange={handleOnChange} className='shadow-md uppercase' />
+                        </FormControl>
+                    </Box>
+                    <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                        <FormControl isInvalid={trainee.e_contact_person === '' && showAlert1}>
+                            <label className='text-gray-400'>Emergency Contact Person:<span className='text-red-700'>*</span></label>
+                            <Input id='e_contact_person' onChange={handleOnChange} className='shadow-md uppercase' />
+                        </FormControl>
+                        <FormControl isInvalid={trainee.e_contact === '' && showAlert1}>
+                            <label className='text-gray-400'>Emergency Contact No.:<span className='text-red-700'>*</span></label>
+                            <Input id='e_contact' onChange={handleOnChange} className='shadow-md uppercase' />
+                        </FormControl>
+                        <FormControl isInvalid={trainee.relationship === '' && showAlert1}>
+                            <label className='text-gray-400'>Relationship:<span className='text-red-700'>*</span></label>
+                            <Input id='relationship' onChange={handleOnChange} className='shadow-md uppercase' />
+                        </FormControl>
+                    </Box>
+                    <Box className='flex space-y-3 flex-col'>
+                        <Box>
+                            <Text className='uppercase text-gray-400'>Attachments:</Text>
+                        </Box>
+                        <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                            <FormControl className='flex-col'>
+                                <Box className='flex-col w-full'>
+                                    <Text className='w- w-fullfull'>Please upload Valid ID</Text>
+                                    <Text className='w-full'><span className='italic' style={{fontSize: '9px'}}>(Preferably: Passport ID)</span></Text>
+                                </Box>
+                                <Input id='valid_id' onChange={handleValidID} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
+                            </FormControl>
+                            <FormControl className='flex-col'>
+                                <Box className='flex-col w-full'>
+                                    <Text className='w- w-fullfull'>Please upload a 2x2 ID photo. </Text>
+                                    <Text className='w-full'><span className='italic' style={{fontSize: '9px'}}>(Note: Ensure photo is clear, and wear your uniform.)</span></Text>
+                                </Box>
+                                <Input id='photo' onChange={handleValid2x2} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
+                            </FormControl>
+                            <FormControl className='flex-col'>
+                                <Box className='flex-col w-full'>
+                                    <Text className='w- w-fullfull'>Please attach your written signature here.</Text>
+                                    <Text className='w-full'><span className='italic' style={{fontSize: '9px'}}>(Note: photo must be clear.)</span></Text>
+                                </Box>
+                                <Input id='e_sig' onChange={handleValidSignature} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
+                            </FormControl>
+                        </Box>
+                    </Box>
+                    <Box className='flex justify-end'>
+                        <Button className='w-full md:w-1/4' onClick={() => {handleNextStep('step1'); handleCombineBirthDate(); }} bgColor='blue.700' colorScheme='blue'>Proceed to Next Step</Button>
+                    </Box>
                 </Box>
             </Box>
         </Box>
-        <Box className={`${show === 'train' ? '' : 'hidden'} rounded border outline-0 uppercase shadow-md space-y-6 p-7 animate__animated animate__fadeInRight`}>
+        <Box ref={reviewSectionRef} className={`${show === 'train' ? '' : 'hidden'} rounded border outline-0 uppercase shadow-md space-y-6 p-7 animate__animated animate__fadeInRight`}>
             {showAlert2 && (
                 <Alert status='info' variant='left-accent' className='flex-col mb-4 items-center justify-center'>
                     <Box className='flex w-full items-center justify-center'>
@@ -755,209 +776,211 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                 <Button onClick={() => { handleNextStep('step2') }} colorScheme='blue'>Review your Form</Button>
             </Box>
         </Box>
-        <Box className={`${show === 'review' ? '' : 'hidden'} rounded border outline-0 uppercase shadow-md space-y-6 p-7 animate__animated animate__fadeInRight`}>
-            <Text className='text-sky-600 text-lg'>Review your Form</Text>
-            <Box className='space-y-3'>
-                <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>Last Name:</Text>
-                        <Text>{trainee.last_name}</Text>
+        <Box maxH={{base: '580px', md: `100%`}} overflowY={'auto'}>
+            <Box className={`${show === 'review' ? '' : 'hidden'} rounded border outline-0 uppercase shadow-md space-y-6 p-7 animate__animated animate__fadeInRight`}>
+                <Text className='text-sky-600 text-lg'>Review your Form</Text>
+                <Box className='space-y-3'>
+                    <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>Last Name:</Text>
+                            <Text>{trainee.last_name}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>First Name:</Text>
+                            <Text>{trainee.first_name}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>Middle Name:</Text>
+                            <Text>{trainee.middle_name}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>Suffix:</Text>
+                            <Text>{trainee.suffix}</Text>
+                        </Box>
                     </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>First Name:</Text>
-                        <Text>{trainee.first_name}</Text>
+                    <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>Rank:</Text>
+                            <Text>{trainee.rank}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>srn:</Text>
+                            <Text>{trainee.srn}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>email:</Text>
+                            <Text>{trainee.email}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>contact no:</Text>
+                            <Text>{trainee.contact_no}</Text>
+                        </Box>
                     </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>Middle Name:</Text>
-                        <Text>{trainee.middle_name}</Text>
+                    <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>gender:</Text>
+                            <Text>{trainee.gender}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>nationality:</Text>
+                            <Text>{trainee.nationality}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>birthDate:</Text>
+                            <Text>{trainee.birthDate
+                            ? new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(trainee.birthDate.toDate())
+                            : 'N/A'}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>birthPlace:</Text>
+                            <Text>{trainee.birthPlace}</Text>
+                        </Box>
                     </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>Suffix:</Text>
-                        <Text>{trainee.suffix}</Text>
+                    <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>address:</Text>
+                            <Text>{trainee.otherAddress  ? trainee.otherAddress  : `${trainee.house_no} ${trainee.street} ${trainee.brgy} ${trainee.city} City`.trim()}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>vessel:</Text>
+                            <Text>{trainee.vessel}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>company:</Text>
+                            <Text>
+                            {allClients?.find((client) => client.id === trainee.company)?.company || ''}
+                            </Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>endorser:</Text>
+                            <Text>{trainee.endorser}</Text>
+                        </Box>
                     </Box>
-                </Box>
-                <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>Rank:</Text>
-                        <Text>{trainee.rank}</Text>
+                    <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>Emergency contact:</Text>
+                            <Text>{trainee.e_contact_person}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>contact No.:</Text>
+                            <Text>{trainee.e_contact}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>relationship:</Text>
+                            <Text>{trainee.relationship}</Text>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Text className='text-gray-400'>marketing:</Text>
+                            <Text>{trainee.marketing}</Text>
+                        </Box>
                     </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>srn:</Text>
-                        <Text>{trainee.srn}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>email:</Text>
-                        <Text>{trainee.email}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>contact no:</Text>
-                        <Text>{trainee.contact_no}</Text>
-                    </Box>
-                </Box>
-                <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>gender:</Text>
-                        <Text>{trainee.gender}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>nationality:</Text>
-                        <Text>{trainee.nationality}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>birthDate:</Text>
-                        <Text>{trainee.birthDate
-                        ? new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(trainee.birthDate.toDate())
-                        : 'N/A'}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>birthPlace:</Text>
-                        <Text>{trainee.birthPlace}</Text>
-                    </Box>
-                </Box>
-                <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>address:</Text>
-                        <Text>{trainee.otherAddress  ? trainee.otherAddress  : `${trainee.house_no} ${trainee.street} ${trainee.brgy} ${trainee.city} City`.trim()}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>vessel:</Text>
-                        <Text>{trainee.vessel}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>company:</Text>
-                        <Text>
-                        {allClients?.find((client) => client.id === trainee.company)?.company || ''}
-                        </Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>endorser:</Text>
-                        <Text>{trainee.endorser}</Text>
-                    </Box>
-                </Box>
-                <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>Emergency contact:</Text>
-                        <Text>{trainee.e_contact_person}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>contact No.:</Text>
-                        <Text>{trainee.e_contact}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>relationship:</Text>
-                        <Text>{trainee.relationship}</Text>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Text className='text-gray-400'>marketing:</Text>
-                        <Text>{trainee.marketing}</Text>
-                    </Box>
-                </Box>
-                <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
-                    <Box className='flex w-full space-x-3'>
-                        <Box className='flex flex-col md:flex-row justify-between w-full'>
+                    <Box className='flex flex-col md:space-y-0 md:flex-row space-y-3 md:space-x-4'>
+                        <Box className='flex w-full space-x-3'>
+                            <Box className='flex flex-col md:flex-row justify-between w-full'>
+                                <Box className='flex flex-col w-full'>
+                                    <Text color='#a1a1a1'>2x2 ID Picture:</Text>
+                                    {validProfile ? (
+                                        <Image src={validProfile as string} width={150} height={150} alt='2x2 ID Picture' />
+                                    ) : (
+                                        <Text color='#a1a1a1'>No 2x2 ID Picture Provided</Text>
+                                    )}
+                                </Box>
+                            </Box>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
                             <Box className='flex flex-col w-full'>
-                                <Text color='#a1a1a1'>2x2 ID Picture:</Text>
-                                {validProfile ? (
-                                    <Image src={validProfile as string} width={150} height={150} alt='2x2 ID Picture' />
+                                <Text color='#a1a1a1'>Valid ID:</Text>
+                                {valid ? (
+                                    <Image src={valid as string} width={150} height={150} alt='Valid ID' />
                                 ) : (
-                                    <Text color='#a1a1a1'>No 2x2 ID Picture Provided</Text>
+                                    <Text color='#a1a1a1'>No Valid ID Provided</Text>
+                                )}
+                            </Box>
+                        </Box>
+                        <Box className='flex w-full space-x-3'>
+                            <Box className='flex flex-col w-full'>
+                                <Text color='#a1a1a1'>Signature:</Text>
+                                {preview ? (
+                                    <Image src={preview as string} width={150} height={150} alt='Valid ID' />
+                                ) : (
+                                    <Text color='#a1a1a1'>No Signature Provided</Text>
                                 )}
                             </Box>
                         </Box>
                     </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Box className='flex flex-col w-full'>
-                            <Text color='#a1a1a1'>Valid ID:</Text>
-                            {valid ? (
-                                <Image src={valid as string} width={150} height={150} alt='Valid ID' />
-                            ) : (
-                                <Text color='#a1a1a1'>No Valid ID Provided</Text>
-                            )}
+                    <Box className='flex flex-col  space-y-3'>
+                        <Box className='flex justify-between'>
+                            <Text className='font-bold text-base text-sky-600'>Courses Selected:</Text>
                         </Box>
-                    </Box>
-                    <Box className='flex w-full space-x-3'>
-                        <Box className='flex flex-col w-full'>
-                            <Text color='#a1a1a1'>Signature:</Text>
-                            {preview ? (
-                                <Image src={preview as string} width={150} height={150} alt='Valid ID' />
-                            ) : (
-                                <Text color='#a1a1a1'>No Signature Provided</Text>
-                            )}
-                        </Box>
-                    </Box>
-                </Box>
-                <Box className='flex flex-col  space-y-3'>
-                    <Box className='flex justify-between'>
-                        <Text className='font-bold text-base text-sky-600'>Courses Selected:</Text>
-                    </Box>
-                    <Box className='space-y-6 md:hidden'>
-                    {courses && courses.map((course, index) => (
-                        <Box key={index} className='flex justify-between border uppercase items-center shadow-md py-3 rounded px-3'>
-                            <Box w='60%' className='flex flex-col space-y-2'>
-                                <Box w='70%' className='flex flex-col space-y-1'>
-                                    <Text className='text-gray-400'>Course:</Text>
-                                    <Text>
-                                        {allCourses && allCourses.find((courseFound) => courseFound.id === course.course)?.course_name || ''}
-                                    </Text>
-                                </Box>
-                                <Box className=''>
-                                {course.end_date === '' ? (
-                                    <Box className='flex flex-col space-y-1'>
-                                        <Text className='text-gray-400' >Date:</Text>
-                                        <Text>{course.start_date}</Text>
-                                    </Box>
-                                ) : (
-                                    <Box className='flex flex-col space-y-1'>
-                                        <Text className='text-gray-400' >Date:</Text>
-                                        <Box className='flex space-x-2'>
-                                            <Text>{`${course.start_date} to`}</Text>
-                                            <Text>{`${course.end_date}`}</Text>
-                                        </Box>
-                                    </Box>
-                                )}
-                                </Box>
-                            </Box>
-                            <Box className='flex flex-col space-y-2' w='30%'>
-                                <Text>{`${course.accountType === 0 ? `Php ${course.course_fee}` : '--'}`}</Text>
-                                <Text>{`${course.accountType === 0 ? 'CREW' : 'company'} charge`}</Text>
-                            </Box>
-                        </Box>
-                    ))}
-                    </Box>
-                    <Box className='space-y-6 hidden md:flex flex-col'>
-                        <Box className='flex justify-between uppercase items-center p-3 bg-sky-600 text-white rounded px-8 shadow-md'>
-                            <Text w='60%' >Course</Text>
-                            <Text w='60%' className='text-center'>Training Schedule</Text>
-                            <Text w='40%' >Course Fee</Text>
-                            <Text w='40%' >Payment Mode</Text>
-                        </Box>
+                        <Box className='space-y-6 md:hidden'>
                         {courses && courses.map((course, index) => (
-                            <Box key={index} className='flex justify-between uppercase items-center shadow-md p-3 rounded px-8'>
-                                <Text w='60%' >
-                                    {allCourses && allCourses.find((courseFound) => courseFound.id === course.course)?.course_name || ''}
-                                </Text>
-                                <Box w='60%'  className='flex items-center justify-center'>
-                                {course.end_date === '' ? (
-                                    <>
-                                        <Text>{course.start_date}</Text>
-                                    </>
-                                ) : (
-                                    <Box className='flex space-x-1'>
-                                        <Text>{`${course.start_date} to`}</Text>
-                                        <Text>{`${course.end_date}`}</Text> 
+                            <Box key={index} className='flex justify-between border uppercase items-center shadow-md py-3 rounded px-3'>
+                                <Box w='60%' className='flex flex-col space-y-2'>
+                                    <Box w='70%' className='flex flex-col space-y-1'>
+                                        <Text className='text-gray-400'>Course:</Text>
+                                        <Text>
+                                            {allCourses && allCourses.find((courseFound) => courseFound.id === course.course)?.course_name || ''}
+                                        </Text>
                                     </Box>
-                                )}
+                                    <Box className=''>
+                                    {course.end_date === '' ? (
+                                        <Box className='flex flex-col space-y-1'>
+                                            <Text className='text-gray-400' >Date:</Text>
+                                            <Text>{course.start_date}</Text>
+                                        </Box>
+                                    ) : (
+                                        <Box className='flex flex-col space-y-1'>
+                                            <Text className='text-gray-400' >Date:</Text>
+                                            <Box className='flex space-x-2'>
+                                                <Text>{`${course.start_date} to`}</Text>
+                                                <Text>{`${course.end_date}`}</Text>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                    </Box>
                                 </Box>
-                                <Text w='40%' >{`${course.accountType === 0 ? `Php ${course.course_fee}` : '--'}`}</Text>
-                                <Text w='40%' >{`${course.accountType === 0 ? 'CREW' : 'company'} charge`}</Text>
+                                <Box className='flex flex-col space-y-2' w='30%'>
+                                    <Text>{`${course.accountType === 0 ? `Php ${course.course_fee}` : '--'}`}</Text>
+                                    <Text>{`${course.accountType === 0 ? 'CREW' : 'company'} charge`}</Text>
+                                </Box>
                             </Box>
                         ))}
+                        </Box>
+                        <Box className='space-y-6 hidden md:flex flex-col'>
+                            <Box className='flex justify-between uppercase items-center p-3 bg-sky-600 text-white rounded px-8 shadow-md'>
+                                <Text w='60%' >Course</Text>
+                                <Text w='60%' className='text-center'>Training Schedule</Text>
+                                <Text w='40%' >Course Fee</Text>
+                                <Text w='40%' >Payment Mode</Text>
+                            </Box>
+                            {courses && courses.map((course, index) => (
+                                <Box key={index} className='flex justify-between uppercase items-center shadow-md p-3 rounded px-8'>
+                                    <Text w='60%' >
+                                        {allCourses && allCourses.find((courseFound) => courseFound.id === course.course)?.course_name || ''}
+                                    </Text>
+                                    <Box w='60%'  className='flex items-center justify-center'>
+                                    {course.end_date === '' ? (
+                                        <>
+                                            <Text>{course.start_date}</Text>
+                                        </>
+                                    ) : (
+                                        <Box className='flex space-x-1'>
+                                            <Text>{`${course.start_date} to`}</Text>
+                                            <Text>{`${course.end_date}`}</Text> 
+                                        </Box>
+                                    )}
+                                    </Box>
+                                    <Text w='40%' >{`${course.accountType === 0 ? `Php ${course.course_fee}` : '--'}`}</Text>
+                                    <Text w='40%' >{`${course.accountType === 0 ? 'CREW' : 'company'} charge`}</Text>
+                                </Box>
+                            ))}
+                        </Box>
                     </Box>
                 </Box>
-            </Box>
-            <Box className='flex md:flex-row flex-col space-y-4 md:space-y-0  md:justify-between'>
-                <Button onClick={() => { onStepChange(2); setShow('train'); }} className='shadow-md uppercase' colorScheme='gray'>Back</Button>
-                <Button onClick={handleSubmit} isLoading={loading} className='shadow-md uppercase' loadingText='Submitting...' colorScheme='blue'>Submit Form</Button>
+                <Box className='flex md:flex-row flex-col space-y-4 md:space-y-0  md:justify-between'>
+                    <Button onClick={() => { handleNextStep('step1'); onStepChange(2); setShow('train'); }} className='shadow-md uppercase' colorScheme='gray'>Back</Button>
+                    <Button onClick={handleSubmit} isLoading={loading} className='shadow-md uppercase' loadingText='Submitting...' colorScheme='blue'>Submit Form</Button>
+                </Box>
             </Box>
         </Box>
         <Box className={`${show === 'completed' ? '' : 'hidden'} flex items-center justify-centerrounded border outline-0 uppercase shadow-md space-y-6 p-7 animate__animated animate__fadeInRight`}>
@@ -1081,9 +1104,10 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
             </ModalFooter>
         </ModalContent>
     </Modal>
-    <Modal isOpen={isOpenModal} onClose={onCloseModal} scrollBehavior="inside" motionPreset="slideInTop" size="xl">
+    {/** Course Selection */}
+    <Modal blockScrollOnMount={false} isOpen={isOpenModal} onClose={onCloseModal} scrollBehavior="inside" motionPreset="slideInTop" size="xl">
         <ModalOverlay />
-        <ModalContent className="px-3">
+        <ModalContent ref={modalRef} tabIndex={-1}  className="px-3">
             <ModalHeader className="text-sky-700 font-bold">Courses Selection</ModalHeader>
             <ModalBody>
                 <Box className='pb-3 text-center text-sm flex space-x-3'>
@@ -1265,9 +1289,23 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
         </ModalContent>
     </Modal>
     {/** Training Schedule Modal */}
-    <Modal isOpen={isOpenSched} size='xl' onClose={onCloseSched} scrollBehavior='inside' motionPreset='scale'>
+    <Modal blockScrollOnMount={false}  isOpen={isOpenSched} size='xl' onClose={onCloseSched} scrollBehavior='inside' motionPreset='scale'>
         <ModalOverlay />
-        <TrainingScheduleModal onClose={onCloseSched} selectedCourse={courseSelect} courseID={courseRef} trainingSched={trainingSched} setSched={setSched} />
+        <ModalContent ref={modalRef} tabIndex={-1} >
+            <ModalHeader color='blue.700' fontWeight='700' fontSize='xl'>Select Training Date</ModalHeader>
+            <Alert status='info' variant='subtle'>
+                <AlertIcon />
+                <AlertDescription>
+                    {`If schedule is not available, kindly click "Select Preferred Dates" to select preferred training schedule.`}
+                </AlertDescription>
+            </Alert>
+            <ModalBody my='4' flex="1">
+                <TrainingScheduleModal onClose={onCloseSched} selectedCourse={courseSelect} courseID={courseRef} trainingSched={trainingSched} setSched={setSched} />
+            </ModalBody>
+            <ModalFooter>
+                <Button colorScheme='blue' shadow='md' bgColor='blue.700' onClick={onCloseSched}>Done</Button>
+            </ModalFooter>
+        </ModalContent>               
     </Modal>
     </>
     )

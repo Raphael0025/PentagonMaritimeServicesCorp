@@ -29,7 +29,7 @@ export default function Admissions(){
     return(
         <>
         <Stepper step={step} />
-        <Container border='0px' maxW='container.lg' mt={5} >
+        <Container border='0px' h='auto' maxW='container.lg' mt={5} >
             <section className={`w-full animate__animated animate__fadeInRight ${path === 'review' || path === 'completed' ? 'hidden' : ''}`}>
                 <Heading as='h3' size='lg' className='text-db mb-2'>{`Online Registration`}</Heading>
                 <p className='text-slate-950 font-medium mb-2'>We warmly welcome seafarers to our training center.</p>

@@ -8,6 +8,11 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 ### High Priority
 
+- [] **Online Registration**: Features in Registration Form
+    - **Details**:
+        - [-] Training Calendar Schedule added 
+        - [-] Fixed scroll issue on second page
+
 - [] **Registration Tab**: Features in Registration Tab
     - **Details**:
         - [-] Change Training Date
