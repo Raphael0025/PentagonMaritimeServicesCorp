@@ -14,6 +14,7 @@ interface ModalProps {
 }
 
 export default function TrainingScheduleModal({setSched, courseID, trainingSched, selectedCourse, onClose}: ModalProps){
+    
     return(
     <>
         <Tabs isLazy variant='enclosed' colorScheme='blue'>

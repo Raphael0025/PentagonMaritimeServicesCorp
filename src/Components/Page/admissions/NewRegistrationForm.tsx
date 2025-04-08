@@ -516,11 +516,12 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                             <label className='text-gray-400'>srn:<span className='text-red-700'>*</span></label>
                             <Input id='srn' onChange={handleOnChange} className='shadow-md uppercase' />
                         </FormControl>
-                        <FormControl className='flex flex-col space-y-2 items-start border-2 rounded shadow-md px-8 py-2 md: space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.rank === '' && showAlert1}>
+                        <FormControl isInvalid={trainee.rank === '' && showAlert1}>
                             <label className='text-gray-400'>rank:<span className='text-red-700'>*</span></label>
-                            <Button className='uppercase' onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}} variant='ghost' colorScheme='blue'>
-                            {allRanks?.find((rank) => rank.code === trainee.rank)?.rank || (trainee.rank === '' ? 'SELECT RANK' : trainee.rank)}
-                            </Button>
+                            <Input id='rank' type='text' isReadOnly textTransform='uppercase' shadow='md' 
+                                value={allRanks?.find((rank) => rank.code === trainee.rank)?.rank || (trainee.rank === '' ? 'SELECT RANK' : trainee.rank)}
+                                onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}}
+                            />
                         </FormControl>
                         <FormControl isInvalid={trainee.email === '' && showAlert1}>
                             <label className='text-gray-400'>email:<span className='text-red-700'>*</span></label>
@@ -584,18 +585,20 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                         </FormControl>
                     </Box>
                     <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
-                        <FormControl className='flex flex-col space-y-2 border-2 rounded shadow-md px-6 items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.vessel === '' && showAlert1}>
+                        <FormControl isInvalid={trainee.vessel === '' && showAlert1}>
                             <label className='text-gray-400'>Verssel Type:<span className='text-red-700'>*</span></label>
-                            <Button className='uppercase' onClick={() => {onOpenVessel(); setVesselRef(''); setSelectVessel('');}} variant='ghost' colorScheme='blue'>
-                                {trainee.vessel === '' ? 'ADD VESSEL' : trainee.vessel}
-                            </Button>
+                            <Input id='vessel' isReadOnly type='text' textTransform='uppercase' shadow='md' 
+                                onClick={() => {onOpenVessel(); setVesselRef(''); setSelectVessel('');}}
+                                value={trainee.vessel === '' ? 'ADD VESSEL' : trainee.vessel}
+                            />
                         </FormControl>
                         {/** Company-modal */}
-                        <FormControl className='flex flex-col space-y-2 border-2 rounded shadow-md px-6 items-start md:space-y-0 md:flex-row md:space-x-3 md:items-center' isInvalid={trainee.company === '' && showAlert1}>
+                        <FormControl isInvalid={trainee.company === '' && showAlert1} >
                             <label className='text-gray-400'>Company:<span className='text-red-700'>*</span></label>
-                            <Button className='uppercase' onClick={() => {onOpenCompany(); setCompanyRef(''); setSelectCompany('');}} variant='ghost' colorScheme='blue'>
-                            {allClients?.find((client) => client.id === trainee.company)?.company || (trainee.company === '' ? 'ADD COMPANY' : trainee.company)}
-                            </Button>
+                            <Input id='company' isReadOnly type='text' textTransform='uppercase' shadow='md' 
+                                onClick={() => {onOpenCompany(); setCompanyRef(''); setSelectCompany('');}}
+                                value={allClients?.find((client) => client.id === trainee.company)?.company || (trainee.company === '' ? 'ADD COMPANY' : trainee.company)}
+                            />
                         </FormControl>
                         <FormControl isInvalid={trainee.endorser === '' && showAlert1}>
                             <label className='text-gray-400'>Endorser:<span className='text-red-700'>*</span></label>
@@ -1303,7 +1306,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                 <TrainingScheduleModal onClose={onCloseSched} selectedCourse={courseSelect} courseID={courseRef} trainingSched={trainingSched} setSched={setSched} />
             </ModalBody>
             <ModalFooter>
-                <Button colorScheme='blue' shadow='md' bgColor='blue.700' onClick={onCloseSched}>Done</Button>
+                <Button isDisabled={sched === ''} colorScheme='blue' shadow='md' bgColor='blue.700' onClick={onCloseSched}>Done</Button>
             </ModalFooter>
         </ModalContent>               
     </Modal>
