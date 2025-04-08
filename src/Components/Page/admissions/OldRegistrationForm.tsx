@@ -603,7 +603,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                     </Box>
                     <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
                         <FormControl isInvalid={trainee.e_contact_person === '' && showAlert1}>
-                            <label className='text-gray-400'>Emergency Contact Person:</label>
+                            <label className='text-gray-400'>In case of Emergency:</label>
                             <Input id='e_contact_person' value={trainee.e_contact_person} onChange={handleOnChange} className='shadow-md uppercase' />
                         </FormControl>
                         <FormControl isInvalid={trainee.e_contact === '' && showAlert1}>
@@ -1295,7 +1295,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
         </ModalContent>
     </Modal>
     {/** Training Schedule Modal */}
-    <Modal blockScrollOnMount={false}  isOpen={isOpenSched} size='xl' onClose={onCloseSched} scrollBehavior='inside' motionPreset='scale'>
+    <Modal blockScrollOnMount={false}  isOpen={isOpenSched} size='xl' onClose={onCloseSched} scrollBehavior='outside' motionPreset='scale'>
         <ModalOverlay />
         <ModalContent ref={modalRef} tabIndex={-1} >
             <ModalHeader color='blue.700' fontWeight='700' fontSize='xl'>Select Training Date</ModalHeader>

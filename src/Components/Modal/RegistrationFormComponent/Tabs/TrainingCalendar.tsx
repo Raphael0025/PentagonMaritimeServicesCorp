@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Box, Text, Input, FormControl, FormLabel, Tabs, TabList, TabPanels, Tab, TabPanel, Alert, AlertIcon, AlertTitle, AlertDescription, InputLeftAddon, InputGroup, useDisclosure, Button, Radio, RadioGroup, useToast, Modal, ModalHeader, ModalContent, ModalBody, ModalFooter, ModalOverlay } from '@chakra-ui/react'
+import { Box, Text, FormControl, Button, } from '@chakra-ui/react'
 import DatePicker from 'react-datepicker'
 
 interface TabProps{
@@ -9,7 +9,6 @@ interface TabProps{
 }
 
 export default function TrainingCalendar({setSched}: TabProps){
-
 
     const [start_date, setStartDate] = useState<Date | null>(new Date())
     const [end_date, setEndDate] = useState<Date | null>(new Date())
@@ -38,7 +37,6 @@ export default function TrainingCalendar({setSched}: TabProps){
         : '';
 
         if(end_date === null || startDateStr === endDateStr){ // 1 day training | opt 1
-            console.log('1 Day')
             setSched(startDateStr)
         } else if (startDateStr !== endDateStr){ // 1 day training | opt 2
             const combineSched = `${startDateStr} to ${endDateStr}`
