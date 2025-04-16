@@ -60,7 +60,7 @@ export default function Page({params}: PageProps){
     }
 
     // Find the course
-    const course = allCourses?.find((course) => course.id === courseID);
+    const course = allCourses?.find((course) => course.id === courseID)
     
     return(
     <>
@@ -125,9 +125,9 @@ export default function Page({params}: PageProps){
                 </Box>
             </Box>
         </main>
-        <Modal isOpen={isOpenMod} size='xl' onClose={onCloseMod} >
+        <Modal isOpen={isOpenMod} size='full' scrollBehavior='inside' onClose={onCloseMod} >
             <ModalOverlay />
-            {/* <CreateBatch onClose={onCloseMod} /> */}
+            <CreateBatch onClose={onCloseMod} course_id={course?.id ?? ''} reg_id={''} reg_Type={1} />
         </Modal>
     </>
     )

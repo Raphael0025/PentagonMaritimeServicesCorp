@@ -22,7 +22,7 @@ import { fullMonth } from '@/handlers/util_handler'
 
 export default function Page() {
     const toast = useToast()
-    const { data: allClients } = useClients()
+    const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
     const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
@@ -189,7 +189,7 @@ export default function Page() {
                                         {allTraining && allTraining?.filter((training) => training.reg_ref_id === registration.id && training.reg_status >= 1 ).map((training) => (
                                             <Box key={training.id} className='py-3 px-5 items-center text-center border-b rounded' display='flex' justifyContent='between'>
                                                 <Text w='100%' className='text-xs uppercase'>
-                                                    {allCourses?.find((course) => course.id === training.course)?.course_code || ''}
+                                                    {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                                                 </Text>
                                                 <Text w='100%' className='text-xs uppercase'>{`Php  ${training.course_fee}`}</Text>
                                                 <Text w='100%' className='text-xs uppercase'>{training.accountType === 0 ? 'Crew' : 'Company'}</Text>

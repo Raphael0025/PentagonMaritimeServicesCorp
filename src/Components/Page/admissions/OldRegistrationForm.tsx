@@ -164,7 +164,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
         const { id, value } = e.target
         setTrainee((prev) => ({
             ...prev,
-            [id]: value
+            [id]: value.toUpperCase()
         }))
     }
     
@@ -173,7 +173,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
         
         setTrainee((prev) => ({
             ...prev,
-            [id]: value.trim()
+            [id]: value.trim().toUpperCase()
         }))
     }
     
@@ -182,7 +182,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
         
         setTrainee((prev) => ({
             ...prev,
-            [id]: value
+            [id]: value.toUpperCase()
         }))
     }
 
@@ -220,8 +220,8 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                 templateData = {
                     course: courseData,
                     course_fee: courseFee,
-                    start_date: startDate,
-                    end_date: endDate,
+                    start_date: startDate.toUpperCase(),
+                    end_date: endDate.toUpperCase(),
                     numOfDays,
                     accountType: payment, // 0 - crew | 1 - company
                     payment_mode: 0, // 0 - cash | 1 - gcash | 2 - bank
@@ -230,7 +230,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                 templateData = {
                     course: courseData,
                     course_fee: courseFee,
-                    start_date: sched,
+                    start_date: sched.toUpperCase(),
                     end_date: '',
                     numOfDays,
                     accountType: payment, // 0 - crew | 1 - company
