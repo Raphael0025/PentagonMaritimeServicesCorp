@@ -130,7 +130,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                         const registeredTrainee = allRegistrations?.find((reg) => reg.id === training.reg_ref_id) // get reg doc using training id
                         const traineeInfo = allTrainee?.find((trainee) => trainee.id === registeredTrainee?.trainee_ref_id) // get the trainee info using reg id
                         return(
-                            <Checkbox mb='3' isChecked={selectedTrainings.some((t) => t.id === training.id)} 
+                            <Checkbox mb='3' key={training.id} isChecked={selectedTrainings.some((t) => t.id === training.id)} 
                                 onChange={() => handleVerifySelection(training.id, training.start_date, training.end_date)} borderRadius={'5px'} border={selectedTrainings.some((t) => t.id === training.id) ? '2px' : '1px'} borderColor={selectedTrainings.some((t) => t.id === training.id) ? 'blue.600' : 'gray.200'} shadow={'lg'} p='3'>
                                 <Box fontSize='16px' display='flex' >
                                     <Text>
