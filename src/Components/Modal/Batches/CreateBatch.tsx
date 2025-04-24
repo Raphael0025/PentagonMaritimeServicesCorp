@@ -200,7 +200,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                             
                             return(
                                 <Checkbox mb='3' size='lg' key={training.id} isChecked={selectedTraining.some((t) => t.training.id === training.id)} 
-                                    onChange={() => handleVerifySelection(training.id, registeredTrainee?.id, traineeInfo?.id, training.start_date, training.end_date, Number(training.numOfDays))} borderRadius={'5px'} border={selectedTraining.some((t) => t.training.id === training.id) ? '2px' : '1px'} borderColor={selectedTraining.some((t) => t.training.id === training.id) ? 'blue.600' : 'gray.200'} shadow={'lg'} p='3'>
+                                    onChange={() => handleVerifySelection(training.id, registeredTrainee?.id || '', traineeInfo?.id || '', training.start_date, training.end_date, Number(training.numOfDays))} borderRadius={'5px'} border={selectedTraining.some((t) => t.training.id === training.id) ? '2px' : '1px'} borderColor={selectedTraining.some((t) => t.training.id === training.id) ? 'blue.600' : 'gray.200'} shadow={'lg'} p='3'>
                                     <Box fontSize='16px' display='flex' >
                                         <Text>
                                             <Text color='gray.500' as='span'>{training.numOfDays > 1 ? 'From:' : 'From - To:'}</Text>
