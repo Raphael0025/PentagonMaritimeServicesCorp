@@ -8,12 +8,13 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 interface TrainingContextType {
     data: TRAINING_BY_ID[] | null;
+    allData: TRAINING_BY_ID[] | null;
     setTraining: React.Dispatch<React.SetStateAction<TRAINING_BY_ID[] | null>>;
     setMonth: React.Dispatch<React.SetStateAction<number>>;
     setYear: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const TrainingContext = createContext<TrainingContextType>({data: null, setTraining: () => {}, setMonth: () => {}, setYear: () => {}})
+const TrainingContext = createContext<TrainingContextType>({data: null, allData: null, setTraining: () => {}, setMonth: () => {}, setYear: () => {}})
 
 interface TrainingProvderProps {
     children: ReactNode;
@@ -21,6 +22,7 @@ interface TrainingProvderProps {
 
 export const TrainingProvider: React.FC<TrainingProvderProps>= ({ children }) => {
     const [data, setData] = useState<TRAINING_BY_ID[] | null>(null)
+    const [allData, setAllData] = useState<TRAINING_BY_ID[] | null>(null)
     const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
     const [year, setYear] = useState<number>(new Date().getFullYear())
     
@@ -38,31 +40,34 @@ export const TrainingProvider: React.FC<TrainingProvderProps>= ({ children }) =>
 
                 // const initData = await getTrainingData(month, year);
                 // setData(initData);
-                const registrationRef = collection(firestore, 'TRAINING');
+                const trainingRef = collection(firestore, 'TRAINING');
                 const filteredQuery = query(
-                    registrationRef,
+                    trainingRef,
                     where("date_enrolled", ">=", startDate),  // Ensure month matches
                     where("date_enrolled", "<=", endDate)     // Ensure year matches
                 )
+                const allTrainingQuery = query(trainingRef)
+
                 const unsubscribe = onSnapshot(filteredQuery, (snapshot) => {
                     const updatedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as TRAINING_BY_ID[];
                     setData(updatedData);
                 });
+                const unsubscribeAllData = onSnapshot(allTrainingQuery, (snapshot) => {
+                    const updatedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as TRAINING_BY_ID[];
+                    setAllData(updatedData);
+                });
                 // Cleanup subscription on unmount
                 return () => {
                     unsubscribe();
+                    unsubscribeAllData();
                 };
             } catch(error){
                 throw error
             } 
-        // };
-        // if (month > 0 && year > 0) {  // Ensure valid values
-        //     fetchData();
-        // }
     }, [month, year])
     
     return (
-        <TrainingContext.Provider value={{data, setTraining: setData, setMonth, setYear}}>
+        <TrainingContext.Provider value={{data, allData, setTraining: setData, setMonth, setYear}}>
             { children }
         </TrainingContext.Provider>
     )

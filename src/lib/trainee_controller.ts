@@ -151,7 +151,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
                 result: 0,
                 train_remarks: '',
                 regType: 2,
-                batch: 1,
+                batch: '1',
                 date_enrolled: Timestamp.now(),
             }
             await addDoc(training, {...newTraining})
@@ -183,7 +183,7 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string) =>
                 result: 0,
                 train_remarks: '',
                 regType: 2,
-                batch: 1,
+                batch: '1',
                 date_enrolled: Timestamp.now(),
             }
             await addDoc(training, {...newTraining})
@@ -209,45 +209,45 @@ export const PROCESS_CANCELLATION = async (val_id: string, type: number, reason:
     }
 }
 
-export const addRegTypeField = async () => {
-    const trainingRef = collection(firestore, 'TRAINING'); // Adjust the collection name as needed
-    const registrationRef = collection(firestore, 'REGISTRATION');
+// export const addRegTypeField = async () => {
+//     const trainingRef = collection(firestore, 'TRAINING'); // Adjust the collection name as needed
+//     const registrationRef = collection(firestore, 'REGISTRATION');
     
-    try {
-        // Get all documents from the training collection
-        const trainingSnapshot = await getDocs(trainingRef);
+//     try {
+//         // Get all documents from the training collection
+//         const trainingSnapshot = await getDocs(trainingRef);
 
-        for (const trainingDoc of trainingSnapshot.docs) {
-            const trainingData = trainingDoc.data();
-            const regType = trainingData.regType;
-            const regRefId = trainingData.reg_ref_id;
+//         for (const trainingDoc of trainingSnapshot.docs) {
+//             const trainingData = trainingDoc.data();
+//             const regType = trainingData.regType;
+//             const regRefId = trainingData.reg_ref_id;
             
-            // Find the corresponding registration document by reg_ref_id
-            const regDocRef = doc(firestore, 'REGISTRATION', regRefId);
-            const regDocSnapshot = await getDoc(regDocRef);  // Use getDoc instead of getDocs for single document retrieval
+//             // Find the corresponding registration document by reg_ref_id
+//             const regDocRef = doc(firestore, 'REGISTRATION', regRefId);
+//             const regDocSnapshot = await getDoc(regDocRef);  // Use getDoc instead of getDocs for single document retrieval
 
-            if (regDocSnapshot.exists()) {
-                const regData = regDocSnapshot.data();
+//             if (regDocSnapshot.exists()) {
+//                 const regData = regDocSnapshot.data();
                 
-                // Check if regType already exists in the registration document
-                if (!regData.hasOwnProperty('regType')) {
-                    // If regType does not exist, add it
-                    await updateDoc(regDocRef, {
-                        regType: regType
-                    });
-                    console.log(`Added regType to document ${regRefId}`);
-                } else {
-                    console.log(`regType already exists in document ${regRefId}, skipping.`);
-                }
-            } else {
-                console.log(`No matching document found for reg_ref_id: ${regRefId}`);
-            }
-        }
+//                 // Check if regType already exists in the registration document
+//                 if (!regData.hasOwnProperty('regType')) {
+//                     // If regType does not exist, add it
+//                     await updateDoc(regDocRef, {
+//                         regType: regType
+//                     });
+//                     console.log(`Added regType to document ${regRefId}`);
+//                 } else {
+//                     console.log(`regType already exists in document ${regRefId}, skipping.`);
+//                 }
+//             } else {
+//                 console.log(`No matching document found for reg_ref_id: ${regRefId}`);
+//             }
+//         }
 
-    } catch (error) {
-        console.error('Error updating registration documents:', error);
-    }
-};
+//     } catch (error) {
+//         console.error('Error updating registration documents:', error);
+//     }
+// };
 
 export const UPDATE_TRAINING = async (training_id: string, updateTrainingDoc: Partial<TRAINING>, actor: string | null) => {
     try{
@@ -267,25 +267,25 @@ export const UPDATE_REGISTRATION = async (reg_id: string, updateRegDoc: Partial<
     }
 }
 
-export const UPDATE_TS = async (training_id: string, startDate: string, endDate: string, actor: string | null) => {
-    try{
-        const trainingRef = doc(firestore, 'TRAINING', training_id)
-        await updateDoc(trainingRef, {start_date: startDate, end_date: endDate})
-        await addLog(actor, 'Training Scheduled Updated', 'TRAINING', training_id)
-    }catch(error){
-        throw error
-    }
-}
+// export const UPDATE_TS = async (training_id: string, startDate: string, endDate: string, actor: string | null) => {
+//     try{
+//         const trainingRef = doc(firestore, 'TRAINING', training_id)
+//         await updateDoc(trainingRef, {start_date: startDate, end_date: endDate})
+//         await addLog(actor, 'Training Scheduled Updated', 'TRAINING', training_id)
+//     }catch(error){
+//         throw error
+//     }
+// }
 
-export const UPDATE_COURSE_FEE = async (training_id: string, course_fee: number, actor: string | null) => {
-    try{
-        const trainingRef = doc(firestore, 'TRAINING', training_id)
-        await updateDoc(trainingRef, {course_fee})
-        await addLog(actor, 'Training Fee Updated', 'TRAINING', training_id)
-    }catch(error){
-        throw error
-    }
-}
+// export const UPDATE_COURSE_FEE = async (training_id: string, course_fee: number, actor: string | null) => {
+//     try{
+//         const trainingRef = doc(firestore, 'TRAINING', training_id)
+//         await updateDoc(trainingRef, {course_fee})
+//         await addLog(actor, 'Training Fee Updated', 'TRAINING', training_id)
+//     }catch(error){
+//         throw error
+//     }
+// }
 
 export const UPDATE_TRAINEE = async (traineeInfo: TRAINEE_BY_ID, actor: string | null) => {
     try{

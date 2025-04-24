@@ -214,7 +214,7 @@ export default function Page(){
                                                         {`Reg-${reg_num}`}
                                                     </Text>                                        
                                                     <Text w="150px">
-                                                        {`${courseBatch?.find((batch) => batch.id === training.batch.toString())?.batch_no || ''}`}
+                                                        {`${courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `B${courseBatch.find((batch) => batch.id === training.batch)?.batch_no}` : ''}`}
                                                     </Text>                                        
                                                     <Text w="150px">
                                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}

@@ -1,3 +1,4 @@
 import CreateBatch from './CreateBatch'
+import EditBatch from './EditBatch'
 
-export { CreateBatch }
+export { CreateBatch, EditBatch }

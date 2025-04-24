@@ -1,5 +1,4 @@
-
-import { Timestamp } from 'firebase/firestore'
+import { reformatTrainingSched, reformatSchedule } from "./trainee_handler"
 
 // Helper function to get the formatted date string
 export const currentYear = new Date().getFullYear()
@@ -7,12 +6,42 @@ export const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', '
 export const fullMonth = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+export const splitTextAtWordBoundary = (text: string, limit: number) => {
+    if (text.length <= limit) return [text, '']; // If text is shorter than the limit, no need to split
+    const splitIndex = text.lastIndexOf(' ', limit); // Find the last space before the limit
+    if (splitIndex === -1) return [text, '']; // If no space is found, return the entire text
+    return [text.slice(0, splitIndex), text.slice(splitIndex + 1)]; // Split at the space
+}
+
+export const getFormatDate = (dateRange: string): string => {
+    // Regular expression to extract the month and day from the input
+    const regex = /(?:\w+, )?(\w+) (\d+)(?: - (?:\w+, )?(\w+) (\d+))?/
+    const match = dateRange.match(regex)
+
+    if (!match) {
+        throw new Error("Invalid date range format")
+    }
+    
+    const [, startMonth, startDay, endMonth, endDay] = match
+    // If the months are the same, format as "Oct 07-09"
+    if (startMonth === endMonth) {
+        return `${startMonth} ${startDay}-${endDay}`
+    }
+    // If the months are different, format as "Oct 31 - Nov 01"
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`
+}
+
 export const getFormattedDate = (date: Date): string => {
     const day = date.getDate().toString().padStart(2, '0') // Ensure day is 2 digits
     const month = months[date.getMonth()] // Get month name from the `months` array
     const weekday = daysOfWeek[date.getDay()] // Get the year, though it's not used in the final string
     
     return `${weekday}, ${month} ${day}`; // Return in "Month Day" format (e.g., "Nov 11")
+}
+
+export const getFormatDateWithTime = (date: Date | null): string => {
+    if(!date) return 'cannot format date'
+    return date.toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true})
 }
 
 const borderTextColorMap: Record<string, Record<number, string>> = {

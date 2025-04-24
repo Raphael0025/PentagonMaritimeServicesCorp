@@ -50,6 +50,19 @@ export const shortenMonth = (month: string): string => {
     };
     return monthMap[month] || month;
 };
+export const formatDateToShort = (dateString: string): string => {
+    // Parse the input string into a Date object
+    const date = new Date(dateString);
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+        throw new Error("Invalid date string");
+    }
+
+    // Format the date to "MMM DD" (e.g., "Apr 21")
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+}
 
 // Helper function to reformat training schedule
 export const reformatSchedule = (schedule: string): string => {

@@ -21,7 +21,10 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Edit Account Type
         - [-] Implement Add New Training using current registration doc
         - [-] Rollback training doc and reg doc  to Pending
-        - [] Create Transfer from BD to Dated or vice versa
+        - [-] Create Transfer from BD to Dated or vice versa
+        - [] Implement Number of days in Edit training schedule
+        - [] Refactor edit enrolled date
+        - [] implement new feature when rollbacked reg doesn't change its reg_no value
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:

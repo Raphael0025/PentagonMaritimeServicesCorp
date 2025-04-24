@@ -1,55 +1,108 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Box, Text, Input, useToast, FormLabel, FormControl, Checkbox, Button, useDisclosure, Modal, ModalOverlay, ModalCloseButton, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react'
+import { Box, Text, Input, useToast, Alert, AlertIcon, AlertTitle, AlertDescription, FormLabel, FormControl, Checkbox, Button, useDisclosure, Modal, ModalOverlay, ModalCloseButton, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
 
-import { useTraining } from '@/context/TrainingContext'
-import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
-import { useTrainees } from '@/context/TraineeContext'
 import { useCourseBatch } from '@/context/BatchContext'
+import { useTraining } from '@/context/TrainingContext'
+import { useRegistrations } from '@/context/RegistrationContext'
+import { useTrainees } from '@/context/TraineeContext'
 import { useRank } from '@/context/RankContext'
 
 import { fullMonth, getFormatDateWithTime } from '@/handlers/util_handler'
-
 import { deployYDate } from '@/types/utils' 
 
-import { GENERATE_BATCH } from '@/lib/course_batches_controller'
+import { UPDATE_BATCH } from '@/lib/course_batches_controller'
 import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 import { ToastStatus } from '@/types/handling'
-import { SelectedTraining } from '@/types/trainees'
+import { SelectedTraining, TRAINING_BY_ID } from '@/types/trainees'
+import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
 
 interface PageProps {
     onClose: () => void;
-    reg_Type: number;
+    batch_id: string;
+    batchNum: number;
     course_id: string;
+    reg_Type: number;
 }
 
 
-export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
+export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course_id}: PageProps){
     const toast = useToast()
     const { data: courseBatch } = useCourseBatch()
-    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
-    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { allData: allTrainings, data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
+    const { allData: allRegistration, data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
     const { data: allTrainee } = useTrainees()
     const { data: allCourses } = useCourses()
     const { data: allRanks } = useRank()
     const { courseCodes } = useClients()
 
     const [selectedTraining, setSelectedTrainings] = useState<SelectedTraining[]>([])
+    const [additionalTraining, setAdditionalTrainings] = useState<SelectedTraining[]>([])
+    const [removeTrainings, setTrainingRemoval] = useState<string[]>([])
+    const [batchInfo, setBatchInfo] = useState<CourseBatchByID>(initCourseBatch)
 
-    const [startDate, setStart] = useState<string>('')
-    const [endDate, setEnd] = useState<string>('')
-    const [batch, setBatch] = useState<number>(0)
-    const [numDays, setNumDays] = useState<number>(0)
+    const [trainingID, setID] = useState<string>('')
+    const [indexNum, setIndx] = useState<number>(0)
+
+    const [startDate, setStart] = useState<string | undefined>('')
+    const [endDate, setEnd] = useState<string | undefined>('')
+    const [batch, setBatch] = useState<number | undefined>(0)
+    const [batchAssigned, setBatchAssign] = useState<number | undefined>(0)
+    const [numDays, setNumDays] = useState<number | undefined>(0)
     const [loading, setLoading] = useState<boolean>(false)
 
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
     const {isOpen: isOpenM, onOpen: onOpenM, onClose: onCloseM } = useDisclosure()
+    const {isOpen: isOpenRemove, onOpen: onOpenRemove, onClose: onCloseRemove } = useDisclosure()
+
+    const courseName = allCourses?.find((course) => course.id === course_id)
+
+    useEffect(() => {
+        const fetchData = () => {
+            const getCourseBatch = courseBatch?.find((b) => b.id === batch_id)
+            setBatchInfo(getCourseBatch || initCourseBatch)
+            setStart(getCourseBatch?.start_date)
+            setEnd(getCourseBatch?.end_date)
+            setBatch(getCourseBatch?.batch_no)
+            setBatchAssign(getCourseBatch?.batch_no)
+            setNumDays(getCourseBatch?.numOfDays)
+
+            const matchingBatchTraining = allTrainings?.filter((training) => training.batch === batch_id) || []
+
+            const newSelectedTrainings: SelectedTraining[] = []
+            for(const training of matchingBatchTraining){
+                const registration = allRegistration?.find((r) => r.id === training.reg_ref_id)
+                if (!registration) continue
+
+                const trainee = allTrainee?.find((t) => t.id === registration.trainee_ref_id)
+                if (!trainee) continue
+
+                newSelectedTrainings.push({
+                    trainee,
+                    registration,
+                    training
+                })
+            }
+            setSelectedTrainings(newSelectedTrainings)
+        }
+        if (batch_id && allTrainings && allRegistration && allTrainee && courseBatch) {
+            fetchData()
+        }
+    },[batch_id, allTrainings, allRegistration, allTrainee, courseBatch])
+
+    const matchedCourseAndCompanyCourse = courseCodes?.find((courseCode) => courseCode.id_course_ref === course_id)?.id // fetched company course code that matches the document course id
+    const matchedCourseTraining = allTraining?.filter((training) => 
+        (training.course === course_id || training.course === matchedCourseAndCompanyCourse)
+    && training.regType === reg_Type // By using training.regType || reg_Type like reg_status to validate the status of training, is also considered if a training is enrolled or not.
+    && Number(training.batch) === 1) // this will validate if training is still has 1 as its value
+    
+    const courseTrainingBatches = matchedCourseTraining?.filter((training) => (training.batch === batch_id)) 
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
         toast({
@@ -63,60 +116,19 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
         })
     }
 
-    
-    const courseName = allCourses?.find((course) => course.id === course_id)
-    const matchedCourseAndCompanyCourse = courseCodes?.find((courseCode) => courseCode.id_course_ref === course_id)?.id // fetched company course code that matches the document course id
-    const matchedCourseTraining = allTraining?.filter((training) => 
-        (training.course === course_id || training.course === matchedCourseAndCompanyCourse)
-    && training.regType === reg_Type // By using training.regType || reg_Type like reg_status to validate the status of training, is also considered if a training is enrolled or not.
-    && (Number(training.batch) === 1 || Number(training.batch) === 0)) // this will validate if training is still has 1 as its value
-    
-    const lastBatchNum = courseBatch && courseBatch?.filter((batch) => batch.course === courseName?.id).reduce((max, curr) => (curr.batch_no > max ? curr.batch_no : max), 0)
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear()
+    const startYear = parseInt(deployYDate, 10)
+    const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
 
-    const handleBatchDuplication = (batchVal: number) => {
-        return courseBatch?.some((batch) => batch.course === courseName?.id && batch.batch_no === batchVal)
-    }
-
-    const handleCreateBatch = async () => {
-        setLoading(true)
-        const actor: string | null = localStorage.getItem('customToken')
-        const courseID = courseName?.id
-
-        handleToast('Processing...', `This may take some time to finish, Kindly wait for it to complete.`, 5000, 'info')
-        new Promise<void>((res, rej) => {
-            setTimeout(async () => {
-                try{
-                    const newBatchRecord = {
-                        batch_no: batch,
-                        start_date: startDate,
-                        end_date: endDate,
-                        numOfDays: numDays,
-                        course: courseID,
-                    }
-                    const batch_id = await GENERATE_BATCH(newBatchRecord, actor) 
-                    await Promise.all(
-                        selectedTraining.map((trainingData) => 
-                            UPDATE_TRAINING(trainingData.training.id, {batch: batch_id}, actor)
-                        )
-                    )
-                    res()
-                }catch(error){
-                    rej(error)
-                }
-            }, 500)
-        }).then(() => {
-            handleToast('New Batch Created Successfully!', `Batch# ${batch} for this course ${courseName?.course_code} has been created.`, 5000, 'success')
-        }).catch((error) => {
-            console.log('Error:, ', error)
-        }).finally(() => {
-            setLoading(false)
-            setSelectedTrainings([])
-            setStart('')
-            setEnd('')
-            setBatch(0)
-            setNumDays(0)
-            onClose()
-        })
+    const handleData = () => {
+        setTMonth(monthSelected + 1) 
+        setTYear(yearSelected)
+        setRMonth(monthSelected + 1) 
+        setRYear(yearSelected)
+        setMonthSelected(new Date().getMonth())
+        setYearSelected(new Date().getFullYear())
+        onCloseM()
     }
 
     const handleVerifySelection = (training: string, registration: string, trainee: string, start_date: string, end_date: string, numOfDays: number) => {
@@ -144,7 +156,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
 
         if (!training && !registration && !trainee) return;
         
-        setSelectedTrainings((prev) => {
+        setAdditionalTrainings((prev) => {
             if (!trainee || !registration || !training) {
                 // If any of the required properties are undefined, return the previous state unchanged
                 return prev;
@@ -166,28 +178,74 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
         })
     }
 
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear()
-    const startYear = parseInt(deployYDate, 10)
-    const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+    const handleDataRemoval = (training_id: string, index: number) => {
+        setTrainingRemoval((prev) => [...prev,training_id])
+        setSelectedTrainings((prev) => prev.filter((_, i) => i !== index))
+    }
 
-    const handleData = () => {
-        setTMonth(monthSelected + 1) 
-        setTYear(yearSelected)
-        setRMonth(monthSelected + 1) 
-        setRYear(yearSelected)
-        setMonthSelected(new Date().getMonth())
-        setYearSelected(new Date().getFullYear())
-        onCloseM()
+    const lastBatchNum = courseBatch && courseBatch?.filter((batch) => batch.course === courseName?.id).reduce((max, curr) => (curr.batch_no > max ? curr.batch_no : max), 0)
+    const handleBatchDuplication = (batchVal: number | undefined) => {
+        return courseBatch?.some((batch) => batch.course === courseName?.id && batch.batch_no === batchVal) && batchAssigned !== batchVal
+    }
+
+    const handleUpdateBatch = async () => {
+        setLoading(true)
+        const actor: string | null = localStorage.getItem('customToken')
+
+        handleToast('Processing...', `This may take some time to finish, Kindly wait for it to complete.`, 5000, 'info')
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const newBatchRecord = { batch_no: batch }
+                    await UPDATE_BATCH(batch_id, newBatchRecord, actor) 
+                    // This function is to add some more trainings, if the condition is true then function will execute 
+                    additionalTraining.length > 0 && (
+                        await Promise.all(
+                            additionalTraining.map((trainingData) => {
+                                return Promise.resolve(UPDATE_TRAINING(trainingData.training.id, {batch: batch_id}, actor))
+                            })
+                        )
+                    )
+                    // This function is to remove some not needed trainings, if the condition is true then function will execute 
+                    removeTrainings.length > 0 && (
+                        await Promise.all(
+                            removeTrainings.map((removal) => 
+                                UPDATE_TRAINING(removal, {batch: '1'}, actor)
+                            )
+                        )
+                    )
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() => {
+            handleToast('Batch Successfully Updated!', `Batch# ${batch} for this course ${courseName?.course_code} has been updated.`, 5000, 'success')
+        }).catch((error) => {
+            console.log('Error:, ', error)
+        }).finally(() => {
+            setLoading(false)
+            setSelectedTrainings([])
+            setAdditionalTrainings([])
+            setTrainingRemoval([])
+            setBatchInfo(initCourseBatch)
+            setID('')
+            setIndx(0)
+            setStart('')
+            setEnd('')
+            setBatch(0)
+            setNumDays(0)
+            onClose()
+        })
     }
 
     return(
     <>
         <ModalContent px='5'>
-            <ModalHeader color='blue.700'>{`SELECT TRAININGS ${courseName?.course_code !== undefined ? `for ${courseName?.course_code}` : ''} ${courseName?.course_name !== undefined ? `- ${courseName?.course_name}` : ''}`}</ModalHeader>
+            <ModalHeader color='blue.700'>{`Edit Details for BATCH# ${batchNum} ${courseName?.course_code !== undefined ? `of ${courseName?.course_code}` : ''} ${courseName?.course_name !== undefined ? `- ${courseName?.course_name}` : ''}`}</ModalHeader>
             <ModalBody>
                 <Box display='flex' justifyContent='start'>
-                    <Button size='sm' bgColor='blue.700' colorScheme='blue' onClick={onOpenM}>Filter Enrolled Date</Button>
+                    <Button size='sm' bgColor='blue.700' colorScheme='blue' onClick={onOpenM}>Filter Date</Button>
                 </Box>
                 <Box display='flex' gap='4' mt='2'>
                     <Box w='25%' display='flex' flexDir='column' overflowY={'auto'} maxH='700px'>
@@ -214,7 +272,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                                         )}
                                     </Box>
                                     <Text mt='2' fontSize='12px' display='flex' justifyContent='space-between' textTransform='uppercase' >
-                                        <Text color='gray.500' as='span'>Trainee:</Text>
+                                        <Text color='gray.500' as='span'>Trainee:</Text> 
                                         <Text as='span' textAlign='end'>{`${allRanks?.find((rank) => rank.code === traineeInfo?.rank)?.rank || traineeInfo?.rank} ${traineeInfo?.last_name}, ${traineeInfo?.first_name}`}</Text>
                                     </Text>
                                     <Text mt='2' fontSize='12px' display='flex' justifyContent='space-between' textTransform='uppercase' >
@@ -232,10 +290,9 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                         <Text py='5' fontSize='xl'>
                             There are no trainings enrolled in this course.
                         </Text>
-                    )
-                    }
+                    )}
                     </Box>
-                    <Box w='100%' shadow='md' borderRadius={'5px'} border='1px' borderColor='gray.200' p='5'>
+                    <Box h='100%' w='100%' shadow='md' borderRadius={'5px'} border='1px' borderColor='gray.200' p='5'>
                         <Box display='flex' alignItems='start' borderBottomWidth={'1px'} borderColor='gray.400' py='4'>
                             <Box display='flex' flexDir='column' alignItems='start'>
                                 <FormControl display='flex' flexDir='column' justifyContent='start' alignItems='start'>
@@ -261,14 +318,14 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                                 <Text as='span'>{`To:`}</Text>
                                 <Text as='span'>{`${endDate}`}</Text>
                             </Text>
-                            <Button onClick={() => {setStart(''); setEnd(''); setBatch(0); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
                         </Box>
                         <Box py='4'>
                             <Box px='6' display='flex' color='gray.600' py='3' justifyContent={'space-between'} alignItems={'center'} borderRadius='5px' borderWidth='1px' borderColor='gray.400'>
                                 <Text w='30%' textAlign='start'>#</Text>
-                                <Text w='100%' textAlign='start'>Name</Text>
+                                <Text w='100%' textAlign='start'>Trainee</Text>
                                 <Text w='100%' textAlign='center'>Rank</Text>
                                 <Text w='100%' textAlign='center'>Registration No.</Text>
+                                <Text w='30%' textAlign='center'>Action</Text>
                             </Box>
                             {selectedTraining.map((row, index) => (
                                 <Box key={index} display='flex' py='3' px='6' textTransform='uppercase' justifyContent={'space-between'} alignItems={'center'} borderBottomWidth='1px' borderColor='gray.400'>
@@ -276,6 +333,20 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                                     <Text w='100%' textAlign='start'>{`${row.trainee.last_name}, ${row.trainee.first_name} ${!row.trainee.middle_name || ['n/a', 'na'].includes(row.trainee.middle_name.toLowerCase()) ? '' : `${row.trainee.middle_name.charAt(0)}.`} ${!row.trainee.suffix || ['n/a', 'na'].includes(row.trainee.suffix.toLowerCase()) ? '' : row.trainee.suffix}`}</Text>
                                     <Text w='100%' textAlign='center'>{`${row.trainee.rank}`}</Text>
                                     <Text w='100%' textAlign='center'>{`REG-${row.registration.reg_no}`}</Text>
+                                    <Box w='30%' display='flex' justifyContent={'center'}>
+                                        <Button onClick={() => {onOpenRemove(); setID(row.training.id); setIndx(index); }} size='sm' variant='ghost' colorScheme='red'>Remove</Button>
+                                    </Box>
+                                </Box>
+                            ))}
+                            {additionalTraining.map((row, index) => (
+                                <Box key={index} display='flex' py='3' px='6' textTransform='uppercase' justifyContent={'space-between'} alignItems={'center'} borderBottomWidth='1px' borderColor='gray.400'>
+                                    <Text w='30%' textAlign='start'>{((index + 1) + selectedTraining.length)}</Text>
+                                    <Text w='100%' textAlign='start'>{`${row.trainee.last_name}, ${row.trainee.first_name} ${!row.trainee.middle_name || ['n/a', 'na'].includes(row.trainee.middle_name.toLowerCase()) ? '' : `${row.trainee.middle_name.charAt(0)}.`} ${!row.trainee.suffix || ['n/a', 'na'].includes(row.trainee.suffix.toLowerCase()) ? '' : row.trainee.suffix}`}</Text>
+                                    <Text w='100%' textAlign='center'>{`${row.trainee.rank}`}</Text>
+                                    <Text w='100%' textAlign='center'>{`REG-${row.registration.reg_no}`}</Text>
+                                    <Box w='30%' display='flex' justifyContent={'center'}>
+                                        <Button onClick={() => {onOpenRemove(); setID(row.training.id); setIndx(index); }} size='sm' variant='ghost' colorScheme='red'>Remove</Button>
+                                    </Box>
                                 </Box>
                             ))}
                         </Box>
@@ -284,9 +355,27 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             </ModalBody>
             <ModalFooter borderTopWidth='2px' display={'flex'} justifyContent='center'>
                 <Button onClick={onClose} variant={'outline'} colorScheme='red' mr={3} shadow='md'>Cancel</Button>
-                <Button onClick={handleCreateBatch} isDisabled={batch === 0 || handleBatchDuplication(batch)} isLoading={loading} loadingText='Creating Batch...' colorScheme='blue' bgColor='blue.700' shadow='md'>Create Batch</Button>
+                <Button onClick={handleUpdateBatch} isDisabled={batch === 0 || handleBatchDuplication(batch)} isLoading={loading} loadingText='Updating Batch Info...' colorScheme='blue' bgColor='blue.700' shadow='md'>Update Batch</Button>
             </ModalFooter>
         </ModalContent>
+        {/** ALert Dialog */}
+        <Modal isOpen={isOpenRemove} size='lg' onClose={onCloseRemove}>
+            <ModalOverlay />
+            <ModalContent px='4'>
+                <ModalHeader borderBottomWidth='1px' borderColor='gray.500'>Action to Remove Data from this Batch</ModalHeader>
+                <ModalBody >
+                    <Text fontSize='16px' fontWeight='normal'>{`Are you sure you want to remove this training data from this batch. This action cannot be undone. If yes, kindly proceed, otherwise cancel.`}</Text>
+                    <Alert borderRadius='5px' mt='5' status='info' variant='left-accent'>
+                        <AlertIcon />
+                        <AlertDescription fontWeight='normal'>Note: If you have mistaken to remove a training, You can still recover it by cancelling the "Edit Batch" and don't click the update button.</AlertDescription>
+                    </Alert>
+                </ModalBody>
+                <ModalFooter display='flex' justifyContent='center' borderTopWidth='1px' borderColor='gray.500'>
+                    <Button variant='ghost' onClick={onCloseRemove}>No, Cancel it</Button>
+                    <Button ml='3' onClick={() => {handleDataRemoval(trainingID, indexNum); onCloseRemove();}} colorScheme='red'>Yes, Proceed to remove</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         {/*  Date Modal */}
         <Modal isOpen={isOpenM} scrollBehavior='inside' onClose={onCloseM}>
             <ModalOverlay />

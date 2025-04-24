@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 import Image from 'next/image'
-import { Box, Text, Input, Textarea, Button, InputLeftAddon, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react'
+import { Box, Text, } from '@chakra-ui/react'
 
-import {TrashIcon, Loading, DownloadIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
-import {NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon} from '@/Components/SideIcons'
+import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -15,8 +14,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 import {useRank} from '@/context/RankContext'
 
-import { useReactToPrint } from 'react-to-print'
-import { parsingTimestamp, ToastStatus } from '@/types/handling'
+import { parsingTimestamp, } from '@/types/handling'
 import './reg_admission.css'
 
 import { reformatTrainingSched } from '@/handlers/trainee_handler'
@@ -29,10 +27,6 @@ interface UIProps {
 export default function Page({regNum, traineeName}: UIProps){
 
     const componentRef = useRef<HTMLDivElement | null>(null);
-    const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `${traineeName}_REGISTRATION_FORM.pdf`,
-    })
 
     const { data: courseBatch } = useCourseBatch()
     const { data: allRanks } = useRank()

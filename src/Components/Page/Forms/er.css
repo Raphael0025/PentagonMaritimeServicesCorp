@@ -1,0 +1,20 @@
+.printable-content {
+    display: none; /* Hide by default */
+}
+.content-head{
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+@media print {
+    .printable-content {
+        display: block; /* Show during printing */
+        visibility: visible;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+}

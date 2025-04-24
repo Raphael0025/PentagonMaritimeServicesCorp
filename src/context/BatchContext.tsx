@@ -1,14 +1,14 @@
 'use client'
 
 import React,{createContext, useContext, useEffect, useState, ReactNode} from 'react'
-import {CourseBatch} from '@/types/course-batches'
+import { CourseBatchByID } from '@/types/course-batches'
 import { BATCH_BY_ID } from '@/types/training'
 import {collection, query, onSnapshot} from 'firebase/firestore'
 import { firestore, FETCH_BATCHES, } from '@/lib/course_batches_controller'
 
 interface CourseBatchContextType{
-    data: BATCH_BY_ID[] | null;
-    setCourseBatch: React.Dispatch<React.SetStateAction<BATCH_BY_ID[] | null>>;
+    data: CourseBatchByID[] | null;
+    setCourseBatch: React.Dispatch<React.SetStateAction<CourseBatchByID[] | null>>;
 }
 
 const CourseBatchContext = createContext<CourseBatchContextType>({data: null, setCourseBatch: () => {},})
@@ -18,16 +18,16 @@ interface CourseBatchProviderProps{
 }
 
 export const CourseBatchProvider: React.FC<CourseBatchProviderProps>  = ({children}) => {
-    const [data, setData] = useState<BATCH_BY_ID[] | null>(null)
+    const [data, setData] = useState<CourseBatchByID[] | null>(null)
     useEffect(() => {
         const fetchData = async () => {
             try{
                 const initData = await FETCH_BATCHES()
                 setData(initData)
-                const batches = collection(firestore, 'BATCHES')
+                const batches = collection(firestore, 'BATCH_RECORDS')
                 const order_query = query(batches)
                 const unsubscribe = onSnapshot(order_query, (snapshot) => {
-                    const updateData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data() })) as BATCH_BY_ID[]
+                    const updateData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data() })) as CourseBatchByID[]
                     setData(updateData)
                 })
                 return () => {

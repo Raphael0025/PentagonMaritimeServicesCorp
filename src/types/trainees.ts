@@ -142,7 +142,7 @@ export interface TRAINING {
     accountType: number; // 0 - crew | 1 - company
     
     date_enrolled: Timestamp;
-    batch: number;
+    batch: string;
     regType: number; // 2 - def | 0 - dated | 1 - bd
     
     isCertified: boolean;
@@ -168,7 +168,7 @@ export const initTraining = {
     accountType: 0, // 0 - crew | 1 - company
     
     date_enrolled: Timestamp.now(),
-    batch: 0,
+    batch: '',
     regType: 0, // 2 - def | 0 - dated | 1 - bd
     
     isCertified: false,
@@ -224,4 +224,10 @@ export interface OldTraineeProps {
     trainee: string;
     allTrainee: TRAINEE_BY_ID[] | null;
     setTraineeID: (value: string) => void;
+}
+
+export type SelectedTraining = {
+    trainee: TRAINEE_BY_ID;
+    registration: REGISTRATION_BY_ID;
+    training: TRAINING_BY_ID;
 }
