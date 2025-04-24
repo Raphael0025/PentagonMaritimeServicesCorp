@@ -24,12 +24,13 @@ interface ERProps {
     start_date: string;
     end_date: string;
     course: string;
+    courseCode: string;
     batch_no: string;
     batchID: string;
     courseID: string;
 }
 
-export default function PreviewER({ onClose, batch_no, e_report, batchID, courseID, start_date, end_date, course }: ERProps) {
+export default function PreviewER({ onClose, batch_no, e_report, batchID, courseID, start_date, end_date, course, courseCode }: ERProps) {
     const toast = useToast()
     const { allData: allTrainingData } = useTraining()
     const { allData: allRegistrations } = useRegistrations()
@@ -38,6 +39,11 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     
     const [year, setYear] = useState<string>('')
     const [room, setRoom] = useState<string>('')
+    const [assessor, setAssessor] = useState<string>('')
+    const [instructor, setInstructor] = useState<string>('')
+    const [practicumSite, setSite] = useState<string>('')
+    const [practicumDate, setDate] = useState<string>('')
+    const [classNo, setClassNo] = useState<string>('')
 
     const trainingsArr = allTrainingData?.filter((training) => training.course === courseID && training.batch.toString() === batchID)
     const formattedDate = end_date === '' ? formatDateToShort(start_date) :getFormatDate(`${start_date} - ${end_date}`)
@@ -65,24 +71,70 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     return (
         <>
         <Box w='70%' display={'flex'} flexDir='column' justifyContent='center'>
-            <Box mb={4} pb={3} borderBottom='1px' borderColor='gray.400'>
+            <Box mb={4} pb={3} borderBottom='1px' borderColor='gray.400' >
                 <Text fontSize='15px' display='flex' justifyContent='start' mb={4}>
                     <Text as='span' color='gray.600' mr={3}>Course:</Text>
                     <Text as='span' fontWeight='normal'>{course}</Text>
                 </Text>
                 <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
-                    <Text w='50%' fontSize='15px' display='flex' justifyContent='start'>
-                        <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
-                        <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
-                    </Text>
-                    <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
-                        <Text w='25%' as='span' color='gray.600'>Training Year:</Text>
-                        <Input w='25%' shadow='md' onChange={(e) => setYear(e.target.value)} />
+                    {e_report === 'STANDARD' ? (
+                    <>
+                        <Text w='50%' fontSize='15px' display='flex' justifyContent='start'>
+                            <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
+                            <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
+                        </Text>
+                        <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                            <Text w='25%' as='span' color='gray.600'>Training Year:</Text>
+                            <Input w='25%' shadow='md' onChange={(e) => setYear(e.target.value)} />
+                        </Box>
+                        <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                            <Text w='20%' as='span' color='gray.600'>Room No:</Text>
+                            <Input w='25%' shadow='md' onChange={(e) => setRoom(e.target.value)} />
+                        </Box>
+                    </>
+                    ) : e_report === 'STCW' ? (
+                    <>
+                    </>
+                    ) : e_report === 'MDS' && (
+                    <Box>
+                        <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+                            <Text w='50%' fontSize='15px' display='flex' justifyContent='start'>
+                                <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
+                                <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
+                            </Text>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Training Year:</Text>
+                                <Input w='30%' shadow='md' onChange={(e) => setYear(e.target.value)} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Class No:</Text>
+                                <Input w='30%' shadow='md' onChange={(e) => setClassNo(e.target.value)} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Room No:</Text>
+                                <Input w='30%' shadow='md' onChange={(e) => setRoom(e.target.value)} />
+                            </Box>
+                        </Box>
+                        <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
+                                <Input w='100%' shadow='md' onChange={(e) => setSite(e.target.value)} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
+                                <Input w='100%' shadow='md' onChange={(e) => setDate(e.target.value)} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Input w='100%' shadow='md' onChange={(e) => setAssessor(e.target.value)} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
+                                <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} />
+                            </Box>
+                        </Box>
                     </Box>
-                    <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
-                        <Text w='20%' as='span' color='gray.600'>Room No:</Text>
-                        <Input w='25%' shadow='md' onChange={(e) => setRoom(e.target.value)} />
-                    </Box>
+                    )}
                 </Box>
             </Box>
             <Box display='flex' justifyContent='center' alignItems='center'>
@@ -160,9 +212,9 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             {e_report === 'STANDARD' ? (
                 <StandardER e_report={e_report} course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room}/>
             ) : e_report === 'STCW' ? (
-                <STCW_ER e_report={e_report} course={course} schedule={formattedDate} year={year} room={room}/>
-            ) : e_report === 'mds' && (
-                <MDS_ER e_report={e_report} course={course} schedule={formattedDate} year={year} room={room}/>
+                <STCW_ER e_report={e_report} course={courseCode} schedule={formattedDate} year={year} room={room}/>
+            ) : e_report === 'MDS' && (
+                <MDS_ER e_report={e_report} course={courseCode} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room} assessor={assessor} instructor={instructor} practicumDate={practicumDate} practicumSite={practicumSite} class_no={classNo}/>
             )}
         </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>

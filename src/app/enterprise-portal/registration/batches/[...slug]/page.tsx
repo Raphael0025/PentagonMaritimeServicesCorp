@@ -281,7 +281,7 @@ export default function Page({params}: PageProps){
             <ModalContent px={4}>
                 <ModalHeader color='blue.700'>{`Preview of ${e_report} Enrollment Report`}</ModalHeader>
                 <ModalBody display={'flex'} flexDir='column' alignItems='center' >
-                    <PreviewER onClose={onCloseER} batch_no={batch} batchID={batchID} courseID={course?.id ?? ''} start_date={startD} end_date={endD} course={`${course?.course_name === undefined ? '' : `${course?.course_name}`}`} e_report={e_report} />
+                    <PreviewER onClose={onCloseER} batch_no={batch} batchID={batchID} courseID={course?.id ?? ''} start_date={startD} end_date={endD} course={`${course?.course_name === undefined ? '' : `${course?.course_name}`}`} courseCode={`${course?.course_code === undefined ? '' : `${course?.course_code}`}`} e_report={e_report} />
                 </ModalBody>
             </ModalContent>
         </Modal>
