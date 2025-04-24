@@ -276,11 +276,11 @@ export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course
                                         <Text as='span' textAlign='end'>{`${allRanks?.find((rank) => rank.code === traineeInfo?.rank)?.rank || traineeInfo?.rank} ${traineeInfo?.last_name}, ${traineeInfo?.first_name}`}</Text>
                                     </Text>
                                     <Text mt='2' fontSize='12px' display='flex' justifyContent='space-between' textTransform='uppercase' >
-                                        <Text color='gray.500' as='span'>Registration #:</Text>
+                                        <Text color='gray.500' as='span'>{`Registration #:`}</Text>
                                         <Text as='span' textAlign='end'>{`REG-${registeredTrainee?.reg_no}`}</Text>
                                     </Text>
                                     <Text mt='2' fontSize='12px' display='flex' justifyContent='space-between' textTransform='uppercase' >
-                                        <Text color='gray.500' as='span'>Enrolled Date:</Text>
+                                        <Text color='gray.500' as='span'>{`Enrolled Date:`}</Text>
                                         <Text as='span' textAlign='end'>{getFormatDateWithTime(training.date_enrolled.toDate())}</Text>
                                     </Text>
                                 </Checkbox>
@@ -367,7 +367,7 @@ export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course
                     <Text fontSize='16px' fontWeight='normal'>{`Are you sure you want to remove this training data from this batch. This action cannot be undone. If yes, kindly proceed, otherwise cancel.`}</Text>
                     <Alert borderRadius='5px' mt='5' status='info' variant='left-accent'>
                         <AlertIcon />
-                        <AlertDescription fontWeight='normal'>Note: If you have mistaken to remove a training, You can still recover it by cancelling the "Edit Batch" and don't click the update button.</AlertDescription>
+                        <AlertDescription fontWeight='normal'>{`Note: If you have mistaken to remove a training, You can still recover it by cancelling the "Edit Batch" and don't click the update button.`}</AlertDescription>
                     </Alert>
                 </ModalBody>
                 <ModalFooter display='flex' justifyContent='center' borderTopWidth='1px' borderColor='gray.500'>

@@ -60,13 +60,7 @@ export default function Page({params}: PageProps){
     })
 
     // Extract course ID from slug
-    const courseID = Array.isArray(params.slug) ? params.slug[0] : undefined;
-
-    if (!courseID) {
-        console.error("Invalid course ID:", params);
-        return <div>Invalid course ID</div>;
-    }
-
+    const courseID = Array.isArray(params.slug) && params.slug.length > 0 ? params.slug[0] : undefined;
     // Find the course
     const course = allCourses?.find((course) => course.id === courseID)
 
@@ -90,7 +84,7 @@ export default function Page({params}: PageProps){
             const targetDept = 'Registration'
 
             const index = deptArr.indexOf(targetDept)
-            if(index !== 1){
+            if(index !== -1){
                 const correspondRank = rankArr[index]
                 const correspondDept = deptArr[index]
                 setRank(Number(correspondRank))
@@ -110,6 +104,7 @@ export default function Page({params}: PageProps){
         }
     }, [rank])
     // ====================================================================================
+    if (!courseID) return 
     
     const handleBatchRemoval = async (batch_id: string) => {
         setLoading(true)
