@@ -111,13 +111,13 @@ export default function Page() {
                     }
                     
                     const start_date = training.start_date
-                    const tArr = allTraining?.filter((t) => t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)
-                    const realBN = tArr?.some((t) => t.batch !== 1)
+                    const tArr = allTraining?.filter((t) => t.start_date === start_date && t.batch !== '1' && training.id !== t.id && t.course === training.course)
+                    const realBN = tArr?.some((t) => t.batch !== '1')
 
                     let batch: string = '1'
 
                     if((tArr?.length ?? 0) > 0 && realBN){ // if there are more and if batch num is not equal to one (1)
-                        const batch_num = allTraining?.find((t) => t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)?.batch
+                        const batch_num = allTraining?.find((t) => t.start_date === start_date && t.batch !== '1' && training.id !== t.id && t.course === training.course)?.batch
                         if(batch_num){
                             batch = batch_num.toString()
                         }
@@ -144,9 +144,9 @@ export default function Page() {
                         
                         if(lastCurrentCourseBatch){
                             const nextBatch = Number(lastCurrentCourseBatch?.batch_no) + 1
-                            batch = await GENERATE_BATCH(nextBatch.toString(), training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
+                            // batch = await GENERATE_BATCH(nextBatch.toString(), training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
                         } else {
-                            batch = await GENERATE_BATCH('1', training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
+                            // batch = await GENERATE_BATCH('1', training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
                         }
                     }
                     await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 1, reg_account_type, actor)
