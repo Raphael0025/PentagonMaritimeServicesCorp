@@ -77,7 +77,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                                 <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>{`${schedule}, ${year}`}</Text>
                             </Box>
                             <Box w='100%' display='flex' alignItems='end' mt='1'>
-                                <Text w='90%'>{`Practicum Site/Vessel:`}</Text>
+                                <Text w='95%'>{`Practicum Site/Vessel:`}</Text>
                                 <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>{`${practicumSite}`}</Text>
                             </Box>
                             <Box w='100%' display='flex' alignItems='end' mt='1'>
@@ -123,8 +123,8 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {(index + 1)}
                                 </GridItem>
-                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name.charAt(0)}.`}`}
+                                <GridItem display='flex' border="0.5pt solid black" fontSize='8pt' borderTop='none' borderRight="none" justifyContent='start' px='2' alignItems='center'>
+                                    {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
@@ -136,7 +136,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         )
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
-                    {(trainingArray ?? []).length > 0 && (
+                    {(trainingArray ?? []).length !== 30 && (
                         <Grid templateColumns="0.38in 2.64in 1.12in 2.44in" h="0.19in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingArray?.length || 0) + 1}
@@ -153,8 +153,8 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         </Grid>
                     )}
                     {/** Fill remaining rows to make a total of 24 */}
-                    {(trainingArray ?? []).length < 24 &&
-                        [...Array(24 - (trainingArray ?? []).length - 1)].map((_, index) => {
+                    {(trainingArray ?? []).length < 30 &&
+                        [...Array(30 - (trainingArray ?? []).length - 1)].map((_, index) => {
                         const startingIndex = (trainingArray?.length || 0) + 1 // Start numbering after the last data row
                         return (
                             <Grid key={index} templateColumns="0.38in 2.64in 1.12in 2.44in" h="0.19in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
