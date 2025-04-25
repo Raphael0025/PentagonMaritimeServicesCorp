@@ -92,7 +92,7 @@ export default function StandardER({ e_report, course, schedule, year, room, tra
                         </Box>
                     </Box>
                 </Box>
-                <Text py='2' as='i' display='flex' justifyContent='end' w='80%' fontFamily='Calibri, Arial, sans-serif' fontWeight='bold' fontSize='7pt'>FRM-PENTAGON-013</Text>
+                <Text py='2' as='i' display='flex' justifyContent='end' w='80%' fontFamily='Calibri, Arial, sans-serif' fontWeight='bold' fontSize='7pt'>FM-PENTAGON-013</Text>
                 {/** Table */}
                 <Box>
                     {/** Table header */}
@@ -112,7 +112,7 @@ export default function StandardER({ e_report, course, schedule, year, room, tra
                                     {(index + 1)}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name.charAt(0)}.`}`}
+                                    {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}

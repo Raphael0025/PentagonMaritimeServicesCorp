@@ -10,6 +10,7 @@ import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useRank } from '@/context/RankContext'
+import { useClients } from '@/context/ClientCompanyContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
@@ -36,6 +37,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const { allData: allRegistrations } = useRegistrations()
     const { data: allRanks } = useRank()
     const { data: allTrainee } = useTrainees()
+    const { courseCodes } = useClients()
     
     const [year, setYear] = useState<string>('')
     const [room, setRoom] = useState<string>('')
@@ -45,7 +47,8 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
 
-    const trainingsArr = allTrainingData?.filter((training) => training.course === courseID && training.batch.toString() === batchID)
+    const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
+    const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
     const formattedDate = end_date === '' ? formatDateToShort(start_date) :getFormatDate(`${start_date} - ${end_date}`)
 
     const componentRef = useRef<HTMLDivElement | null>(null);

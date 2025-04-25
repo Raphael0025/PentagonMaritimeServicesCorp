@@ -38,6 +38,7 @@ export default function Page({params}: PageProps){
     const { allData: allTrainingData } = useTraining()
     const { allData: allRegistrations } = useRegistrations()
     const { data: allRanks } = useRank()
+    const { courseCodes } = useClients()
 
     const { isOpen: isOpenMod, onOpen: onOpenMod, onClose: onCloseMod } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
@@ -63,7 +64,6 @@ export default function Page({params}: PageProps){
     const courseID = Array.isArray(params.slug) && params.slug.length > 0 ? params.slug[0] : undefined;
     // Find the course
     const course = allCourses?.find((course) => course.id === courseID)
-
     // ====================================================================================
     const [actor, setActor] = useState<string | null>('')
     const [rank, setRank] = useState<number | null>(0)
@@ -106,6 +106,7 @@ export default function Page({params}: PageProps){
     // ====================================================================================
     if (!courseID) return 
     
+    const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     const handleBatchRemoval = async (batch_id: string) => {
         setLoading(true)
         const actor: string | null = localStorage.getItem('customToken')
@@ -117,7 +118,7 @@ export default function Page({params}: PageProps){
                     await DELETE_BATCH(batch_id, actor) // Delete the batch document
                     // getting the training id then updating its batch value back to 1
                     await Promise.all(
-                        (allTrainingData ?? [])?.filter((training) => training.course === course?.id && training.batch.toString() === batch_id)
+                        (allTrainingData ?? [])?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batch_id)
                         .map((trainingData) => {
                             return Promise.resolve(UPDATE_TRAINING(trainingData.id, {batch: '1'}, actor))
                         })
@@ -226,7 +227,7 @@ export default function Page({params}: PageProps){
                             <Text w='100%'>Rank</Text>
                             <Text w='100%'>Registration No.</Text>
                         </Box>
-                        {allTrainingData?.filter((training) => training.course === course?.id && training.batch.toString() === batchID).map((training, index) => {
+                        {allTrainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID).map((training, index) => {
                             const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                             const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                             return(

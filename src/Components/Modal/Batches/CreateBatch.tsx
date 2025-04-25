@@ -65,9 +65,9 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
 
     
     const courseName = allCourses?.find((course) => course.id === course_id)
-    const matchedCourseAndCompanyCourse = courseCodes?.find((courseCode) => courseCode.id_course_ref === course_id)?.id // fetched company course code that matches the document course id
+    const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === course_id).map((courseCode) => courseCode.id)
     const matchedCourseTraining = allTraining?.filter((training) => 
-        (training.course === course_id || training.course === matchedCourseAndCompanyCourse)
+        (training.course === course_id || matchedCourseAndCompanyCourse?.includes(training.course))
     && training.regType === reg_Type // By using training.regType || reg_Type like reg_status to validate the status of training, is also considered if a training is enrolled or not.
     && (Number(training.batch) === 1 || Number(training.batch) === 0)) // this will validate if training is still has 1 as its value
     
