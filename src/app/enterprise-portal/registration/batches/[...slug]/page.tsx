@@ -205,7 +205,7 @@ export default function Page({params}: PageProps){
                         <Text color='gray.600' textTransform='uppercase' className='text-lg'>Enrollment Report</Text>
                         <Box>
                             <Menu isLazy >
-                                <MenuButton onClick={(e) => {e.stopPropagation();}} fontWeight='normal' isDisabled={batch===''} as={Button} bgColor='#1C437E' colorScheme='blue' size='sm' shadow='md'>Print Reports</MenuButton>
+                                <MenuButton onClick={(e) => {e.stopPropagation();}} fontWeight='normal' isDisabled={batch===''} as={Button} bgColor='#1C437E' colorScheme='blue' size='sm' shadow='md'>Preview Report</MenuButton>
                                 <MenuList>
                                     <MenuItem onClick={(e) => {e.stopPropagation(); onOpenER(); setER('STANDARD');}} fontSize='16px' display='flex' justifyContent={'center'}>
                                         <Text fontWeight={'normal'}>Standard Report</Text>
