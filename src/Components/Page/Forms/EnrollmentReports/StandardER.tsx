@@ -103,7 +103,22 @@ export default function StandardER({ e_report, course, schedule, year, room, tra
                         <GridItem display='flex' border="0.5pt solid black" justifyContent='center' pt='2' alignItems='start'>REGISTRATION NUMBER</GridItem>
                     </Grid>
                     {/** Table Body */}
-                    {trainingArray?.map((training, index) => {
+                    {trainingArray // Create a shallow copy to avoid mutating the original array
+                    ?.slice() // Create a shallow copy to avoid mutating the original array
+                    .sort((a, b) => {
+                        const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
+                        const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
+                
+                        // Extract numeric parts of the registration number
+                        const [yearA, numberA] = regNoA.split('-').map(Number);
+                        const [yearB, numberB] = regNoB.split('-').map(Number);
+                
+                        // Compare by year first, then by number
+                        if (yearA !== yearB) {
+                            return yearA - yearB;
+                        }
+                        return numberA - numberB;
+                    }).map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
