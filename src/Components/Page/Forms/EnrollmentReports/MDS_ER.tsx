@@ -151,7 +151,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         )
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
-                    {(trainingArray ?? []).length !== 30 && (
+                    {(trainingArray ?? []).length < 30 && (
                         <Grid templateColumns="0.38in 2.64in 1.12in 2.44in" h="0.19in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingArray?.length || 0) + 1}
