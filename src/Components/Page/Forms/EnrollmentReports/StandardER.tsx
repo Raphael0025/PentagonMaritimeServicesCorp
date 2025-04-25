@@ -124,13 +124,13 @@ export default function StandardER({ e_report, course, schedule, year, room, tra
                         )
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
-                    {(trainingArray ?? []).length > 0 && (
+                    {(trainingArray ?? []).length < 24 && (
                         <Grid templateColumns="0.49in 3.26in 1.63in 1.88in" h="0.30in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingArray?.length || 0) + 1}
                             </GridItem>
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
-                                <Text>*NOTHING FOLLOWS*</Text>
+                                <Text>{`${((trainingArray ?? [])?.length || 0) >= 24 ? '' : '*NOTHING FOLLOWS*'}`}</Text>
                             </GridItem>
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {/* Empty cell */}

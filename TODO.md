@@ -35,6 +35,15 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
         - [] Implement New Collection for Prev. companies of crew
 
+- [] **Batch Records**: Enrollment Reports
+    - **Details**:
+        - [-] Create ER Report for (Standard | MDS)
+        - [-] Create function for batch record
+        - [-] Remove function 
+        - [-] Update function 
+        - [-] Print function
+        **CAUTION**: It might use a lot of data reads that may lead to increase of cost.
+
 - [] **Attachment**: Implement this feature
     - **Details**:
         - [] Payment Attachments - new page for sending online payments
