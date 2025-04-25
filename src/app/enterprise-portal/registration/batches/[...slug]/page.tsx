@@ -210,9 +210,9 @@ export default function Page({params}: PageProps){
                                     <MenuItem onClick={(e) => {e.stopPropagation(); onOpenER(); setER('STANDARD');}} fontSize='16px' display='flex' justifyContent={'center'}>
                                         <Text fontWeight={'normal'}>Standard Report</Text>
                                     </MenuItem>
-                                    <MenuItem onClick={(e) => {e.stopPropagation(); onOpenER(); setER('STCW');}} fontSize='16px' display='flex' justifyContent={'center'}>
+                                    {/* ON-HOLD <MenuItem onClick={(e) => {e.stopPropagation(); onOpenER(); setER('STCW');}} fontSize='16px' display='flex' justifyContent={'center'}>
                                         <Text fontWeight={'normal'}>STCW Report</Text>
-                                    </MenuItem>
+                                    </MenuItem> */}
                                     <MenuItem onClick={(e) => {e.stopPropagation(); onOpenER(); setER('MDS');}} fontSize='16px' display='flex' justifyContent={'center'}>
                                         <Text fontWeight={'normal'}>MDS Report</Text>
                                     </MenuItem>

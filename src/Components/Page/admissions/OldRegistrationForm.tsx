@@ -171,10 +171,18 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target
         
-        setTrainee((prev) => ({
-            ...prev,
-            [id]: value.trim().toUpperCase()
-        }))
+        if(id === 'email'){
+            setTrainee((prev) => ({
+                ...prev,
+                [id]: value.trim()
+            }))
+            
+        } else {
+            setTrainee((prev) => ({
+                ...prev,
+                [id]: value.trim().toUpperCase()
+            }))
+        }
     }
     
     const handleOnChangeAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
