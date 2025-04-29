@@ -132,7 +132,6 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             } 
             handleSelection(training, registration, trainee)
         } else {
-            console.log(3)
             handleToast('Training Date Not Matched!', `You're trying to select a training with un-matching training schedule. Kindly select a training with matching dates.`, 7000, 'warning')
             return
         }
