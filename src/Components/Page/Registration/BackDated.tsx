@@ -340,10 +340,10 @@ export default function Page(){
             <Modal isOpen={isOpenForm} size='full' scrollBehavior='inside' onClose={onCloseForm}>
                 <ModalOverlay />
                 <ModalContent px={4}>
-                    <ModalHeader className='text-sky-700' fontWeight='800'>Registration & Admission Forms</ModalHeader>
+                    <ModalHeader color='blue.700' fontWeight='800'>Registration & Admission Forms</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody display='flex' alignItems='center' flexDir='column'>
-                        <Box w='80%' >
+                        <Box w='8.2in' >
                             <Box w='100%' ref={componentRef}>
                                 <RegistrationForm regNum={regNum} traineeName={traineeName} />
                                 <AdmissionForm regNum={regNum} traineeName={traineeName} />

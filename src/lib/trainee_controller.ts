@@ -77,20 +77,20 @@ export const addAttachments = async (id: string, lastName: string, givenName: st
 
         if (file !== 'No file chosen yet...') {
             // Upload valid id to Storage
-            const idRef = ref(storage, `TRAINEES/valid_id/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_validID.png`);
+            const idRef = ref(storage, `TRAINEES/valid_id/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_validID.jpg`);
             const id_data = await uploadBytes(idRef, validID[0]);
             validURL = await getDownloadURL(id_data.ref);
         }
         if (pfpFile !== 'No file chosen yet...') {
             // Upload valid pfp to Storage
-            const pfpRef = ref(storage, `TRAINEES/photos/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_idPic.png`);
+            const pfpRef = ref(storage, `TRAINEES/photos/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_idPic.jpg`);
             const pfp_data = await uploadBytes(pfpRef, profileID[0]);
             validProfileURL = await getDownloadURL(pfp_data.ref);
         }
         
         if (validSignature && validSignature.length > 0) {
             // Upload valid signature to Storage
-            const sigRef = ref(storage, `TRAINEES/e-signs/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_esign.png`);
+            const sigRef = ref(storage, `TRAINEES/e-signs/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_esign.jpg`);
             const sig_data = await uploadBytes(sigRef, validSignature[0]);
             sig_url = await getDownloadURL(sig_data.ref);
         }
@@ -511,7 +511,7 @@ export const changeImg = async (trainee_id: string, last_name: string, first_nam
 
         if (file !== 'No file chosen yet...') {
             // Upload valid id to Storage
-            const idRef = ref(storage, `TRAINEES/${attachment_type}/${last_name}_${first_name}_${cat}.png`);
+            const idRef = ref(storage, `TRAINEES/${attachment_type}/${last_name}_${first_name}_${cat}.jpg`);
             const id_data = await uploadBytes(idRef, validID[0]);
             URL = await getDownloadURL(id_data.ref);
         }

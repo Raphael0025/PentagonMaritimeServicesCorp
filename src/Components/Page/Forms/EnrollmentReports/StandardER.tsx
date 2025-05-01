@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react';
-import { useState, useRef } from 'react'
 import { Box, Text, Grid, Image, GridItem } from '@chakra-ui/react'
 import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 
@@ -13,7 +12,6 @@ import { useRank } from '@/context/RankContext'
 import { splitTextAtWordBoundary } from '@/handlers/util_handler';
 
 interface ERProps {
-    e_report: string;
     course: string;
     schedule: string;
     year: string;
@@ -21,7 +19,7 @@ interface ERProps {
     trainingArray?: TRAINING_BY_ID[];
 }
 
-export default function StandardER({ e_report, course, schedule, year, room, trainingArray}: ERProps) {
+export default function StandardER({ course, schedule, year, room, trainingArray}: ERProps) {
     const { allData: allRegistrations } = useRegistrations()
     const { data: allTrainee } = useTrainees()
     const { data: allRanks } = useRank()

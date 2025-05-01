@@ -1,8 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
-import Image from 'next/image'
-import { Box, Text, } from '@chakra-ui/react'
+import { Box, Text, Grid, Image, GridItem } from '@chakra-ui/react'
 
 import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 
@@ -11,7 +9,6 @@ import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
-import { useCourseBatch } from '@/context/BatchContext'
 import {useRank} from '@/context/RankContext'
 
 import { parsingTimestamp, } from '@/types/handling'
@@ -21,14 +18,10 @@ import { reformatTrainingSched } from '@/handlers/trainee_handler'
 
 interface UIProps {
     regNum: string,
-    traineeName: string
 }
 
-export default function Page({regNum, traineeName}: UIProps){
+export default function Page({regNum, }: UIProps){
 
-    const componentRef = useRef<HTMLDivElement | null>(null);
-
-    const { data: courseBatch } = useCourseBatch()
     const { data: allRanks } = useRank()
     const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
@@ -53,276 +46,295 @@ export default function Page({regNum, traineeName}: UIProps){
 
     return(
     <>
-        <Box className='flex flex-col space-y-4'>
-            <Box className='flex flex-col space-y-1 px-6' ref={componentRef}>
-                <div className='content-head'>
-                    <Image src='/Logo.jpg' width={'180'} height={'80'} alt='logo'/>
-                    <div className='hide'>
-                        <p style={{fontSize: '7px', color: '#333333', display: 'flex', gap: '4px'}}><span><PinIcon size={'14'} color={'#333333'} /></span>2/F 801 Building UN Avenue Ermita Manila</p>
-                        <p style={{fontSize: '7px', color: '#333333', display: 'flex', gap: '4px'}}><span><PhoneIcon size={'14'} color={'#333333'} /></span>(02) 8 281-8155</p>
-                        <p style={{fontSize: '7px', color: '#333333', display: 'flex', gap: '4px'}}><span><MailIcon size={'14'} color={'#333333'} /></span>pentagonmaritimeservicescorp@gmail.com</p>
-                        <p style={{fontSize: '7px', color: '#333333', display: 'flex', gap: '4px'}}><span><FacebookIcon size={'14'} color={'#333333'} /></span>/pentagonmaritimeservicescorp</p>
-                    </div>
-                </div>
-                <div className='flex flex-col justify-between py-1'>
-                    <div className='flex w-full justify-between'>
-                        <h3 style={{fontSize: '22px', color: '#1C437E', fontWeight: '700', textTransform: 'uppercase'}}>Registration Form</h3>
-                        <Box w='200px' className='border px-3 py-1 border-2 border-black flex flex-col'>
-                            <Text fontSize='15px'>Registration No:</Text>
-                            <Text fontSize='18px' className='text-red-500'>{`REG-${reg.reg_no}`}</Text>
+        <Box 
+        w='100%'
+        // className='flex flex-col space-y-4'
+        >
+            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center' >
+                {/** Header */}
+                <Box display='flex' justifyContent='space-between' alignItems='center' w='100%'>
+                    <Image src='/Logo.jpg' width={'2.81in'} height={'0.66in'} alt='logo'/>
+                    <Box >
+                        <Text display='flex' justifyContent='end' alignItems='center' fontSize='9pt' fontFamily='Calibri, Arial, sans-serif' fontWeight='normal'>
+                            <Text as='span' mr={1}>
+                                <PinIcon size={'12'} color={'#000'} />
+                            </Text>
+                            <Text>2/F 801 Building UN Avenue Ermita Manila</Text>
+                        </Text>
+                        <Text display='flex' justifyContent='end' alignItems='center' fontSize='9pt' fontFamily='Calibri, Arial, sans-serif' fontWeight='normal'>
+                            <Text as='span' mr={1}>
+                                <PhoneIcon size={'12'} color={'#000'} />
+                            </Text>
+                            <Text>(02) 8 281-8155</Text>
+                        </Text>
+                        <Text display='flex' justifyContent='end' alignItems='center' fontSize='9pt' fontFamily='Calibri, Arial, sans-serif' fontWeight='normal'>
+                            <Text as='span' mr={1}>
+                                <MailIcon size={'12'} color={'#000'} />
+                            </Text>
+                            <Text>pentagonmaritimeservicescorp@gmail.com</Text>
+                        </Text>
+                        <Text display='flex' justifyContent='end' alignItems='center' fontSize='9pt' fontFamily='Calibri, Arial, sans-serif' fontWeight='normal'>
+                            <Text as='span' mr={1}>
+                                <FacebookIcon size={'12'} color={'#000'} />
+                            </Text>
+                            <Text>/pentagonmaritimeservicescorp</Text>
+                        </Text>
+                    </Box>
+                </Box>
+                <Box display='flex' flexDir='column' w='100%' >
+                    <Box className='flex w-full justify-between'>
+                        <Text fontSize='16pt' fontWeight='bold' color='#002060' textTransform='uppercase' fontFamily='Arial, sans-serif'>Registration Form</Text>
+                        <Box w='2.26in' fontFamily='Arial, sans-serif' lineHeight={'none'} px='4' py='2' h='0.48in' borderColor='black' borderWidth='0.75pt'>
+                            <Text mb='0' fontSize='10pt' sx={{fontVariant: 'small-caps'}} textTransform='uppercase' fontWeight='bold' >Registration No:</Text>
+                            <Text mt='0' fontSize='12pt' px='5' textTransform='uppercase' fontWeight='bold' color='#ff0000'>{`REG-${reg.reg_no}`}</Text>
                         </Box>
-                    </div>
-                    <div>
-                        <Box className='content-one p-1'>
-                            <Text fontSize='7px' className='text-end w-full italic'>{`FRM-PENTAGON-012 REV.01  Issued Date: 11/20/2023`}</Text>
+                    </Box> 
+                    <Box>
+                        <Box display='flex' flexDir='column'  className='content-one p-1'>
+                            <Text fontWeight='bold' as='i' fontFamily='Calibri' fontSize='7pt' w='100%' textAlign='end'>{`FM-02-10-01 REV.03  Issued Date: 04/05/2025`}</Text>
                         </Box>
-                        <Box className='content-one p-1 ps-2' style={{backgroundColor: '#002060', color: 'white'}}>
-                            <Text fontSize='10px'>{`TRAINEE'S INFORMATION`}</Text>
-                        </Box>
-                        <Box className='content-one'>
-                            <Box className='content-child'>
-                                <Text className='label-text'>Last Name:</Text>
-                                <Text className='value-text capitalize'>{traineeInfo.last_name}</Text>
-                            </Box>
-                            <Box className='content-child'>
-                                <Text className='label-text'>First Name:</Text>
-                                <Text className='value-text capitalize'>{traineeInfo.first_name}</Text>
-                            </Box>
-                            <Box className='content-child'>
-                                <Text className='label-text'>Middle Name:</Text>
-                                <Text className='value-text capitalize'>{traineeInfo.middle_name !== '' ? traineeInfo.middle_name : ''}</Text>
-                            </Box>
-                            <Box className='content-child' style={{width: '30%'}}>
-                                <Text className='label-text'>Suffix:</Text>
-                                <Text className='value-text capitalize'>{traineeInfo.suffix !== '' ? traineeInfo.suffix : ''}</Text>
-                            </Box>
-                            <Box className='content-child'>
-                                <Text className='label-text'>Position/Rank:</Text>
-                                <Text className='value-text capitalize'>
+                        <Grid h='0.22in' pt='0.1px' pb='4' sx={{ textIndent: '0.08in' }} fontSize='9pt' bgColor='#002060' color='white' fontWeight='bold' fontFamily='Arial'>
+                            <GridItem display='flex' border="0.5pt solid black" borderBottom='none' justifyContent='start' alignItems='start'>
+                                <Text as='span'>{`TRAINEE'S INFORMATION`}</Text>
+                            </GridItem>
+                        </Grid>
+                        <Grid templateColumns="1.58in 1.66in 1.66in 0.6in 1.27in 1.44in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt' >Last Name:</Text>
+                                <Text fontSize='9pt' >{traineeInfo.last_name}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt' >First Name:</Text>
+                                <Text fontSize='9pt' >{traineeInfo.first_name}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt' >Middle Name:</Text>
+                                <Text fontSize='9pt' >{traineeInfo.middle_name !== '' ? traineeInfo.middle_name : ''}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='start' >
+                                <Text fontSize='7pt' >Suffix:</Text>
+                                <Text fontSize='9pt' >{traineeInfo.suffix !== '' ? traineeInfo.suffix : ''}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt' >Position/Rank:</Text>
+                                <Text fontSize='9pt' >
                                     {allRanks?.find((rank) => rank.code === traineeInfo.rank)?.rank || traineeInfo.rank}
                                 </Text>
-                            </Box>
-                            <div className='content-child'>
-                                <p  className='label-text'>SRN#:</p>
-                                <p className='value-text' >{traineeInfo.srn}</p>
-                            </div>
-                        </Box>
-                        <Box className='content-one'>
-                            <Box className='content-child'>
-                                <Text className='label-text' color='#1A2B56'>Address:</Text>
-                                <Text className='value-text capitalize'>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt' >SRN#:</Text>
+                                <Text fontSize='9pt' >{traineeInfo.srn}</Text>
+                            </GridItem>
+                        </Grid>
+                        <Grid templateColumns="5.50in 1.27in 1.44in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Address:</Text>
+                                <Text fontSize='9pt'>
                                     {traineeInfo.otherAddress === '' ? `${traineeInfo.house_no} ${traineeInfo.street} Brgy. ${traineeInfo.brgy}, ${traineeInfo.city} City` : traineeInfo.otherAddress}
                                 </Text>
-                            </Box>
-                            <Box className='content-child-excep' >
-                                <Text className='label-text' color='#1A2B56'>Company:</Text>
-                                <Text className='value-text capitalize' style={{overflow: 'hidden'}}>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Company:</Text>
+                                <Text fontSize='9pt' overflow="hidden" whiteSpace="nowrap" textOverflow="ellipsis" maxWidth="100%">
                                     {allClients?.find((client) => client.id === traineeInfo.company)?.company || traineeInfo.company}
                                 </Text>
-                            </Box>
-                            <Box className='content-child-excep' >
-                                <Text className='label-text capitalize' color='#1A2B56'>Reffered By:</Text>
-                                <Text className='value-text capitalize'>{traineeInfo.endorser}</Text>
-                            </Box>
-                        </Box>
-                        <Box className='content-one'>
-                            <Box className='content-child' >
-                                <Text className='label-text' color='#1A2B56'>Contact Number:</Text>
-                                <Text className='value-text'>{traineeInfo.contact_no}</Text>
-                            </Box>
-                            <Box className='content-child' >
-                                <Text className='label-text' color='#1A2B56'>Email:</Text>
-                                <Text className='email-text'>{traineeInfo.email}</Text>
-                            </Box>
-                            <Box className='content-child' >
-                                <Text className='label-text' color='#1A2B56'>Nationality:</Text>
-                                <Text className='value-text capitalize'>{ traineeInfo.nationality }</Text>
-                            </Box>
-                            <Box className='content-child' style={{width: '29%'}}>
-                                <Text className='label-text' color='#1A2B56'>Gender:</Text>
-                                <Text className='value-text capitalize'>{traineeInfo.gender}</Text>
-                            </Box>
-                            <Box className='content-child' >
-                                <Text className='label-text' color='#1A2B56'>Date of Birth:</Text>
-                                <Text className='value-text capitalize'>{parsingTimestamp(traineeInfo.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</Text>
-                            </Box>
-                            <Box className='content-child' >
-                                <Text className='label-text' color='#1A2B56'>Place of Birth:</Text>
-                                <Text className='value-text capitalize' style={{fontSize: '10px'}}>{ traineeInfo.birthPlace }</Text>
-                            </Box>
-                        </Box>
-                        <Box className='flex md:flex-row flex-col'>
-                            <Box className='content-one'>
-                                <Box className='content-child'>
-                                    <Text className='label-text' color='#1A2B56'>{`IN CASE OF EMERGENCY, PLEASE CONTACT: ( NAME / CONTACT NUMBER / RELATIONSHIP)`}</Text>
-                                    <Text className='value-text capitalize'>{traineeInfo.e_contact === '' || traineeInfo.e_contact_person === '' || traineeInfo.relationship === '' ? '' : `${traineeInfo.e_contact_person} / ${traineeInfo.e_contact} / ${traineeInfo.relationship}`}</Text>
-                                </Box>
-                                <Box className='content-child-excep'>
-                                    <Text className='label-text capitalize' color='#1A2B56'>Type of Vessel:</Text>
-                                    <Text className='value-text'>{traineeInfo.vessel}</Text>
-                                </Box>
-                                <div className='content-child-excep'>
-                                    <p  className='label-text' style={{color: '#1A2B56'}}>Trainee Type:</p>
-                                    <p className='value-text' >{reg?.traineeType === 0 ? 'New' : 'Old'}</p>
-                                </div>
-                            </Box>
-                        </Box>
-                        <Box className='flex flex-col '>
-                            <Box className='content-one p-1 ps-2' style={{backgroundColor: '#002060', color: 'white'}}>
-                                <Text fontSize='10px'>TRAINING DETAILS</Text>
-                            </Box>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Reffered By:</Text>
+                                <Text fontSize='9pt'>{traineeInfo.endorser}</Text>
+                            </GridItem>
+                        </Grid>
+                        <Grid templateColumns="1.58in 2.17in 1.15in 0.6in 1.27in 1.44in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Contact Number:</Text>
+                                <Text fontSize='9pt'>{traineeInfo.contact_no}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Email:</Text>
+                                <Text fontSize='8pt' textTransform='lowercase'>{traineeInfo.email}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Nationality:</Text>
+                                <Text fontSize='9pt'>{ traineeInfo.nationality }</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Gender:</Text>
+                                <Text fontSize='9pt'>{traineeInfo.gender}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Date of Birth:</Text>
+                                <Text fontSize='9pt'>{parsingTimestamp(traineeInfo.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</Text>
+                            </GridItem>
+                            <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' justifyContent='start' alignItems='start'>
+                                <Text fontSize='7pt'>Place of Birth:</Text>
+                                <Text fontSize='9pt'>{ traineeInfo.birthPlace }</Text>
+                            </GridItem>
+                        </Grid>
+                        {/* <Grid className='flex md:flex-row flex-col'> */}
+                            <Grid templateColumns="4.9in 2.33in 0.98in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                                <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                    <Text fontSize='7pt'>{`IN CASE OF EMERGENCY, PLEASE CONTACT: ( NAME / CONTACT NUMBER / RELATIONSHIP)`}</Text>
+                                    <Text fontSize='9pt'>{traineeInfo.e_contact === '' || traineeInfo.e_contact_person === '' || traineeInfo.relationship === '' ? '' : `${traineeInfo.e_contact_person} / ${traineeInfo.e_contact} / ${traineeInfo.relationship}`}</Text>
+                                </GridItem>
+                                <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
+                                    <Text fontSize='7pt'>Type of Vessel:</Text>
+                                    <Text fontSize='9pt'>{traineeInfo.vessel}</Text>
+                                </GridItem>
+                                <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' justifyContent='start' alignItems='start'>
+                                    <Text fontSize='7pt'>Trainee Type:</Text>
+                                    <Text fontSize='7pt'>{reg?.traineeType === 0 ? '● NEW' : '○ NEW'}</Text>
+                                    <Text fontSize='7pt'>{reg?.traineeType !== 0 ? '● RE-ENROLLED' : '○ RE-ENROLLED'}</Text>
+                                </GridItem>
+                            </Grid>
+                        {/* </Grid> */}
+                        <Box display='flex' flexDir='column'>
+                            <Grid h='0.30in' pt='0.1px' pb='4' sx={{ textIndent: '0.08in' }} fontSize='9pt' bgColor='#002060' color='white' fontWeight='bold' fontFamily='Arial'>
+                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderBottom='none' justifyContent='start' alignItems='start'>
+                                    <Text as='span'>TRAINING DETAILS</Text>
+                                </GridItem>
+                            </Grid>
                             <Box className='flex'>
                                 <Box w='100%'>
-                                    <Box className='content-one-training'>
+                                    {/* <Box className='content-one-training'>
                                         <Text className='label-text text-center p-1' w='100%' color='#1A2B56' style={{borderWidth: '1px', borderColor: '#00000060'}}>Course</Text>
                                         <Text className='label-text text-center p-1' w='60%' color='#1A2B56' style={{borderWidth: '1px', borderColor: '#00000060'}}>Schedule</Text>
                                         <Text className='label-text text-center p-1' w='50%' color='#1A2B56' style={{borderWidth: '1px', borderColor: '#00000060'}}>Course Fee</Text>
-                                    </Box>
+                                    </Box> */}
+                                    <Grid templateColumns="3.24in 1.66in 0.98in" gap={0} textAlign='center' textTransform='uppercase' fontSize='7.4pt' h='0.29in' fontWeight='normal' fontFamily='Arial, sans-serif' >
+                                        <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Course</GridItem>
+                                        <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Schedule</GridItem>
+                                        <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>{`Course Fee (PHP)`}</GridItem>
+                                    </Grid>
                                     {trainings && trainings.length > 0 ? (
                                         trainings.filter((training) => training.reg_status === 3).map((training, index) => (
-                                            <Box key={index} className='content-one'>
-                                                <Box className='training-content-child flex justify-center items-center'>
-                                                    <Text className='uppercase'>
+                                            <Grid key={index} templateColumns="3.24in 1.66in 0.98in" gap={0} h='0.31in' fontFamily="Arial, sans-serif" textTransform='uppercase' fontWeight='normal' fontSize='8pt'>
+                                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
+                                                    <Text >
                                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                                                     </Text>
-                                                </Box>
-                                                <Box w='60%' className='training-content-child flex justify-center items-center'>
+                                                </GridItem>
+                                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
                                                     <Text>
                                                         {reformatTrainingSched(training.start_date, training.end_date)}
                                                     </Text>
-                                                </Box>
-                                                <Box w='50%' className='training-content-child flex justify-center items-center'>
+                                                </GridItem>
+                                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
                                                     <Text>{training.course_fee}</Text>
-                                                </Box>
-                                            </Box>
+                                                </GridItem>
+                                            </Grid>
                                         ))
                                     ) : (
-                                        <Box className='content-one'>
-                                            <Box className='flex justify-center items-center'>
+                                        <Grid templateColumns="3.24in 1.66in 0.98in" gap={0} h='0.31in' >
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                            <Box className='training-content-child'>
+                                            </GridItem>
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                            <Box className='training-content-child'>
+                                            </GridItem>
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                            <Box className='training-content-child'>
+                                            </GridItem>
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                            <Box className='training-content-child'>
+                                            </GridItem>
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                            <Box className='training-content-child'>
+                                            </GridItem>
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                            <Box className='training-content-child'>
+                                            </GridItem>
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                            <Box className='training-content-child'>
+                                            </GridItem>
+                                            <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
-                                            </Box>
-                                        </Box>
+                                            </GridItem>
+                                        </Grid>
                                     )}
                                     {trainings && trainings.length < 8 && 
                                         [...Array(8 - trainings.length)].map((_, index) => (
-                                            <Box key={index} className="content-one">
-                                                <Box className="training-content-child flex-row text-center flex justify-center items-center">
+                                            <Grid key={index} templateColumns="3.24in 1.66in 0.98in" gap={0} h='0.31in' >
+                                                <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                     <Text></Text>
-                                                </Box>
-                                                <Box w='60%' className="training-content-child flex-row text-center flex justify-center items-center">
+                                                </GridItem>
+                                                <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                     <Text></Text>
-                                                </Box>
-                                                <Box w='50%' className="training-content-child text-center flex-row flex justify-center items-center">
+                                                </GridItem>
+                                                <GridItem border="0.5pt solid black" borderTop='none' borderRight="none">
                                                     <Text></Text>
-                                                </Box>
-                                            </Box>
+                                                </GridItem>
+                                            </Grid>
                                         ))
                                     }
                                 </Box>
-                                <Box w='50%' className='' bg='#DBE5F1'>
-                                    <Box className='content-one-training'>
-                                        <Text className='label-text text-center p-1' w='100%' color='#1A2B56' style={{borderWidth: '1px', borderColor: '#00000060'}}>For Pentagon Use Only</Text>
-                                    </Box>
-                                    <Box className='training-content-child flex flex-col '>
+                                <Grid templateColumns='2.33in' fontFamily='Arial' templateRows='0.315in 0.288in 0.31in 0.31in 0.31in 0.31in 0.31in 0.31in 0.30in' bg='#dbe5f1' textTransform='uppercase' gap={0}>
+                                    <GridItem fontSize='9pt' display='flex' fontWeight='bold' border='0.5pt solid black' justifyContent='center' alignItems='center'>For Pentagon Use Only:</GridItem>
+                                    <GridItem fontSize='6.5pt' ps='3' fontWeight='normal' border='0.5pt solid black' borderTop='none' justifyContent='center' alignItems='center'>
+                                        <Text py='0' >{reg.reg_accountType === 0 ? `● TRAINEE'S ACCOUNT` : `○ TRAINEE'S ACCOUNT`}</Text> 
+                                        <Text py='0' >{reg.reg_accountType === 1 ? `● COMPANY'S ACCOUNT` : `○ COMPANY'S ACCOUNT`}</Text>
+                                    </GridItem>
+                                    <GridItem fontSize='6.5pt' ps='3' fontWeight='normal' border='0.5pt solid black' borderTop='none' borderBottom='none' display='flex' justifyContent='start' alignItems='end'>
+                                        Mode of payment:
+                                    </GridItem>
+                                    <GridItem fontSize='7pt' display='flex' fontWeight='normal' border='0.5pt solid black' borderTop='none' justifyContent='space-around' alignItems='center'>
                                         <Text>
-                                            {reg.reg_accountType === 0 ? `● TRAINEE'S ACCOUNT` : `Ο TRAINEE'S ACCOUNT`}
+                                            {reg.payment_mode === 0 ? `● CASH` : `○ CASH`}
                                         </Text> 
                                         <Text>
-                                            {reg.reg_accountType === 1 ? `● COMPANY'S ACCOUNT` : `Ο COMPANY'S ACCOUNT`}
+                                            {reg.payment_mode === 1 ? `● G-CASH` : `○ G-CASH`}
                                         </Text>
-                                    </Box>
-                                    <Box h='80px' className='training-content-child flex justify-center flex-col '>
-                                        <Text>Mode of Payment:</Text>
-                                        <Box className=' flex items-center justify-between '>
-                                            <Text>
-                                                {reg.payment_mode === 0 ? `● CASH` : `Ο CASH`}
-                                            </Text> 
-                                            <Text>
-                                                {reg.payment_mode === 1 ? `● G-CASH` : `Ο G-CASH`}
-                                            </Text>
-                                            <Text>
-                                                {reg.payment_mode === 2 ? `● BANK` : `Ο BANK`}
-                                            </Text>
-                                        </Box>
-                                    </Box>
-                                    <Box h='80px' className='training-content-child flex flex-col '>
+                                        <Text>
+                                            {reg.payment_mode === 2 ? `● BANK` : `○ BANK`}
+                                        </Text>
+                                    </GridItem>
+                                    <GridItem fontSize='6.5pt' ps='3' pb='0' fontWeight='normal' border='0.5pt solid black' borderTop='none' borderBottom='none' display='flex' flexDir='column' justifyContent='end' alignItems='start'>
                                         <Text>PAYMENT:</Text>
-                                        <Box className=' flex flex-col '>
-                                            <Text>
-                                                {reg.payment_status === 1 ? `● PARTIAL` : `Ο PARTIAL`}
-                                            </Text> 
-                                            <Text>
-                                                {reg.payment_status === 0 ? `● FULL` : `Ο FULL`}
-                                            </Text>
-                                            <Text>
-                                                {`Ο RECEIPT NO`}
-                                            </Text>
-                                        </Box>
-                                    </Box>
-                                    <Box h='120px' className='training-content-child flex flex-col '>
-                                        <Text>PROCESSED BY:</Text>
-                                        <Box className=' flex justify-evenly items-center space-x-4 w-full'>
-                                            <Text className='w-1/2 py-8'>
-                                                <Text className='text-center py-2 border-gray-500 border-t'>REGISTRAR</Text>
-                                            </Text>
-                                            <Text className='w-1/2 py-8'>
-                                                <Text className='text-center py-2 border-gray-500 border-t'>CASHIER</Text>
-                                            </Text>
-                                        </Box>
-                                    </Box>
-                                </Box>
+                                        <Text>{reg.payment_status === 1 ? `● PARTIAL` : `○ PARTIAL`}</Text> 
+                                    </GridItem>
+                                    <GridItem fontSize='6.5pt' ps='3' pt='0' fontWeight='normal' border='0.5pt solid black' borderTop='none' >
+                                        <Text>{reg.payment_status === 0 ? `● FULL` : `○ FULL`}</Text>
+                                        <Text>{`○ RECEIPT NO`}</Text>
+                                    </GridItem>
+                                    <GridItem fontSize='6.5pt' ps='3' fontWeight='normal' border='0.5pt solid black' borderTop='none' borderBottom='none' display='flex' justifyContent='start' alignItems='start'>
+                                        Processed By:
+                                    </GridItem>
+                                    <GridItem fontSize='6.5pt' ps='3' fontWeight='normal' border='0.5pt solid black' borderTop='none' borderBottom='none'  justifyContent='center' alignItems='center'>
+                                    {/** Empty Component */}
+                                    </GridItem>
+                                    <GridItem fontSize='6.5pt' fontWeight='normal' border='0.5pt solid black' borderTop='none' display='flex' justifyContent='space-around' alignItems='start'>
+                                        <Text w='30%' textAlign='center' border="0" borderTop="0.5pt solid black">REGISTRAR</Text>
+                                        <Text w='30%' textAlign='center' border="0" borderTop="0.5pt solid black" >CASHIER</Text>
+                                    </GridItem>
+                                </Grid>
                             </Box>
                             
                         </Box>
-                    </div>
-                </div>
-                <Box className='flex items-start flex-col space-y-2'>
-                    <Box className='flex flex-col' color='#333333'>
-                        <Box>
-                            <Text fontSize='9px' className='py-2'>{`BY SIGNING THIS I GRANT MY VOLUNTARY AND UNCONDITIONAL CONSENT TO THE COLLECTION AND PROCESSING MY PERSONAL DATA AS STATED ABOVE TO THE INFORMATION AND DATA BASE OF PENTAGON MARITIME SERVICES CORP. IN ACCORDANCE WITH REPUBLIC ACT (R.A) 10173, OTHERWISE KNOWN AS THE “DATA PRIVACY ACT OF 2012” OF THE REPUBLIC OF THE PHILIPPINES, INCLUDING ITS IMPLEMENTING RULES AND REGULATIONS (IRR) AS WELL AS ALL OTHER GUIDELINES AND ISSUANCES BY THE NATIONAL PRIVACY COMMISSION (NPC).`}</Text>
-                        </Box>
-                        <label className='text-xs flex items-center'>
-                            <Box>
-                                <Text fontSize='9px' className='uppercase'>
-                                I understand, that Pentagon Maritime Services Corp. shall keep my personal data and information in strict confidence and that the collection and processing of my personal data/information shall be used only for my enrollment, training and certification.
-                                </Text>
-                            </Box>
-                        </label>
-                        <label className='text-xs flex items-center'>
-                            <Box>
-                                <Text fontSize='9px' className='uppercase'>
-                                I hereby certify that I have read and understood the above and hereby consent to, agree on, accept and acknowledge these terms.
-                                </Text>
-                            </Box>
-                        </label>
                     </Box>
                 </Box>
-                <Box className=' w-1/3 md:w-1/3 '>
-                    <Box className='flex flex-col w-full justify-center items-center'>
-                        <Image src={traineeInfo.e_sig} width={100} height={100} alt='Signature' />
-                        <Text color='#333333' className='text-center w-full border-b-2 border-gray-500'>{`${traineeInfo.last_name}, ${traineeInfo.first_name} ${traineeInfo.middle_name}`}</Text>
-                        <Text color='#333333' className='text-center font-light'>{`Trainee's Signature Over Printed Name`}</Text>
+                <Box className='flex items-start flex-col space-y-2'>
+                    <Box display='flex' flexDir='column' textTransform='uppercase' fontSize='5.5pt' fontFamily='Arial' fontWeight='normal'>
+                        <Text py='1'>{`BY SIGNING THIS I GRANT MY VOLUNTARY AND UNCONDITIONAL CONSENT TO THE COLLECTION AND PROCESSING MY PERSONAL DATA AS STATED ABOVE TO THE INFORMATION AND DATA BASE OF PENTAGON MARITIME SERVICES CORP. IN ACCORDANCE WITH REPUBLIC ACT (R.A) 10173, OTHERWISE KNOWN AS THE “DATA PRIVACY ACT OF 2012” OF THE REPUBLIC OF THE PHILIPPINES, INCLUDING ITS IMPLEMENTING RULES AND REGULATIONS (IRR) AS WELL AS ALL OTHER GUIDELINES AND ISSUANCES BY THE NATIONAL PRIVACY COMMISSION (NPC).`}</Text>
+                        <Text py='1'>
+                            I understand, that Pentagon Maritime Services Corp. shall keep my personal data and information in strict confidence and that the collection and processing of my personal data/information shall be used only for my enrollment, training and certification.
+                        </Text>
+                        <Text py='1'>
+                            I hereby certify that I have read and understood the above and hereby consent to, agree on, accept and acknowledge these terms.
+                        </Text>
+                    </Box>
+                </Box>
+                <Box w='100%' display='flex' justifyContent='space-between' alignItems='end'>
+                    <Box className=' w-1/3 md:w-1/3 '>
+                        <Box className='flex flex-col w-full justify-center items-center'>
+                            <Image src={traineeInfo.e_sig} width={100} height={100} alt='Signature' />
+                            <Text border='0' borderBottom='0.5pt solid black' color='#333333' w='100%' textAlign='center'>{`${traineeInfo.last_name}, ${traineeInfo.first_name} ${traineeInfo.middle_name}`}</Text>
+                            <Text color='#333333' className='text-center' fontWeight='normal' textTransform='uppercase' sx={{ fontVariant: 'small-caps'}}>{`Trainee's Signature Over Printed Name`}</Text>
+                        </Box>
+                    </Box>
+                    <Box className=' w-1/3 md:w-1/3 '>
+                        <Box className='flex flex-col w-full justify-center items-center'>
+                            <Text border='0' borderBottom='0.5pt solid black' color='#333333' w='100%' textTransform='uppercase' textAlign='center'>{`${reg.date_registered.toDate().toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}`}</Text>
+                            <Text color='#333333' className='text-center' fontWeight='normal' textTransform='uppercase' sx={{ fontVariant: 'small-caps'}}>{`Date`}</Text>
+                        </Box>
                     </Box>
                 </Box>
             </Box>

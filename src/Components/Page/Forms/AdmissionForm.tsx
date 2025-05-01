@@ -80,7 +80,7 @@ export default function Page({regNum, traineeName}: UIProps){
                     </div>
                     <div>
                         <Box className='content-one p-1'>
-                            <Text fontSize='7px' className='text-end w-full italic'>{`FM-02-10-02 REV.02  Issued Date: 08/01/2024`}</Text>
+                            <Text fontSize='7px' className='text-end w-full italic'>{`FM-02-10-02 REV.03  Issued Date: 04/05/2025`}</Text>
                         </Box>
                         <Box className='content-one p-1 ps-2' style={{backgroundColor: '#002060', color: 'white'}}>
                             <Text fontSize='10px'>{`TRAINEE'S INFORMATION`}</Text>
