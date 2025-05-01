@@ -228,7 +228,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         </Box>
         <Box w='100%' ref={componentRef} className="printable-content">
             {e_report === 'STANDARD' ? (
-                <StandardER e_report={e_report} course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room}/>
+                <StandardER course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room}/>
             ) : e_report === 'STCW' ? (
                 <STCW_ER e_report={e_report} course={courseCode} schedule={formattedDate} year={year} room={room}/>
             ) : e_report === 'MDS' && (
