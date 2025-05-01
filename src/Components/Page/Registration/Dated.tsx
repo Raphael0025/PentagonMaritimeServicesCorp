@@ -343,9 +343,9 @@ export default function Page(){
                     <ModalHeader className='text-sky-700' fontWeight='800'>Registration & Admission Forms</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody display='flex' alignItems='center' flexDir='column'>
-                        <Box w='80%' >
+                        <Box w='8.2in' >
                             <Box w='100%' ref={componentRef}>
-                                <RegistrationForm regNum={regNum} traineeName={traineeName} />
+                                <RegistrationForm regNum={regNum} />
                                 <AdmissionForm regNum={regNum} traineeName={traineeName} />
                             </Box>
                         </Box>
