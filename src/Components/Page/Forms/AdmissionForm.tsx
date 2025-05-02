@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 import { Box, Text, Grid, Image, GridItem } from '@chakra-ui/react'
 
-import {TrashIcon, Loading, DownloadIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
-import {NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon} from '@/Components/SideIcons'
+import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -15,17 +14,17 @@ import { useCourseBatch } from '@/context/BatchContext'
 import {useRank} from '@/context/RankContext'
 
 import { useReactToPrint } from 'react-to-print'
-import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import './reg_admission.css'
 
 import { reformatTrainingSched } from '@/handlers/trainee_handler'
 
 interface UIProps {
     regNum: string,
-    traineeName: string
+    traineeName: string,
+    tab: string,
 }
 
-export default function Page({regNum, traineeName}: UIProps){
+export default function Page({regNum, tab, traineeName}: UIProps){
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -51,7 +50,7 @@ export default function Page({regNum, traineeName}: UIProps){
         return <Text>No trainee information found.</Text>;
     }
 
-    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && t.reg_status >= 3);
+    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status >= 3 : t.reg_status >= 2));
     if (!trainings || trainings.length === 0) {
         return <Text>No trainings found.</Text>;
     }
@@ -153,7 +152,7 @@ export default function Page({regNum, traineeName}: UIProps){
                                         <GridItem display='flex' border="0.5pt solid black" justifyContent='center' alignItems='center'>{`Room No.`}</GridItem>
                                     </Grid>
                                     {trainings && trainings.length > 0 ? (
-                                        trainings.filter((training) => training.reg_status === 3).map((training, index) => (
+                                        trainings.filter((training) => (tab === 'enrolled' ? training.reg_status >= 3 : training.reg_status >= 2)).map((training, index) => (
                                             <Grid key={index} templateColumns="3.24in 2.25in 0.98in 2.35in" gap={0} h='0.31in' fontFamily="Arial, sans-serif" textTransform='uppercase' fontWeight='normal' fontSize='8pt'>
                                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
                                                     <Text >

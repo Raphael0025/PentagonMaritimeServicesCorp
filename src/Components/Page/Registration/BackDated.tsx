@@ -345,8 +345,8 @@ export default function Page(){
                     <ModalBody display='flex' alignItems='center' flexDir='column'>
                         <Box w='7.9in' >
                             <Box w='100%' ref={componentRef}>
-                                <RegistrationForm regNum={regNum} />
-                                <AdmissionForm regNum={regNum} traineeName={traineeName} />
+                                <RegistrationForm regNum={regNum} tab={'enrolled'} />
+                                <AdmissionForm regNum={regNum} tab={'enrolled'} traineeName={traineeName} />
                             </Box>
                         </Box>
                     </ModalBody>

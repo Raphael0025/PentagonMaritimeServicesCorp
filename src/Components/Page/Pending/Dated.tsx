@@ -14,7 +14,8 @@ import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 
-import RegistrationForm from '@/Components/Page/Pending/RegistrationForm'
+import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
+import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
 import { InsertTraining, CancelModal, RegisterTrainee, EditTrainingDetails, ChangeAccountType } from '@/Components/Modal/Pending'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
@@ -60,6 +61,8 @@ export default function Page() {
     const { isOpen: isOpenCancel, onOpen: onOpenCancel, onClose: onCloseCancel } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     const { isOpen: isOpenAT, onOpen: onOpenAT, onClose: onCloseAT } = useDisclosure()
+    const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
+    const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -437,16 +440,20 @@ export default function Page() {
         </Modal>
         <Modal isOpen={isOpenReg} onClose={onCloseReg} scrollBehavior='inside' size='full'>
             <ModalOverlay />
-            <ModalContent>
-                <ModalHeader fontSize='lg' fontWeight='700' className='text-sky-700 uppercase'>Preview</ModalHeader>
-                <ModalBody>
-                    <Box ref={componentRef} w='100%' display='flex' justifyContent='center'>
-                        <RegistrationForm reg_id={regID} />
+            <ModalContent px={4}>
+                <ModalHeader color='blue.700' fontWeight='800'>Registration & Admission Forms</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody display='flex' alignItems='center' flexDir='column'>
+                    <Box w='7.9in' >
+                        <Box w='100%' ref={componentRef}>
+                            <RegistrationForm regNum={regID} tab={'pending'} />
+                            <AdmissionForm regNum={regID} tab={'pending'} traineeName={traineeName} />
+                        </Box>
                     </Box>
                 </ModalBody>
-                <ModalFooter>
-                        <Button shadow='lg' size='sm' mr={3} onClick={onCloseReg}>Close Viewer</Button>
-                        <Button shadow='lg' size='sm' bgColor='#1C437E' colorScheme='blue' onClick={handlePrint}>Print Form</Button>
+                <ModalFooter borderTopWidth='1px'>
+                    <Button onClick={() => {onCloseForm(); onOpenSForm();}} mr={3}>Close</Button>
+                    <Button colorScheme='blue' bgColor='#1C437E' onClick={handlePrint}>Print Forms</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

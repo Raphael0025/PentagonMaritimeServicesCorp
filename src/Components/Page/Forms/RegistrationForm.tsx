@@ -18,9 +18,10 @@ import { reformatTrainingSched } from '@/handlers/trainee_handler'
 
 interface UIProps {
     regNum: string,
+    tab: string
 }
 
-export default function Page({regNum, }: UIProps){
+export default function Page({regNum, tab}: UIProps){
 
     const { data: allRanks } = useRank()
     const { data: allClients, courseCodes } = useClients()
@@ -39,7 +40,7 @@ export default function Page({regNum, }: UIProps){
         return <Text>No trainee information found.</Text>;
     }
 
-    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && t.reg_status >= 3);
+    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status >= 3 : t.reg_status >= 2));
     if (!trainings || trainings.length === 0) {
         return <Text>No trainings found.</Text>;
     }
@@ -206,7 +207,7 @@ export default function Page({regNum, }: UIProps){
                                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>{`Course Fee (PHP)`}</GridItem>
                                     </Grid>
                                     {trainings && trainings.length > 0 ? (
-                                        trainings.filter((training) => training.reg_status === 3).map((training, index) => (
+                                        trainings.filter((training) => (tab === 'enrolled' ? training.reg_status >= 3 : training.reg_status >= 2)).map((training, index) => (
                                             <Grid key={index} templateColumns="3.24in 1.66in 1.58in" gap={0} h='0.31in' fontFamily="Arial, sans-serif" textTransform='uppercase' fontWeight='normal' fontSize='8pt'>
                                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
                                                     <Text >
@@ -332,7 +333,9 @@ export default function Page({regNum, }: UIProps){
                     </Box>
                     <Box className=' w-1/3 md:w-1/3 '>
                         <Box className='flex flex-col w-full justify-center items-center'>
-                            <Text border='0' borderBottom='0.5pt solid black' color='#333333' w='100%' textTransform='uppercase' textAlign='center'>{`${reg.date_registered.toDate().toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}`}</Text>
+                            <Text border='0' borderBottom='0.5pt solid black' color='#333333' w='100%' textTransform='uppercase' textAlign='center'>{
+                                // `${reg.date_registered.toDate().toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}`
+                            }</Text>
                             <Text color='#333333' className='text-center' fontWeight='normal' textTransform='uppercase' sx={{ fontVariant: 'small-caps'}}>{`Date`}</Text>
                         </Box>
                     </Box>
