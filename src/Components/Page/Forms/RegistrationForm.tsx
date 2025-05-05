@@ -40,7 +40,7 @@ export default function Page({regNum, tab}: UIProps){
         return <Text>No trainee information found.</Text>;
     }
 
-    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status >= 3 : t.reg_status === 2));
+    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status === 3 : t.reg_status === 2));
     if (!trainings || trainings.length === 0) {
         return <Text>No trainings found.</Text>;
     }
@@ -207,7 +207,7 @@ export default function Page({regNum, tab}: UIProps){
                                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>{`Course Fee (PHP)`}</GridItem>
                                     </Grid>
                                     {trainings && trainings.length > 0 ? (
-                                        trainings.filter((training) => (tab === 'enrolled' ? training.reg_status >= 3 : training.reg_status === 2)).map((training, index) => (
+                                        trainings.filter((training) => (tab === 'enrolled' ? training.reg_status === 3 : training.reg_status === 2)).map((training, index) => (
                                             <Grid key={index} templateColumns="3.24in 1.66in 1.58in" gap={0} h='0.31in' fontFamily="Arial, sans-serif" textTransform='uppercase' fontWeight='normal' fontSize='8pt'>
                                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
                                                     <Text >
