@@ -14,7 +14,7 @@ import {useRank} from '@/context/RankContext'
 import { parsingTimestamp, } from '@/types/handling'
 import './reg_admission.css'
 
-import { reformatTrainingSched } from '@/handlers/trainee_handler'
+import { reformatTrainingSched, validateEnrolledDates } from '@/handlers/trainee_handler'
 
 interface UIProps {
     regNum: string,
@@ -44,6 +44,8 @@ export default function Page({regNum, tab}: UIProps){
     if (!trainings || trainings.length === 0) {
         return <Text>No trainings found.</Text>;
     }
+
+    const trainingDate_EnrolledDate = validateEnrolledDates(trainings)
 
     return(
     <>
@@ -334,7 +336,7 @@ export default function Page({regNum, tab}: UIProps){
                     <Box className=' w-1/3 md:w-1/3 '>
                         <Box className='flex flex-col w-full justify-center items-center'>
                             <Text border='0' borderBottom='0.5pt solid black' color='#333333' w='100%' textTransform='uppercase' textAlign='center'>{
-                                // `${reg.date_registered.toDate().toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}`
+                                `${trainingDate_EnrolledDate}`
                             }</Text>
                             <Text color='#333333' className='text-center' fontWeight='normal' textTransform='uppercase' sx={{ fontVariant: 'small-caps'}}>{`Date`}</Text>
                         </Box>

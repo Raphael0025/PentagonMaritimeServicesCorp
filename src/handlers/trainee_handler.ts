@@ -1,4 +1,4 @@
-
+import { TRAINING } from '@/types/trainees';
 
 export const handleResults = (result: number) => {
     switch(result){
@@ -94,4 +94,16 @@ export const reformatTrainingSched = (startD: string, endD: string): string => {
     } else {
         return `${split_startD[1]} - ${split_endD[1]}, ${split_startD[0]} - ${split_endD[0]}`
     }
+}
+
+export const validateEnrolledDates = (trainings: TRAINING[]): string | null => {
+    if(!trainings || trainings.length === 0) return 'No trainings found.'
+
+    const formatDate = (date: Date) => {
+        const dateObj = new Date(date);
+        return dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    const firstDate = formatDate(new Date(trainings[0].date_enrolled.toDate()))
+    const allDatesMatch = trainings.every((training) => formatDate(training.date_enrolled.toDate()) === firstDate)
+    return allDatesMatch ? firstDate : null
 }
