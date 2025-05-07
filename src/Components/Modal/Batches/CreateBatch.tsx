@@ -125,8 +125,8 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             setEnd(end_date)
             setNumDays(numOfDays)
             handleSelection(training, registration, trainee)
-        } else if (endDate !== '' || endDate === end_date){
-            if(startDate !== start_date){
+        } else if (endDate.toUpperCase() !== '' || endDate.toUpperCase() === end_date.toUpperCase()){
+            if(startDate.toUpperCase() !== start_date.toUpperCase()){
                 handleToast('Training Date Not Matched!', `You're trying to select a training with un-matching training schedule. Kindly select a training with matching dates.`, 7000, 'warning')
                 return
             } 

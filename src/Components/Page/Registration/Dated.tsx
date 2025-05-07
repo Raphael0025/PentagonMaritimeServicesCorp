@@ -349,7 +349,7 @@ export default function Page(){
                                 <AdmissionForm regNum={regNum} tab={'enrolled'} traineeName={traineeName} />
                             </Box>
                         </Box>
-                    </ModalBody>
+                    </ModalBody> 
                     <ModalFooter borderTopWidth='1px'>
                             <Button onClick={() => {onCloseForm(); onOpenSForm();}} mr={3}>Close</Button>
                             <Button onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' isLoading={loading} loadingText='Saving...'>Print</Button>

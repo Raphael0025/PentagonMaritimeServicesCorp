@@ -55,7 +55,7 @@ export default function Page({regNum, tab}: UIProps){
         >
             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center' >
                 {/** Header */}
-                <Box display='flex' justifyContent='space-between' alignItems='center' w='100%'>
+                <Box display='flex' justifyContent='space-between' alignItems='center' w='95%'>
                     <Image src='/Logo.jpg' width={'2.81in'} height={'0.66in'} alt='logo'/>
                     <Box >
                         <Text display='flex' justifyContent='end' alignItems='center' fontSize='9pt' fontFamily='Calibri, Arial, sans-serif' fontWeight='normal'>
@@ -84,7 +84,7 @@ export default function Page({regNum, tab}: UIProps){
                         </Text>
                     </Box>
                 </Box>
-                <Box display='flex' flexDir='column' w='100%' >
+                <Box display='flex' flexDir='column' w='95%' >
                     <Box className='flex w-full justify-between'>
                         <Text fontSize='16pt' fontWeight='bold' color='#002060' textTransform='uppercase' fontFamily='Arial, sans-serif'>Registration Form</Text>
                         <Box w='2.26in' fontFamily='Arial, sans-serif' lineHeight={'none'} px='4' py='2' h='0.48in' borderColor='black' borderWidth='0.75pt'>
@@ -101,7 +101,7 @@ export default function Page({regNum, tab}: UIProps){
                                 <Text as='span'>{`TRAINEE'S INFORMATION`}</Text>
                             </GridItem>
                         </Grid>
-                        <Grid templateColumns="1.6in 1.7in 1.65in 0.6in 1.56in 1.7in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                        <Grid templateColumns="1.58in 1.65in 1.6in 0.5in 1.45in 1.55in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
                             <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='start'>
                                 <Text fontSize='7pt' >Last Name:</Text>
                                 <Text fontSize='9pt' >{traineeInfo.last_name}</Text>
@@ -129,7 +129,7 @@ export default function Page({regNum, tab}: UIProps){
                                 <Text fontSize='9pt' >{traineeInfo.srn}</Text>
                             </GridItem>
                         </Grid>
-                        <Grid templateColumns="5.55in 1.56in 1.7in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                        <Grid templateColumns="5.33in 1.45in 1.55in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
                             <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
                                 <Text fontSize='7pt'>Address:</Text>
                                 <Text fontSize='9pt'>
@@ -147,7 +147,7 @@ export default function Page({regNum, tab}: UIProps){
                                 <Text fontSize='9pt'>{traineeInfo.endorser}</Text>
                             </GridItem>
                         </Grid>
-                        <Grid templateColumns="1.6in 2.2in 1.15in 0.6in 1.56in 1.7in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                        <Grid templateColumns="1.57in 2.1in 1.15in 0.5in 1.46in 1.55in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
                             <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
                                 <Text fontSize='7pt'>Contact Number:</Text>
                                 <Text fontSize='9pt'>{traineeInfo.contact_no}</Text>
@@ -174,7 +174,7 @@ export default function Page({regNum, tab}: UIProps){
                             </GridItem>
                         </Grid>
                         {/* <Grid className='flex md:flex-row flex-col'> */}
-                            <Grid templateColumns="5.55in 2.28in 0.98in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
+                            <Grid templateColumns="4.82in 2.48in 1.03in" gap={0} textTransform='uppercase' h='0.43in' fontWeight='normal' fontFamily='Arial MT, sans-serif' >
                                 <GridItem display='flex' lineHeight='none' ps='1' pt='1' pb='1' flexDir='column' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='start' alignItems='start'>
                                     <Text fontSize='7pt'>{`IN CASE OF EMERGENCY, PLEASE CONTACT: ( NAME / CONTACT NUMBER / RELATIONSHIP)`}</Text>
                                     <Text fontSize='9pt'>{traineeInfo.e_contact === '' || traineeInfo.e_contact_person === '' || traineeInfo.relationship === '' ? '' : `${traineeInfo.e_contact_person} / ${traineeInfo.e_contact} / ${traineeInfo.relationship}`}</Text>
@@ -203,14 +203,14 @@ export default function Page({regNum, tab}: UIProps){
                                         <Text className='label-text text-center p-1' w='60%' color='#1A2B56' style={{borderWidth: '1px', borderColor: '#00000060'}}>Schedule</Text>
                                         <Text className='label-text text-center p-1' w='50%' color='#1A2B56' style={{borderWidth: '1px', borderColor: '#00000060'}}>Course Fee</Text>
                                     </Box> */}
-                                    <Grid templateColumns="3.24in 1.66in 1.58in" gap={0} textAlign='center' textTransform='uppercase' fontSize='7.4pt' h='0.29in' fontWeight='normal' fontFamily='Arial, sans-serif' >
+                                    <Grid templateColumns="2.95in 1.85in 1.72in" gap={0} textAlign='center' textTransform='uppercase' fontSize='7.4pt' h='0.29in' fontWeight='normal' fontFamily='Arial, sans-serif' >
                                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Course</GridItem>
                                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Schedule</GridItem>
                                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>{`Course Fee (PHP)`}</GridItem>
                                     </Grid>
                                     {trainings && trainings.length > 0 ? (
                                         trainings.filter((training) => (tab === 'enrolled' ? training.reg_status === 3 : training.reg_status === 2)).map((training, index) => (
-                                            <Grid key={index} templateColumns="3.24in 1.66in 1.58in" gap={0} h='0.31in' fontFamily="Arial, sans-serif" textTransform='uppercase' fontWeight='normal' fontSize='8pt'>
+                                            <Grid key={index} templateColumns="2.95in 1.85in 1.72in" gap={0} h='0.31in' fontFamily="Arial, sans-serif" textTransform='uppercase' fontWeight='normal' fontSize='8pt'>
                                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
                                                     <Text >
                                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
@@ -227,7 +227,7 @@ export default function Page({regNum, tab}: UIProps){
                                             </Grid>
                                         ))
                                     ) : (
-                                        <Grid templateColumns="3.24in 1.66in 1.58in" gap={0} h='0.31in' >
+                                        <Grid templateColumns="2.95in 1.85in 1.72in" gap={0} h='0.31in' >
                                             <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                 <Text></Text>
                                             </GridItem>
@@ -256,7 +256,7 @@ export default function Page({regNum, tab}: UIProps){
                                     )}
                                     {trainings && trainings.length < 8 && 
                                         [...Array(8 - trainings.length)].map((_, index) => (
-                                            <Grid key={index} templateColumns="3.24in 1.66in 1.58in" gap={0} h='0.31in' >
+                                            <Grid key={index} templateColumns="2.95in 1.85in 1.72in" gap={0} h='0.31in' >
                                                 <GridItem border="0.5pt solid black" borderTop='none' borderRight="none" >
                                                     <Text></Text>
                                                 </GridItem>
@@ -270,7 +270,7 @@ export default function Page({regNum, tab}: UIProps){
                                         ))
                                     }
                                 </Box>
-                                <Grid templateColumns='2.33in' fontFamily='Arial' templateRows='0.315in 0.288in 0.31in 0.31in 0.31in 0.31in 0.31in 0.31in 0.30in' bg='#dbe5f1' textTransform='uppercase' gap={0}>
+                                <Grid templateColumns='1.8in' fontFamily='Arial' templateRows='0.288in 0.32in 0.31in 0.31in 0.31in 0.31in 0.31in 0.31in 0.30in' bg='#dbe5f1' textTransform='uppercase' gap={0}>
                                     <GridItem fontSize='9pt' display='flex' fontWeight='bold' border='0.5pt solid black' justifyContent='center' alignItems='center'>For Pentagon Use Only:</GridItem>
                                     <GridItem fontSize='6.5pt' ps='3' fontWeight='normal' border='0.5pt solid black' borderTop='none' justifyContent='center' alignItems='center'>
                                         <Text py='0' >{reg.reg_accountType === 0 ? `● TRAINEE'S ACCOUNT` : `○ TRAINEE'S ACCOUNT`}</Text> 
@@ -314,7 +314,7 @@ export default function Page({regNum, tab}: UIProps){
                         </Box>
                     </Box>
                 </Box>
-                <Box className='flex items-start flex-col space-y-2'>
+                <Box w='95%' className='flex items-start flex-col space-y-2'>
                     <Box display='flex' flexDir='column' textTransform='uppercase' fontSize='5.5pt' fontFamily='Arial' fontWeight='normal'>
                         <Text py='1'>{`BY SIGNING THIS I GRANT MY VOLUNTARY AND UNCONDITIONAL CONSENT TO THE COLLECTION AND PROCESSING MY PERSONAL DATA AS STATED ABOVE TO THE INFORMATION AND DATA BASE OF PENTAGON MARITIME SERVICES CORP. IN ACCORDANCE WITH REPUBLIC ACT (R.A) 10173, OTHERWISE KNOWN AS THE “DATA PRIVACY ACT OF 2012” OF THE REPUBLIC OF THE PHILIPPINES, INCLUDING ITS IMPLEMENTING RULES AND REGULATIONS (IRR) AS WELL AS ALL OTHER GUIDELINES AND ISSUANCES BY THE NATIONAL PRIVACY COMMISSION (NPC).`}</Text>
                         <Text py='1'>
@@ -325,7 +325,7 @@ export default function Page({regNum, tab}: UIProps){
                         </Text>
                     </Box>
                 </Box>
-                <Box w='100%' display='flex' justifyContent='space-between' alignItems='end'>
+                <Box w='95%' display='flex' justifyContent='space-between' alignItems='end'>
                     <Box className=' w-1/3 md:w-1/3 '>
                         <Box className='flex flex-col w-full justify-center items-center'>
                             <Image src={traineeInfo.e_sig} width={100} height={100} alt='Signature' />

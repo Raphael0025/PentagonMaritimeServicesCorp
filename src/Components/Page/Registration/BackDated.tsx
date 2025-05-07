@@ -358,7 +358,7 @@ export default function Page(){
             </Modal>
             <Modal isOpen={isOpenSForm} size='md' scrollBehavior='inside' onClose={() => {onCloseSForm(); setSearch('')}}>
                 <ModalOverlay />
-                <ModalContent px={4}>
+                <ModalContent px={4}> 
                     <ModalHeader className='text-sky-700' fontWeight='800'>Select Registration Number</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody display='flex' alignItems='center' flexDir='column'>

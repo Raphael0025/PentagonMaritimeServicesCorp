@@ -444,7 +444,7 @@ export default function Page() {
                 <ModalHeader color='blue.700' fontWeight='800'>Registration & Admission Forms</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody display='flex' alignItems='center' flexDir='column'>
-                    <Box w='7.9in' >
+                    <Box w='7.9in' > 
                         <Box w='100%' ref={componentRef}>
                             <RegistrationForm regNum={regID} tab={'pending'} />
                             <AdmissionForm regNum={regID} tab={'pending'} traineeName={traineeName} />
