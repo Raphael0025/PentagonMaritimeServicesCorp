@@ -64,7 +64,8 @@ export default function Page(){
     const [filters, setFilters] = useState([
         {category: 'marketingFilter', value: ''},
         {category: 'gender', value: ''},
-        {category: 'sortOption', value: 'Latest Date'}
+        {category: 'sortOption', value: ''},
+        {category: 'company', value: ''},
     ])
 
     useEffect(() => {
@@ -179,13 +180,23 @@ export default function Page(){
             acc[filter.category] = filter.value;
             return acc;
         }, {} as FilterState);
-        const { gender } = filterState;
+        const { gender, company } = filterState
+        // Resolve the company name using allClients
+        const resolvedCompanyName = allClients?.find((client) => client.id === trainee.company)?.company || trainee.company;
+
         return(
             (gender ? gender.toLowerCase() === trainee.gender.toLowerCase() : true) &&
-            (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            trainee.middle_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            trainee.srn.toLowerCase().includes(searchTerm.toLowerCase()) )
+            (company
+                ? company.toLowerCase() === 'na'
+                    ? resolvedCompanyName.toLowerCase() === 'n/a' || resolvedCompanyName.toLowerCase() === 'na'
+                    : resolvedCompanyName.toLowerCase().includes(company.toLowerCase())
+                : true) &&
+            (   trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                trainee.middle_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                trainee.srn.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                resolvedCompanyName.toLowerCase().includes(searchTerm.toLowerCase())
+            )
         )
     }).map((trainee) => ({
         ...trainee!,
@@ -227,6 +238,17 @@ export default function Page(){
         }
     }
 
+    const handleClearFilters = () => {
+        setFilters([
+            { category: 'marketingFilter', value: '' },
+            { category: 'gender', value: '' },
+            { category: 'sortOption', value: '' },
+            { category: 'company', value: '' },
+        ])
+        setSearchTerm('') // Reset the search term
+        setPage(1) // Reset to the first page
+    }
+
     const handleEditAccess = (slug: string) => {
         router.push(`/enterprise-portal/registration/trainees/${slug}`)
     }
@@ -257,19 +279,32 @@ export default function Page(){
                     <Input id='search-bar' onChange={handleSearch} value={searchTerm} placeholder='e.g. Juan dela Cruz...' />
                 </InputGroup>
                 <Box display="flex" gap={4}>
+                    <Select size="sm" onChange={(e) => updateFilter('company', e.target.value)}
+                        width="200px" value={filters.find((filter) => filter.category === 'company')?.value || ''}
+                    >
+                        <option hidden>Filter by Company</option>
+                        {allClients?.map((client) => (
+                            <option key={client.id} value={client.company}>
+                                {client.company.toUpperCase()}
+                            </option>
+                        ))}
+                        <option value="NA">N/A</option>
+                    </Select>
                     {/* Gender Filter */}
-                    <Select size="sm" onChange={(e) => updateFilter('gender', e.target.value)} width="160px" >
+                    <Select size="sm" onChange={(e) => updateFilter('gender', e.target.value)} width="160px" value={filters.find((filter) => filter.category === 'gender')?.value || ''}>
                         <option hidden>Filter by Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                     </Select>
-
                     {/* Sort by Date */}
-                    <Select size="sm" onChange={(e) => updateFilter('sortOption', e.target.value)} width="140px" >
+                    <Select size="sm" onChange={(e) => updateFilter('sortOption', e.target.value)} width="140px" value={filters.find((filter) => filter.category === 'sortOption')?.value || ''}>
                         <option hidden>Sort by Date</option>
                         <option value="Latest Date">Latest Date</option>
                         <option value="Oldest Date">Oldest Date</option>
                     </Select>
+                    {(filters.some((filter) => filter.value !== '') || searchTerm) && (
+                        <Button size="sm" colorScheme="red" shadow="md" onClick={handleClearFilters} >Clear Filters</Button>
+                    )}
                 </Box>
             </Box>
             <Box className='w-full '>
@@ -296,8 +331,8 @@ export default function Page(){
                                     <Text w='100px' className='text-xs text-center'>{`${allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank}`}</Text>
                                     <Text w='100px' className='text-xs text-center'>{`${trainee.srn}`}</Text>
                                     <Text w='100px' className='text-xs text-center'>{`${trainee.gender}`}</Text>
-                                    <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
-                                        <Text w='350px' fontSize='8.5pt' noOfLines={1} className='text-wrap'>
+                                    <Tooltip className='text-center' aria-label='tooltip' textTransform='uppercase' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
+                                        <Text w='350px' fontSize='8.5pt'  noOfLines={1} className='text-wrap'>
                                             {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
                                         </Text>    
                                     </Tooltip> 
