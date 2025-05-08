@@ -12,7 +12,7 @@ import html2canvas from 'html2canvas'
 import { getDownloadURL, ref, getStorage  } from "firebase/storage";
 
 import {DotsIcon, Loading, EditIcon, UploadIcon, ViewDocIcon, DownloadIcon, VerifyIcon, TrashIcon, PinIcon, MailIcon, PhoneIcon, FilterIcon, FacebookIcon, SearchIcon } from '@/Components/Icons'
-import {HistoryIcon} from '@/Components/SideIcons'
+import { HistoryIcon, PrevIcon, NextIcon2 } from '@/Components/SideIcons'
 
 import { changeImg,} from '@/lib/trainee_controller'
 
@@ -22,12 +22,15 @@ import { parsingTimestamp, formatTime, formatDateToWords, getStatusStyles, showT
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useHistoryLogs } from '@/context/HistoryLogContext'
+import { getFormatTimeDate } from '@/handlers/util_handler'
 import { useClients } from '@/context/ClientCompanyContext'
+import { useRank } from '@/context/RankContext'
 
 export default function Page(){
     const toast = useToast()
     const {data: allTrainee } = useTrainees()
     const {data: allLogs} = useHistoryLogs()
+        const { data: allRanks } = useRank()
     const {data: allClients, companyCharge: companyCharges, courseCodes: companyCourseCodes} = useClients()
 
     const [loading, setLoading] = useState<boolean>(false)
@@ -60,6 +63,7 @@ export default function Page(){
 
     const [filters, setFilters] = useState([
         {category: 'marketingFilter', value: ''},
+        {category: 'gender', value: ''},
         {category: 'sortOption', value: 'Latest Date'}
     ])
 
@@ -156,11 +160,15 @@ export default function Page(){
     }
 
     const updateFilter: UpdateFilter = (category, value) => {
-        setFilters(prevFilters => 
-            prevFilters.map(filter => 
-                filter.category === category ? {...filter, value: filter.value === value ? '' : value } : filter
+        setFilters((prevFilters) => {
+            const updatedFilters = prevFilters.map((filter) =>
+                filter.category === category
+                    ? { ...filter, value: filter.value === value ? '' : value }
+                    : filter
             )
-        )
+            console.log('Updated Filters:', updatedFilters); // Debugging
+            return updatedFilters;
+        })
     }
     
     // Filter the merged data
@@ -171,15 +179,15 @@ export default function Page(){
             acc[filter.category] = filter.value;
             return acc;
         }, {} as FilterState);
-        const { marketingFilter} = filterState;
+        const { gender } = filterState;
         return(
-            (marketingFilter ? marketingFilter === trainee.marketing : true) &&
+            (gender ? gender.toLowerCase() === trainee.gender.toLowerCase() : true) &&
             (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             trainee.middle_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             trainee.srn.toLowerCase().includes(searchTerm.toLowerCase()) )
         )
-    }).map((trainee, index) => ({
+    }).map((trainee) => ({
         ...trainee!,
         slug: generateSlug(`${trainee!.last_name.trim().charAt(0)}${trainee!.first_name.trim().charAt(0)}${trainee!.id.slice(0,2)}`)
     })).sort((a,b) => {
@@ -218,10 +226,6 @@ export default function Page(){
             setPage(page - 1)
         }
     }
-    
-    const handleEdit = (slug: string) => {
-        router.push(`/enterprise-portal/registration/trainees/${slug}`)
-    }
 
     const handleEditAccess = (slug: string) => {
         router.push(`/enterprise-portal/registration/trainees/${slug}`)
@@ -245,42 +249,61 @@ export default function Page(){
     return(
     <>
         <main className='w-full space-y-3'>
-            <Box className='w-full flex'>
+            <Box w='100%' display='flex' justifyContent='space-between' >
                 <InputGroup w='30%' className='shadow-md rounded-lg'>
                     <InputLeftAddon>
                         <SearchIcon color='#a1a1a1' size='18'/>
                     </InputLeftAddon>
                     <Input id='search-bar' onChange={handleSearch} value={searchTerm} placeholder='e.g. Juan dela Cruz...' />
                 </InputGroup>
+                <Box display="flex" gap={4}>
+                    {/* Gender Filter */}
+                    <Select size="sm" onChange={(e) => updateFilter('gender', e.target.value)} width="160px" >
+                        <option hidden>Filter by Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </Select>
+
+                    {/* Sort by Date */}
+                    <Select size="sm" onChange={(e) => updateFilter('sortOption', e.target.value)} width="140px" >
+                        <option hidden>Sort by Date</option>
+                        <option value="Latest Date">Latest Date</option>
+                        <option value="Oldest Date">Oldest Date</option>
+                    </Select>
+                </Box>
             </Box>
             <Box className='w-full '>
                 <Box className='flex justify-between bg-sky-700 rounded uppercase shadow-md p-3 px-8 text-white'>
-                    <Text w='70%' className='text-center'>{`Trainee's Name`}</Text>
-                    <Text w='50%' className='text-center'>rank</Text>
-                    <Text w='50%' className='text-center'>srn</Text>
-                    <Text w='30%' className='text-center'>gender</Text>
-                    <Text w='70%' className='text-center'>company</Text>
-                    <Text w='50%' className='text-center'>email</Text>
-                    <Text w='50%' className='text-center'>contact #</Text>
-                    <Text w='30%' className='text-center'>action</Text>
+                    <Text w='200px' className='text-center'>{`Registered Date`}</Text>
+                    <Text w='350px' className='text-center'>{`Trainee's Name`}</Text>
+                    <Text w='100px' className='text-center'>rank</Text>
+                    <Text w='100px' className='text-center'>srn</Text>
+                    <Text w='100px' className='text-center'>gender</Text>
+                    <Text w='350px' className='text-center'>company</Text>
+                    <Text w='180px' className='text-center'>email</Text>
+                    <Text w='180px' className='text-center'>contact #</Text>
+                    <Text w='5%' className='text-center'>action</Text>
                     <Text w='5%' className='text-center'>{``}</Text>
                 </Box>
-                <Box style={{maxHeight:'700px', overflowY: 'auto'}}>
+                <Box style={{maxHeight:'650px', overflowY: 'auto'}}>
                     <Box className='space-y-5 p-2'>
                         <Accordion allowMultiple className='space-y-5'>
                         {displayTrainees && displayTrainees.map((trainee) => (
                             <AccordionItem key={trainee.id} >
                                 <AccordionButton className='flex justify-between rounded shadow-md p-3 px-8 uppercase'>
-                                    <Text w='70%' className='text-xs'>{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name === '' || trainee.middle_name.toLowerCase() === 'n/a' ? '' : `${trainee.middle_name.charAt(0)}.`} ${trainee.suffix === '' || trainee.suffix.toLowerCase() === 'n/a'  ? '' : trainee.suffix}`}</Text>
-                                    <Text w='50%' className='text-xs text-center'>{`${trainee.rank}`}</Text>
-                                    <Text w='50%' className='text-xs text-center'>{`${trainee.srn}`}</Text>
-                                    <Text w='30%' className='text-xs text-center'>{`${trainee.gender}`}</Text>
-                                    <Text w='70%' className='text-xs text-center'>
-                                        {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
-                                    </Text>
-                                    <Text w='50%' className='text-xs lowercase text-center'>{`${trainee.email}`}</Text>
-                                    <Text w='50%' className='text-xs text-center'>{`${trainee.contact_no}`}</Text>
-                                    <Box p={0} style={{width: '30%', textAlign: 'center', fontSize: 12 }}>
+                                    <Text w='200px' fontSize='7pt'>{`${getFormatTimeDate(trainee.createdAt.toDate())}`}</Text>
+                                    <Text w='350px' className='text-xs'>{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name === '' || trainee.middle_name.toLowerCase() === 'n/a' ? '' : `${trainee.middle_name.charAt(0)}.`} ${trainee.suffix === '' || trainee.suffix.toLowerCase() === 'n/a'  ? '' : trainee.suffix}`}</Text>
+                                    <Text w='100px' className='text-xs text-center'>{`${allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank}`}</Text>
+                                    <Text w='100px' className='text-xs text-center'>{`${trainee.srn}`}</Text>
+                                    <Text w='100px' className='text-xs text-center'>{`${trainee.gender}`}</Text>
+                                    <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
+                                        <Text w='350px' fontSize='8.5pt' noOfLines={1} className='text-wrap'>
+                                            {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
+                                        </Text>    
+                                    </Tooltip> 
+                                    <Text w='180px' className='text-xs lowercase text-center'>{`${trainee.email}`}</Text>
+                                    <Text w='180px' className='text-xs text-center'>{`${trainee.contact_no}`}</Text>
+                                    <Box w='5%' p={0} style={{ textAlign: 'center', fontSize: 12 }}>
                                         <Menu isLazy  >
                                             <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
                                             <MenuList className='space-y-1 text-start'>
@@ -300,7 +323,7 @@ export default function Page(){
                                             </MenuList>
                                         </Menu>
                                     </Box>
-                                    <AccordionIcon />
+                                    <AccordionIcon w='5%' />
                                 </AccordionButton>
                                 <AccordionPanel className='flex justify-around'>
                                     <Box w='400px' className='p-3 py-4 space-y-3 rounded shadow-md uppercase'>
@@ -373,6 +396,40 @@ export default function Page(){
                             </AccordionItem>
                         ))}
                         </Accordion>
+                    </Box>
+                </Box>
+                {/** Pagination */}
+                <Box display='flex' justifyContent='end'>
+                    <Box display="flex" justifyContent="center" alignItems="center" mt={4} gap={2}>
+                        <Text fontSize="sm" fontWeight="normal">Items per page:</Text>
+                        <Select value={limit} onChange={handleLimitChange} size="sm" width="100px" >
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={150}>150</option>
+                            <option value={200}>200</option>
+                        </Select>
+                        <Box display="flex" alignItems="center" gap={2}>
+                            <Text fontSize="sm" fontWeight="normal">
+                                {startIndx + 1} - {Math.min(startIndx + limit, filteredTrainees?.length || 0)} of {filteredTrainees?.length || 0}
+                            </Text>
+                        </Box>
+                        <Text fontSize="sm" fontWeight='normal' > Page {page} </Text>
+                        <Tooltip aria-label='tooltip' label='Previous Page'>
+                            <Button onClick={handlePrevPage} isDisabled={page === 1} // Disable the "Previous" button on the first page
+                                colorScheme="gray" shadow='md'
+                                borderRadius='5px' fontWeight='normal' size="sm"
+                                >
+                                <PrevIcon size={'24'} color={'#575757'}/>
+                            </Button>
+                        </Tooltip>
+                        <Tooltip aria-label='tooltip' label='Next Page'>
+                            <Button onClick={handleNextPage} isDisabled={filteredTrainees ? page >= Math.ceil(filteredTrainees?.length / limit) : true} // Disable "Next" button on the last page
+                                colorScheme="gray" shadow='md'
+                                fontWeight='normal' borderRadius='5px' size="sm"
+                                >
+                                <NextIcon2 size='24' color={'#575757'} />
+                            </Button>
+                        </Tooltip>
                     </Box>
                 </Box>
             </Box>

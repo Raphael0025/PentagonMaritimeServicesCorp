@@ -202,3 +202,5 @@ Footer Title #[control number]"
 - **Reviewed-by**
 - **Signed-off-by**
 - **See also**
+
+### Change from png to jpg effective on May 1, 2025

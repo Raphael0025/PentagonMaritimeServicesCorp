@@ -37,5 +37,7 @@ import WorkIcon from './WorkIcon'
 import UserIcon from './UserIcon'
 import ArrowBack from './ArrowBack'
 import CatalogIcon from './CatalogIcon'
+import PrevIcon from './PrevIcon'
+import NextIcon2 from './NextIcon2'
 
-export {CalendarIcon, CatalogIcon, ArrowBack, UserIcon, CashIcon, DeBugIcon, EducIcon, FamilyIcon, FeedbackIcon, GovtIcon, HideIcon, HistoryIcon, HomeIcon, LoginIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, ReturnIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, ShowIcon, SupportIcon, TrainingIcon, WorkIcon, BankIcon, AdminFolderIcon, NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon}
+export {CalendarIcon, NextIcon2, PrevIcon, CatalogIcon, ArrowBack, UserIcon, CashIcon, DeBugIcon, EducIcon, FamilyIcon, FeedbackIcon, GovtIcon, HideIcon, HistoryIcon, HomeIcon, LoginIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, ReturnIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, ShowIcon, SupportIcon, TrainingIcon, WorkIcon, BankIcon, AdminFolderIcon, NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon}

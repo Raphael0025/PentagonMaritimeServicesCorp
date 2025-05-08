@@ -66,14 +66,14 @@ export default function StandardER({ course, schedule, year, room, trainingArray
                         <Text whiteSpace='9' mr='2'>Course:</Text>
                         <Box w="100%" borderBottomWidth="1px" p="0" borderColor="black">
                             <Text textAlign="center" fontSize="11pt" whiteSpace="pre-wrap" wordBreak="break-word">
-                                {firstLine} {/* Display the first 50 characters */}
+                                {firstLine.toUpperCase()} {/* Display the first 50 characters */}
                             </Text>
                         </Box>
                     </Box>
                     {secondLine ? (
                         <Box w="100%" borderBottomWidth="1px" p="0" borderColor="black" mt="1">
                             <Text textAlign="center" fontSize="11pt" whiteSpace="pre-wrap" wordBreak="break-word">
-                                {secondLine}
+                                {secondLine.toUpperCase()}
                             </Text>
                         </Box>
                     ) : (

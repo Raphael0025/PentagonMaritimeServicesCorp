@@ -70,7 +70,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         <Box w='50%' display='flex' flexDir='column' justifyContent='start' mr='5'>
                             <Box display='flex' w='100%' alignItems='end' mt='1'>
                                 <Text whiteSpace='9' mr='2'>Course:</Text>
-                                <Text w='100%' textAlign="center" borderBottomWidth="1px" p="0" borderColor="black" >{course}</Text>
+                                <Text w='100%' textAlign="center" borderBottomWidth="1px" p="0" borderColor="black" >{course.toUpperCase()}</Text>
                             </Box>
                             <Box w='100%' display='flex' alignItems='end' mt='1'>
                                 <Text w='60%'>{`Class Schedule:`}</Text>
