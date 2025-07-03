@@ -365,12 +365,17 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
         
         const currentYear = new Date().getFullYear();
         // this is where it initializes a reg number 
-        if (maxRegNo === '') {
-            maxRegNo = `${currentYear}-0001`; // First reg_no will be [current_year]-0001
+        if (!maxRegNo) {
+            maxRegNo = `${currentYear}-000001`; // First reg_no: 2025-000001
         } else {
-            // Increment maxRegNo by 1 for the new registration
             const [year, num] = maxRegNo.split('-');
-            const incrementedNum = (parseInt(num, 10) + 1).toString().padStart(6, '0');
+
+            // Safely parse and increment the numeric part
+            const currentNum = parseInt(num, 10);
+            const nextNum = currentNum + 1;
+
+            // Ensure it's padded to 6 digits
+            const incrementedNum = nextNum.toString().padStart(6, '0');
             maxRegNo = `${currentYear}-${incrementedNum}`;
         }
         
