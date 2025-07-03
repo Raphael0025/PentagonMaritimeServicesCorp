@@ -347,7 +347,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
     try{
         // this part fetches the latest registration number then increments it, 
         // but if no data is found it initializes a registration number
-        let maxRegNo: string = ''
+        
         const reg_Collection_Snapshot = await getDocs(registration)
         
         // Filter documents with the matching reg_type
@@ -355,29 +355,22 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
             (doc) => doc.data().regType === reg_type
         )
         
-        // If there are matching documents, find the one with the highest reg_no
-        if (filteredDocs.length > 0) {
-            const latestRegDoc = filteredDocs.reduce((prev, current) =>
-                prev.data().reg_no > current.data().reg_no ? prev : current
-            )
-            maxRegNo = latestRegDoc.data().reg_no
-        }
-        
         const currentYear = new Date().getFullYear();
-        // this is where it initializes a reg number 
-        if (!maxRegNo) {
-            maxRegNo = `${currentYear}-000001`; // First reg_no: 2025-000001
-        } else {
-            const [year, num] = maxRegNo.split('-');
+        let maxNum = 10000; // So first reg_no will be 10001
 
-            // Safely parse and increment the numeric part
-            const currentNum = parseInt(num, 10);
-            const nextNum = currentNum + 1;
-
-            // Ensure it's padded to 6 digits
-            const incrementedNum = nextNum.toString();
-            maxRegNo = `${currentYear}-${incrementedNum}`;
+        if (filteredDocs.length > 0) {
+            filteredDocs.forEach(doc => {
+                const regNo = doc.data().reg_no;
+                // Extract the numeric part after the last dash
+                const parts = regNo.split('-');
+                const numPart = parseInt(parts[parts.length - 1], 10);
+                if (!isNaN(numPart) && numPart > maxNum) {
+                    maxNum = numPart;
+                }
+            });
         }
+
+        const maxRegNo = `${currentYear}-${maxNum + 1}`;
         
         // on this part, it fetches all documents with the same reg_ref_id in training collection
         const tQuery = query(training, where('reg_ref_id', '==', registration_id))
