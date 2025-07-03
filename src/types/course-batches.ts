@@ -10,17 +10,27 @@ export interface CourseBatch{
 
 export interface CourseBatchByID extends CourseBatch{
     id: string;
+    time_duration: string
+    training_mode: string;
+    room: string;
+    instructor: string;
+    remarks: string;
     createdAt: Timestamp;
     updateAt: Timestamp;
 }
 
 export const initCourseBatch = {
+    id: '',
+    course: '',
     batch_no: 0,
     start_date: '',
     end_date: '',
     numOfDays: 0,
-    course: '',
-    id: '',
+    time_duration: '',    
+    training_mode: '',
+    room: '',
+    instructor: '',
+    remarks: '',
     createdAt: Timestamp.now(),
     updateAt: Timestamp.now(),
 }

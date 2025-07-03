@@ -30,11 +30,10 @@ export default function Page(){
     const toast = useToast()
     const {data: allTrainee } = useTrainees()
     const {data: allLogs} = useHistoryLogs()
-        const { data: allRanks } = useRank()
-    const {data: allClients, companyCharge: companyCharges, courseCodes: companyCourseCodes} = useClients()
+    const { data: allRanks } = useRank()
+    const {data: allClients,} = useClients()
 
     const [loading, setLoading] = useState<boolean>(false)
-    const [search, setSearch] = useState<string>('')
 
     const { isOpen: isOpenModal, onOpen: onOpenModal, onClose: onCloseModal } = useDisclosure()
     const { isOpen: isHistoryLogOpen, onOpen: openHistoryLog, onClose: closeHistoryLog } = useDisclosure()

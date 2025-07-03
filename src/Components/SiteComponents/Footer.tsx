@@ -12,7 +12,7 @@ import { ClockIconCustom, MailIcon, PinIcon, PhoneIcon } from '../Icons';
 export default function Footer() {
     const pathname = usePathname()
 
-    const shouldHideNavbar = pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
+    const shouldHideNavbar = pathname?.startsWith('/forms') || pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
 
     if (shouldHideNavbar) {
         return null; // Don't render anything if conditions are met
@@ -104,7 +104,7 @@ export default function Footer() {
             </Box>
         </Box>
         <Box bgColor={'#1a2b57'} color='#fbffff' p='5' display='flex' justifyContent='center' alignItems='center'>
-            <Text fontWeight='400' textAlign='center' >Copyrights © 2024 All Rights Reserved by Pentagon Maritime Serivces Corp.</Text>
+            <Text fontWeight='400' textAlign='center' >Copyrights © 2024-{new Date().getFullYear()}  All Rights Reserved by Pentagon Maritime Serivces Corp.</Text>
         </Box>
     </>
     )

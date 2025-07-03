@@ -370,7 +370,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
         } else {
             // Increment maxRegNo by 1 for the new registration
             const [year, num] = maxRegNo.split('-');
-            const incrementedNum = (parseInt(num, 10) + 1).toString().padStart(4, '0');
+            const incrementedNum = (parseInt(num, 10) + 1).toString().padStart(6, '0');
             maxRegNo = `${currentYear}-${incrementedNum}`;
         }
         

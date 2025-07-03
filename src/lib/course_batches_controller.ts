@@ -1,4 +1,4 @@
-import { addDoc, deleteDoc, getDoc, DocumentReference, updateDoc, setDoc, doc, getDocs, query, collection, getFirestore, Timestamp } from 'firebase/firestore'
+import { addDoc, deleteDoc, DocumentReference, updateDoc, doc, getDocs, query, collection, getFirestore, Timestamp } from 'firebase/firestore'
 import { app } from './firebase'
 import { CourseBatch, CourseBatchByID } from '@/types/course-batches'
 import { addLog } from '@/lib/history_log_controller'
@@ -9,7 +9,7 @@ export const courseBatches = collection(firestore, 'BATCH_RECORDS')
 
 export const GENERATE_BATCH = async (batch_record: CourseBatch, actor: string | null) => {
     try{
-        const newBatch = { ...batch_record, createdAt: Timestamp.now(), updateAt: Timestamp.now() }
+        const newBatch = { ...batch_record, time_duration: '', room: '', remarks: '', instructor: '', training_mode: '', createdAt: Timestamp.now(), updateAt: Timestamp.now() }
         const batchID: DocumentReference = await addDoc(courseBatches, {...newBatch})
         //await addLog(actor, 'New Batch Created', 'BATCHES', batchID.id)
         return batchID.id
