@@ -375,7 +375,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
             const nextNum = currentNum + 1;
 
             // Ensure it's padded to 6 digits
-            const incrementedNum = nextNum.toString().padStart(6, '0');
+            const incrementedNum = nextNum.toString();
             maxRegNo = `${currentYear}-${incrementedNum}`;
         }
         
