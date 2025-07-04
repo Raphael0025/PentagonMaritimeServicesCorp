@@ -356,19 +356,16 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
         )
         
         const currentYear = new Date().getFullYear();
-        let maxNum = 10000; // So first reg_no will be 10001
+        let maxNum = 0;
 
-        if (filteredDocs.length > 0) {
-            filteredDocs.forEach(doc => {
-                const regNo = doc.data().reg_no;
-                // Extract the numeric part after the last dash
-                const parts = regNo.split('-');
-                const numPart = parseInt(parts[parts.length - 1], 10);
-                if (!isNaN(numPart) && numPart > maxNum) {
-                    maxNum = numPart;
-                }
-            });
-        }
+        filteredDocs.forEach(doc => {
+            const regNo = doc.data().reg_no; // e.g., "Reg-2025-10000"
+            const parts = regNo.split("-");
+            const numPart = parseInt(parts[1]); // directly get the number part
+            if (numPart > maxNum) {
+                maxNum = numPart;
+            }
+        });
 
         const maxRegNo = `${currentYear}-${maxNum + 1}`;
         
