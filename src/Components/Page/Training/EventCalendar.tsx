@@ -122,17 +122,19 @@ export default function EventCalendar({ events, setCourseID, setBatchID, onOpen 
                             )}
                             <Box mt={4}>
                                 {dayEvents.map((event) => {
-                                    const courseObj = allCourses?.find((course) => course.id === event.course) || []
+                                    const courseObj = allCourses?.find((course) => course.id === event.course)
                                     return(
                                         <Box key={event.id} as="button" onClick={() => { 
-                                            //setCourseID(courseObj.id); 
+                                            if(courseObj){
+                                                setCourseID(courseObj.id); 
+                                            }
                                             setBatchID(event.id); onOpen(); }} textAlign="left" w="100%">
                                             <Text as='span' textTransform='uppercase' display='flex' className='hover:underline underline-offset-2' fontSize="xs" color="blue.600" fontWeight="medium" mb={1}>
-                                                {` 
+                                                {` ${courseObj?.course_code ?? ''}
                                                 ${event.event}`}
                                             </Text>
                                         </Box>
-                                        // ${courseObj?.course_code ?? ''}
+                                        
                                     )
                                 })}
                             </Box>
