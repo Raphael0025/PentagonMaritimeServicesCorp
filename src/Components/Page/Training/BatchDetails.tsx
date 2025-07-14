@@ -252,15 +252,11 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
 
                     const route = '/api/training-advise/notify-instructor'
                     
-                    const listOfTrainees = traineeDataArr
-                    .map(({ trainee }) => {
+                    const listOfTrainees = traineeDataArr.map(({ trainee }) => {
                         const rank = allRanks?.find(rank => rank.code === trainee?.rank)?.rank || trainee?.rank;
-                        const middleInitial =
-                        trainee?.middle_name?.toLowerCase() === 'n/a' || !trainee?.middle_name
-                            ? ''
-                            : `${trainee?.middle_name.charAt(0)}.`;
+                        const middleInitial = trainee?.middle_name?.toLowerCase() === 'n/a' || !trainee?.middle_name ? '' : `${trainee?.middle_name.charAt(0).toUpperCase()}.`;
 
-                        return `${rank} ${trainee?.last_name}, ${trainee?.first_name} ${middleInitial}`;
+                        return `${rank.toUpperCase()} ${trainee?.last_name.toUpperCase()}, ${trainee?.first_name.toUpperCase()} ${middleInitial}`;
                     })
                     
                     await fetch(route, {
@@ -294,7 +290,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
             onModClose()
             setNote('')
             setEmail('')
-            setShow(false)
+            setShow(true)
             setLoadInstructor(false)
         })
     }

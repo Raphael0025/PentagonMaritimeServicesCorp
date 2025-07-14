@@ -12,7 +12,10 @@ This document outlines the tasks and improvements planned for the project. Each 
     - **Details**:
         - [-] Training Calendar Schedule added 
         - [-] Fixed scroll issue on second page
-
+- [] **Training Tab**: Features in Training Tab
+    - **Details**:
+        - [-] Overview Tab
+            - Implemented Email advise for both trainee and instructor
 - [] **Registration Tab**: Features in Registration Tab
     - **Details**:
         - [-] Fixed Registration Series, reached 10000+ series
