@@ -4,13 +4,13 @@ import nodemailer from 'nodemailer'
 export async function POST(request: NextRequest){
     try{
         const { 
-            bcc, 
+            to, 
             course_code, 
             course_name, 
-            schedule, 
-            time, 
-            training_mode, 
-            class_code, 
+            time_duration, 
+            trainees,
+            notes,
+            instructor,
             tro_contact, 
             staff, 
             position 
@@ -24,11 +24,12 @@ export async function POST(request: NextRequest){
             },
         })
 
+        const listOfTrainees = trainees.map((trainee: string) => `<li>${trainee}</li>`).join('');
+        console.log(listOfTrainees)
         await transporter.sendMail({
             from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
-            to: `undisclosed-recipients:;`,
-            bcc: bcc,
-            subject: `${course_code} TRAINING (${schedule.toUpperCase()})`,
+            to,
+            subject: `LIST OF TRAINEES for ${course_code} Class`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -122,45 +123,20 @@ export async function POST(request: NextRequest){
                                 <img src="https://i.imgur.com/aYyVE1x.png" alt="Pentagon Logo" class="logo" />
                             </header>
                             <main class="email-body">
-                                <h1>${course_name} TRAINING</h1>
-                                <p class="subhead"><strong>Please read the entire email carefully and thoroughly, ensuring you review all content up to the final content.</strong></p>
-                                <p><strong>Greetings!</strong></p>
-                                <p>I'm reaching out to share the details for today’s training session. Below, you’ll find all the essential information. Please don’t hesitate to get in touch if you have any questions or need additional details.<br>Looking forward to the session!</p>
+                                <h1>${course_name} CLASS</h1>
+                                <p>Good Day ${instructor}!</p>
+                                <p>Below is the list of trainees for the ${course_code} class at ${time_duration}</p>
                                 <div class="section">
-                                    <p><strong>TRAINING DETAILS:</strong><br>
-                                    Course: ${course_name} (${course_code})<br>
-                                    Training Date: ${schedule}<br>
-                                    Time: ${time}<br>
-                                    Mode of Training: ${training_mode}</p>
-                                </div>
-                                <div class="section">
-                                    <p><strong>Platforms Need to Download:</strong> Google Classroom and Google Meet<br>
-                                    <strong>Google Classroom Code:</strong> ${class_code}</p>
-                                </div>
-                                <div class="section">
-                                    <p><strong>TRAINING INSTRUCTIONS/REMINDERS:</strong></p>
-                                    <p><em>For Google Classroom (before the class starts):</em></p>
                                     <ol>
-                                    <li>After downloading Google Classroom, click the plus (+) button to join the class using the Google Classroom code indicated above.
-                                        <ul>
-                                        <li>For phone users, the plus (+) button can be found at the lower right corner</li>
-                                        <li>For desktop/laptop users, the plus (+) button can be found at the upper right corner</li>
-                                        </ul>
-                                    </li>
-                                    <li>Next, go to the classwork.
-                                        <ul>
-                                        <li>For phone users, classwork can be found at the center bottom</li>
-                                        <li>For desktop/laptop users, classwork can be found at the center top</li>
-                                        </ul>
-                                    </li>
-                                    <li>Then, click the attendance list under the bulletin board category and fill out the attendance form (Google Forms).</li>
+                                        ${listOfTrainees}
                                     </ol>
-                                    <p>Upon completing your training, please stay online. Wait for further instructions/announcement for your assessment and post-training satisfaction survey form to be filled out.</p>
-                                    <p>For further training concerns, please contact this number: ${tro_contact}</p>
                                 </div>
-
+                                <div class="section">
+                                    <p>If their are any participants who have not yet joined the session, kindly inform us so that we would notify them</p>
+                                    <p>${notes}</p>
+                                </div>
+                                <p>For further training concerns, please contact this number: ${tro_contact}</p>
                                 <p><strong>Thank you!</strong></p>
-
                                 <div style={{ lineHeight: "1.2" }}>
                                     <p style={{ color: "#D3D3D3" }}><strong>${staff}</strong><br />
                                     <em style={{ color: "#D3D3D3", font-size: 5px }}>${position}</em>

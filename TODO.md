@@ -15,6 +15,7 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 - [] **Registration Tab**: Features in Registration Tab
     - **Details**:
+        - [-] Fixed Registration Series, reached 10000+ series
         - [-] Change Training Date
         - [-] Edit Course Fee
         - [-] Edit Course Name/Company Course Code

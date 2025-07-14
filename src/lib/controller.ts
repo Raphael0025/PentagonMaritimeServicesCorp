@@ -135,6 +135,7 @@ export const loginUser = async (userCode: string, password: string) => {
         localStorage.setItem('departmentToken', departmentToken);
         localStorage.setItem('rankToken', rankToken);
         localStorage.setItem('jobPositionToken', jobPositionToken);
+        localStorage.setItem('phone', user.phone)
 
         return user;
     } catch (error) {

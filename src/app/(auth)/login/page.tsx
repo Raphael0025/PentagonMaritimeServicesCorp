@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FormControl, FormErrorMessage, InputGroup, InputRightElement, Input, Box, Button, Heading, Text } from '@chakra-ui/react'
 import { touchValues, FormValues } from '@/types/document'
 import { loginUser } from '@/lib/controller'

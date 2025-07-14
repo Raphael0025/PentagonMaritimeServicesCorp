@@ -207,6 +207,10 @@ export default function EditCourseForm({ onClose, id } : IProps){
                         </Select>
                     </Box>
                 </Box>
+                <Box >
+                    <Text >Class Code:</Text>
+                    <Input id='class_code' textTransform='lowercase' onChange={handleChange} value={courseVal.class_code} fontSize='lg' size='lg' placeholder='' type='text' className='p-3 form-input' border='0' borderBottom='2px' borderColor='#A1A1A1' borderRadius='0' autoComplete='off' _hover={{borderColor: '#2F67B2'}} _focus={{ boxShadow:'0 0 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}} />
+                </Box>
                 <Box className='flex flex-col justify-center space-y-2'>
                     <Text>Old Time Schedule:</Text>
                     <Box className='flex justify-center space-x-6'>

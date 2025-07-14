@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Box, Button, InputGroup, Alert, AlertIcon, AlertTitle, AlertDescription, useToast, InputLeftElement, Input, Select, FormControl,  } from '@chakra-ui/react'
+import { Box, Button, InputGroup, Alert, Text, AlertIcon, AlertTitle, AlertDescription, useToast, InputLeftElement, Input, Select, FormControl,  } from '@chakra-ui/react'
 
 import { Timestamp } from 'firebase/firestore'
 
@@ -190,6 +190,10 @@ export default function NewCourseForm({ onClose } : IProps){
                     <Input id='course_name' onChange={handleChange} size='lg' placeholder='' type='text' className='p-3 text-base form-input' border='0' borderBottom='2px' borderColor='#A1A1A1' borderRadius='0' autoComplete='off' _hover={{borderColor: '#2F67B2'}} _focus={{ boxShadow:'0 0 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}}/>
                     <label htmlFor='course_name' className='form-label text-base'>Course </label>
                 </FormControl>
+            </Box>
+            <Box >
+                <Text >Class Code:</Text>
+                <Input id='class_code' textTransform='lowercase' onChange={handleChange} fontSize='lg' size='lg' placeholder='' type='text' className='p-3 form-input' border='0' borderBottom='2px' borderColor='#A1A1A1' borderRadius='0' autoComplete='off' _hover={{borderColor: '#2F67B2'}} _focus={{ boxShadow:'0 0 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}} />
             </Box>
             <Box className='flex space-x-4'>
                 <Box className='input-grp w-full '>

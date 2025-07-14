@@ -134,7 +134,6 @@ export default function EventCalendar({ events, setCourseID, setBatchID, onOpen 
                                                 ${event.event}`}
                                             </Text>
                                         </Box>
-                                        
                                     )
                                 })}
                             </Box>
@@ -142,7 +141,6 @@ export default function EventCalendar({ events, setCourseID, setBatchID, onOpen 
                     );
                 })}
             </Grid>
-
         </Box>
     );
 }

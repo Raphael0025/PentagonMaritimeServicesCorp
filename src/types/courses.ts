@@ -9,6 +9,7 @@ export interface CoursesById extends Courses {
 export interface Courses{
     course_code: string;
     course_name: string;
+    class_code: string;
     course_fee: number;
     day: string;
     startTime: Timestamp;
@@ -22,6 +23,7 @@ export const initCourses = {
     course_code: '',
     course_name: '',
     course_fee: 0,
+    class_code: '',
     day: '',
     numOfDays: 0,
     courseType: 2,
@@ -35,6 +37,7 @@ export const initCoursesById = {
     code: '',
     course_code: '',
     course_name: '',
+    class_code: '',
     course_fee: 0,
     day: '',
     startTime: Timestamp.now(),
