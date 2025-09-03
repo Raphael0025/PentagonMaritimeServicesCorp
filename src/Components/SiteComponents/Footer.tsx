@@ -12,7 +12,7 @@ import { ClockIconCustom, MailIcon, PinIcon, PhoneIcon } from '../Icons';
 export default function Footer() {
     const pathname = usePathname()
 
-    const shouldHideNavbar = pathname?.startsWith('/forms') || pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
+    const shouldHideNavbar = pathname?.startsWith('/Tester') || pathname?.startsWith('/forms') || pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
 
     if (shouldHideNavbar) {
         return null; // Don't render anything if conditions are met
