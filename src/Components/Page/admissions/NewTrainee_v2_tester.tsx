@@ -388,8 +388,8 @@ export default function NewTrainee_v2(){
     <>
         <Registration_Background />
         <Box ref={e_form} w={{base: '100%', md: '100%'}} display='flex' justifyContent={'center'}>
-            <TracingBeam>
-                <Box py='4' px='2'>
+            {/* <TracingBeam> */}
+                <Box py='4' px='2' w={{base: '100%', md: '65%'}}>
                     <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment - Tester</Text>
                     <Box className='animate__animated animate__fadeInRight'>
                         <Text color='white' fontWeight='400' display='flex' gap='3' alignItems='center' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} mb='2' py='4' px='4' textTransform='uppercase'>
@@ -754,7 +754,7 @@ export default function NewTrainee_v2(){
                         </Button>
                     </Box>
                 </Box>
-            </TracingBeam>
+            {/* </TracingBeam> */}
         </Box>
         {/** Vessel */}
         <Modal isOpen={isOpenVessel} onClose={onCloseVessel} size='xl' scrollBehavior='inside' motionPreset='scale'>
