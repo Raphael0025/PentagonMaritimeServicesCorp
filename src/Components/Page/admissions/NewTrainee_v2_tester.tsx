@@ -388,7 +388,7 @@ export default function NewTrainee_v2(){
     <>
         <Registration_Background />
         <Box ref={e_form} w={{base: '100%', md: '100%'}} display='flex' justifyContent={'center'}>
-            <TracingBeam className='px-6'>
+            <TracingBeam>
                 <Box py='4' px='2'>
                     <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment - Tester</Text>
                     <Box className='animate__animated animate__fadeInRight'>
