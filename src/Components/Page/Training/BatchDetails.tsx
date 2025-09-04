@@ -256,7 +256,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                         const rank = allRanks?.find(rank => rank.code === trainee?.rank)?.rank || trainee?.rank;
                         const middleInitial = trainee?.middle_name?.toLowerCase() === 'n/a' || !trainee?.middle_name ? '' : `${trainee?.middle_name.charAt(0).toUpperCase()}.`;
 
-                        return `${rank.toUpperCase()} ${trainee?.last_name.toUpperCase()}, ${trainee?.first_name.toUpperCase()} ${middleInitial}`;
+                        return `${rank?.toUpperCase()} ${trainee?.last_name.toUpperCase()}, ${trainee?.first_name.toUpperCase()} ${middleInitial}`;
                     })
                     
                     await fetch(route, {
