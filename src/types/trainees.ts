@@ -190,6 +190,14 @@ export interface TEMP_COURSES {
     accountType: number; 
 }
 
+export interface TEMP_COURSES_V2{
+    course_fee: number;
+    course: string;
+    t_sched: string;
+    numOfDays: number;
+    accountType: number; 
+}
+
 export interface TEMP_COURSES_WITH_PM extends TEMP_COURSES{
     payment_mode: number;
 }
