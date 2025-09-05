@@ -963,28 +963,28 @@ export default function NewTrainee_v2(){
         <Modal isOpen={isOpenThankYou} closeOnOverlayClick={false} onClose={onCloseThankYou} size='xl' isCentered motionPreset='slideInBottom'>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader color='blue.700' fontWeight='800' w='full' textTransform='uppercase' textAlign='center'>Enrollment Submitted!</ModalHeader>
+                <ModalHeader color='blue.700' fontWeight='800' w='full' textTransform='uppercase' textAlign='center'>{`Enrollment Submitted!`}</ModalHeader>
                 <ModalBody>
                     <Box className='flex flex-col space-y-3 text-center'>
-                        <Text fontWeight='500' fontSize='14px'>We appreciate your interest in Pentagon Maritime Services Corp. and for taking the time to complete our enrollment form.</Text>
-                        <Text fontWeight='500' fontSize='14px'>Our team will review your submission and get back to you.</Text>
-                        <Text fontWeight='500' fontSize='14px'>For your reference, you can take a screenshot of this page and send it as proof of your submission to our official email</Text>
-                        <Text fontWeight='500' fontSize='14px'>If you have any questions or need further assistance, please don't hesitate to contact us.</Text>
-                        <Text fontWeight='500' fontSize='14px'>You can contact us using the contact details below.</Text>
+                        <Text fontWeight='500' fontSize='14px'>{`We appreciate your interest in Pentagon Maritime Services Corp. and for taking the time to complete our enrollment form.`}</Text>
+                        <Text fontWeight='500' fontSize='14px'>{`Our team will review your submission and get back to you.`}</Text>
+                        <Text fontWeight='500' fontSize='14px'>{`For your reference, you can take a screenshot of this page and send it as proof of your submission to our official email`}</Text>
+                        <Text fontWeight='500' fontSize='14px'>{`If you have any questions or need further assistance, please don't hesitate to contact us.`}</Text>
+                        <Text fontWeight='500' fontSize='14px'>{`You can contact us using the contact details below.`}</Text>
                         <Box w='full' placeItems='center'>
                             <UnorderedList w={{base: '85%', md: '55%'}} textAlign='start' lineHeight='1.7rem' fontSize='13px' fontWeight='400'>
-                                <ListItem>Email: pentagonmaritimecorp@gmail.com</ListItem>
-                                <ListItem>Contact no.: 0999-513-5916</ListItem>
+                                <ListItem>{`Email: pentagonmaritimecorp@gmail.com`}</ListItem>
+                                <ListItem>{`Contact no.: 0999-513-5916`}</ListItem>
                                 <ListItem>Facebook: 
                                     <Link color='blue.400' isExternal href='https://www.facebook.com/Pentagonmaritimeservicescorp'> Pentagonmaritimeservicescorp <ExternalLinkIcon mx='2px' /></Link>
                                 </ListItem>
                             </UnorderedList>
                         </Box>
-                        <Text fontWeight='500' fontSize='14px'>Thank you once again for choosing Pentagon Maritime Services Corp. We look forward to assisting you on your maritime journey!</Text>
+                        <Text fontWeight='500' fontSize='14px'>{`Thank you once again for choosing Pentagon Maritime Services Corp. We look forward to assisting you on your maritime journey!`}</Text>
                     </Box>
                 </ModalBody>
                 <ModalFooter display='flex' justifyContent='center'>
-                    <Button onClick={handleClose} colorScheme='blue' shadow='md' bgColor='blue.700'>Got it!</Button>
+                    <Button onClick={handleClose} colorScheme='blue' shadow='md' bgColor='blue.700'>{`Got it!`}</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
