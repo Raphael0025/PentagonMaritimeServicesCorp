@@ -7,10 +7,10 @@ import React, { useEffect, useState, useRef } from 'react'
 import { Timestamp } from 'firebase/firestore'
 
 // Chakra UI components
-import { Box, Text, Link, Tooltip, FormLabel, Checkbox, Switch, FormControl, Input, FormErrorMessage, FormHelperText, Alert, AlertTitle, AlertDescription, AlertIcon, OrderedList, ListItem, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
+import { Box, Text, Link, Tooltip, UnorderedList, FormLabel, Checkbox, Switch, FormControl, Input, FormErrorMessage, FormHelperText, Alert, AlertTitle, AlertDescription, AlertIcon, OrderedList, ListItem, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
+import { ExternalLinkIcon } from '@chakra-ui/icons'
 
 // Aceternity UI components
-import { TracingBeam } from "@/Components/ui/tracing-beam"
 import Registration_Background from "@/Components/ui/Registration_Background"
 
 //types
@@ -44,6 +44,7 @@ export default function NewTrainee_v2(){
     const {isOpen: isOpenVessel, onOpen: onOpenVessel, onClose: onCloseVessel} = useDisclosure()
     const {isOpen: isOpenSched, onOpen: onOpenSched, onClose: onCloseSched} = useDisclosure()
     const {isOpen: isOpenReview, onOpen: onOpenReview, onClose: onCloseReview} = useDisclosure()
+    const {isOpen: isOpenThankYou, onOpen: onOpenThankYou, onClose: onCloseThankYou} = useDisclosure()
 
     const [companyRef, setCompanyRef] = useState<string>('')
     const [selectCompany, setSelectCompany] = useState<string>('')
@@ -377,6 +378,7 @@ export default function NewTrainee_v2(){
             setLoading(true)
             handleToast('IMPORTANT!', 'This is only a testing environment. No data will be saved or recorded.', 10000, 'info')
             onCloseReview()
+            onOpenThankYou()
         } catch(error){
             throw error
         } finally {
@@ -384,383 +386,385 @@ export default function NewTrainee_v2(){
         }
     }
 
+    const handleClose = () => {
+        onCloseThankYou()
+        router.push('/Tester/online-enrollment')
+    }
     return(
     <>
         <Registration_Background />
         <Box ref={e_form} w={{base: '100%', md: '100%'}} display='flex' justifyContent={'center'}>
-            <TracingBeam>
-                <Box py='4' px='2'>
-                    <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment stcw - Tester</Text>
-                    <Box className='animate__animated animate__fadeInRight'>
-                        <Text color='white' fontWeight='400' display='flex' gap='3' alignItems='center' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} mb='2' py='4' px='4' textTransform='uppercase'>
-                            <Text as='span'>
-                                <CourseIcon size='24' color='#fff' />
-                            </Text>
-                            <Text as='span'>
-                                Course Details
-                            </Text>
+            <Box py='4' px='2' w={{base: '100%', md: '65%'}}>
+                <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment stcw - Tester</Text>
+                <Box className='animate__animated animate__fadeInRight'>
+                    <Text color='white' fontWeight='400' display='flex' gap='3' alignItems='center' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} mb='2' py='4' px='4' textTransform='uppercase'>
+                        <Text as='span'>
+                            <CourseIcon size='24' color='#fff' />
                         </Text>
-                        {showAlert && (!tempCourses[0]?.course || tempCourses.length === 0) && (
-                            <Alert display='flex' flexDir='column' pt='2' status='warning' variant='left-accent'>
-                                <Box display='flex'>
-                                    <AlertIcon />
-                                    <AlertTitle>Please select a course/s.</AlertTitle>
-                                </Box>
-                            </Alert>
-                        )}
-                        <Box p='2'>
-                            <Box display={{base: 'none', md: 'flex'}} mb='3' justifyContent='end'>
-                                <Button leftIcon={<PlusIcon />} colorScheme='teal' onClick={() => setTempCourses((prev) => [...prev, {} as TEMP_COURSES_V2])} fontWeight='400' fontSize='0.75rem' shadow='md' textTransform='uppercase'>Add Course</Button>
+                        <Text as='span'>
+                            Course Details
+                        </Text>
+                    </Text>
+                    {showAlert && (!tempCourses[0]?.course || tempCourses.length === 0) && (
+                        <Alert display='flex' flexDir='column' pt='2' status='warning' variant='left-accent'>
+                            <Box display='flex'>
+                                <AlertIcon />
+                                <AlertTitle>Please select a course/s.</AlertTitle>
                             </Box>
-                            {tempCourses.map((course, index) => {
-                                const courseFound = allCourses?.find((c) => c.id === course.course);
-                                
-                                return(
-                                    <Box key={index} mb={6} border="1px solid #ccc" p={4} shadow='md' borderRadius="md">
-                                        <Box display='flex' justifyContent='end'>
-                                            <Tooltip label='Remove Course'>
-                                                <Button size='xs' py='4' px='3' colorScheme='red' onClick={() => {handleRemoveCourse(index);}}>
-                                                    <TrashIcon size='24' color='#fff' />
-                                                </Button>
-                                            </Tooltip>
-                                        </Box>
-                                        <Box display="flex" flexDir={{ base: "column", md: "row" }} gap="4" pt="3" pb={{base: '4', md: '8'}}>
-                                            <FormControl isRequired>
-                                                <FormLabel py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
-                                                    Course
-                                                </FormLabel>
-                                                <Input readOnly value={courseFound ? `${courseFound.course_code} - ${courseFound.course_name}` : ''} onClick={() => {onOpenModal(); setCourseIndex(index); }} fontWeight="400" textTransform="uppercase" placeholder="Select Course" shadow="md" />
-                                            </FormControl>
-                                            <FormControl display={tempCourses[index]?.accountType === 0 ? 'block' : 'none'} w={{ base: "100%", md: "30%" }} isRequired>
-                                                <FormLabel htmlFor={`fee-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
-                                                    Course Fee
-                                                </FormLabel>
-                                                <Input id={`fee-${index}`} value={tempCourses[index]?.course_fee} readOnly />
-                                            </FormControl>
-                                        </Box>
-                                        <Box display="flex" flexDir={{ base: "column", md: "row" }} gap="4" pt="3" pb="8">
-                                            <FormControl isRequired>
-                                                <FormLabel htmlFor={`schedule-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
-                                                    Training Schedule
-                                                </FormLabel>
-                                                <Input readOnly id={`schedule-${index}`} 
-                                                    isDisabled={!tempCourses[index]?.course}
-                                                    onClick={() => {selectCourse(tempCourses[index].course); setCourseIndex(index); onOpenSched();}}  
-                                                    value={tempCourses[index].t_sched} 
-                                                    shadow="md" placeholder="Select Training Schedule" />
-                                            </FormControl>
-                                            <FormControl w={{ base: "100%", md: "30%" }} isRequired>
-                                                <FormLabel htmlFor={`payment-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
-                                                    Payment Method
-                                                </FormLabel>
-                                                <Select isDisabled={!tempCourses[index]?.course} id={`payment-${index}`} value={tempCourses[index].accountType} onChange={(e) => {setCourseIndex(index); handleCourseSelection(e.target.value, 'accountType');}} shadow="md">
-                                                    <option hidden />
-                                                    <option value={0}>Crew Charge</option>
-                                                    <option value={1}>Company Charge</option>
-                                                </Select>
-                                            </FormControl>
-                                        </Box>
+                        </Alert>
+                    )}
+                    <Box p='2'>
+                        <Box display={{base: 'none', md: 'flex'}} mb='3' justifyContent='end'>
+                            <Button leftIcon={<PlusIcon />} colorScheme='teal' onClick={() => setTempCourses((prev) => [...prev, {} as TEMP_COURSES_V2])} fontWeight='400' fontSize='0.75rem' shadow='md' textTransform='uppercase'>Add Course</Button>
+                        </Box>
+                        {tempCourses.map((course, index) => {
+                            const courseFound = allCourses?.find((c) => c.id === course.course);
+                            
+                            return(
+                                <Box key={index} mb={6} border="1px solid #ccc" p={4} shadow='md' borderRadius="md">
+                                    <Box display='flex' justifyContent='end'>
+                                        <Tooltip label='Remove Course'>
+                                            <Button size='xs' py='4' px='3' colorScheme='red' onClick={() => {handleRemoveCourse(index);}}>
+                                                <TrashIcon size='24' color='#fff' />
+                                            </Button>
+                                        </Tooltip>
                                     </Box>
-                            )})}
-                            <Box display={{base: 'flex', md: 'none'}} mb='3' justifyContent='center'>
-                                <Button w='100%'colorScheme='teal' onClick={() => setTempCourses((prev) => [...prev, {} as TEMP_COURSES_V2])} fontWeight='400' fontSize='0.75rem' shadow='md' textTransform='uppercase'>Add Course</Button>
-                            </Box>
-                        </Box>
-                    </Box>
-                    {/** Trainee Info */}
-                    <Box className='animate__animated animate__fadeInLeft'>
-                        <Text display='flex' gap='3' alignItems='center' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} mb='2' py='4' px='4' textTransform='uppercase'>
-                            <Text as='span'>
-                                <ListIcon size='24' color='#fff' />
-                            </Text>
-                            <Text as='span'>
-                                Trainee Information
-                            </Text>
-                        </Text>
-                        {showAlert && (
-                            <Alert display='flex' flexDir='column' pt='2' status='warning' variant='left-accent'>
-                                <Box display='flex'>
-                                    <AlertIcon />
-                                    <AlertTitle>Please provide the required fields.</AlertTitle>
-                                </Box>
-                                <AlertDescription >
-                                    <Box >
-                                        <Box display='flex' flexDir='column'>
-                                            <p>{trainee.last_name === ''  ? `* Last Name` : ''}</p>
-                                            <p>{trainee.first_name === '' ? `* First Name` : ''}</p>
-                                            <p>{trainee.rank === '' ? `* Rank.` : ''}</p>
-                                            <p>{trainee.srn === '' ? `* SRN.` : ''}</p>
-                                            <p>{trainee.contact_no === '' ? `* Contact no.` : ''}</p>
-                                            <p>{trainee.email === '' ? `* Email.` : ''}</p>
-                                            <p>{trainee.gender === '' ? `* Gender.` : ''}</p>
-                                            <p>{trainee.contact_no === '' ? `* Contact No.#.` : ''}</p>
-                                            <p>{trainee.vessel === '' ? `* Vessel Type` : ''}</p>
-                                            <p>{trainee.company === '' ? `* Company` : ''}</p>
-                                            <p>{trainee.endorser === '' ? `* Endorser/Crewing` : ''}</p>
-                                            <p>{trainee.e_contact_person === '' ? `* Emergency Contact Person` : ''}</p>
-                                            <p>{trainee.e_contact === '' ? `* Emergency Contact No.#` : ''}</p>
-                                            <p>{trainee.relationship === '' ? `* Relationship to Contact person` : ''}</p>
-                                        </Box>
+                                    <Box display="flex" flexDir={{ base: "column", md: "row" }} gap="4" pt="3" pb={{base: '4', md: '8'}}>
+                                        <FormControl isRequired>
+                                            <FormLabel py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
+                                                Course
+                                            </FormLabel>
+                                            <Input readOnly value={courseFound ? `${courseFound.course_code} - ${courseFound.course_name}` : ''} onClick={() => {onOpenModal(); setCourseIndex(index); }} fontWeight="400" textTransform="uppercase" placeholder="Select Course" shadow="md" />
+                                        </FormControl>
+                                        <FormControl display={tempCourses[index]?.accountType === 0 ? 'block' : 'none'} w={{ base: "100%", md: "30%" }} isRequired>
+                                            <FormLabel htmlFor={`fee-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
+                                                Course Fee
+                                            </FormLabel>
+                                            <Input id={`fee-${index}`} value={tempCourses[index]?.course_fee} readOnly />
+                                        </FormControl>
                                     </Box>
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                        <Box p='2'>
-                            <Text fontWeight='600' fontSize='12px' textTransform='uppercase' color='blue.700'>Fields marked with <span style={{ color: "red" }}>*</span> are required. Type N/A if not applicable</Text>
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
-                                <FormControl isRequired isInvalid={showAlert && trainee.last_name === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='last_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Last Name</FormLabel>
-                                    <Input id='last_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Doe' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.first_name === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='first_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>First Name</FormLabel>
-                                    <Input id='first_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. John' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl textTransform='uppercase'>
-                                    <FormLabel htmlFor='middle_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Middle Name</FormLabel>
-                                    <Input id='middle_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Michael' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl textTransform='uppercase' w={{base: '100%', md: '40%'}}>
-                                    <FormLabel htmlFor='suffix' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Suffix</FormLabel>
-                                    <Select id='suffix' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' >
-                                        <option hidden />
-                                        <option value='jr.'>Jr.</option>
-                                        <option value='sr.'>Sr.</option>
-                                        <option value='i.'>I</option>
-                                        <option value='ii.'>II</option>
-                                        <option value='iii.'>III</option>
-                                        <option value='iv.'>IV</option>
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
-                                <FormControl textTransform='uppercase'>
-                                    <FormLabel htmlFor='' py='0' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Date of Birth</FormLabel>
-                                    <FormControl display='flex' flexDir={{ base: 'column', md: 'row' }} gap='2' textTransform='uppercase'>
-                                        <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
-                                            <FormLabel htmlFor='month' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>MONTH</FormLabel>
-                                            <Input id='month' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <Box display="flex" flexDir={{ base: "column", md: "row" }} gap="4" pt="3" pb="8">
+                                        <FormControl isRequired>
+                                            <FormLabel htmlFor={`schedule-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
+                                                Training Schedule
+                                            </FormLabel>
+                                            <Input readOnly id={`schedule-${index}`} 
+                                                isDisabled={!tempCourses[index]?.course}
+                                                onClick={() => {selectCourse(tempCourses[index].course); setCourseIndex(index); onOpenSched();}}  
+                                                value={tempCourses[index].t_sched} 
+                                                shadow="md" placeholder="Select Training Schedule" />
                                         </FormControl>
-                                        <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
-                                            <FormLabel htmlFor='day' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>DAY</FormLabel>
-                                            <Input id='day' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                        <FormControl w={{ base: "100%", md: "30%" }} isRequired>
+                                            <FormLabel htmlFor={`payment-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
+                                                Payment Method
+                                            </FormLabel>
+                                            <Select isDisabled={!tempCourses[index]?.course} id={`payment-${index}`} value={tempCourses[index].accountType} onChange={(e) => {setCourseIndex(index); handleCourseSelection(e.target.value, 'accountType');}} shadow="md">
+                                                <option hidden />
+                                                <option value={0}>Crew Charge</option>
+                                                <option value={1}>Company Charge</option>
+                                            </Select>
                                         </FormControl>
-                                        <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
-                                            <FormLabel htmlFor='year' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>YEAR</FormLabel>
-                                            <Input id='year' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 2002' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                        </FormControl>
-                                    </FormControl>
-                                    <FormHelperText fontWeight='600' fontSize='10px'>Note: Please enter your birth date using digits (01/01/2001)</FormHelperText>
-                                </FormControl>
-                                <FormControl textTransform='uppercase'>
-                                    <FormLabel htmlFor='birthPlace' pt='2' mb='2' pb='1.5' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Birth Place</FormLabel>
-                                    <Input id='birthPlace' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.gender === ''} textTransform='uppercase' w={{base: '100%', md: '40%'}}>
-                                    <FormLabel htmlFor='gender' pt='2' mb='2' pb='1.5' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Gender</FormLabel>
-                                    <Select id='gender' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
-                                        <option hidden/>
-                                        <option value='male'>Male</option>
-                                        <option value='female'>Female</option>
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
-                                <FormControl isRequired isInvalid={showAlert && trainee.otherAddress === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='otherAddress' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Address</FormLabel>
-                                    <Input id='otherAddress' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                            </Box>
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
-                                <FormControl isRequired isInvalid={showAlert && trainee.email === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='email' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Email</FormLabel>
-                                    <Input id='email' onChange={handleOnChange} textTransform='uppercase' type='email' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.contact_no === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='contact_no' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Contact No.</FormLabel>
-                                    <Input id='contact_no' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. 09xxxxxxxxx' type='tel' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.rank === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='rank' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Rank/Position</FormLabel>
-                                    <Input type='text' textTransform='uppercase' id='rank' 
-                                        value={allRanks?.find((rank) => rank.code === trainee.rank)?.rank || (trainee.rank === '' ? 'SELECT RANK' : trainee.rank)}
-                                        onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}}
-                                        shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'/>
-                                </FormControl>
-                                <FormControl textTransform='uppercase'>
-                                    <FormLabel htmlFor='nationality' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Nationality</FormLabel>
-                                    <Input id='nationality' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                            </Box>
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
-                                <FormControl isRequired isInvalid={showAlert && trainee.srn === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='srn' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>SRN No.</FormLabel>
-                                    <Input id='srn' onChange={handleOnChange} type='text' textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.vessel === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='vessel' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Vessel Type</FormLabel>
-                                    <Input id='vessel' textTransform='uppercase' isReadOnly shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' 
-                                            onClick={() => {onOpenVessel(); setVesselRef(''); setSelectVessel('');}}
-                                            value={trainee.vessel === '' ? 'ADD VESSEL' : trainee.vessel}
-                                        />
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.company === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='company' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Company</FormLabel>
-                                    <Input id='company' onClick={() => {onOpenCompany(); setCompanyRef(''); setSelectCompany('');}} 
-                                        value={allClients?.find((client) => client.id === trainee.company)?.company || (trainee.company === '' ? 'ADD COMPANY' : trainee.company)}
-                                        type='text' shadow='md' textTransform='uppercase' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' isReadOnly/>
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.endorser === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='endorser' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Endorser/Crewing</FormLabel>
-                                    <Input id='endorser' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                            </Box>
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
-                                <FormControl isRequired isInvalid={showAlert && trainee.e_contact_person === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='e_contact_person' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>{`In Case Of Emergency: (Contact Person)`}</FormLabel>
-                                    <Input id='e_contact_person' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                </FormControl>
-                                <FormControl isRequired isInvalid={trainee.contact_no === trainee.e_contact && trainee.e_contact !== ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='e_contact' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Emergency Contact No.:</FormLabel>
-                                    <Input id='e_contact' onChange={handleOnChange} textTransform='uppercase' type='tel' placeholder='e.g. 09xxxxxxxxx' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                    <FormErrorMessage fontWeight='500' fontSize='12px'>
-                                        Emergency Contact# must not be the same as personal contact#.
-                                    </FormErrorMessage>
-                                </FormControl>
-                                <FormControl isRequired isInvalid={showAlert && trainee.relationship === ''} textTransform='uppercase'>
-                                    <FormLabel htmlFor='relationship' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Relationship to Contact Person</FormLabel>
-                                    <Select id='relationship' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
-                                        <option hidden/>
-                                        <option value='parent'>Parent</option>
-                                        <option value='spouse'>Spouse</option>
-                                        <option value='sibling'>Sibling</option>
-                                        <option value='child'>Child</option>
-                                        <option value='relative'>Relative</option>
-                                        <option value='friend'>Friend</option>
-                                        <option value='guardian'>Guradian</option>
-                                        <option value='partner'>Partner</option>
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                        </Box>
-                    </Box>
-                    {/** Enrollment Attachments */}
-                    <Box className='animate__animated animate__fadeInRight'>
-                        <Text display='flex' alignItems='center' gap='3' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} py='4' px='4' textTransform='uppercase'>
-                            <Text as='span'>
-                                <ClipIcon size='24' color='#fff' />
-                            </Text>
-                            <Text as='span'>
-                                Enrollment Attachments
-                            </Text>
-                        </Text>
-                        <Box p='2'>
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
-                                <FormControl isRequired >
-                                    <FormLabel htmlFor='valid_id' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Valid ID</FormLabel>
-                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Preferably: Passport ID)</FormHelperText>
-                                    <Input id='valid_id' onChange={handleValidID} p='4px' placeholder='e.g. Doe' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
-                                </FormControl>
-                                <FormControl isRequired >
-                                    <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>2x2 ID Photo</FormLabel>
-                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Ensure photo is clear, and wear your uniform.)</FormHelperText>
-                                    <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
-                                </FormControl>
-                                <FormControl isRequired >
-                                    <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
-                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
-                                    <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
-                                </FormControl>
-                            </Box>
-                        </Box>
-                    </Box>
-                    {/** Company Policies & Guidelines*/}
-                    <Box className='animate__animated animate__fadeInLeft'>
-                        <Text display='flex' gap='3' alignItems='center' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} py='4' px='4' textTransform='uppercase'>
-                            <Text as='span'>
-                                <PolicyIcon size='24' color='#fff' />
-                            </Text>
-                            <Text as='span'>
-                                Company Policies and Guidelines
-                            </Text>
-                        </Text>
-                        <Box p='2'>
-                            <AdmissionPolicy />
-                            <TrainingPolicy />
-                            <DataPrivacy />
-                            <FormControl py='3' gap='2' display='flex'>
-                                <Checkbox id='check' size='lg' colorScheme='blue' 
-                                    onChange={() => setUA(!userAgree)}
-                                    sx={{
-                                        "& .chakra-checkbox__control": {
-                                            border: "2px solid #2B6CB0", // thicker border
-                                            borderRadius: "6px",         // more square edges
-                                            boxShadow: "0 0 6px rgba(43, 108, 176, 0.6)", // glowing effect
-                                            _checked: {
-                                                bg: "blue.600",
-                                                borderColor: "blue.700",
-                                                boxShadow: "0 0 8px rgba(43, 108, 176, 0.8)", // glow when checked
-                                            },
-                                        },
-                                    }} 
-                                />
-                                <Box>
-                                    <FormLabel htmlFor='check' fontWeight='400' fontSize='13px'>
-                                        {`I understand, that Pentagon Maritime Services Corp. shall keep my personal data and information in strict confidence and that the collection and processing of my personal data/information shall be used only for my enrollment, training and certification.`}
-                                    </FormLabel>
-                                    <FormLabel htmlFor='check' fontWeight='400' fontSize='13px'>
-                                    {`I hereby certify that I have read and understood the above and hereby consent to, agree on, accept and acknowledge these terms.`}
-                                    </FormLabel>
+                                    </Box>
                                 </Box>
-                            </FormControl>
+                        )})}
+                        <Box display={{base: 'flex', md: 'none'}} mb='3' justifyContent='center'>
+                            <Button w='100%'colorScheme='teal' onClick={() => setTempCourses((prev) => [...prev, {} as TEMP_COURSES_V2])} fontWeight='400' fontSize='0.75rem' shadow='md' textTransform='uppercase'>Add Course</Button>
                         </Box>
-                    </Box>
-                    {/** E-Signature */}
-                    <Box className='animate__animated animate__fadeInRight'>
-                        <Text display='flex' alignItems='center' gap='3' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} py='4' px='4' textTransform='uppercase'>
-                            <Text as='span'>
-                                <SignIcon size='24' />
-                            </Text>
-                            <Text as='span'>
-                                E-Signature
-                            </Text>
-                        </Text>
-                        <Box p='2'>
-                            <FormControl isRequired >
-                                <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Upload your Signature</FormLabel>
-                                <Input id='photo' onChange={handleValidSignature} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
-                                <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
-                                <FormHelperText fontWeight='600' fontSize='10px'>Note: Write your signature on a clean piece of paper then take a picture of it and then upload. The image must be clear and not blurred. </FormHelperText>
-                            </FormControl>
-                        </Box>
-                        <Box p='3'>
-                            <Text fontWeight='400' fontSize='13px'>
-                                {`BY SIGNING THIS I GRANT MY VOLUNTARY AND UNCONDITIONAL CONSENT TO THE COLLECTION AND PROCESSING MY PERSONAL DATA AS STATED ABOVE TO THE INFORMATION AND DATA BASE OF PENTAGON MARITIME SERVICES CORP. IN ACCORDANCE WITH REPUBLIC ACT (R.A) 10173, OTHERWISE KNOWN AS THE “DATA PRIVACY ACT OF 2012” OF THE REPUBLIC OF THE PHILIPPINES, INCLUDING ITS IMPLEMENTING RULES AND REGULATIONS (IRR) AS WELL AS ALL OTHER GUIDELINES AND ISSUANCES BY THE NATIONAL PRIVACY COMMISSION (NPC).`}
-                            </Text>
-                        </Box>
-                    </Box>
-                    {/** Action Button */}
-                    <Box display='flex' pt='4' justifyContent={'end'} className='animate__animated animate__fadeInLeft'>
-                        <Button 
-                            //isDisabled={!userAgree || sig_file==='No file chosen yet...'} 
-                            onClick={() => {handlePreSubmitForm();}} 
-                            w={{base: '100%', md: '20%'}} 
-                            colorScheme="blue" 
-                            fontWeight='400' 
-                            fontSize='0.75rem' 
-                            bgColor='blue.700' 
-                            shadow='md' 
-                            textTransform={'uppercase'}
-                            leftIcon={<VerifyIcon size='24' color='#fff' />} 
-                        >
-                                Submit Form
-                        </Button>
                     </Box>
                 </Box>
-            </TracingBeam>
+                {/** Trainee Info */}
+                <Box className='animate__animated animate__fadeInLeft'>
+                    <Text display='flex' gap='3' alignItems='center' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} mb='2' py='4' px='4' textTransform='uppercase'>
+                        <Text as='span'>
+                            <ListIcon size='24' color='#fff' />
+                        </Text>
+                        <Text as='span'>
+                            Trainee Information
+                        </Text>
+                    </Text>
+                    {showAlert && (
+                        <Alert display='flex' flexDir='column' pt='2' status='warning' variant='left-accent'>
+                            <Box display='flex'>
+                                <AlertIcon />
+                                <AlertTitle>Please provide the required fields.</AlertTitle>
+                            </Box>
+                            <AlertDescription >
+                                <Box >
+                                    <Box display='flex' flexDir='column'>
+                                        <p>{trainee.last_name === ''  ? `* Last Name` : ''}</p>
+                                        <p>{trainee.first_name === '' ? `* First Name` : ''}</p>
+                                        <p>{trainee.rank === '' ? `* Rank.` : ''}</p>
+                                        <p>{trainee.srn === '' ? `* SRN.` : ''}</p>
+                                        <p>{trainee.contact_no === '' ? `* Contact no.` : ''}</p>
+                                        <p>{trainee.email === '' ? `* Email.` : ''}</p>
+                                        <p>{trainee.gender === '' ? `* Gender.` : ''}</p>
+                                        <p>{trainee.contact_no === '' ? `* Contact No.#.` : ''}</p>
+                                        <p>{trainee.vessel === '' ? `* Vessel Type` : ''}</p>
+                                        <p>{trainee.company === '' ? `* Company` : ''}</p>
+                                        <p>{trainee.endorser === '' ? `* Endorser/Crewing` : ''}</p>
+                                        <p>{trainee.e_contact_person === '' ? `* Emergency Contact Person` : ''}</p>
+                                        <p>{trainee.e_contact === '' ? `* Emergency Contact No.#` : ''}</p>
+                                        <p>{trainee.relationship === '' ? `* Relationship to Contact person` : ''}</p>
+                                    </Box>
+                                </Box>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                    <Box p='2'>
+                        <Text fontWeight='600' fontSize='12px' textTransform='uppercase' color='blue.700'>Fields marked with <span style={{ color: "red" }}>*</span> are required. Type N/A if not applicable</Text>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
+                            <FormControl isRequired isInvalid={showAlert && trainee.last_name === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='last_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Last Name</FormLabel>
+                                <Input id='last_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Doe' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.first_name === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='first_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>First Name</FormLabel>
+                                <Input id='first_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. John' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl textTransform='uppercase'>
+                                <FormLabel htmlFor='middle_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Middle Name</FormLabel>
+                                <Input id='middle_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Michael' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl textTransform='uppercase' w={{base: '100%', md: '40%'}}>
+                                <FormLabel htmlFor='suffix' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Suffix</FormLabel>
+                                <Select id='suffix' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' >
+                                    <option hidden />
+                                    <option value='jr.'>Jr.</option>
+                                    <option value='sr.'>Sr.</option>
+                                    <option value='i.'>I</option>
+                                    <option value='ii.'>II</option>
+                                    <option value='iii.'>III</option>
+                                    <option value='iv.'>IV</option>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
+                            <FormControl textTransform='uppercase'>
+                                <FormLabel htmlFor='' py='0' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Date of Birth</FormLabel>
+                                <FormControl display='flex' flexDir={{ base: 'column', md: 'row' }} gap='2' textTransform='uppercase'>
+                                    <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
+                                        <FormLabel htmlFor='month' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>MONTH</FormLabel>
+                                        <Input id='month' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    </FormControl>
+                                    <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
+                                        <FormLabel htmlFor='day' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>DAY</FormLabel>
+                                        <Input id='day' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    </FormControl>
+                                    <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
+                                        <FormLabel htmlFor='year' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>YEAR</FormLabel>
+                                        <Input id='year' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 2002' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    </FormControl>
+                                </FormControl>
+                                <FormHelperText fontWeight='600' fontSize='10px'>Note: Please enter your birth date using digits (01/01/2001)</FormHelperText>
+                            </FormControl>
+                            <FormControl textTransform='uppercase'>
+                                <FormLabel htmlFor='birthPlace' pt='2' mb='2' pb='1.5' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Birth Place</FormLabel>
+                                <Input id='birthPlace' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.gender === ''} textTransform='uppercase' w={{base: '100%', md: '40%'}}>
+                                <FormLabel htmlFor='gender' pt='2' mb='2' pb='1.5' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Gender</FormLabel>
+                                <Select id='gender' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
+                                    <option hidden/>
+                                    <option value='male'>Male</option>
+                                    <option value='female'>Female</option>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
+                            <FormControl isRequired isInvalid={showAlert && trainee.otherAddress === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='otherAddress' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Address</FormLabel>
+                                <Input id='otherAddress' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
+                            <FormControl isRequired isInvalid={showAlert && trainee.email === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='email' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Email</FormLabel>
+                                <Input id='email' onChange={handleOnChange} textTransform='uppercase' type='email' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.contact_no === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='contact_no' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Contact No.</FormLabel>
+                                <Input id='contact_no' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. 09xxxxxxxxx' type='tel' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.rank === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='rank' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Rank/Position</FormLabel>
+                                <Input type='text' textTransform='uppercase' id='rank' 
+                                    value={allRanks?.find((rank) => rank.code === trainee.rank)?.rank || (trainee.rank === '' ? 'SELECT RANK' : trainee.rank)}
+                                    onClick={() => {onOpenRank(); setRankRef(''); setSelectedRank('');}}
+                                    shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'/>
+                            </FormControl>
+                            <FormControl textTransform='uppercase'>
+                                <FormLabel htmlFor='nationality' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Nationality</FormLabel>
+                                <Input id='nationality' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
+                            <FormControl isRequired isInvalid={showAlert && trainee.srn === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='srn' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>SRN No.</FormLabel>
+                                <Input id='srn' onChange={handleOnChange} type='text' textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.vessel === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='vessel' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Vessel Type</FormLabel>
+                                <Input id='vessel' textTransform='uppercase' isReadOnly shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' 
+                                        onClick={() => {onOpenVessel(); setVesselRef(''); setSelectVessel('');}}
+                                        value={trainee.vessel === '' ? 'ADD VESSEL' : trainee.vessel}
+                                    />
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.company === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='company' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Company</FormLabel>
+                                <Input id='company' onClick={() => {onOpenCompany(); setCompanyRef(''); setSelectCompany('');}} 
+                                    value={allClients?.find((client) => client.id === trainee.company)?.company || (trainee.company === '' ? 'ADD COMPANY' : trainee.company)}
+                                    type='text' shadow='md' textTransform='uppercase' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' isReadOnly/>
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.endorser === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='endorser' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Endorser/Crewing</FormLabel>
+                                <Input id='endorser' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                            <FormControl isRequired isInvalid={showAlert && trainee.e_contact_person === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='e_contact_person' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>{`In Case Of Emergency: (Contact Person)`}</FormLabel>
+                                <Input id='e_contact_person' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            </FormControl>
+                            <FormControl isRequired isInvalid={trainee.contact_no === trainee.e_contact && trainee.e_contact !== ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='e_contact' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Emergency Contact No.:</FormLabel>
+                                <Input id='e_contact' onChange={handleOnChange} textTransform='uppercase' type='tel' placeholder='e.g. 09xxxxxxxxx' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <FormErrorMessage fontWeight='500' fontSize='12px'>
+                                    Emergency Contact# must not be the same as personal contact#.
+                                </FormErrorMessage>
+                            </FormControl>
+                            <FormControl isRequired isInvalid={showAlert && trainee.relationship === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='relationship' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Relationship to Contact Person</FormLabel>
+                                <Select id='relationship' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
+                                    <option hidden/>
+                                    <option value='parent'>Parent</option>
+                                    <option value='spouse'>Spouse</option>
+                                    <option value='sibling'>Sibling</option>
+                                    <option value='child'>Child</option>
+                                    <option value='relative'>Relative</option>
+                                    <option value='friend'>Friend</option>
+                                    <option value='guardian'>Guradian</option>
+                                    <option value='partner'>Partner</option>
+                                </Select>
+                            </FormControl>
+                        </Box>
+                    </Box>
+                </Box>
+                {/** Enrollment Attachments */}
+                <Box className='animate__animated animate__fadeInRight'>
+                    <Text display='flex' alignItems='center' gap='3' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} py='4' px='4' textTransform='uppercase'>
+                        <Text as='span'>
+                            <ClipIcon size='24' color='#fff' />
+                        </Text>
+                        <Text as='span'>
+                            Enrollment Attachments
+                        </Text>
+                    </Text>
+                    <Box p='2'>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                            <FormControl isRequired >
+                                <FormLabel htmlFor='valid_id' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Valid ID</FormLabel>
+                                <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Preferably: Passport ID)</FormHelperText>
+                                <Input id='valid_id' onChange={handleValidID} p='4px' placeholder='e.g. Doe' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                            </FormControl>
+                            <FormControl isRequired >
+                                <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>2x2 ID Photo</FormLabel>
+                                <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Ensure photo is clear, and wear your uniform.)</FormHelperText>
+                                <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                            </FormControl>
+                            <FormControl isRequired >
+                                <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
+                                <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
+                                <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                            </FormControl>
+                        </Box>
+                    </Box>
+                </Box>
+                {/** Company Policies & Guidelines*/}
+                <Box className='animate__animated animate__fadeInLeft'>
+                    <Text display='flex' gap='3' alignItems='center' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} py='4' px='4' textTransform='uppercase'>
+                        <Text as='span'>
+                            <PolicyIcon size='24' color='#fff' />
+                        </Text>
+                        <Text as='span'>
+                            Company Policies and Guidelines
+                        </Text>
+                    </Text>
+                    <Box p='2'>
+                        <AdmissionPolicy />
+                        <TrainingPolicy />
+                        <DataPrivacy />
+                        <FormControl py='3' gap='2' display='flex'>
+                            <Checkbox id='check' size='lg' colorScheme='blue' 
+                                onChange={() => setUA(!userAgree)}
+                                sx={{
+                                    "& .chakra-checkbox__control": {
+                                        border: "2px solid #2B6CB0", // thicker border
+                                        borderRadius: "6px",         // more square edges
+                                        boxShadow: "0 0 6px rgba(43, 108, 176, 0.6)", // glowing effect
+                                        _checked: {
+                                            bg: "blue.600",
+                                            borderColor: "blue.700",
+                                            boxShadow: "0 0 8px rgba(43, 108, 176, 0.8)", // glow when checked
+                                        },
+                                    },
+                                }} 
+                            />
+                            <Box>
+                                <FormLabel htmlFor='check' fontWeight='400' fontSize='13px'>
+                                    {`I understand, that Pentagon Maritime Services Corp. shall keep my personal data and information in strict confidence and that the collection and processing of my personal data/information shall be used only for my enrollment, training and certification.`}
+                                </FormLabel>
+                                <FormLabel htmlFor='check' fontWeight='400' fontSize='13px'>
+                                {`I hereby certify that I have read and understood the above and hereby consent to, agree on, accept and acknowledge these terms.`}
+                                </FormLabel>
+                            </Box>
+                        </FormControl>
+                    </Box>
+                </Box>
+                {/** E-Signature */}
+                <Box className='animate__animated animate__fadeInRight'>
+                    <Text display='flex' alignItems='center' gap='3' color='white' fontWeight='400' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} py='4' px='4' textTransform='uppercase'>
+                        <Text as='span'>
+                            <SignIcon size='24' />
+                        </Text>
+                        <Text as='span'>
+                            E-Signature
+                        </Text>
+                    </Text>
+                    <Box p='2'>
+                        <FormControl isRequired >
+                            <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Upload your Signature</FormLabel>
+                            <Input id='photo' onChange={handleValidSignature} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                            <FormHelperText fontWeight='600' fontSize='10px'>Note: Write your signature on a clean piece of paper then take a picture of it and then upload. The image must be clear and not blurred. </FormHelperText>
+                        </FormControl>
+                    </Box>
+                    <Box p='3'>
+                        <Text fontWeight='400' fontSize='13px'>
+                            {`BY SIGNING THIS I GRANT MY VOLUNTARY AND UNCONDITIONAL CONSENT TO THE COLLECTION AND PROCESSING MY PERSONAL DATA AS STATED ABOVE TO THE INFORMATION AND DATA BASE OF PENTAGON MARITIME SERVICES CORP. IN ACCORDANCE WITH REPUBLIC ACT (R.A) 10173, OTHERWISE KNOWN AS THE “DATA PRIVACY ACT OF 2012” OF THE REPUBLIC OF THE PHILIPPINES, INCLUDING ITS IMPLEMENTING RULES AND REGULATIONS (IRR) AS WELL AS ALL OTHER GUIDELINES AND ISSUANCES BY THE NATIONAL PRIVACY COMMISSION (NPC).`}
+                        </Text>
+                    </Box>
+                </Box>
+                {/** Action Button */}
+                <Box display='flex' pt='4' justifyContent={'end'} className='animate__animated animate__fadeInLeft'>
+                    <Button 
+                        //isDisabled={!userAgree || sig_file==='No file chosen yet...'} 
+                        onClick={() => {handleSubmit();}} 
+                        w={{base: '100%', md: '20%'}} 
+                        colorScheme="blue" 
+                        fontWeight='400' 
+                        fontSize='0.75rem' 
+                        bgColor='blue.700' 
+                        shadow='md' 
+                        textTransform={'uppercase'}
+                        leftIcon={<VerifyIcon size='24' color='#fff' />} 
+                    >
+                            Submit Form
+                    </Button>
+                </Box>
+            </Box>
         </Box>
         {/** Vessel */}
         <Modal isOpen={isOpenVessel} onClose={onCloseVessel} size='xl' scrollBehavior='inside' motionPreset='scale'>
@@ -958,6 +962,35 @@ export default function NewTrainee_v2(){
                     >
                         Confirm & Submit
                     </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        {/** Appreciation Note-Modal */}
+        <Modal isOpen={isOpenThankYou} closeOnOverlayClick={false} onClose={onCloseThankYou} size='xl' isCentered motionPreset='slideInBottom'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader color='blue.700' fontWeight='800' w='full' textTransform='uppercase' textAlign='center'>Enrollment Submitted!</ModalHeader>
+                <ModalBody>
+                    <Box className='flex flex-col space-y-3 text-center'>
+                        <Text fontWeight='500' fontSize='14px'>We appreciate your interest in Pentagon Maritime Services Corp. and for taking the time to complete our enrollment form.</Text>
+                        <Text fontWeight='500' fontSize='14px'>Our team will review your submission and get back to you.</Text>
+                        <Text fontWeight='500' fontSize='14px'>For your reference, you can take a screenshot of this page and send it as proof of your submission to our official email</Text>
+                        <Text fontWeight='500' fontSize='14px'>If you have any questions or need further assistance, please don't hesitate to contact us.</Text>
+                        <Text fontWeight='500' fontSize='14px'>You can contact us using the contact details below.</Text>
+                        <Box w='full' placeItems='center'>
+                            <UnorderedList w={{base: '85%', md: '55%'}} textAlign='start' lineHeight='1.7rem' fontSize='13px' fontWeight='400'>
+                                <ListItem>Email: pentagonmaritimecorp@gmail.com</ListItem>
+                                <ListItem>Contact no.: 0999-513-5916</ListItem>
+                                <ListItem>Facebook: 
+                                    <Link color='blue.400' isExternal href='https://www.facebook.com/Pentagonmaritimeservicescorp'> Pentagonmaritimeservicescorp <ExternalLinkIcon mx='2px' /></Link>
+                                </ListItem>
+                            </UnorderedList>
+                        </Box>
+                        <Text fontWeight='500' fontSize='14px'>Thank you once again for choosing Pentagon Maritime Services Corp. We look forward to assisting you on your maritime journey!</Text>
+                    </Box>
+                </ModalBody>
+                <ModalFooter display='flex' justifyContent='center'>
+                    <Button onClick={handleClose} colorScheme='blue' shadow='md' bgColor='blue.700'>Got it!</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
