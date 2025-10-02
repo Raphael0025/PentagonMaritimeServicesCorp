@@ -55,7 +55,7 @@ export const CompanyUserProvider: React.FC<CompanyUserProviderProps> = ({childre
         const removeTokenAt8PM = () => {
             const now = new Date();
             const targetTime = new Date(now);
-            targetTime.setHours(17, 0, 0, 0); // Set the target time to 6:00 PM
+            targetTime.setHours(22, 0, 0, 0); // Set the target time to 6:00 PM
             
             const timeUntil6PM = targetTime.getTime() - now.getTime();
             

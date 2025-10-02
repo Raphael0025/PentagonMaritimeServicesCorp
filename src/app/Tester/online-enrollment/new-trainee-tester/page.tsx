@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React from 'react';
 //components
 import NewTrainee_v2_tester from '@/Components/Page/admissions/NewTrainee_v2_tester';
 //css library

@@ -23,7 +23,7 @@ import { EditRegistration } from '@/Components/Modal/Registration'
 import { SAVE_REMARKS } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
-import './Registration.css'
+//import './Registration.css'
 import { deployYDate } from '@/types/utils' 
 import { fullMonth } from '@/handlers/util_handler'
 

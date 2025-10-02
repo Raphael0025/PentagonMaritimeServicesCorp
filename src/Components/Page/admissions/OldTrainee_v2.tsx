@@ -14,11 +14,11 @@ import { ExternalLinkIcon } from '@chakra-ui/icons'
 import Registration_Background from "@/Components/ui/Registration_Background"
 
 //types
-import { TRAINEE, initTRAINEE, TEMP_COURSES_V2, TEMP_COURSES, TRAINING } from '@/types/trainees'
+import { TRAINEE, TRAINEE_BY_ID, initTRAINEE, TEMP_COURSES_V2, TEMP_COURSES, TRAINING } from '@/types/trainees'
 import { ToastStatus } from '@/types/handling';
 
 // Controllers
-import { addNewTrainee, addRegistrationDetails, addTrainingDetails } from '@/lib/trainee_controller'
+import { addRegistrationDetails, addTrainingDetails, RE_ENROLLED_TRAINEE, changeImg } from '@/lib/trainee_controller'
 import {TrashIcon, PlusIcon, VerifyIcon, PinIcon, MailIcon, PhoneIcon, SearchIcon, FacebookIcon } from '@/Components/Icons'
 import { ReviewIcon, PolicyIcon, ClipIcon, SignIcon, ListIcon, CourseIcon, } from '@/Components/SideIcons'
 import { generateDateRanges } from '@/handlers/course_handler'
@@ -32,7 +32,11 @@ import { AdmissionPolicy, TrainingPolicy, DataPrivacy } from '@/Components/ui/te
 import TrainingScheduleModal from '@/Components/Modal/RegistrationFormComponent/TrainingScheduleModal';
 import CoursesModal from '@/Components/Modal/RegistrationFormComponent/CoursesModal';
 
-export default function NewTrainee_v2(){
+interface Props {
+    oldTrainee: TRAINEE_BY_ID;
+}
+
+export default function OldTrainee_v2({ oldTrainee }: Props){
     const toast = useToast()
     const router = useRouter()
     const { data: allRanks } = useRank()
@@ -70,6 +74,7 @@ export default function NewTrainee_v2(){
 
     const [preview, setPreview] = useState<string | null>(null)
     const [validSignature, setSignature] = useState<File[]>([])
+    const [validSig, setValidSig] = useState<string>('')
     const [sig_file, setSigFile] = useState<string>('No file chosen yet...')
     
     const [month, setMonth] = useState<number>(0)
@@ -79,6 +84,8 @@ export default function NewTrainee_v2(){
     const [sched, setSched] = useState<string>('')
     const [trainingSched, setTrainingSched] = useState<string[]>([])
     
+    const [birth_date, setBirthDate] = useState<Date | null>(new Date())
+    const [idRef, setIDRef] = useState<string>('')
     const [search, setSearch] = useState<string>('')
     const [courseRef, setCourseRef] = useState<string>('')
     const [courseSelect, selectCourse] = useState<string>('')
@@ -88,6 +95,26 @@ export default function NewTrainee_v2(){
     const [loading, setLoading] = useState<boolean>(false)
 
     const e_form = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const fetchData = () => {
+            const {id, ...rest} = oldTrainee
+            setTrainee(rest)
+            setIDRef(id)
+
+            setValid(oldTrainee.valid_id)
+            setValidPfp(oldTrainee.photo)
+            setValidSig(oldTrainee.e_sig)
+
+            setBirthDate(oldTrainee.birthDate.toDate())
+            
+            const birthDate = oldTrainee.birthDate.toDate()
+            setMonth(birthDate.getUTCMonth() + 1)
+            setDay(birthDate.getUTCDate())
+            setYear(birthDate.getUTCFullYear())
+        } 
+        fetchData()
+    }, [])
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
         toast({
@@ -123,7 +150,12 @@ export default function NewTrainee_v2(){
                 ...prev,
                 [id]: value.trim()
             }))
-        } else{
+        } else if (id === 'marketing'){
+            setTrainee((prev) => ({
+                ...prev,
+                [id]: `OTHERS-${value.trim().toUpperCase()}`
+            }))
+        } else {
             setTrainee((prev) => ({
                 ...prev,
                 [id]: value.trim().toUpperCase()
@@ -137,6 +169,7 @@ export default function NewTrainee_v2(){
             ...prev,
             [id]: value.toUpperCase()
         }))
+        console.log(value)
     }
 
     const handleValidID = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -332,11 +365,11 @@ export default function NewTrainee_v2(){
         
             // define what makes a course "unique"
             const unique = combined.filter(
-              (course, index, self) => index === self.findIndex(
-                  (c) =>
-                    c.course === course.course &&
-                    c.start_date === course.start_date &&
-                    c.end_date === course.end_date
+                (course, index, self) => index === self.findIndex(
+                    (c) =>
+                        c.course === course.course &&
+                        c.start_date === course.start_date &&
+                        c.end_date === course.end_date
                 )
             )
         
@@ -359,6 +392,7 @@ export default function NewTrainee_v2(){
             || trainee.e_contact_person === ''
             || trainee.e_contact === ''
             || trainee.relationship === ''
+            || trainee.marketing === ''
             || (!tempCourses[0]?.course || tempCourses.length === 0)
         ){
             setAlert(true)
@@ -371,10 +405,100 @@ export default function NewTrainee_v2(){
         }
     }
     
+    const checkTraineeChanges = (): boolean => {
+        const changes: Partial<TRAINEE> = {}
+        const {...rest} = oldTrainee
+
+        for (const key in rest) {
+            
+            const typedKey = key as keyof TRAINEE // Cast `key` to keyof TRAINEE
+            const oldValue = rest[typedKey]
+            const newValue = trainee[typedKey]
+            // Compare values
+            if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+                changes[typedKey] = { old: oldValue, new: newValue } as any;
+            }
+        }
+        return Object.keys(changes).length > 0 ? true : false
+    }
+
     const handleSubmit = async () => {
         try{
             setLoading(true)
-            handleToast('IMPORTANT!', 'This is only a testing environment. No data will be saved or recorded.', 10000, 'info')
+            
+            if(checkTraineeChanges()){
+                await RE_ENROLLED_TRAINEE(idRef, trainee)
+            }
+            if(file !== 'No file chosen yet...'){
+                await changeImg(idRef, trainee.last_name, trainee.first_name, 'validID', 'valid_id', validID, file, 'Re-Enrolled Trainee')                
+            }
+            if(pfpFile !== 'No file chosen yet...') {
+                await changeImg(idRef, trainee.last_name, trainee.first_name, 'idPic', 'photos', validPfp, pfpFile, 'Re-Enrolled Trainee')
+            }
+            if (sig_file !== 'No file chosen yet...') {
+                await changeImg(idRef, trainee.last_name, trainee.first_name, 'esign', 'e-signs', validSignature, sig_file, 'Re-Enrolled Trainee')
+            }
+
+            if(idRef !== null){
+                const ccArr = []
+                const crewArr = []
+                for(const course of courses){
+                    if(course.accountType === 0){
+                        crewArr.push(course)
+                    } else {
+                        ccArr.push(course)
+                    }
+                }
+                let regCCID, regCrewID
+                if(ccArr.length !== 0){
+                    let fee: number = 0
+                    for(const course of ccArr){
+                        fee = course.course_fee + fee
+                    }
+                    regCCID = await addRegistrationDetails(idRef, fee, 0, 1, 1, trainee.marketing)
+                    for(const course of ccArr){
+                        try{
+                            if(regCCID){
+                                await addTrainingDetails(course, regCCID, trainee.marketing)
+                            }
+                        }catch(error){
+                            console.error('Failed to process this company charge: ', error)
+                        }
+                    }
+                }
+                
+                if(crewArr.length !== 0){
+                    let fee: number = 0
+                    for(const course of crewArr){
+                        fee = course.course_fee + fee
+                    }
+                    regCrewID = await addRegistrationDetails(idRef, fee, 0, 1, 1, trainee.marketing)
+                    for(const course of crewArr){
+                        try{
+                            if(regCrewID){
+                                await addTrainingDetails(course, regCrewID, trainee.marketing)
+                            }
+                        }catch(error){
+                            console.error('Failed to process this crew charge: ', error)
+                        }
+                    }
+                }
+                await fetch('/api/send-mail', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    }, 
+                    body: JSON.stringify({
+                        to: trainee.email,
+                        subject: 'ENROLLMENT TO PENTAGON MARITIME SERVICES CORP.',
+                        text: 'Thank you for submitting your online registration form, someone will assist you once your registration is verified. Thank you have a nice day!',
+                        last_name: trainee.last_name,
+                        first_name: trainee.first_name,
+                    })
+                })
+            } else {
+                router.push('/admissions/ol/forms')
+            }
             onCloseReview()
             onOpenThankYou()
         } catch(error){
@@ -386,14 +510,14 @@ export default function NewTrainee_v2(){
 
     const handleClose = () => {
         onCloseThankYou()
-        router.push('/Tester/online-enrollment')
+        router.push('/admissions/ol/forms')
     }
     return(
     <>
         <Registration_Background />
         <Box ref={e_form} w={{base: '100%', md: '100%'}} display='flex' justifyContent={'center'}>
             <Box py='4' px='2' w={{base: '100%', md: '65%'}}>
-                <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment - Tester</Text>
+                <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment</Text>
                 <Box className='animate__animated animate__fadeInRight'>
                     <Text color='white' fontWeight='400' display='flex' gap='3' alignItems='center' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} mb='2' py='4' px='4' textTransform='uppercase'>
                         <Text as='span'>
@@ -504,6 +628,10 @@ export default function NewTrainee_v2(){
                                         <p>{trainee.e_contact_person === '' ? `* Emergency Contact Person` : ''}</p>
                                         <p>{trainee.e_contact === '' ? `* Emergency Contact No.#` : ''}</p>
                                         <p>{trainee.relationship === '' ? `* Relationship to Contact person` : ''}</p>
+                                        <p>{trainee.marketing === '' ? `* Marketing` : ''}</p>
+                                        {trainee.marketing !== '' && (
+                                            <p>{trainee.otherMarketing === '' ? `* Marketing` : ''}</p>
+                                        )}
                                     </Box>
                                 </Box>
                             </AlertDescription>
@@ -514,19 +642,19 @@ export default function NewTrainee_v2(){
                         <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
                             <FormControl isRequired isInvalid={showAlert && trainee.last_name === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='last_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Last Name</FormLabel>
-                                <Input id='last_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Doe' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='last_name' value={trainee?.last_name} onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Doe' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl isRequired isInvalid={showAlert && trainee.first_name === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='first_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>First Name</FormLabel>
-                                <Input id='first_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. John' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='first_name' value={trainee?.first_name} onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. John' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl textTransform='uppercase'>
                                 <FormLabel htmlFor='middle_name' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Middle Name</FormLabel>
-                                <Input id='middle_name' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Michael' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='middle_name' value={trainee?.middle_name} onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. Michael' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl textTransform='uppercase' w={{base: '100%', md: '40%'}}>
                                 <FormLabel htmlFor='suffix' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Suffix</FormLabel>
-                                <Select id='suffix' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' >
+                                <Select id='suffix' value={trainee?.suffix} onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' >
                                     <option hidden />
                                     <option value='jr.'>Jr.</option>
                                     <option value='sr.'>Sr.</option>
@@ -543,26 +671,26 @@ export default function NewTrainee_v2(){
                                 <FormControl display='flex' flexDir={{ base: 'column', md: 'row' }} gap='2' textTransform='uppercase'>
                                     <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
                                         <FormLabel htmlFor='month' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>MONTH</FormLabel>
-                                        <Input id='month' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                        <Input id='month' value={month} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     </FormControl>
                                     <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
                                         <FormLabel htmlFor='day' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>DAY</FormLabel>
-                                        <Input id='day' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                        <Input id='day' value={day} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     </FormControl>
                                     <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
                                         <FormLabel htmlFor='year' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>YEAR</FormLabel>
-                                        <Input id='year' shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 2002' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                        <Input id='year' value={year} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 2002' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     </FormControl>
                                 </FormControl>
                                 <FormHelperText fontWeight='600' fontSize='10px'>Note: Please enter your birth date using digits (01/01/2001)</FormHelperText>
                             </FormControl>
                             <FormControl textTransform='uppercase'>
                                 <FormLabel htmlFor='birthPlace' pt='2' mb='2' pb='1.5' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Birth Place</FormLabel>
-                                <Input id='birthPlace' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='birthPlace' value={trainee.birthPlace} onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl isRequired isInvalid={showAlert && trainee.gender === ''} textTransform='uppercase' w={{base: '100%', md: '40%'}}>
                                 <FormLabel htmlFor='gender' pt='2' mb='2' pb='1.5' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Gender</FormLabel>
-                                <Select id='gender' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
+                                <Select id='gender' value={trainee?.gender} onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
                                     <option hidden/>
                                     <option value='male'>Male</option>
                                     <option value='female'>Female</option>
@@ -572,17 +700,17 @@ export default function NewTrainee_v2(){
                         <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
                             <FormControl isRequired isInvalid={showAlert && trainee.otherAddress === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='otherAddress' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Address</FormLabel>
-                                <Input id='otherAddress' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='otherAddress' value={trainee?.otherAddress} onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                         </Box>
                         <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
                             <FormControl isRequired isInvalid={showAlert && trainee.email === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='email' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Email</FormLabel>
-                                <Input id='email' onChange={handleOnChange} textTransform='uppercase' type='email' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='email' value={trainee?.email} onChange={handleOnChange} textTransform='uppercase' type='email' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl isRequired isInvalid={showAlert && trainee.contact_no === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='contact_no' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Contact No.</FormLabel>
-                                <Input id='contact_no' onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. 09xxxxxxxxx' type='tel' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='contact_no' value={trainee?.contact_no} onChange={handleOnChange} textTransform='uppercase' placeholder='e.g. 09xxxxxxxxx' type='tel' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl isRequired isInvalid={showAlert && trainee.rank === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='rank' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Rank/Position</FormLabel>
@@ -593,13 +721,13 @@ export default function NewTrainee_v2(){
                             </FormControl>
                             <FormControl textTransform='uppercase'>
                                 <FormLabel htmlFor='nationality' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Nationality</FormLabel>
-                                <Input id='nationality' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='nationality' value={trainee?.nationality} onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                         </Box>
                         <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
                             <FormControl isRequired isInvalid={showAlert && trainee.srn === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='srn' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>SRN No.</FormLabel>
-                                <Input id='srn' onChange={handleOnChange} type='text' textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='srn' value={trainee?.srn} onChange={handleOnChange} type='text' textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl isRequired isInvalid={showAlert && trainee.vessel === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='vessel' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Vessel Type</FormLabel>
@@ -616,24 +744,24 @@ export default function NewTrainee_v2(){
                             </FormControl>
                             <FormControl isRequired isInvalid={showAlert && trainee.endorser === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='endorser' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Endorser/Crewing</FormLabel>
-                                <Input id='endorser' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='endorser' value={trainee?.endorser} onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                         </Box>
-                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
                             <FormControl isRequired isInvalid={showAlert && trainee.e_contact_person === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='e_contact_person' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>{`In Case Of Emergency: (Contact Person)`}</FormLabel>
-                                <Input id='e_contact_person' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='e_contact_person' value={trainee?.e_contact_person} onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                             <FormControl isRequired isInvalid={trainee.contact_no === trainee.e_contact && trainee.e_contact !== ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='e_contact' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Emergency Contact No.:</FormLabel>
-                                <Input id='e_contact' onChange={handleOnChange} textTransform='uppercase' type='tel' placeholder='e.g. 09xxxxxxxxx' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='e_contact' value={trainee?.e_contact} onChange={handleOnChange} textTransform='uppercase' type='tel' placeholder='e.g. 09xxxxxxxxx' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                 <FormErrorMessage fontWeight='500' fontSize='12px'>
                                     Emergency Contact# must not be the same as personal contact#.
                                 </FormErrorMessage>
                             </FormControl>
                             <FormControl isRequired isInvalid={showAlert && trainee.relationship === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='relationship' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Relationship to Contact Person</FormLabel>
-                                <Select id='relationship' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
+                                <Select id='relationship' value={trainee?.relationship} onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
                                     <option hidden/>
                                     <option value='parent'>Parent</option>
                                     <option value='spouse'>Spouse</option>
@@ -645,6 +773,26 @@ export default function NewTrainee_v2(){
                                     <option value='partner'>Partner</option>
                                 </Select>
                             </FormControl>
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                            <FormControl isRequired isInvalid={showAlert && trainee.marketing === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='marketing' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Please select from the following below, How did you found out about us?</FormLabel>
+                                <Select id='marketing' value={trainee?.marketing} onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
+                                    <option hidden/>
+                                    <option value='agent'>Agent</option>
+                                    <option value='company'>Company</option>
+                                    <option value='walk-in'>Walk-In</option>
+                                    <option value='fb'>Facebook</option>
+                                    <option value='consultancy'>Consultancy</option>
+                                    <option value='others'>Others</option>
+                                </Select>
+                            </FormControl>
+                            {(trainee?.marketing === 'OTHERS') && (
+                                <FormControl isRequired isInvalid={showAlert && trainee.otherMarketing === ''} textTransform='uppercase'>
+                                    <FormLabel htmlFor='otherMarketing' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>{`If Others, please specify`}</FormLabel>
+                                    <Input id='otherMarketing' value={trainee?.otherMarketing} onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                </FormControl>
+                            )}
                         </Box>
                     </Box>
                 </Box>
@@ -672,6 +820,14 @@ export default function NewTrainee_v2(){
                                 <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                 <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                             </FormControl>
+                            {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
+                                    <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                            )}
                         </Box>
                     </Box>
                 </Box>
@@ -743,8 +899,8 @@ export default function NewTrainee_v2(){
                 {/** Action Button */}
                 <Box display='flex' pt='4' justifyContent={'end'} className='animate__animated animate__fadeInLeft'>
                     <Button 
-                        //isDisabled={!userAgree || sig_file==='No file chosen yet...'} 
-                        onClick={() => {handleSubmit();}} 
+                        isDisabled={!userAgree || sig_file==='No file chosen yet...'} 
+                        onClick={() => {handlePreSubmitForm();}} 
                         w={{base: '100%', md: '20%'}} 
                         colorScheme="blue" 
                         fontWeight='400' 

@@ -13,20 +13,20 @@ interface ModalProps {
     onClose: () => void;
 }
 
-export default function TrainingScheduleModal({setSched, courseID, trainingSched, selectedCourse, onClose}: ModalProps){
+export default function TrainingScheduleModal({setSched, courseID, trainingSched, selectedCourse}: ModalProps){
     
     return(
     <>
         <Tabs isLazy variant='enclosed' colorScheme='blue'>
             <TabList>
-                <Tab>Available Schedules</Tab>
-                <Tab>Select Preferred Dates</Tab>
+                <Tab onClick={() => setSched('')} >Available Schedules</Tab>
+                <Tab onClick={() => setSched('')} >Select Preferred Dates</Tab>
             </TabList>
             <TabPanels>
-                <TabPanel>
+                <TabPanel  >
                     <DropdownSchedule courseID={selectedCourse} courseRef={courseID} trainingSched={trainingSched} setSched={setSched} />
                 </TabPanel>
-                <TabPanel>
+                <TabPanel  >
                     <TrainingCalendar setSched={setSched} />
                 </TabPanel>
             </TabPanels>

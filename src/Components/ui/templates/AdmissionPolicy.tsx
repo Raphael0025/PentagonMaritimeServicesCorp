@@ -44,9 +44,6 @@ export default function AdmissionPolicy() {
                                 <ListItem>{`At least ONE DAY before the start of training - FULL COURSE FEE`}</ListItem>
                             </OrderedList>
                         </ListItem>
-                        <ListItem>
-                            {`For government-accredited courses, no cancellation/rescheduling or change, of course, shall be allowed unless done earlier than a WEEK before the start of training or otherwise shall be charged the FULL COURSE FEE`}
-                        </ListItem>
                     </OrderedList>
                 </ListItem>
                 <ListItem>{`Trainees with unauthorized absences should attend "MAKE UP CLASS" and will be charged ₱500`}</ListItem>
@@ -62,8 +59,8 @@ export default function AdmissionPolicy() {
                 <ListItem>
                     {`OTHER charges related to Certificate printing`}
                     <OrderedList>
-                        <ListItem>{`Reprinting of Certificate (due to lost copy) - ₱50 and notarized Affidavit of Loss`}</ListItem>
-                        <ListItem>{`Request for Certified True Copy - ₱500`}</ListItem>
+                        <ListItem>{`Reprinting of Certificate (due to lost copy) - ₱500 and notarized Affidavit of Loss`}</ListItem>
+                        <ListItem>{`Request for Certified True Copy - ₱100`}</ListItem>
                         <ListItem>{`Archiving/late claiming - ₱50`}</ListItem>
                     </OrderedList>
                 </ListItem>

@@ -167,11 +167,11 @@ export const deleteCandidate = async (id: string, actor: string | null, candidat
 export const hireCandidate = async (id: string, actor: string | null, candidateName: string) => {
     try{
         const candidateRef  = doc(firestore, `company_users/${id}`)
-        // Fetch the current data of the candidate document
+        //? Fetch the current data of the candidate document
         const candidateSnap = await getDoc(candidateRef);
-        // Check if the document exists
+        //* Check if the document exists
         if (candidateSnap.exists()) {
-            // Get the current data
+            //* Get the current data
             const candidateData = candidateSnap.data();
             // Update the data with new values
             const updatedData = {
@@ -179,7 +179,7 @@ export const hireCandidate = async (id: string, actor: string | null, candidateN
                 emp_status: 'Hired',
                 hired_date: serverTimestamp()
             };
-            // Write the updated data back to Firestore
+            //* Write the updated data back to Firestore
             await setDoc(candidateRef, updatedData)
             await addLog(actor, 'You have been hired in the company.', 'companyUser', id)
             await addLog(actor, `Candidate ${candidateName} has been successfully hired.`, 'companyUser', 'Log')
@@ -188,5 +188,13 @@ export const hireCandidate = async (id: string, actor: string | null, candidateN
         }
     }catch(error){
         console.log('Error: ', error)
+    }
+}
+const todo_tasks = async () => {
+    try{
+        //* Upload tasks per user
+        
+    }catch(error){
+        console.error(error)
     }
 }

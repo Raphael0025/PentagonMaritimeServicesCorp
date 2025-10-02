@@ -12,6 +12,8 @@ This document outlines the tasks and improvements planned for the project. Each 
     - **Details**:
         - [-] Training Calendar Schedule added 
         - [-] Fixed scroll issue on second page
+        - [-] Revised the UI/UX of Online Enrollment Form
+        - [ ] Conditional Process for In-house/STCW Courses
 - [] **Training Tab**: Features in Training Tab
     - **Details**:
         - [-] Overview Tab

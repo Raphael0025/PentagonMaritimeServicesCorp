@@ -67,7 +67,7 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
     const [selectCompany, setSelectCompany] = useState<string>('')
     const [vesselRef, setVesselRef] = useState<string>('')
     const [selectedVessel, setSelectVessel] = useState<string>('')
-        const [courseSelect, selectCourse] = useState<string>('')
+    const [courseSelect, selectCourse] = useState<string>('')
 
     const [rankRef, setRankRef] = useState<string>('')
     const [selectedRank, setSelectedRank] = useState<string>('')
@@ -365,11 +365,11 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                 for(const course of ccArr){
                     fee = course.course_fee + fee
                 }
-                regCCID = await addRegistrationDetails(idRef, fee, regApproach, traineeType, 1)
+                regCCID = await addRegistrationDetails(idRef, fee, regApproach, traineeType, 1, '')
                 for(const course of ccArr){
                     try{
                         if(regCCID){
-                            await addTrainingDetails(course, regCCID)
+                            await addTrainingDetails(course, regCCID, '')
                         }
                     }catch(error){
                         console.error('Failed to process this: ', error)
@@ -382,11 +382,11 @@ export default function OldRegistrationForm({ oldTrainee, onStepChange = () => {
                 for(const course of crewArr){
                     fee = course.course_fee + fee
                 }
-                regCrewID = await addRegistrationDetails(idRef, fee, regApproach, traineeType, 0)
+                regCrewID = await addRegistrationDetails(idRef, fee, regApproach, traineeType, 0, '')
                 for(const course of crewArr){
                     try{
                         if(regCrewID){
-                            await addTrainingDetails(course, regCrewID)
+                            await addTrainingDetails(course, regCrewID, '')
                         }
                     }catch(error){
                         console.error('Failed to process this: ', error)

@@ -38,6 +38,7 @@ export const initTRAINEE_BY_ID = {
     photo: '',
     e_sig: '',
     marketing: '',
+    otherMarketing: '',
     createdAt: Timestamp.now(),
 }
 export interface TRAINEE {
@@ -71,6 +72,7 @@ export interface TRAINEE {
     photo: string;
     e_sig: string;
     marketing: string;
+    otherMarketing: string;
 }
 
 export const initTRAINEE = {
@@ -103,6 +105,7 @@ export const initTRAINEE = {
     photo: '',
     e_sig: '',
     marketing: '',
+    otherMarketing: '',
     createdAt: Timestamp.now(),
 }
 
@@ -127,6 +130,7 @@ export interface REGISTRATION {
     date_registered: Timestamp;
     reg_remarks: string;
     regType: number; // 2 - def | 0 - dated | 1 - bd | 3 - cancel
+    marketing: string;
     reg_accountType: number; // 0 - crew | 1 - company
 }
 
@@ -152,6 +156,7 @@ export interface TRAINING {
     practical: number;
     written: number;
     result: number;
+    marketing: string;
     train_remarks: string;
 }
 
@@ -179,6 +184,7 @@ export const initTraining = {
     written: 0,
     result: 0,
     train_remarks: '',
+    marketing: '',
 }
 
 export interface TEMP_COURSES {

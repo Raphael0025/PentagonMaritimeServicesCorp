@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 //components
-import NewRegistrationForm from '@/Components/Page/admissions/NewRegistrationForm';
+import NewTrainee_v2 from '@/Components/Page/admissions/NewTrainee_v2';
 import Stepper from '@/Components/NavStepper'
 //types
 import { TRAINEE, initTRAINEE } from '@/types/trainees'
@@ -27,11 +27,12 @@ export default function NewTrainee() {
     
     return (
         <>
-        <Stepper step={path} onStepChange={handleStepChange} />
-        <Box h='auto' className=' flex py-5 justify-center '>
-            <Box className='w-full md:w-3/4'>
-                <NewRegistrationForm onStepChange={setPath} />
-            </Box>
+        {/* <Stepper step={path} onStepChange={handleStepChange} /> */}
+        <Box h='auto' bgColor='white' className='pb-5 justify-center '>
+            {/* <Box className='w-full'> */}
+                {/* <NewRegistrationForm onStepChange={setPath} /> */}
+                <NewTrainee_v2 />
+            {/* </Box> */}
         </Box>
         </>
     )

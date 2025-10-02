@@ -123,7 +123,12 @@ export default function NewTrainee_v2(){
                 ...prev,
                 [id]: value.trim()
             }))
-        } else{
+        } else if (id === 'marketing'){
+            setTrainee((prev) => ({
+                ...prev,
+                [id]: `OTHERS-${value.trim().toUpperCase()}`
+            }))
+        } else {
             setTrainee((prev) => ({
                 ...prev,
                 [id]: value.trim().toUpperCase()
@@ -137,6 +142,7 @@ export default function NewTrainee_v2(){
             ...prev,
             [id]: value.toUpperCase()
         }))
+        console.log(value)
     }
 
     const handleValidID = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -332,11 +338,11 @@ export default function NewTrainee_v2(){
         
             // define what makes a course "unique"
             const unique = combined.filter(
-              (course, index, self) => index === self.findIndex(
-                  (c) =>
-                    c.course === course.course &&
-                    c.start_date === course.start_date &&
-                    c.end_date === course.end_date
+                (course, index, self) => index === self.findIndex(
+                    (c) =>
+                        c.course === course.course &&
+                        c.start_date === course.start_date &&
+                        c.end_date === course.end_date
                 )
             )
         
@@ -359,6 +365,7 @@ export default function NewTrainee_v2(){
             || trainee.e_contact_person === ''
             || trainee.e_contact === ''
             || trainee.relationship === ''
+            || trainee.marketing === ''
             || (!tempCourses[0]?.course || tempCourses.length === 0)
         ){
             setAlert(true)
@@ -374,7 +381,68 @@ export default function NewTrainee_v2(){
     const handleSubmit = async () => {
         try{
             setLoading(true)
-            handleToast('IMPORTANT!', 'This is only a testing environment. No data will be saved or recorded.', 10000, 'info')
+            
+            const traineeID = await addNewTrainee(trainee, 0, validID, validPfp, validSignature, file, pfpFile)
+            if(traineeID !== null){
+                const ccArr = []
+                const crewArr = []
+                for(const course of courses){
+                    if(course.accountType === 0){
+                        crewArr.push(course)
+                    } else {
+                        ccArr.push(course)
+                    }
+                }
+                let regCCID, regCrewID
+                if(ccArr.length !== 0){
+                    let fee: number = 0
+                    for(const course of ccArr){
+                        fee = course.course_fee + fee
+                    }
+                    regCCID = await addRegistrationDetails(traineeID, fee, 0, 0, 1, trainee.marketing)
+                    for(const course of ccArr){
+                        try{
+                            if(regCCID){
+                                await addTrainingDetails(course, regCCID, trainee.marketing)
+                            }
+                        }catch(error){
+                            console.error('Failed to process this company charge: ', error)
+                        }
+                    }
+                }
+                
+                if(crewArr.length !== 0){
+                    let fee: number = 0
+                    for(const course of crewArr){
+                        fee = course.course_fee + fee
+                    }
+                    regCrewID = await addRegistrationDetails(traineeID, fee, 0, 0, 1, trainee.marketing)
+                    for(const course of crewArr){
+                        try{
+                            if(regCrewID){
+                                await addTrainingDetails(course, regCrewID, trainee.marketing)
+                            }
+                        }catch(error){
+                            console.error('Failed to process this crew charge: ', error)
+                        }
+                    }
+                }
+                await fetch('/api/send-mail', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    }, 
+                    body: JSON.stringify({
+                        to: trainee.email,
+                        subject: 'ENROLLMENT TO PENTAGON MARITIME SERVICES CORP.',
+                        text: 'Thank you for submitting your online registration form, someone will assist you once your registration is verified. Thank you have a nice day!',
+                        last_name: trainee.last_name,
+                        first_name: trainee.first_name,
+                    })
+                })
+            } else {
+                router.push('/admissions/ol/forms')
+            }
             onCloseReview()
             onOpenThankYou()
         } catch(error){
@@ -386,14 +454,14 @@ export default function NewTrainee_v2(){
 
     const handleClose = () => {
         onCloseThankYou()
-        router.push('/Tester/online-enrollment')
+        router.push('/admissions/ol/forms')
     }
     return(
     <>
         <Registration_Background />
         <Box ref={e_form} w={{base: '100%', md: '100%'}} display='flex' justifyContent={'center'}>
             <Box py='4' px='2' w={{base: '100%', md: '65%'}}>
-                <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment - Tester</Text>
+                <Text fontSize='1.5625rem' fontWeight='500' py='4' textTransform='uppercase'>Online Enrollment</Text>
                 <Box className='animate__animated animate__fadeInRight'>
                     <Text color='white' fontWeight='400' display='flex' gap='3' alignItems='center' fontSize='0.75rem' borderRadius='5px' bgColor={'blue.700'} mb='2' py='4' px='4' textTransform='uppercase'>
                         <Text as='span'>
@@ -504,6 +572,10 @@ export default function NewTrainee_v2(){
                                         <p>{trainee.e_contact_person === '' ? `* Emergency Contact Person` : ''}</p>
                                         <p>{trainee.e_contact === '' ? `* Emergency Contact No.#` : ''}</p>
                                         <p>{trainee.relationship === '' ? `* Relationship to Contact person` : ''}</p>
+                                        <p>{trainee.marketing === '' ? `* Marketing` : ''}</p>
+                                        {trainee.marketing !== '' && (
+                                            <p>{trainee.otherMarketing === '' ? `* Marketing` : ''}</p>
+                                        )}
                                     </Box>
                                 </Box>
                             </AlertDescription>
@@ -619,7 +691,7 @@ export default function NewTrainee_v2(){
                                 <Input id='endorser' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                             </FormControl>
                         </Box>
-                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3'>
                             <FormControl isRequired isInvalid={showAlert && trainee.e_contact_person === ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='e_contact_person' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>{`In Case Of Emergency: (Contact Person)`}</FormLabel>
                                 <Input id='e_contact_person' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
@@ -645,6 +717,26 @@ export default function NewTrainee_v2(){
                                     <option value='partner'>Partner</option>
                                 </Select>
                             </FormControl>
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                            <FormControl isRequired isInvalid={showAlert && trainee.marketing === ''} textTransform='uppercase'>
+                                <FormLabel htmlFor='marketing' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Please select from the following below, How did you found out about us?</FormLabel>
+                                <Select id='marketing' onChange={handleSelect} textTransform='uppercase' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400'>
+                                    <option hidden/>
+                                    <option value='agent'>Agent</option>
+                                    <option value='company'>Company</option>
+                                    <option value='walk-in'>Walk-In</option>
+                                    <option value='fb'>Facebook</option>
+                                    <option value='consultancy'>Consultancy</option>
+                                    <option value='others'>Others</option>
+                                </Select>
+                            </FormControl>
+                            {(trainee?.marketing === 'OTHERS') && (
+                                <FormControl isRequired isInvalid={showAlert && trainee.otherMarketing === ''} textTransform='uppercase'>
+                                    <FormLabel htmlFor='otherMarketing' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>{`If Others, please specify`}</FormLabel>
+                                    <Input id='otherMarketing' onChange={handleOnChange} textTransform='uppercase' type='text' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                </FormControl>
+                            )}
                         </Box>
                     </Box>
                 </Box>
@@ -672,6 +764,14 @@ export default function NewTrainee_v2(){
                                 <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                 <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                             </FormControl>
+                            {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
+                                    <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                            )}
                         </Box>
                     </Box>
                 </Box>
@@ -743,8 +843,8 @@ export default function NewTrainee_v2(){
                 {/** Action Button */}
                 <Box display='flex' pt='4' justifyContent={'end'} className='animate__animated animate__fadeInLeft'>
                     <Button 
-                        //isDisabled={!userAgree || sig_file==='No file chosen yet...'} 
-                        onClick={() => {handleSubmit();}} 
+                        isDisabled={!userAgree || sig_file==='No file chosen yet...'} 
+                        onClick={() => {handlePreSubmitForm();}} 
                         w={{base: '100%', md: '20%'}} 
                         colorScheme="blue" 
                         fontWeight='400' 

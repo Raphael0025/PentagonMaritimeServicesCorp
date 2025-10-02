@@ -106,7 +106,7 @@ export const addAttachments = async (id: string, lastName: string, givenName: st
     }
 }
 
-export const addRegistrationDetails = async (ref_id: string, payment_fee: number, registrationType: number, traineeType: number, account_type: number) => {
+export const addRegistrationDetails = async (ref_id: string, payment_fee: number, registrationType: number, traineeType: number, account_type: number, marketing: string) => {
     try{
             const newRegistration: REGISTRATION = {
                 trainee_ref_id: ref_id,
@@ -119,6 +119,7 @@ export const addRegistrationDetails = async (ref_id: string, payment_fee: number
                 date_registered: Timestamp.now(),
                 reg_remarks: '',
                 regType: 2,
+                marketing: marketing,
                 reg_accountType: account_type === 0 ? account_type : 1,
             }  
             const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
@@ -129,7 +130,7 @@ export const addRegistrationDetails = async (ref_id: string, payment_fee: number
     }
 }
 
-export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) => {
+export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string, marketing: string) => {
     try{
         if(tempCourses){
             // Get the current date and subtract one day
@@ -152,6 +153,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
                 train_remarks: '',
                 regType: 2,
                 batch: '1',
+                marketing: marketing,
                 date_enrolled: Timestamp.now(),
             }
             await addDoc(training, {...newTraining})
@@ -161,7 +163,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string) 
     }
 }
 
-export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string) => {
+export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string, marketing: string) => {
     try{
         if(tempCourses){
             // Get the current date and subtract one day
@@ -184,6 +186,7 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string) =>
                 train_remarks: '',
                 regType: 2,
                 batch: '1',
+                marketing: marketing,
                 date_enrolled: Timestamp.now(),
             }
             await addDoc(training, {...newTraining})
@@ -326,6 +329,7 @@ export const CHANGE_AT = async (training_id: string, reg_doc: REGISTRATION_BY_ID
                     payment_balance: curr_reg.payment_balance,
                     date_registered: curr_reg.date_registered,
                     reg_remarks: '',
+                    marketing: curr_reg.marketing,
                     regType: curr_reg.regType,
                     reg_accountType: curr_reg.reg_accountType === 0 ? 1 : 0, // Use the current reg's reg_accountType value and take the opposite of it
                 }
@@ -439,6 +443,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                     payment_balance: 0,                
                     date_registered: Timestamp.now(),  // Current timestamp
                     reg_remarks: '',
+                    marketing: '',
                     reg_accountType: reg_account_type === 0 ? reg_account_type : 1,              
                 };
                 const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
@@ -663,3 +668,33 @@ export const verifyTrainee = async (last_name: string, given_name: string,) => {
         throw error
     }
 }
+
+// * Report
+export const GET_MONTHLY_DATA = async (currentMonth: number, currentYear: number, reg_type: number): Promise<TRAINING_BY_ID[]> => {
+    try {
+        // Query for registration
+        const trainingQuery = query(
+            training,
+            where("reg_status", "==", 3),
+            where("regType", "==", reg_type),
+            where("date_enrolled", ">=", new Date(currentYear, currentMonth, 1, 0, 0, 0, 0)),
+            where("date_enrolled", "<=", new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999)),
+        );
+        
+        const querySnapshot = await getDocs(trainingQuery);
+        const data: TRAINING_BY_ID[] = [];
+
+        if (!querySnapshot.empty) {
+            querySnapshot.forEach((doc) => {
+                const docData = doc.data() as TRAINING_BY_ID;
+                docData.id = doc.id;
+                data.push(docData);
+            });
+        }
+
+        return data; // ✅ safely returning inside try
+    } catch (error) {
+        console.error(error);
+        return []; // ✅ ensures a return in case of error
+    }
+};

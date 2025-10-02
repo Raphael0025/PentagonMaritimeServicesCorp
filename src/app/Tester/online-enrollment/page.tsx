@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import 'animate.css';
-import { useEffect, useState, useRef } from 'react';
-import { Collapse, FormControl, useDisclosure, FormErrorMessage, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Input, Box, Button, Heading, Text, Container, Radio, RadioGroup, HStack, VStack } from '@chakra-ui/react'
+import { useState } from 'react';
+import { Collapse, Box, Button, Heading, Text, Container, Radio, RadioGroup, VStack } from '@chakra-ui/react'
 import Swal from 'sweetalert2'
 import Stepper from '@/Components/NavStepper'
 import { NextIcon } from '@/Components/SideIcons' 
@@ -56,24 +56,7 @@ export default function Admissions(){
                             </Box>
                         </VStack>
                     </RadioGroup>
-                </section> 
-                <section className={`rounded outline outline-2 outline-gray-200 space-y-5 p-7 ${path === 'step2' || path === 'completed' || path === 'review' || path === 'step1' ? 'hidden' : ''}`}>
-                    <Heading as='h4' size='sm' className='text-og text-base font-bold'>What are you enrolling for?</Heading>
-                    <RadioGroup onChange={setCourseType}>
-                        <VStack spacing={5}>
-                            <Box className='w-full px-5 bg-zinc-100 transition ease-in-out delay-150 hover:cursor-pointer hover:-translate-y-3 duration-300' border="1px" borderColor='gray.200'  borderRadius='md' >
-                                <Radio w='100%' value='0'>
-                                    <Text className='w-full py-5 px-2' fontSize='sm'>STCW Courses</Text>
-                                </Radio>
-                            </Box>
-                            <Box className='w-full px-5 bg-zinc-100 transition ease-in-out delay-150 hover:cursor-pointer hover:-translate-y-3 duration-300' border='1px' borderColor='gray.200' borderRadius='md' >
-                                <Radio w='100%' value='1'>
-                                    <Text className='w-full py-5 px-2' fontSize='sm'>In-House Courses</Text>
-                                </Radio>
-                            </Box>
-                        </VStack>
-                    </RadioGroup>
-                    <Collapse in={traineeType !== '' && courseType !== '2'} animateOpacity>
+                    <Collapse in={traineeType !== ''} animateOpacity>
                         <Button onClick={() => {setNewPath()}} borderRadius='base' bg='#1C437E' _hover={{ bg: 'blue.600' }} className=' animate__animated animate__fadeInDown' fontSize='xs' color='white' ><span className='me-2'>Proceed Registration</span>
                             <NextIcon size={'20'} />
                         </Button>

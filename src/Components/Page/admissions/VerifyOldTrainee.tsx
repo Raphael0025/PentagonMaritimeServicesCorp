@@ -7,11 +7,12 @@ import OldRegistrationForm from '@/Components/Page/admissions/OldRegistrationFor
 //types
 import { TRAINEE, TRAINEE_BY_ID } from '@/types/trainees';
 //css library
-import 'animate.css';
 import { FormControl, Input, Box, Button, Text, useToast, } from '@chakra-ui/react';
 import { ToastStatus } from '@/types/handling'
 
 import { useTrainees } from '@/context/TraineeContext';
+// Aceternity UI components
+import Registration_Background from "@/Components/ui/Registration_Background"
 
 interface UIProps {
     setTrainee: (trainee: TRAINEE_BY_ID) => void;
@@ -82,50 +83,53 @@ export default function VerifyOldTrainee({ setTrainee, setShow }: UIProps) {
     }
 
     return (
-        <Box display="flex" alignItems="center" justifyContent="center">
-            <Box w={{md: '50%', base: '100%'}} className={`rounded border border-gray-100 shadow-md space-y-8 p-7 ${isAnimating ? 'animate__animated animate__fadeOut' : showForm ? 'animate__animated animate__fadeIn'  : '' }`}>
-                {/* Greeting Section */}
-                {!showForm && (
-                    <Box className={`space-y-3 ${isAnimating ? 'pointer-events-none' : ''}`}>
-                        <Text fontWeight="700" className="animate__animated animate__fadeInLeftBig text-xl text-sky-700">
-                            {`Hey there Trainee!`}
-                        </Text>
-                        <Text fontWeight="500" className="animate__animated animate__fadeInRight text-base text-gray-500">
-                            {`To get you started, we just need a few details to make sure we've got the right person. It'll
-                            only take a minute.`}
-                        </Text>
-                        <Text fontWeight="900" className="animate__animated animate__fadeInLeftBig text-xl text-center text-sky-700">
-                            {`Let's get you Verified!`}
-                        </Text>
-                        <Box display="flex" className="animate__animated animate__fadeInLeftBig" justifyContent="center" w="100%">
-                            <Button onClick={handleClick} colorScheme="blue" w="50%" className="shadow-md uppercase" size="lg">Ok!</Button>
+        <>
+            <Registration_Background />
+            <Box mt='5' display="flex" alignItems="center" justifyContent="center">
+                <Box w={{md: '30%', base: '100%'}} className={`rounded border border-gray-100 shadow-md space-y-8 p-7 ${isAnimating ? 'animate__animated animate__fadeOut' : showForm ? 'animate__animated animate__fadeIn'  : '' }`}>
+                    {/* Greeting Section */}
+                    {!showForm && (
+                        <Box className={`space-y-3 ${isAnimating ? 'pointer-events-none' : ''}`}>
+                            <Text fontWeight="700" className="animate__animated animate__fadeInLeftBig text-xl text-sky-700">
+                                {`Hey there Trainee!`}
+                            </Text>
+                            <Text fontWeight="500" className="animate__animated animate__fadeInRight text-base text-gray-500">
+                                {`To get you started, we just need a few details to make sure we've got the right person. It'll
+                                only take a minute.`}
+                            </Text>
+                            <Text fontWeight="900" className="animate__animated animate__fadeInLeftBig text-xl text-center text-sky-700">
+                                {`Let's get you Verified!`}
+                            </Text>
+                            <Box display="flex" className="animate__animated animate__fadeInLeftBig" justifyContent="center" w="100%">
+                                <Button onClick={handleClick} colorScheme="blue" w="50%" className="shadow-md uppercase" size="lg">Ok!</Button>
+                            </Box>
                         </Box>
-                    </Box>
-                )}
-                {/* Form Section */}
-                {showForm && (
-                    <Box className="space-y-3 animate__animated animate__fadeIn" display="flex" flexDir="column" alignItems="center" justifyContent="center">
-                        <Box display='flex' justifyContent='start' w='100%' >
-                            <Text className='text-lg text-sky-700' fontWeight='800'>Please fill-up your information below</Text>
+                    )}
+                    {/* Form Section */}
+                    {showForm && (
+                        <Box className="space-y-3 animate__animated animate__fadeIn" display="flex" flexDir="column" alignItems="center" justifyContent="center">
+                            <Box display='flex' justifyContent='start' w='100%' >
+                                <Text className='text-lg text-sky-700' fontWeight='800'>Please fill-up your information below</Text>
+                            </Box>
+                            <FormControl className='space-y-2'>
+                                <label className='text-base text-gray-400'>SRN:</label>
+                                <Input id='srn' onChange={(e) => setSRN(e.target.value)} className='uppercase' type='text' placeholder="Provide your SRN here..." />
+                            </FormControl>
+                            <FormControl className='space-y-2'>
+                                <label className='text-base text-gray-400'>Last Name:</label>
+                                <Input id='last_name' onChange={(e) => setLN(e.target.value)} className='uppercase' type='text' placeholder="e.g. Doe..." />
+                            </FormControl>
+                            <FormControl className='space-y-2'>
+                                <label className='text-base text-gray-400'>First Name:</label>
+                                <Input id='first_name' onChange={(e) => setFN(e.target.value)} className='uppercase' type='text' placeholder="e.g. John..." />
+                            </FormControl>
+                            <Box w='100%'>
+                                <Button onClick={handleVerify} isLoading={loading} loadingText='Verifying...' colorScheme='blue' w='100%' className='uppercase shadow-md'>verify</Button>
+                            </Box>
                         </Box>
-                        <FormControl className='space-y-2'>
-                            <label className='text-base text-gray-400'>SRN:</label>
-                            <Input id='srn' onChange={(e) => setSRN(e.target.value)} className='uppercase' type='text' placeholder="Provide your SRN here..." />
-                        </FormControl>
-                        <FormControl className='space-y-2'>
-                            <label className='text-base text-gray-400'>Last Name:</label>
-                            <Input id='last_name' onChange={(e) => setLN(e.target.value)} className='uppercase' type='text' placeholder="e.g. Doe..." />
-                        </FormControl>
-                        <FormControl className='space-y-2'>
-                            <label className='text-base text-gray-400'>First Name:</label>
-                            <Input id='first_name' onChange={(e) => setFN(e.target.value)} className='uppercase' type='text' placeholder="e.g. John..." />
-                        </FormControl>
-                        <Box w='100%'>
-                            <Button onClick={handleVerify} isLoading={loading} loadingText='Verifying...' colorScheme='blue' w='100%' className='uppercase shadow-md'>verify</Button>
-                        </Box>
-                    </Box>
-                )}
+                    )}
+                </Box>
             </Box>
-        </Box>
+        </>
     );
 }

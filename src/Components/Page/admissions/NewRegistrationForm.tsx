@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { Timestamp } from 'firebase/firestore'
 import Image from 'next/image'
 import React, { useEffect, useState, useRef } from 'react'
-import DatePicker from 'react-datepicker'
 
 import {TrashIcon, Loading, DownloadIcon, PinIcon, MailIcon, PhoneIcon, SearchIcon, FacebookIcon } from '@/Components/Icons'
 import {NextIcon, ListIcon, EmergencyIcon, CourseIcon, PlusIcon, ClipIcon, SignIcon, PolicyIcon, ReviewIcon, SubmitIcon, CheckIcon} from '@/Components/SideIcons'
@@ -86,12 +85,16 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
     const [file, setFilename] = useState<string>('No file chosen yet...')
 
     const [validPfp, setPfp] = useState<File[]>([])
-    const [ validProfile, setValidPfp] = useState<string>('')
+    const [validProfile, setValidPfp] = useState<string>('')
     const [pfpFile, setPfpFile] = useState<string>('No file chosen yet...')
 
     const [preview, setPreview] = useState<string | null>(null)
     const [validSignature, setSignature] = useState<File[]>([])
     const [sig_file, setSigFile] = useState<string>('No file chosen yet...')
+    
+    const [previewProfile, setPreviewProfile] = useState<string | null>(null)
+    const [mismoProfile, setMismoProfile] = useState<File[]>([])
+    const [mismoFile, setMismoFile] = useState<string>('No file chosen yet...')
 
     const handleValidID = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -138,6 +141,22 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
             setPreview(objectUrl)
         } else {
             setSigFile('No file chosen yet...')
+        }
+    }
+    
+    const handleMismoProfile = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const signature = files[0];
+            setMismoFile(file);
+            setMismoProfile(Array.from(files));
+
+            const objectUrl = URL.createObjectURL(signature)
+            setPreviewProfile(objectUrl)
+        } else {
+            setMismoFile('No file chosen yet...')
         }
     }
 
@@ -309,11 +328,11 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     for(const course of ccArr){
                         fee = course.course_fee + fee
                     }
-                    regCCID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 1)
+                    regCCID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 1, '')
                     for(const course of ccArr){
                         try{
                             if(regCCID){
-                                await addTrainingDetails(course, regCCID)
+                                await addTrainingDetails(course, regCCID, '')
                             }
                         }catch(error){
                             console.error('Failed to process this: ', error)
@@ -326,11 +345,11 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     for(const course of crewArr){
                         fee = course.course_fee + fee
                     }
-                    regCrewID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 0)
+                    regCrewID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 0, '')
                     for(const course of crewArr){
                         try{
                             if(regCrewID){
-                                await addTrainingDetails(course, regCrewID)
+                                await addTrainingDetails(course, regCrewID, '')
                             }
                         }catch(error){
                             console.error('Failed to process this: ', error)
@@ -631,7 +650,7 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                         <Box>
                             <Text className='uppercase text-gray-400'>Attachments:</Text>
                         </Box>
-                        <Box display='flex' gridGap={4} flexDir={{md:'row', base:'column'}} >
+                        <Box display='flex' gridGap={4} flexDir={{md:'column', base:'column'}} >
                             <FormControl className='flex-col'>
                                 <Box className='flex-col w-full'>
                                     <Text className='w- w-fullfull'>Please upload Valid ID</Text>
@@ -652,6 +671,13 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                                     <Text className='w-full'><span className='text-red-700'>*</span><span className='italic' style={{fontSize: '9px'}}>(Note: photo must be clear.)</span></Text>
                                 </Box>
                                 <Input id='e_sig' onChange={handleValidSignature} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
+                            </FormControl>
+                            <FormControl className='flex-col'>
+                                <Box className='flex-col w-full'>
+                                    <Text className='w- w-fullfull'>Please attach a screenshot of your MISMO portal profile.</Text>
+                                    <Text className='w-full'><span className='text-red-700'>*</span><span className='italic' style={{fontSize: '9px'}}>(Note: Applicable only if you're registering for STCW courses.)</span></Text>
+                                </Box>
+                                <Input id='mismo' onChange={handleMismoProfile} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
                             </FormControl>
                         </Box>
                     </Box>
