@@ -327,11 +327,11 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     for(const course of ccArr){
                         fee = course.course_fee + fee
                     }
-                    regCCID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 1)
+                    regCCID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 1, "")
                     for(const course of ccArr){
                         try{
                             if(regCCID){
-                                await addTrainingDetails(course, regCCID)
+                                await addTrainingDetails(course, regCCID, "")
                             }
                         }catch(error){
                             console.error('Failed to process this: ', error)
@@ -344,11 +344,11 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                     for(const course of crewArr){
                         fee = course.course_fee + fee
                     }
-                    regCrewID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 0)
+                    regCrewID = await addRegistrationDetails(traineeID, fee, regApproach, traineeType, 0, "")
                     for(const course of crewArr){
                         try{
                             if(regCrewID){
-                                await addTrainingDetails(course, regCrewID)
+                                await addTrainingDetails(course, regCrewID, "")
                             }
                         }catch(error){
                             console.error('Failed to process this: ', error)
