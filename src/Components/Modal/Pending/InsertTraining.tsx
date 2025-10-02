@@ -121,9 +121,9 @@ export default function InsertTraining({ onClose, c_id, accountType, reg_id, tab
             try{
                 if(reg_id){
                     if(tab === 0){
-                        await addTrainingDetails(course, reg_id)
+                        await addTrainingDetails(course, reg_id, "")
                     } else {
-                        await EnrolledTraining(course, reg_id)
+                        await EnrolledTraining(course, reg_id, "")
                     }
                 }
             }catch(error){
