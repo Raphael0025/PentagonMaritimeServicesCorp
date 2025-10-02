@@ -197,11 +197,11 @@ export default function RegisterTrainee({onClose}: PageProps){
                             for(const course of crewArr){
                                 fee = course.course_fee + fee
                             }
-                            regCrewID = await addRegistrationDetails(trainee_ref_id, fee, 1, traineeType, 0)
+                            regCrewID = await addRegistrationDetails(trainee_ref_id, fee, 1, traineeType, 0, "walk-in")
                             for(const course of crewArr){
                                 try{
                                     if(regCrewID){
-                                        await addTrainingDetails(course, regCrewID)
+                                        await addTrainingDetails(course, regCrewID, "walk-in")
                                     }
                                 }catch(error){
                                     console.error('Failed to process this: ', error)
