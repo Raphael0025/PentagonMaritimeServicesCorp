@@ -667,15 +667,15 @@ export default function NewRegistrationForm({ onStepChange = () => {} }: Props){
                             </FormControl>
                             <FormControl className='flex-col'>
                                 <Box className='flex-col w-full'>
-                                    <Text className='w- w-fullfull'>Please attach your written signature here.</Text>
+                                    <Text className='w- w-fullfull'>{`Please attach your written signature here.`}</Text>
                                     <Text className='w-full'><span className='text-red-700'>*</span><span className='italic' style={{fontSize: '9px'}}>(Note: photo must be clear.)</span></Text>
                                 </Box>
                                 <Input id='e_sig' onChange={handleValidSignature} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
                             </FormControl>
                             <FormControl className='flex-col'>
                                 <Box className='flex-col w-full'>
-                                    <Text className='w- w-fullfull'>Please attach a screenshot of your MISMO portal profile.</Text>
-                                    <Text className='w-full'><span className='text-red-700'>*</span><span className='italic' style={{fontSize: '9px'}}>(Note: Applicable only if you're registering for STCW courses.)</span></Text>
+                                    <Text className='w- w-fullfull'>{`Please attach a screenshot of your MISMO portal profile.`}</Text>
+                                    <Text className='w-full'><span className='text-red-700'>*</span><span className='italic' style={{fontSize: '9px'}}>({`Note: Applicable only if you're registering for STCW courses.`})</span></Text>
                                 </Box>
                                 <Input id='mismo' onChange={handleMismoProfile} className='p-2 flex items-center border-white' accept='.png, .jpg' type='file' />
                             </FormControl>
