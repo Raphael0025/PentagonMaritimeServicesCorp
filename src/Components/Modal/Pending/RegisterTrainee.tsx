@@ -180,11 +180,11 @@ export default function RegisterTrainee({onClose}: PageProps){
                             for(const course of ccArr){
                                 fee = course.course_fee + fee
                             }
-                            regCCID = await addRegistrationDetails(trainee_ref_id, fee, 1, traineeType, 1)
+                            regCCID = await addRegistrationDetails(trainee_ref_id, fee, 1, traineeType, 1, "")
                             for(const course of ccArr){
                                 try{
                                     if(regCCID){
-                                        await addTrainingDetails(course, regCCID)
+                                        await addTrainingDetails(course, regCCID, "")
                                     }
                                 }catch(error){
                                     console.error('Failed to process this: ', error)
