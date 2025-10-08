@@ -189,6 +189,7 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string, ma
                 regType: 2,
                 batch: '1',
                 marketing: marketing,
+                otherMarketing: '',
                 date_enrolled: Timestamp.now(),
             }
             await addDoc(training, {...newTraining})
