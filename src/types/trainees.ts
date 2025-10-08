@@ -187,6 +187,7 @@ export const initTraining = {
     result: 0,
     train_remarks: '',
     marketing: '',
+    otherMarketing: '',
 }
 
 export interface TEMP_COURSES {
