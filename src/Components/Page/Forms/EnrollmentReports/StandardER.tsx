@@ -175,7 +175,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                                     {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'})}
+                                    {parsingTimestamp(trainee?.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'})}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" fontSize='7pt' borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {trainee?.birthPlace}
