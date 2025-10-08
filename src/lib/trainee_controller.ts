@@ -333,7 +333,7 @@ export const CHANGE_AT = async (training_id: string, reg_doc: REGISTRATION_BY_ID
                     date_registered: curr_reg.date_registered,
                     reg_remarks: '',
                     marketing: curr_reg.marketing,
-                    otherMarketing.curr_reg.otherMarketing,
+                    otherMarketing: curr_reg.otherMarketing,
                     regType: curr_reg.regType,
                     reg_accountType: curr_reg.reg_accountType === 0 ? 1 : 0, // Use the current reg's reg_accountType value and take the opposite of it
                 }
