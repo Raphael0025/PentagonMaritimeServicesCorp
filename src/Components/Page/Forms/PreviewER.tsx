@@ -180,7 +180,13 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {parsingTimestamp(trainee?.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'})}
+                                    {trainee?.birthDate
+                                    ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'numeric',
+                                        day: 'numeric',
+                                    })
+                                    : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' fontSize='7pt' borderRight="none" justifyContent='center' textAlign='center' alignItems='center'>
                                     {trainee?.birthPlace}
