@@ -18,6 +18,7 @@ export default function BackDated(){
     const { data: allClients } = useClients()
     const { data: allTrainee } = useTrainees()
     const { lastMonthReg: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
 
     const initialMonth = new Date().getMonth()
     const initialYear = new Date().getFullYear()
