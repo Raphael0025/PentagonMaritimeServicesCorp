@@ -120,6 +120,7 @@ export const addRegistrationDetails = async (ref_id: string, payment_fee: number
                 reg_remarks: '',
                 regType: 2,
                 marketing: marketing,
+                otherMarketing: '',
                 reg_accountType: account_type === 0 ? account_type : 1,
             }  
             const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
@@ -154,6 +155,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string, 
                 regType: 2,
                 batch: '1',
                 marketing: marketing,
+                otherMarketing: '',
                 date_enrolled: Timestamp.now(),
             }
             await addDoc(training, {...newTraining})
