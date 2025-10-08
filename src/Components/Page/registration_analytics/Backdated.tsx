@@ -12,20 +12,12 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { TRAINING_BY_ID, REGISTRATION_BY_ID, TRAINEE_BY_ID } from '@/types/trainees'
 
 import { GET_MONTHLY_DATA } from '@/lib/trainee_controller'
-import { GET_TOTAL_COUNT_MONTHLY, GET_CUSTOMERS_GROUP_BY_COMPANY } from '@/handlers/registration_report_handler'
+import { GET_TOTAL_COUNT_MONTHLY, GET_CUSTOMERS_GROUP_BY_COMPANY, GET_CUSTOMERS_GROUP_BY_UNTAPPED_COMPANY } from '@/handlers/registration_report_handler'
 
 export default function BackDated(){
     const { data: allClients } = useClients()
     const { data: allTrainee } = useTrainees()
-    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { lastMonthReg: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
-
-    type GroupByCompany = {
-        companyId: string;      // the id from allClients
-        companyName: string;    // the readable company name
-        ccCharge: number;       // company charge count
-        crewCharge: number;     // crew charge count
-    }
 
     const initialMonth = new Date().getMonth()
     const initialYear = new Date().getFullYear()
@@ -49,6 +41,7 @@ export default function BackDated(){
     const [visitors, setTotalVisitors] = useState<number>(0)
 
     const [groupByCompany, setGroupByCompany] = useState<{ company: string; ccCharge: number; crewCharge: number }[]>([]);
+    const [groupByUntappedCompany, setGroupByUntappedCompany] = useState<{ company: string; ccCharge: number; crewCharge: number }[]>([]);
 
     const [month, setMonth] = useState<number>(initialMonth)
     const [year, setYear] = useState<number>(initialYear)
@@ -103,15 +96,15 @@ export default function BackDated(){
             const total_visitors = await GET_TOTAL_COUNT_MONTHLY(result, 'visitors')
             setTotalVisitors(total_visitors);
             
-            if (allTrainee && allRegistrations) {
+            if (allTrainee && allRegistrations && allClients) {
                 const grouped = await GET_CUSTOMERS_GROUP_BY_COMPANY(
                     result,
                     allTrainee,
-                    allRegistrations
+                    allRegistrations,
+                    allClients
                 );
-                setGroupByCompany(grouped);
-                console.log(month)
-                console.log(initialMonth)
+                setGroupByCompany(grouped)
+                
             }
             
             setData(result || []);

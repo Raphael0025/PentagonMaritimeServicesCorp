@@ -77,8 +77,36 @@ const bgColorMap: Record<string, Record<number, string>> = {
     category: {
         0: 'blue.50',
         1: 'green.50',
-    },
+    }
 };
+
+export const marketBGColor = (val: string): string => {
+    switch(val.toLowerCase()){
+        case 'company':
+            return 'blue.200'
+        case 'agent':
+            return 'teal.200'
+        case 'walk-in':
+            return 'orange.200'
+        case 'fb':
+            return 'blue.700'
+        case 'consultancy':
+            return 'green.200'
+        case 'others':
+            return 'gray.200'
+        default:
+            return 'No Match'
+    }
+}
+
+export const marketFontColor = (val: string): string => {
+    switch(val.toLowerCase()){
+        case 'fb':
+            return 'white'
+        default:
+            return 'No Match'
+    }
+}
 
 export const getBorderTextColor = (val: number, type: string): string => {
     return borderTextColorMap[type]?.[val] || 'No Value';

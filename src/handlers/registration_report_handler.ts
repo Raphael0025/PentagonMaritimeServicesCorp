@@ -39,70 +39,93 @@ export const GET_TOTAL_COUNT_MONTHLY = async (trainColl: TRAINING_BY_ID[], field
     }
 }
 
+export const GET_CUSTOMERS_GROUP_BY_COMPANY = async ( trainColl: TRAINING_BY_ID[], traineeColl: TRAINEE_BY_ID[], registrationColl: REGISTRATION_BY_ID[], allClients: ClientCompanyByID[]) => {
+  try {
+    type GroupByCompany = {
+      company: string;
+      ccCharge: number;   // count of accountType === 0
+      crewCharge: number; // count of accountType === 1
+    }
+      
+    const group_by_company: GroupByCompany[] = [];
+    
+    allClients?.forEach((client_company) => {
+      trainColl.forEach((training) => {
+        const registration = registrationColl.find((reg) => reg.id === training.reg_ref_id)
+        if(!registration) return
 
-type GroupByCompany = {
-    companyId: string;      // the id from allClients
-    companyName: string;    // the readable company name
-    ccCharge: number;       // company charge count
-    crewCharge: number;     // crew charge count
+        const trainee = traineeColl.find((trainee) => trainee.id === registration.trainee_ref_id)
+        if(!trainee) return
+
+        if (trainee.company === client_company.id) {
+          // check if company already exists in group_by_company
+          let existing = group_by_company.find(g => g.company === client_company.company);
+
+          if (!existing) {
+            existing = {
+              company: client_company.company,
+              ccCharge: training.accountType === 1 ? 1 : 0,
+              crewCharge: training.accountType === 0 ? 1 : 0
+            }
+            group_by_company.push(existing);
+          } else {
+            if (training.accountType === 1) {
+              existing.ccCharge += 1;
+            } else if (training.accountType === 0) {
+              existing.crewCharge += 1;
+            }
+          }
+        }
+      })
+    })
+    
+    return group_by_company;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
-export const GET_CUSTOMERS_GROUP_BY_COMPANY = async (
-    trainColl: TRAINING_BY_ID[],
-    traineeColl: TRAINEE_BY_ID[],
-    registrationColl: REGISTRATION_BY_ID[]
-  ) => {
-    try {
-      type GroupByCompany = {
-        company: string;
-        ccCharge: number;   // count of accountType === 0
-        crewCharge: number; // count of accountType === 1
-      };
-      
-      const group_by_company: GroupByCompany[] = [];
-      
-      // Use a Map for efficient grouping
-      const companyMap = new Map<string, { ccCharge: number; crewCharge: number }>();
-  
-      trainColl.forEach((training) => {
-        // Find registration
-        const reg = registrationColl.find((r) => r.id === training.reg_ref_id);
-        if (!reg) return;
-  
-        // Find trainee
-        const trainee = traineeColl.find((t) => t.id === reg.trainee_ref_id);
-        if (!trainee) return;
-  
-        const company = trainee.company || "UNKNOWN";
-  
-        // Initialize if not in map
-        if (!companyMap.has(company)) {
-          companyMap.set(company, { ccCharge: 0, crewCharge: 0 });
-        }
-  
-        // Count based on account type
-        if (reg.reg_accountType === 1) {
-          companyMap.get(company)!.ccCharge += 1;
-        } else if (reg.reg_accountType === 0) {
-          companyMap.get(company)!.crewCharge += 1;
-        }
-        console.log("tainee")
-      console.log(trainee)
-      console.log("reg")
-      console.log(reg)
-      });
-      // Convert map to array
-      companyMap.forEach((value, key) => {
-        group_by_company.push({
-          company: key,
-          ccCharge: value.ccCharge,
-          crewCharge: value.crewCharge,
-        });
-      });
-      return group_by_company;
-    } catch (error) {
-      console.error(error);
-      throw error;
+export const GET_CUSTOMERS_GROUP_BY_UNTAPPED_COMPANY = async ( trainColl: TRAINING_BY_ID[], traineeColl: TRAINEE_BY_ID[], registrationColl: REGISTRATION_BY_ID[], allClients: ClientCompanyByID[]) => {
+  try {
+    type GroupByCompany = {
+      company: string;
+      ccCharge: number;   // count of accountType === 0
+      crewCharge: number; // count of accountType === 1
     }
-  };
-  
+      
+    const group_by_company: GroupByCompany[] = [];
+    
+    
+      trainColl.forEach((training) => {
+        const registration = registrationColl.find((reg) => reg.id === training.reg_ref_id)
+        if(!registration) return
+
+        const trainee = traineeColl.find((trainee) => trainee.id === registration.trainee_ref_id)
+        if(!trainee) return
+
+        // check if company already exists in group_by_company
+        const existing = group_by_company.find(g => g.company === trainee.company);
+
+        if (!existing) {
+          group_by_company.push({
+            company: trainee.company,
+            ccCharge: training.accountType === 1 ? 1 : 0,
+            crewCharge: training.accountType === 0 ? 1 : 0
+          });
+        } else {
+          if (training.accountType === 1) {
+            existing.ccCharge += 1;
+          } else if (training.accountType === 0) {
+            existing.crewCharge += 1;
+          }
+        }
+        
+      })
+    
+    return group_by_company;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

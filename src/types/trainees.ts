@@ -131,6 +131,7 @@ export interface REGISTRATION {
     reg_remarks: string;
     regType: number; // 2 - def | 0 - dated | 1 - bd | 3 - cancel
     marketing: string;
+    otherMarketing: string;
     reg_accountType: number; // 0 - crew | 1 - company
 }
 
@@ -157,6 +158,7 @@ export interface TRAINING {
     written: number;
     result: number;
     marketing: string;
+    otherMarketing: string;
     train_remarks: string;
 }
 

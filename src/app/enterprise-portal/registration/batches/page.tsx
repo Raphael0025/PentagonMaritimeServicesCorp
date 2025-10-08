@@ -2,32 +2,22 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation'
-import { Box, Text, Input, Textarea, Button, InputLeftAddon, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Input, InputLeftAddon, InputGroup, useToast, } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 
 import { useCourses } from '@/context/CourseContext'
 import { useCourseBatch } from '@/context/BatchContext'
 
-import { handleRegStatus } from '@/handlers/trainee_handler'
-import { parsingTimestamp, ToastStatus } from '@/types/handling'
-
 import { useReactToPrint } from 'react-to-print'
 
 export default function Page(){
-    const toast = useToast()
     const router = useRouter()
-    const { data: courseBatch } = useCourseBatch()
     const { data: allCourses } = useCourses()
 
-    const [loading, setLoading] = useState<boolean>(false)
     const [search, setSearch] = useState<string>('')
 
     const componentRef = useRef<HTMLDivElement | null>(null);
-    const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `REGISTRATION_FORM.pdf`,
-    })
-
+    
     return(
     <>
         <Box className='flex flex-col'>

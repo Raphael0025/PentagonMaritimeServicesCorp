@@ -80,7 +80,6 @@ export default function EditRegistration({onClose, reg_id, reg_Type}: PageProps)
             setLoading(false)
             onCloseRB()
         })
-
     }
 
     return(

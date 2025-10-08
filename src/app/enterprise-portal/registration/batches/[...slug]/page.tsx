@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useRef} from 'react'
 
-import { Box, Text, Heading, Tooltip, Input, useToast, Menu, MenuButton, MenuList, MenuItem, FormControl, Radio, Select, RadioGroup, Switch, VStack, HStack, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, } from '@chakra-ui/react'
+import { Box, Text, useToast, Menu, MenuButton, MenuList, MenuItem, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, } from '@chakra-ui/react'
 import 'animate.css'
 
-import {DotsIcon, EditIcon, TrashIcon} from '@/Components/Icons'
 
-import { ToastStatus } from '@/types/handling'
+import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
@@ -223,8 +222,11 @@ export default function Page({params}: PageProps){
                     <Box w='100%' className='space-y-3'>
                         <Box borderBottomWidth='1px' borderColor='gray.400' color='gray.600' className='flex space-x-4 p-3 text-center uppercase' w='100%'>
                             <Text w='20%'>No.</Text>
-                            <Text w='100%'>Name of Trainees</Text>
-                            <Text w='100%'>Rank</Text>
+                            <Text w='100%'>Name of Trainee</Text>
+                            <Text w='100%'>Date of Birth</Text>
+                            <Text w='100%'>Place of Birth</Text>
+                            <Text w='100%'>Rank/Position</Text>
+                            <Text w='100%'>Date of Enrollment</Text>
                             <Text w='100%'>Registration No.</Text>
                         </Box>
                         {allTrainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
@@ -250,7 +252,10 @@ export default function Page({params}: PageProps){
                                     <Box className='flex space-x-4 p-3 text-center uppercase' w='100%'>
                                         <Text w='20%'>{(index + 1)}</Text>
                                         <Text w='100%'>{`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name.charAt(0)}.`}`}</Text>
+                                        <Text w='100%'>{parsingTimestamp(trainee?.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'})}</Text>
+                                        <Text w='100%'>{trainee?.birthPlace}</Text>
                                         <Text w='100%'>{allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}</Text>
+                                        <Text w='100%'>{parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: 'numeric',})}</Text>
                                         <Text w='100%'>{`Reg-${registrations?.reg_no}`}</Text>
                                     </Box>
                                 </Box>
