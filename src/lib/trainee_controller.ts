@@ -448,6 +448,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                     date_registered: Timestamp.now(),  // Current timestamp
                     reg_remarks: '',
                     marketing: '',
+                    otherMarketing: '',
                     reg_accountType: reg_account_type === 0 ? reg_account_type : 1,              
                 };
                 const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
