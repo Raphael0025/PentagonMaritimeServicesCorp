@@ -252,7 +252,15 @@ export default function Page({params}: PageProps){
                                     <Box className='flex space-x-4 p-3 text-center uppercase' w='100%'>
                                         <Text w='20%'>{(index + 1)}</Text>
                                         <Text w='100%'>{`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name.charAt(0)}.`}`}</Text>
-                                        <Text w='100%'>{parsingTimestamp(trainee?.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'numeric', day: 'numeric'})}</Text>
+                                        <Text w='100%'>
+                                            {trainee?.birthDate
+                                            ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'numeric',
+                                                day: 'numeric',
+                                            })
+                                            : ''}
+                                        </Text>
                                         <Text w='100%'>{trainee?.birthPlace}</Text>
                                         <Text w='100%'>{allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}</Text>
                                         <Text w='100%'>{parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: 'numeric',})}</Text>
