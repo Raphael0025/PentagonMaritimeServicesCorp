@@ -92,6 +92,11 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                         end_date: endDate,
                         numOfDays: numDays,
                         course: courseID,
+                        practicumSite: '',
+                        practicumDate: '',
+                        room: '',
+                        instructor: '',
+                        assessor: '',
                     }
                     const batch_id = await GENERATE_BATCH(newBatchRecord, actor) 
                     await Promise.all(
