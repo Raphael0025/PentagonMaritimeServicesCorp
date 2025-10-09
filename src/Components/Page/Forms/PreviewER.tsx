@@ -16,6 +16,8 @@ import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
+import { UPDATE_BATCH } from '@/lib/course_batches_controller'
+
 import { useReactToPrint } from 'react-to-print'
 import './er.css'
 
@@ -47,6 +49,8 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
 
+    const [loading, setLoading] = useState<boolean>(false)
+
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
     const formattedDate = end_date === '' ? formatDateToShort(start_date) :getFormatDate(`${start_date} - ${end_date}`)
@@ -68,6 +72,33 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             status: status,
             duration: timer,
             isClosable: true,
+        })
+    }
+
+    const handleBatchDetails = async () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const batchDetails = {
+                        room: room,
+                        practicumSite: practicumSite,
+                        practicumDate: practicumDate,
+                        assessor: assessor,
+                        instructor: instructor,
+                    }
+                    await UPDATE_BATCH(batchID, batchDetails, actor)
+                    handleToast('Batch details updated successfully!', ``, 5000, 'success')
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setLoading(false)
         })
     }
 
@@ -136,6 +167,13 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} />
                             </Box>
                         </Box>
+                        <Box display='flex' justifyContent='space-between' alignItems='center' >
+                            <Text>
+                                <Text fontWeight='bold'>Note:</Text>
+                                <Text color='red' fontWeight='normal'>{`Kindly save details above before printing the Enrollment Report (ER).`}</Text>
+                            </Text>
+                            <Button onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                        </Box>
                     </Box>
                     )}
                 </Box>
@@ -143,7 +181,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             <Box display='flex' justifyContent='center' alignItems='center'>
                 <Box>
                     {/** Table header */}
-                    <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" gap={0} fontSize='11pt' h='0.63in' fontWeight='normal' textAlign='center' fontFamily='Calibri' >
+                    <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" gap={0} fontSize='9pt' h='0.63in' fontWeight='normal' textAlign='center' fontFamily='Calibri' >
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>NO.</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Name of Trainee</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Date of Birth</GridItem>
@@ -172,7 +210,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
-                            <Grid key={training.id} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
+                            <Grid key={training.id} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform='uppercase' fontSize='8pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {(index + 1)}
                                 </GridItem>
@@ -180,13 +218,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {trainee?.birthDate
-                                    ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'numeric',
-                                        day: 'numeric',
-                                    })
-                                    : ''}
+                                    {trainee?.birthDate ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: '2-digit', }).replace(/[\s,\/]+/g, '-') : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' fontSize='7pt' borderRight="none" justifyContent='center' textAlign='center' alignItems='center'>
                                     {trainee?.birthPlace}
@@ -195,7 +227,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: 'numeric',})}
+                                    {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: 'short',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
                                     {`Reg-${registrations?.reg_no}`}
@@ -205,7 +237,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
                     {(trainingsArr ?? []).length > 0 && (
-                        <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="11pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                        <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingsArr?.length || 0) + 1}
                             </GridItem>
@@ -234,7 +266,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                         [...Array(24 - (trainingsArr ?? []).length - 1)].map((_, index) => {
                         const startingIndex = (trainingsArr?.length || 0) + 1 // Start numbering after the last data row
                         return (
-                            <Grid key={index} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="11pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                            <Grid key={index} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {startingIndex + index + 1}
                                 </GridItem>

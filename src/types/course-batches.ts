@@ -6,14 +6,17 @@ export interface CourseBatch{
     end_date: string;
     numOfDays: number;
     course: string | undefined;
+    practicumSite: string;
+    practicumDate: string;
+    room: string;
+    instructor: string;
+    assessor: string;
 }
 
 export interface CourseBatchByID extends CourseBatch{
     id: string;
     time_duration: string
     training_mode: string;
-    room: string;
-    instructor: string;
     remarks: string;
     createdAt: Timestamp;
     updateAt: Timestamp;

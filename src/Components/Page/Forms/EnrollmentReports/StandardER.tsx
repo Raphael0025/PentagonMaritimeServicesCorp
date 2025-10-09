@@ -68,41 +68,41 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         </Text>
                     </Box>
                 </Box>
-                <Text py='4' display='flex' justifyContent='center' w='80%' fontFamily='Arial, sans-serif' fontWeight='bold' fontSize='15pt'>ENROLLMENT REPORT</Text>
+                <Text py='4' display='flex' justifyContent='center' w='80%' fontFamily='Arial, sans-serif' fontWeight='bold' fontSize='15pt'>ENROLMENT REPORT</Text>
                 <Box w='90%' display='flex' flexDir='row' justifyContent='center' alignItems='center' fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt'>
                     <Box w='50%'>
                         <Box w='100%' display='flex' alignItems='end'>
-                            <Text w='40%'>{`Course:`}</Text>
+                            <Text w='40%'>{`Course`}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${courseCode}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
-                            <Text w='40%'>{`Schedule:`}</Text>
+                            <Text w='40%'>{`Schedule`}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${schedule}, ${year}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
-                            <Text w='40%'>{`Practicum Site:`}</Text>
+                            <Text w='40%'>{`Practicum Site`}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${site}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
-                            <Text w='40%'>{`Instructor:`}</Text>
+                            <Text w='40%'>{`Instructor`}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${instructor}`}</Text>
                         </Box>
                     </Box>
                     <Box w='50%'>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
-                            <Text w='40%'>{`Class No: `}</Text>
+                            <Text w='40%'>{`Class No `}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batchNo}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
-                            <Text w='40%'>{`Room No: `}</Text>
+                            <Text w='40%'>{`Room No `}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${room}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
-                            <Text w='40%'>{`Practicum Date: `}</Text>
+                            <Text w='40%'>{`Practicum Date `}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${practicumDate}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
-                            <Text w='40%'>{`Assessor: `}</Text>
+                            <Text w='40%'>{`Assessor `}</Text>
                             <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${assessor}`}</Text>
                         </Box>
                     </Box>
@@ -134,11 +134,11 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         </Box>
                     </Box> */}
                 </Box>
-                <Text py='2' as='i' display='flex' justifyContent='end' w='80%' fontFamily='Calibri' fontWeight='bold' fontSize='7pt'>FM-03-10-03 REV.01</Text>
+                <Text py='2' as='i' display='flex' justifyContent='end' w='91%' fontFamily='Calibri' fontWeight='bold' fontSize='7pt'>FM-03-10-03 REV.01</Text>
                 {/** Table */}
                 <Box w='90%' display='flex' justifyContent='center' flexDir='column' >
                     {/** Table header */}
-                    <Grid templateColumns="0.34in 2.73in 0.76in 1.55in 0.66in 0.83in 1.27in" gap={0} fontSize='10pt' h='0.63in' textAlign='center' fontWeight='normal' fontFamily='Calibri' >
+                    <Grid templateColumns="0.34in 2.73in 0.66in 1.55in 0.66in 0.83in 1.27in" gap={0} fontSize='10pt' h='0.63in' textAlign='center' fontWeight='normal' fontFamily='Calibri' >
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>NO.</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Name of Trainee</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' wordBreak="break-word" whiteSpace="normal" alignItems='center'>Date of Birth</GridItem>
@@ -167,7 +167,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
-                            <Grid key={training.id} templateColumns="0.34in 2.73in 0.76in 1.55in 0.66in 0.83in 1.27in" h='0.25in' textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
+                            <Grid key={training.id} templateColumns="0.34in 2.73in 0.66in 1.55in 0.66in 0.83in 1.27in" h='0.25in' textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {(index + 1)}
                                 </GridItem>
@@ -175,13 +175,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                                     {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {trainee?.birthDate
-                                    ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'numeric',
-                                        day: 'numeric',
-                                    })
-                                    : ''}
+                                    {trainee?.birthDate ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: '2-digit', }).replace(/[\s,\/]+/g, '-') : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" fontSize='7pt' borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {trainee?.birthPlace}
@@ -190,7 +184,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                                     {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: 'numeric',})}
+                                    {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: 'short',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
                                     {`Reg-${registrations?.reg_no}`}
@@ -200,7 +194,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
                     {(trainingArray ?? []).length < 24 && (
-                        <Grid templateColumns="0.34in 2.73in 0.76in 1.55in 0.66in 0.83in 1.27in" h="0.25in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                        <Grid templateColumns="0.34in 2.73in 0.66in 1.55in 0.66in 0.83in 1.27in" h="0.25in" textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingArray?.length || 0) + 1}
                             </GridItem>
@@ -229,7 +223,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         [...Array(24 - (trainingArray ?? []).length - 1)].map((_, index) => {
                         const startingIndex = (trainingArray?.length || 0) + 1 // Start numbering after the last data row
                         return (
-                            <Grid key={index} templateColumns="0.34in 2.73in 0.76in 1.55in 0.66in 0.83in 1.27in" h="0.25in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                            <Grid key={index} templateColumns="0.34in 2.73in 0.66in 1.55in 0.66in 0.83in 1.27in" h="0.25in" textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {startingIndex + index + 1}
                                 </GridItem>
