@@ -2,9 +2,7 @@
 
 import React, { useState } from 'react';
 //components
-import OldRegistrationForm from '@/Components/Page/admissions/OldRegistrationForm';
 import VerifyOldTrainee from '@/Components/Page/admissions/VerifyOldTrainee';
-import Stepper from '@/Components/NavStepper'
 import OldTrainee_v2 from '@/Components/Page/admissions/OldTrainee_v2';
 //types
 import { TRAINEE_BY_ID, initTRAINEE_BY_ID } from '@/types/trainees'
@@ -18,7 +16,7 @@ export default function OldTrainee() {
 
     const handleStepChange = (step: number) => {
         setPath(step)
-    }
+    } 
     
     return (
         <>

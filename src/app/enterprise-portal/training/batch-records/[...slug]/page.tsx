@@ -220,7 +220,7 @@ export default function Page({params}: PageProps){
                                             : ''}
                                         </Text>
                                         <Text w='100%'>{allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}</Text>
-                                        <Text w='100%'>{parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: 'numeric',})}</Text>
+                                        <Text w='100%'>{parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: '2-digit',})}</Text>
                                         <Text w='100%'>{`Reg-${registrations?.reg_no}`}</Text>
                                     </Box>
                                 </Box>

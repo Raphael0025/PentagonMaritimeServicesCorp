@@ -82,12 +82,12 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                     <Text as='span' color='gray.600' mr={3}>Course:</Text>
                     <Text as='span' fontWeight='normal'>{course}</Text>
                 </Text>
-                <Box display='flex' justifyContent='center' alignItems='center' mb={4}>
-                    <Box>
+                <Box w='100%' display='flex' justifyContent='center' alignItems='center' mb={4}>
+                    <Box w='100%' >
                         <Box display='flex' w='100%' justifyContent='space-between' alignItems='center' mb={4}>
                             <Text w='100%' fontSize='15px' display='flex' justifyContent='start'>
-                                <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
-                                <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
+                                <Text textAlign='end' w='100%' as='span' color='gray.600' mr={3}>Schedule:</Text>
+                                <Text textAlign='center' w='100%' borderBottom='0.5pt solid black' as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
                             </Text>
                             {/* <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Training Year:</Text>
@@ -95,30 +95,30 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                 <Text w='30%'>{batch_no}</Text>
                             </Box> */}
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center'>
-                                <Text w='100%' as='span' color='gray.600'>Class No:</Text>
-                                <Text w='100%'>{batch?.batch_no}</Text>
+                                <Text textAlign='end' w='50%' as='span' color='gray.600'>Class No:</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='50%'>{batch?.batch_no}</Text>
                             </Box>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center'>
-                                <Text w='100%' as='span' color='gray.600'>Room No:</Text>
-                                <Text w='100%'>{batch?.room}</Text>
+                                <Text textAlign='end' w='50%' as='span' color='gray.600'>Room No:</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.room}</Text>
                             </Box>
                         </Box>
                         <Box display='flex' w='100%' justifyContent='space-between' alignItems='center' mb={4}>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center' mr='2'>
-                                <Text w='100%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
-                                <Text w='100%'>{batch?.practicumSite}</Text>
+                                <Text textAlign='end' w='100%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.practicumSite}</Text>
                             </Box>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center' mr='2'>
-                                <Text w='100%' as='span' color='gray.600'>Practicum Date:</Text>
-                                <Text w='100%'>{batch?.practicumDate}</Text>
+                                <Text textAlign='end' w='50%' as='span' color='gray.600'>Practicum Date:</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.practicumDate}</Text>
                             </Box>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center' mr='2'>
-                                <Text w='100%' as='span' color='gray.600'>Assessor:</Text>
-                                <Text w='100%'>{batch?.assessor}</Text>
+                                <Text textAlign='end' w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.assessor}</Text>
                             </Box>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center'>
-                                <Text w='100%' as='span' color='gray.600'>Instructor:</Text>
-                                <Text w='100%'>{batch?.instructor}</Text>
+                                <Text textAlign='end' w='50%' as='span' color='gray.600'>Instructor:</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.instructor}</Text>
                             </Box>
                         </Box>
                     </Box>

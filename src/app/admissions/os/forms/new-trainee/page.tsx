@@ -3,14 +3,13 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 //components
-import OSNewRegistrationForm from '@/Components/Page/admissions/OSNewRegistrationForm';
+import OSNewTrainee_v2 from '@/Components/Page/admissions/OSNewTrainee_v2';
 import Stepper from '@/Components/NavStepper'
 //types
 import { TRAINEE, initTRAINEE } from '@/types/trainees'
 //Contexts
 import { useCourses } from '@/context/CourseContext'
 //css library
-import 'animate.css';
 import { Box } from '@chakra-ui/react'
 
 export default function NewTrainee() {
@@ -30,11 +29,12 @@ export default function NewTrainee() {
     
     return (
         <>
-        <Stepper step={path} onStepChange={handleStepChange} />
-        <Box className='h-full flex py-5 justify-center '>
-            <Box className='w-full md:w-3/4'>
-                <OSNewRegistrationForm onStepChange={setPath} />
-            </Box>
+        {/* <Stepper step={path} onStepChange={handleStepChange} /> */}
+        <Box h='auto' bgColor='white' className='pb-5 justify-center '>
+            {/* <Box className='w-full'> */}
+                {/* <NewRegistrationForm onStepChange={setPath} /> */}
+                <OSNewTrainee_v2 />
+            {/* </Box> */}
         </Box>
         </>
     )

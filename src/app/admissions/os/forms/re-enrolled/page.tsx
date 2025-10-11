@@ -1,17 +1,12 @@
 'use client'
 
-import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 //components
-import OSOldRegistrationForm from '@/Components/Page/admissions/OSOldRegistrationForm';
+import OSOldTrainee_v2 from '@/Components/Page/admissions/OSOldTrainee_v2';
 import VerifyOldTrainee from '@/Components/Page/admissions/VerifyOldTrainee';
-import Stepper from '@/Components/NavStepper'
 //types
-import { TRAINEE, TRAINEE_BY_ID, initTRAINEE, initTRAINEE_BY_ID } from '@/types/trainees'
-//Contexts
-import { useCourses } from '@/context/CourseContext'
+import { TRAINEE_BY_ID, initTRAINEE_BY_ID } from '@/types/trainees'
 //css library
-import 'animate.css';
 import { Box } from '@chakra-ui/react'
 
 export default function OldTrainee() {
@@ -25,15 +20,12 @@ export default function OldTrainee() {
     
     return (
         <>
-        <Stepper step={path} onStepChange={handleStepChange} />
-        <Box className='h-full flex py-5 justify-center '>
-            <Box className='w-full md:w-3/4'>
-                {show ? (
-                    <OSOldRegistrationForm oldTrainee={trainee} onStepChange={setPath} /> 
-                ) : (
-                    <VerifyOldTrainee setTrainee={setTrainee} setShow={setShow}/>
-                )}
-            </Box>
+        <Box h='auto' bgColor='white' className='pb-5 justify-center '>
+            {show ? (
+                <OSOldTrainee_v2 oldTrainee={trainee} /> 
+            ) : (
+                <VerifyOldTrainee setTrainee={setTrainee} setShow={setShow}/>
+            )}
         </Box>
         </>
     )
