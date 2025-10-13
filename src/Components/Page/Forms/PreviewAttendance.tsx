@@ -392,11 +392,11 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
             ref={componentRef} 
             className="printable-content"
         >
-            <AttendanceForm courseCode={courseCode} batchNo={batch_no} assessor={assessor} instructor={instructor} practicumDate={practicumDate} site={practicumSite} course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room}/>
+            <AttendanceForm batch={batch} trainingArray={trainingsArr} />
         </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
-            <Button isDisabled={year === '' || room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Attendance</Button>
+            <Button onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Attendance</Button>
         </Box>
         </>
     )

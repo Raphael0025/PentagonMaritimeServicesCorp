@@ -8,6 +8,7 @@ import {RankProvider} from '@/context/RankContext'
 import {TypeProvider} from '@/context/TypeContext'
 import {CatalogProvider} from '@/context/CatalogContext'
 import {CategoryProvider} from '@/context/CategoryContext'
+import {InquiryProvider} from '@/context/InquiriesContext'
 
 export function Providers({children}: { children: React.ReactNode}) {
     return (
@@ -18,9 +19,11 @@ export function Providers({children}: { children: React.ReactNode}) {
                         <TypeProvider>
                             <CourseProvider>
                                 <ClientProvider>
-                                    <TraineeProvider>
-                                        {children}
-                                    </TraineeProvider>
+                                    <InquiryProvider>
+                                        <TraineeProvider>
+                                            {children}
+                                        </TraineeProvider>
+                                    </InquiryProvider>
                                 </ClientProvider>
                             </CourseProvider>
                         </TypeProvider>

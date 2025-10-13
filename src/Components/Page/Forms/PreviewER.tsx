@@ -108,7 +108,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             <Box mb={4} pb={3} borderBottom='1px' borderColor='gray.400' >
                 <Text fontSize='15px' display='flex' justifyContent='start' mb={4}>
                     <Text as='span' color='gray.600' mr={3}>Course:</Text>
-                    <Text as='span' fontWeight='normal'>{course}</Text>
+                    <Text as='span' fontWeight='normal'>{course.toUpperCase()}</Text>
                 </Text>
                 <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
                     {e_report === 'MDS' ? (

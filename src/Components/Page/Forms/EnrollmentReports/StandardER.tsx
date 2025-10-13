@@ -73,7 +73,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     <Box w='50%'>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Course`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${courseCode}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${courseCode.toUpperCase()}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Schedule`}</Text>
