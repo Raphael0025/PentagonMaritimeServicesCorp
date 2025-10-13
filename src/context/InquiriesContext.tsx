@@ -22,7 +22,7 @@ export const InquiryProvider: React.FC<InquiryProviderProps> = ({children}) => {
         const fetchData = async () => {
             try{
                 const initData = await FETCH_INQUIRIES()
-                setData(initData)
+                setData(initData ?? [])
                 const inquiries = collection(firestore, 'INQUIRIES')
                 const inquiry_query = query(inquiries)
 
