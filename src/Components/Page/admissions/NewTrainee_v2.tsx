@@ -68,8 +68,8 @@ export default function NewTrainee_v2(){
     const [validProfile, setValidPfp] = useState<string>('')
     const [pfpFile, setPfpFile] = useState<string>('No file chosen yet...')
 
-    const [preview, setPreview] = useState<string | null>(null)
     const [validSignature, setSignature] = useState<File[]>([])
+    const [preview, setPreview] = useState<string | null>(null)
     const [sig_file, setSigFile] = useState<string>('No file chosen yet...')
     
     const [month, setMonth] = useState<number>(0)

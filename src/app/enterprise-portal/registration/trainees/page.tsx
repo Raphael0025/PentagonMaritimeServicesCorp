@@ -6,19 +6,17 @@ import { useRouter } from 'next/navigation'
 
 import { Box, Text, Tooltip, Input, InputLeftAddon, InputGroup, useDisclosure, Select, Button, useToast, Menu, MenuButton, MenuGroup, MenuDivider, MenuList, IconButton, MenuItem, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel, AlertDialog, AlertDialogCloseButton, AlertDialogBody, AlertDialogHeader, AlertDialogOverlay, AlertDialogFooter, AlertDialogContent} from '@chakra-ui/react'
 import 'animate.css'
-import { useReactToPrint } from 'react-to-print'
 import { parse } from 'date-fns'
-import html2canvas from 'html2canvas'
 import { getDownloadURL, ref, getStorage  } from "firebase/storage";
 
-import {DotsIcon, Loading, EditIcon, UploadIcon, ViewDocIcon, DownloadIcon, VerifyIcon, TrashIcon, PinIcon, MailIcon, PhoneIcon, FilterIcon, FacebookIcon, SearchIcon } from '@/Components/Icons'
+import {DotsIcon, EditIcon, ViewDocIcon, SearchIcon } from '@/Components/Icons'
 import { HistoryIcon, PrevIcon, NextIcon2 } from '@/Components/SideIcons'
 
 import { changeImg,} from '@/lib/trainee_controller'
 
 import { HistoryLog, FilterState, UpdateFilter } from '@/types/utils'
 
-import { parsingTimestamp, formatTime, formatDateToWords, getStatusStyles, showTitleTextIcon, ToastStatus, handleMarketing, generateSlug} from '@/types/handling'
+import { parsingTimestamp, ToastStatus, handleMarketing, generateSlug} from '@/types/handling'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useHistoryLogs } from '@/context/HistoryLogContext'

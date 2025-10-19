@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react';
-import { useState, useRef } from 'react'
-import { Box, Text, Input, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
+import { useState, useEffect, useRef } from 'react'
+import { Box, Text, Input, useToast, Select, Button, Grid, GridItem } from '@chakra-ui/react'
 
 import { StandardER, MDS_ER, STCW_ER } from '@/Components/Page/Forms/EnrollmentReports'
 
@@ -11,6 +11,9 @@ import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useRank } from '@/context/RankContext'
 import { useClients } from '@/context/ClientCompanyContext'
+import { useCourseBatch } from '@/context/BatchContext'
+import { useInstructors } from '@/context/InstructorContext'
+import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
@@ -35,11 +38,13 @@ interface ERProps {
 
 export default function PreviewER({ onClose, batch_no, e_report, batchID, courseID, start_date, end_date, course, courseCode }: ERProps) {
     const toast = useToast()
+    const { data: allInstructors } = useInstructors()
     const { allData: allTrainingData } = useTraining()
     const { allData: allRegistrations } = useRegistrations()
     const { data: allRanks } = useRank()
     const { data: allTrainee } = useTrainees()
     const { courseCodes } = useClients()
+    const { data: courseBatch } = useCourseBatch()
     
     const [year, setYear] = useState<string>('')
     const [room, setRoom] = useState<string>('')
@@ -48,8 +53,20 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const [practicumSite, setSite] = useState<string>('')
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
+    const [batch, setBatch] = useState<CourseBatchByID>(initCourseBatch)
 
     const [loading, setLoading] = useState<boolean>(false)
+
+    useEffect(() => {
+        const fetchData = () => {
+            const batchData = courseBatch?.find((b) => b.id === batchID)
+            if(batchData) {
+                setBatch(batchData)
+            }
+        }
+        fetchData()
+    }, [batchID])
+
 
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
@@ -75,6 +92,24 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         })
     }
 
+    const handleBatchOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target
+
+        setBatch((prev) => ({
+            ...prev,
+            [id]: value,
+        }))
+    }
+
+    const handleBatchOnChangeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const { id, value } = e.target
+
+        setBatch((prev) => ({
+            ...prev,
+            [id]: value,
+        }))
+    }
+
     const handleBatchDetails = async () => {
         setLoading(true)
         new Promise<void>((res, rej) => {
@@ -82,11 +117,11 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                 try{
                     const actor = localStorage.getItem('customToken')
                     const batchDetails = {
-                        room: room,
-                        practicumSite: practicumSite,
-                        practicumDate: practicumDate,
-                        assessor: assessor,
-                        instructor: instructor,
+                        room: batch.room,
+                        practicumSite: batch.practicumSite,
+                        practicumDate: batch.practicumDate,
+                        assessor: batch.assessor,
+                        instructor: batch.instructor,
                     }
                     await UPDATE_BATCH(batchID, batchDetails, actor)
                     handleToast('Batch details updated successfully!', ``, 5000, 'success')
@@ -146,25 +181,36 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Room No:</Text>
-                                <Input w='30%' shadow='md' onChange={(e) => setRoom(e.target.value)} />
+                                <Input w='30%' value={batch?.room} shadow='md' id='room' onChange={handleBatchOnChange} />
                             </Box>
                         </Box>
                         <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
-                                <Input w='100%' shadow='md' onChange={(e) => setSite(e.target.value)} />
+                                <Input w='100%' value={batch?.practicumSite} shadow='md' id='practicumSite' onChange={handleBatchOnChange} />
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
-                                <Input w='100%' shadow='md' onChange={(e) => setDate(e.target.value)} />
+                                <Input w='100%' shadow='md' value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
-                                <Input w='100%' shadow='md' onChange={(e) => setAssessor(e.target.value)} />
+                                <Select id='assessor' shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                </Select>
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
-                                <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} />
+                                {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
+                                <Select id='instructor' shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.instructor ? (allInstructors?.find((i) => i.id === batch.instructor)?.name || batch.instructor) : 'Select Instructor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                </Select>
                             </Box>
                         </Box>
                         <Box display='flex' justifyContent='space-between' alignItems='center' >
@@ -172,7 +218,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Text fontWeight='bold'>Note:</Text>
                                 <Text color='red' fontWeight='normal'>{`Kindly save details above before printing the Enrollment Report (ER).`}</Text>
                             </Text>
-                            <Button onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                            <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
                         </Box>
                     </Box>
                     )}
@@ -299,7 +345,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         className="printable-content"
         >
             {e_report === 'STANDARD' ? (
-                <StandardER courseCode={courseCode} batchNo={batch_no} assessor={assessor} instructor={instructor} practicumDate={practicumDate} site={practicumSite} course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room}/>
+                <StandardER courseCode={courseCode} batchNo={batch_no} assessor={batch.assessor} instructor={batch.instructor} practicumDate={batch.practicumDate} site={batch.practicumSite} course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={batch.room}/>
             ) : e_report === 'STCW' ? (
                 <STCW_ER e_report={e_report} course={courseCode} schedule={formattedDate} year={year} room={room}/>
             ) : e_report === 'MDS' && (
@@ -308,7 +354,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
-            <Button isDisabled={year === '' || room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
+            <Button isDisabled={year === '' || batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
         </Box>
         </>
     );

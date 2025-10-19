@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/Image'
 import React from 'react';
 import { useState, useRef } from 'react'
 import { Box, Text, Input, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
@@ -11,6 +12,7 @@ import { useRank } from '@/context/RankContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 import { CourseBatchByID } from '@/types/course-batches'
+import { useInstructors } from '@/context/InstructorContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
@@ -39,6 +41,7 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
     const { data: allRanks } = useRank()
     const { data: allTrainee } = useTrainees()
     const { courseCodes } = useClients()
+    const { data: allInstructors } = useInstructors()
     
     const [year, setYear] = useState<string>('')
     const [room, setRoom] = useState<string>('')
@@ -114,17 +117,35 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                             </Box>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text textAlign='end' w='50%' as='span' color='gray.600'>Assessor:</Text>
-                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.assessor}</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>
+                                {(() => {
+                                    const ins = allInstructors?.find((i) => i.id === batch?.assessor);
+                                    if (!ins) return batch?.assessor || 'No Instructor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                    return `${ins.rank} ${ins.name}${suffix}`;
+                                })()}
+                                </Text>
                             </Box>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text textAlign='end' w='50%' as='span' color='gray.600'>Instructor:</Text>
-                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.instructor}</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>
+                                    {(() => {
+                                        const ins = allInstructors?.find((i) => i.id === batch?.instructor);
+                                        if (!ins) return batch?.instructor || 'No Instructor';
+
+                                        // Add 'MM' if rank is 'CAPT'
+                                        const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                        return `${ins.rank} ${ins.name}${suffix}`;
+                                    })()}
+                                </Text>
                             </Box>
                         </Box>
                     </Box>
                 </Box>
             </Box>
-            <Box display='flex' justifyContent='center' alignItems='center'>
+            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                 <Box>
                     {/** Table header */}
                     <Grid templateColumns="0.48in 2.34in 0.89in 1in 0.84in 1in 1in 1in 1in 1in 1in" gap={0} fontSize='8pt' h='0.65in' fontWeight='bold' textAlign='center' fontFamily='Calibri' >
@@ -385,6 +406,39 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                             </Grid>
                         );
                     })}
+                </Box>
+                {/** Footer */}
+                <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' mt='8'>
+                    <Box w='25%' display='flex' justifyContent='center' alignItems='center'   flexDir='column'>
+                        {(() => {
+                            const ins = allInstructors?.find((i) => i.id === batch?.instructor)
+
+                            const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                            const suffix = ins?.rank === 'CAPT' ? ', MM' : ''
+                        
+                            return(
+                                <>
+                                    {batch?.room?.toLowerCase() === 'online' && (
+                                        <Image mt='8' src={eSignSrc} width='100' height='50' objectFit='contain' mx='auto' alt='signature' />
+                                    )}
+                                    <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
+                                        {(() => {
+                                            if (!ins) return batch?.instructor || 'No Instructor';
+
+                                            // Add 'MM' if rank is 'CAPT'
+                                            const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                            return `${ins.rank} ${ins.name}${suffix}`;
+                                        })()}
+                                    </Text>
+                                    <Text textAlign='center' w='100%'>Instructor</Text>
+                                </>
+                            )
+                        })()}
+                    </Box>
+                    <Box width='25%'>
+                        <Text mt='8' w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>CAPT. ROGELIO MAHINAY, MM</Text>
+                        <Text textAlign='center' w='100%'>Training Director</Text>
+                    </Box>
                 </Box>
             </Box>
         </Box>

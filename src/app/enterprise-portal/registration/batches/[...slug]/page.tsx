@@ -53,10 +53,6 @@ export default function Page({params}: PageProps){
     const [endD, setEndD] = useState<string>('')
 
     const componentRef = useRef<HTMLDivElement | null>(null);
-    const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `B-${batch}ENROLLMENT_REPORT.pdf`,
-    })
 
     // Extract course ID from slug
     const courseID = Array.isArray(params.slug) && params.slug.length > 0 ? params.slug[0] : undefined;

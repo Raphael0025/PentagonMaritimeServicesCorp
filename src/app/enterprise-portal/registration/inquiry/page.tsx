@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 
 import { Box, Button, Select, Textarea, FormControl, FormLabel, Input, Text, useToast, useDisclosure, Tooltip, Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent, ModalFooter, ModalCloseButton} from '@chakra-ui/react'
-import { INQUIRIES_BY_ID, INQUIRIES, initInquiry } from '@/types/inquiries'
+import { INQUIRIES, initInquiry } from '@/types/inquiries'
 import { useInquiries } from '@/context/InquiriesContext'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { INSERT_INQUIRY, UPDATE_INQUIRY, DELETE_INQUIRY } from '@/lib/inquiry_controller'

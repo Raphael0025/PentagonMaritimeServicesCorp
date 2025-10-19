@@ -1,7 +1,8 @@
 'use client'
 
+import NextImage from 'next/image'
 import React from 'react';
-import { Box, Text, Grid, Image, GridItem } from '@chakra-ui/react'
+import { Box, Text, Grid, Image as ChakraImage, GridItem } from '@chakra-ui/react'
 import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -10,6 +11,7 @@ import { useTrainees } from '@/context/TraineeContext'
 import { useRank } from '@/context/RankContext'
 import { CourseBatchByID } from '@/types/course-batches'
 import { useCourses } from '@/context/CourseContext'
+import { useInstructors } from '@/context/InstructorContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
@@ -26,6 +28,7 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
     const { allData: allRegistrations } = useRegistrations()
     const { data: allTrainee } = useTrainees()
     const { data: allRanks } = useRank()
+    const { data: allInstructors } = useInstructors()
 
     if(!batch) return null;
     const course = allCourses?.find((course) => course.id === batch.course)
@@ -37,7 +40,7 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
         <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
             {/** Header */}
             <Box display='flex' justifyContent='space-between' alignItems='center' w='90%'>
-                <Image src='/Logo.jpg' width={'2.81in'} height={'0.66in'} alt='logo'/>
+                <ChakraImage src='/Logo.jpg' width={'2.81in'} height={'0.66in'} alt='logo'/>
                 <Box >
                     <Text display='flex' justifyContent='end' alignItems='center' fontSize='9pt' fontFamily='Calibri, Arial, sans-serif' fontWeight='normal'>
                         <Text as='span' mr={1}>
@@ -82,7 +85,16 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Instructor:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.instructor}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                            {(() => {
+                                const ins = allInstructors?.find((i) => i.id === batch?.instructor);
+                                if (!ins) return batch?.instructor || 'No Instructor';
+
+                                // Add 'MM' if rank is 'CAPT'
+                                const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                return `${ins.rank} ${ins.name}${suffix}`;
+                            })()}
+                        </Text>
                     </Box>
                 </Box>
                 <Box w='45%'>
@@ -100,7 +112,16 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                     </Box>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Assessor: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.assessor}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                            {(() => {
+                                const ins = allInstructors?.find((i) => i.id === batch?.assessor);
+                                if (!ins) return batch?.assessor || 'No Instructor';
+
+                                // Add 'MM' if rank is 'CAPT'
+                                const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                return `${ins.rank} ${ins.name}${suffix}`;
+                            })()}
+                        </Text>
                     </Box>
                 </Box>
             </Box>
@@ -369,16 +390,38 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                 </Box>
             </Box>
             {/** Footer */}
-            <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Calibri' fontWeight='normal' fontSize='10pt' mt='8'>
-                <Box w='35%'>
-                    <Text textAlign='center'>{batch?.instructor}</Text>
-                    <Text mt='0' w='100%' borderBottomWidth='1px' borderColor='black'/>
-                    <Text textAlign='center' w='100%'>INSTRUCTOR</Text>
+            <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' mt='8'>
+                <Box w='25%' display='flex' position='relative' justifyContent='center' alignItems='center'   flexDir='column'>
+                    {(() => {
+                        const ins = allInstructors?.find((i) => i.id === batch?.instructor)
+
+                        const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                        const suffix = ins?.rank === 'CAPT' ? ', MM' : ''
+                    
+                        return(
+                            <>
+                                {batch?.room?.toLowerCase() === 'online' && (
+                                    <Box position='absolute' top='-20px' left='50%' transform="translateX(-50%)" zIndex={2} >
+                                        <NextImage src={eSignSrc} width='100' height='20' alt='signature' />
+                                    </Box>
+                                )}
+                                <Text mt='8' position='relative' zIndex={1} w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
+                                    {(() => {
+                                        if (!ins) return batch?.instructor || 'No Instructor';
+
+                                        // Add 'MM' if rank is 'CAPT'
+                                        const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                        return `${ins.rank} ${ins.name}${suffix}`;
+                                    })()}
+                                </Text>
+                                <Text textAlign='center' w='100%'>Instructor</Text>
+                            </>
+                        )
+                    })()}
                 </Box>
-                <Box width='4in'>
-                    <Text textAlign='center'>CAPT. ROGELIO MAHINAY</Text>
-                    <Text mt='0' w='100%' borderBottomWidth='1px' borderColor='black'/>
-                    <Text textAlign='center' w='100%'>TRAINING DIRECTOR</Text>
+                <Box width='25%'>
+                    <Text mt='8' w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>CAPT. ROGELIO MAHINAY, MM</Text>
+                    <Text textAlign='center' w='100%'>Training Director</Text>
                 </Box>
             </Box>
         </Box>

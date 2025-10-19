@@ -1,0 +1,322 @@
+'use client'
+
+import Image from 'next/image'
+import React, { useState, useRef } from 'react'
+import { Box, Text, Input, useToast, Button, FormControl, FormHelperText, FormLabel, Modal, ModalHeader,ModalContent, ModalOverlay, ModalCloseButton, ModalBody, ModalFooter, useDisclosure } from '@chakra-ui/react'
+
+import { Instructor, initInstructor } from '@/types/instructor'
+import { useInstructors } from '@/context/InstructorContext'
+import { ADD_INSTRUCTOR, DELETE_INSTRUCTOR, CHANGE_ATTACHMENTS, UPDATE_INSTRUCTOR } from '@/lib/instructor_controller'
+import { parsingTimestamp, ToastStatus } from '@/types/handling'
+import { ViewDocIcon, EditIcon, } from '@/Components/Icons'
+
+import { getDownloadURL, ref, getStorage  } from "firebase/storage";
+
+export default function Page() {
+    const toast = useToast()
+    const { data: allInstructors } = useInstructors()
+
+    const [loading, setLoading] = useState<boolean>(false)
+    const [loadingModal, setLoadingModal] = useState<boolean>(false)
+    const [instructor, setInstructor] = useState<Instructor>(initInstructor)
+    const [e_sign, setESign] = useState<File[]>([])
+    const [preview, setPreview] = useState<string | null>(null)
+    const [fileName, setFilename] = useState<string>('No file chosen yet...')
+    const [insID, setIDIns] = useState<string>('')
+    const [attachmentFile, setAttachment] = useState<string>('')
+
+    const attachment = useRef<HTMLButtonElement>(null)
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+    const { isOpen: isOpenIns, onOpen: onOpenIns, onClose: onCloseIns } = useDisclosure()
+    const { isOpen: isOpenModal, onOpen: onOpenModal, onClose: onCloseModal } = useDisclosure()
+    const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
+    const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure()
+
+    const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
+        toast({
+            title: title,
+            description: desc,
+            position: 'top-right',
+            variant: 'left-accent',
+            status: status,
+            duration: timer,
+            isClosable: true,
+        })
+    }
+
+    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {id, value} = e.target
+        setInstructor((prev) => ({
+            ...prev,
+            [id]: value.toUpperCase()
+        }))
+    }
+    
+    const handleESign = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if(files && files.length > 0){
+            setESign(Array.from(files))
+            const file = files[0].name
+            setFilename(file)
+            const e_sign = files[0]
+
+            const objectURL = URL.createObjectURL(e_sign)
+            setPreview(objectURL)
+        } else {
+            setFilename('No file chosen yet...')
+        }
+    }
+
+    const handleSubmit = async () => {
+        setLoading(true)
+
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    await ADD_INSTRUCTOR(instructor, e_sign, instructor.name, actor ?? null)
+                    handleToast('Instructor Created Successfully', ``, 5000, 'success')
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setLoading(false)
+            setInstructor(initInstructor)
+            onCloseIns()
+        })
+    }
+
+    const handleCloseMod = () => {
+        onCloseModal()
+        setFilename('No file chosen yet...')
+        // setPreview(null)
+    }
+
+    const handleUploadImg = async () => {
+        try{
+            setLoading(true)
+            await CHANGE_ATTACHMENTS(insID, instructor.name, fileName, e_sign)
+            handleToast(`Successfully changed Trainee's Attachment.`, `Trainee's attachment file has been updated.`, 5000, 'success')
+        } catch(error){
+            console.error('Error updating trainee image: ', error);
+            handleToast(`Failed to change Trainee's Attachment.`, `Trainee's attachment file was not successfully updated. Please issue this to the IT department.`, 5000, 'success')
+        } finally {
+            setLoading(false)
+            setPreview(null)
+            setFilename('No file chosen yet...')
+            setESign([])
+            handleCloseMod()
+        }
+    }
+
+    const handleUpdate = async () => {
+        setLoadingModal(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    await UPDATE_INSTRUCTOR(insID, instructor, actor ?? null)
+                    handleToast('Instructor Updated Successfully', ``, 5000, 'success')
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        } ).finally(() => {
+            setIDIns('')
+            setLoadingModal(false)
+            onCloseEdit()
+        })
+    }
+    
+    const storage = getStorage();
+    const handleDownload = async () => {
+        if (attachmentFile) {
+            try {
+                // Get the download URL for the attachmentFile from Firebase Storage
+                const storageRef = ref(storage, attachmentFile); // Assuming 'storage' is your Firebase Storage instance
+                const downloadUrl = await getDownloadURL(storageRef);
+                // Create a link element and trigger the download
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = downloadUrl;
+                link.target = `_blank`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error("Error fetching download URL:", error);
+            }
+        }
+    }
+
+    const handleDelete = async () => {
+        setLoadingModal(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    await DELETE_INSTRUCTOR(insID, actor ?? null)
+                    handleToast('Instructor Deleted Successfully', ``, 5000, 'success')
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }
+        ).finally(() => {
+            setIDIns('')
+            setLoadingModal(false)
+            onCloseDelete()
+        })
+    }
+
+    return(
+    <>
+        <Box >
+            <Box px='4' display='flex' justifyContent='space-between'>
+                <Text fontSize='lg'>INSTRUCTORS</Text>
+                <Button onClick={onOpenIns} colorScheme='blue' bgColor='blue.700' size='sm' shadow='md' m={2}>Add Instructor</Button>
+            </Box>
+            <Box px='4'>
+                <Box display='flex' justifyContent='space-between' borderRadius='5px' border='1px solid black' p='2'>
+                    <Text w='100px' textAlign='center' >Date Added</Text>
+                    <Text w='250px' textAlign='center' >Name</Text>
+                    <Text w='100px' textAlign='center' >Rank/Position</Text>
+                    <Text w='100px' textAlign='center' >Attachments</Text>
+                    <Text w='150px' textAlign='center' >Action</Text>
+                </Box>
+                <Box>
+                    {allInstructors && allInstructors.map((ins) => (
+                        <Box key={ins.id} p='2' fontWeight='normal' display='flex' alignItems='center' justifyContent='space-between' borderBottom='1px solid black'>
+                            <Text w='100px' textAlign='center' >{parsingTimestamp(ins?.date_added).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: 'numeric',})}</Text>
+                            <Text w='250px' textAlign='center' >{ins.name}</Text>
+                            <Text w='100px' textAlign='center' >{ins.rank}</Text>
+                            <Button w='100px' className={`rounded p-0 ${ins.e_sign === '' ? `border-2 border-red-200` : ''}`} ref={attachment} onClick={() => { setInstructor(ins); setAttachment(ins.e_sign); onOpenModal();}}>
+                                <ViewDocIcon color={'#0D70AB'} size={'32'}/>
+                            </Button>
+                            <Box w='150px' display='flex'>
+                                <Button onClick={() => {setIDIns(ins.id); setInstructor(ins); onOpenEdit();}} mr={3} size='sm' shadow='md' colorScheme='blue' >Edit</Button>
+                                <Button onClick={() => {setIDIns(ins.id); onOpenDelete();}} size='sm' shadow='md' colorScheme='red' >Delete</Button>
+                            </Box>
+                        </Box>
+                    ))}
+                </Box>
+            </Box>
+        </Box>
+        <Modal isOpen={isOpenIns} onClose={onCloseIns} size='xl' scrollBehavior='inside'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Add New Instructor</ModalHeader>   
+                <ModalCloseButton />
+                <ModalBody>
+                    <Box gap='4' display='flex' flexDirection='column'>
+                        <FormControl isRequired>
+                            <FormLabel>Full Name</FormLabel>
+                            <Input id='name' shadow='md' onChange={handleOnChange} type='text' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormLabel>Rank</FormLabel>
+                            <Input id='rank' shadow='md' onChange={handleOnChange} type='text' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormLabel>E-Signature</FormLabel>
+                            <Input id='e_sign' onChange={handleESign} type='file' accept='.png' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                            <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                        </FormControl>
+                    </Box>
+                </ModalBody>
+                <ModalFooter>
+                    <Button size='sm' shadow='md' mr={3} onClick={onCloseIns}>
+                        Close
+                    </Button>
+                    <Button onClick={handleSubmit} isLoading={loading} size='sm' shadow='md' loadingText='Creating...' bgColor='blue.700' colorScheme='blue' >Create</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        {/** Edit */}
+        <Modal isOpen={isOpenEdit} onClose={onCloseEdit} size='xl' scrollBehavior='inside'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Edit Instructor</ModalHeader>   
+                <ModalCloseButton />
+                <ModalBody>
+                    <Box gap='4' display='flex' flexDirection='column'>
+                        <FormControl isRequired>
+                            <FormLabel>Full Name</FormLabel>
+                            <Input id='name' shadow='md' value={instructor.name} onChange={handleOnChange} type='text' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormLabel>Rank</FormLabel>
+                            <Input id='rank' shadow='md' value={instructor.rank} onChange={handleOnChange} type='text' />
+                        </FormControl>
+                    </Box>
+                </ModalBody>
+                <ModalFooter>
+                    <Button size='sm' shadow='md' mr={3} onClick={onCloseEdit}>
+                        Close
+                    </Button>
+                    <Button onClick={handleUpdate} isLoading={loadingModal} size='sm' shadow='md' loadingText='Updating...' bgColor='blue.700' colorScheme='blue' >Update</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        {/** Delete */}
+        <Modal isOpen={isOpenDelete} onClose={onCloseDelete} size='md' >
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Delete Instructor</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Text>Are you sure you want to delete this instructor?</Text>
+                </ModalBody>
+                <ModalFooter>
+                    <Button size='sm' shadow='md' mr={3} onClick={onCloseDelete}>
+                        Close
+                    </Button>
+                    <Button onClick={handleDelete} isLoading={loadingModal} size='sm' shadow='md' loadingText='Deleting...' bgColor='red.700' colorScheme='red' >Delete</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        {/** View Image */}
+        <Modal isOpen={isOpenModal} onClose={handleCloseMod} scrollBehavior='inside' size='xl' motionPreset='slideInTop'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader pb={0} >{`E-Signature`}</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody pt={0}>
+                    <Box className='flex-col p-2 space-y-3 items-center justify-center'>
+                        <Box w='100%' className='flex items-end justify-end'>
+                            <Button size='sm' variant='ghost' onClick={() => fileInputRef.current?.click()} leftIcon={<EditIcon size='20' color='#a1a1a1' />} >Change Image</Button>
+                            <input ref={fileInputRef} onChange={handleESign}  type='file' accept='image/png' style={{display: 'none'}} />
+                        </Box>
+                        <Box className='image-container w-full p-1 relative flex justify-center items-center rounded border outline-0 shadow-lg'>
+                        {attachmentFile !== '' ? (
+                            preview === null ? (
+                                <Image className='image' src={attachmentFile} layout='fill' objectFit='contain' alt={'e-signature'}/>
+                            ) : (
+                                <Image className='image' src={preview} layout='fill' objectFit='contain' alt={fileName}/>
+                            )
+                        ) : (
+                            <Text className='text-gray-400 absolute text-lg'>{fileName}</Text>
+                        )}
+                        </Box>
+                        <Box className='flex space-x-4'>
+                            <Button onClick={handleUploadImg} isLoading={loading} loadingText='Uploading...' isDisabled={preview === null} colorScheme='green' w='100%'>Upload Image</Button>
+                            <Button onClick={handleDownload} isDisabled={preview !== null} colorScheme='blue' w='100%'>Download Image</Button>
+                        </Box>
+                    </Box>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
+    )
+}

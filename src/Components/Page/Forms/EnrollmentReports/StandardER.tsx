@@ -8,8 +8,9 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useTrainees } from '@/context/TraineeContext'
 import { useRank } from '@/context/RankContext'
+import { useInstructors } from '@/context/InstructorContext'
 
-import { splitTextAtWordBoundary } from '@/handlers/util_handler';
+//import { splitTextAtWordBoundary } from '@/handlers/util_handler';
 
 import { parsingTimestamp } from '@/types/handling'
 
@@ -31,6 +32,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
     const { allData: allRegistrations } = useRegistrations()
     const { data: allTrainee } = useTrainees()
     const { data: allRanks } = useRank()
+    const { data: allInstructors } = useInstructors()
 
     // * Split the course text
     // * const [firstLine, secondLine] = splitTextAtWordBoundary(course, 50);
@@ -85,7 +87,16 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Instructor`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${instructor}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                                {(() => {
+                                    const ins = allInstructors?.find((i) => i.id === instructor);
+                                    if (!ins) return instructor || 'No Instructor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                    return `${ins.rank} ${ins.name}${suffix}`;
+                                })()}
+                            </Text>
                         </Box>
                     </Box>
                     <Box w='50%'>
@@ -103,7 +114,16 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Assessor `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${assessor}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                                {(() => {
+                                    const assessor_name = allInstructors?.find((i) => i.id === assessor);
+                                    if (!assessor_name) return assessor || 'No Assessor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = assessor_name.rank === 'CAPT' ? ', MM' : '';
+                                    return `${assessor_name.rank} ${assessor_name.name}${suffix}`;
+                                })()}
+                            </Text>
                         </Box>
                     </Box>
                     {/* <Box display='flex' w='100%' alignItems='end'>
