@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/Image'
+import Image from 'next/image'
 import React from 'react';
 import { useState, useRef } from 'react'
 import { Box, Text, Input, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
