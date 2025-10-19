@@ -419,7 +419,7 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                             return(
                                 <>
                                     {batch?.room?.toLowerCase() === 'online' && (
-                                        <Image src={eSignSrc} width='100' height='50' objectFit='contain' mx='auto' alt='signature' />
+                                        <Image src={eSignSrc} width='100' height='50' objectFit='contain' alt='signature' />
                                     )}
                                     <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
                                         {(() => {
