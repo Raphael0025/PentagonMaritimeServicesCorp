@@ -17,6 +17,7 @@ export const getFormatDate = (dateRange: string): string => {
     // Regular expression to extract the month and day from the input
     const regex = /(?:\w+, )?(\w+) (\d+)(?: - (?:\w+, )?(\w+) (\d+))?/
     const match = dateRange.match(regex)
+    const year = new Date().getFullYear()
 
     if (!match) {
         throw new Error("Invalid date range format")
@@ -25,10 +26,10 @@ export const getFormatDate = (dateRange: string): string => {
     const [, startMonth, startDay, endMonth, endDay] = match
     // If the months are the same, format as "Oct 07-09"
     if (startMonth === endMonth) {
-        return `${startMonth} ${startDay}-${endDay}`
+        return `${startMonth} ${startDay}-${endDay}, ${year}`
     }
     // If the months are different, format as "Oct 31 - Nov 01"
-    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`
 }
 
 export const getFormattedDate = (date: Date): string => {

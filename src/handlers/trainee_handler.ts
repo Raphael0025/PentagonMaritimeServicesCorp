@@ -59,8 +59,12 @@ export const formatDateToShort = (dateString: string): string => {
         throw new Error("Invalid date string");
     }
 
+    // Force the year to the current year
+    const currentYear = new Date().getFullYear();
+    date.setFullYear(currentYear);
+    
     // Format the date to "MMM DD" (e.g., "Apr 21")
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
     return date.toLocaleDateString('en-US', options);
 }
 

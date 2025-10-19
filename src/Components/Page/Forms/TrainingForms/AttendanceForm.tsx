@@ -32,7 +32,7 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
 
     if(!batch) return null;
     const course = allCourses?.find((course) => course.id === batch.course)
-    const formattedDate = batch.end_date === '' ? formatDateToShort(batch.start_date) :getFormatDate(`${batch.start_date} - ${batch.end_date}`)
+    const formattedDate = batch.end_date === '' ? formatDateToShort(batch.start_date) : getFormatDate(`${batch.start_date} - ${batch.end_date}`)
 
     return(
     <>
