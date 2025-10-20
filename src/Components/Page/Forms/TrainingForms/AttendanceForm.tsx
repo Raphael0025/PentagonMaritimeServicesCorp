@@ -73,7 +73,7 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                 <Box w='47%'>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Course:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${course?.course_code}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${course?.course_code.toUpperCase()}`}</Text>
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Schedule:`}</Text>

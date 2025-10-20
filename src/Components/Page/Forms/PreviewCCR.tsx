@@ -83,7 +83,7 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
             <Box mb={4} pb={3} borderBottom='1px' borderColor='gray.400' >
                 <Text fontSize='15px' display='flex' justifyContent='start' mb={4}>
                     <Text as='span' color='gray.600' mr={3}>Course:</Text>
-                    <Text as='span' fontWeight='normal'>{course}</Text>
+                    <Text as='span' fontWeight='normal'>{course.toUpperCase()}</Text>
                 </Text>
                 <Box w='100%' display='flex' justifyContent='center' alignItems='center' mb={4}>
                     <Box w='100%' >

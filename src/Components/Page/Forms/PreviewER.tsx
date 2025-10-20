@@ -171,10 +171,10 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
                                 <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
                             </Text>
-                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                            {/* <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Training Year:</Text>
                                 <Input w='30%' shadow='md' onChange={(e) => setYear(e.target.value)} />
-                            </Box>
+                            </Box> */}
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Class No:</Text>
                                 <Text w='30%'>{batch_no}</Text>
@@ -354,7 +354,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
-            <Button isDisabled={year === '' || batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
+            <Button isDisabled={ batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
         </Box>
         </>
     );
