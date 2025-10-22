@@ -416,7 +416,7 @@ export default function NewTrainee_v2(){
                     for(const course of crewArr){
                         fee = course.course_fee + fee
                     }
-                    regCrewID = await addRegistrationDetails(traineeID, fee, 0, 0, 1, trainee.marketing)
+                    regCrewID = await addRegistrationDetails(traineeID, fee, 0, 0, 0, trainee.marketing)
                     for(const course of crewArr){
                         try{
                             if(regCrewID){

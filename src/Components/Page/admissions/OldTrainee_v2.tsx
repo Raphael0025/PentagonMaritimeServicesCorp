@@ -472,7 +472,7 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
                     for(const course of crewArr){
                         fee = course.course_fee + fee
                     }
-                    regCrewID = await addRegistrationDetails(idRef, fee, 0, 1, 1, trainee.marketing)
+                    regCrewID = await addRegistrationDetails(idRef, fee, 0, 1, 0, trainee.marketing)
                     for(const course of crewArr){
                         try{
                             if(regCrewID){
