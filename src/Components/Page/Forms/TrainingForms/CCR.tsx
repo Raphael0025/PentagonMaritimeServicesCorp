@@ -76,7 +76,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                         <Grid mb='7' templateColumns="2.28in 3.47in 0.56in 0.56in 1.68in 1.91in" gap={0} fontSize='8pt' h='1.82in' fontWeight='bold' textAlign='center' fontFamily='Calibri' >
                             <GridItem display='flex' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='center'>
                                 <Box fontSize='8pt' w='2.28in' 
-                                    h={course?.course_name?.length > 50 ? '0.66in' : '0.36in'} 
+                                    h={(course?.course_name ?? '').length > 50 ? '0.66in' : '0.36in'}
                                     ps='2' textAlign='start' borderBottom='1px solid black'>
                                     <Text>{`Training Course: `} <Text as='span' fontWeight='bold' fontSize='6pt'>{course?.course_name.toUpperCase()}</Text></Text>
                                 </Box>
