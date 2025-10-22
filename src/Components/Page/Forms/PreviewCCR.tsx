@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import NextImage from 'next/image'
 import React from 'react';
 import { useState, useRef } from 'react'
 import { Box, Text, Input, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
@@ -145,7 +145,124 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                     </Box>
                 </Box>
             </Box>
+            <Box display='flex' mb='5' justifyContent='space-between'>
+                <Box color='red'>
+                    <Text>Note:</Text>
+                    <Text>For Practical, If course is not a simulator type, Input 101 for Performed.</Text>
+                    <Text>If status of a trainee is Incomplete, Input 102 on both written and practical fields.</Text>
+                </Box>
+                <Button size='sm' shadow='md' colorScheme='blue' bgColor='blue.700'>Save Grades</Button>
+            </Box>
+            <Box w='100%' display='flex' flexDir='column' justifyContent='center' alignItems='center'>
+                <Box display='flex' w='100%' mb='2' borderBottom='1px solid black' justifyContent='center' alignItems='center'>
+                    {/** Table Header */}
+                        <Box w='20px'>
+                            <Text>No.</Text>
+                        </Box>
+                        <Box w='300px' fontWeight='normal' display='flex' alignItems='center' flexDir='column' justifyContent='center'>
+                            <Text>{`Name of Trainee`}</Text>
+                            <Text>{`(LastName, First Name, Middle name)`}</Text>
+                        </Box>
+                        <Box w='50px'  >
+                            <Text>Rank</Text>
+                        </Box>
+                        <Box w='100px'  >
+                            <Text>Registration No.</Text>
+                        </Box>
+                        <Text w='100px'>{`Written (%)`}</Text>
+                        <Text w='100px'>{`Practical (%)`}</Text>
+                        <Text w='100px'>
+                            Passed
+                        </Text>
+                        <Box w='100px' >
+                            <Text >Failed</Text>
+                        </Box>
+                        <Box w='100px'>
+                            <Text >Incomplete</Text>
+                        </Box>
+                        <Box w='200px' >
+                            Training Certificate Number
+                        </Box>
+                </Box>
+                {/** Table Body */}
+                {trainingsArr// Create a shallow copy to avoid mutating the original array
+                ?.slice() // Create a shallow copy to avoid mutating the original array
+                .sort((a, b) => {
+                    const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
+                    const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
+            
+                    // Extract numeric parts of the registration number
+                    const [yearA, numberA] = regNoA.split('-').map(Number);
+                    const [yearB, numberB] = regNoB.split('-').map(Number);
+            
+                    // Compare by year first, then by number
+                    if (yearA !== yearB) {
+                        return yearA - yearB;
+                    }
+                    return numberA - numberB;
+                }).map((training, index) => {
+                    const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
+                    const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
+                    return(
+                        <Box w='100%' key={training.id} display='flex' justifyContent='center' alignItems='center' textTransform='uppercase' mb='3' fontWeight={'normal'} fontFamily='Calibri'>
+                            <Text w='20px' >
+                                {(index + 1)}
+                            </Text>
+                            <Text w='300px' textAlign='center'>
+                                {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
+                            </Text>
+                            <Text w='50px' >
+                                {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                            </Text>
+                            <Text w='100px' >
+                                {`Reg-${registrations?.reg_no}`}
+                            </Text>
+                            <Text w='100px' >
+                                <Input size='sm' shadow='md' />
+                            </Text>
+                            <Text w='100px' >
+                                <Input size='sm' shadow='md' />
+                            </Text>
+                            <Text w='100px'  >
+                                {training?.practical === 101 ? (training?.written) >= 75 && '✓' : ((training?.written + training?.practical) / 2) >= 75 && '✓'}
+                            </Text>
+                            <Text w='100px'  >
+                                {training?.written !== 0 && training?.practical !== 0 && (
+                                    training?.practical === 101
+                                    ? (training?.written < 75 || training?.written >= 1) && '✓'
+                                    : ((training?.written + training?.practical) / 2 < 75 ||
+                                        (training?.written + training?.practical) / 2 >= 1) && '✓'
+                                )}
+                            </Text>
+                            <Text w='100px'  >
+                                {training?.written !== 0 && training?.practical !== 0 && (
+                                    training?.written === 102 && training?.practical === 102 ? '✓' : '🗙'
+                                )}
+                            </Text>
+                            <Text w='200px' >
+                                {training?.written !== 0 && training?.practical !== 0 && (
+                                    training?.written === 102 && training?.practical === 102 ? '✓' : '🗙'
+                                )}
+                            </Text>
+                        </Box>
+                    )
+                })}
+                
+            </Box>
         </Box>
+        <Box w='100%' 
+            ref={componentRef} 
+            className="printable-content"
+        >
+            <CCR batch={batch} trainingsArr={trainingsArr} />
+        </Box>
+        <Box mt='24' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
+            <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
+            <Button 
+            // isDisabled={ batch.room === ''} 
+            onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Course Completion</Button>
+        </Box>
+        
         </>
     )
 }

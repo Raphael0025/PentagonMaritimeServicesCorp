@@ -36,7 +36,7 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
 
     return(
     <>
-     <Box w='100%'>
+    <Box w='100%'>
         <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
             {/** Header */}
             <Box display='flex' justifyContent='space-between' alignItems='center' w='90%'>
