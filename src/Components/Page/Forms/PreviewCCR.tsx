@@ -1,8 +1,7 @@
 'use client'
 
 import NextImage from 'next/image'
-import React from 'react';
-import { useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Box, Text, Input, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
 
 import { useTrainees } from '@/context/TraineeContext'
@@ -14,9 +13,13 @@ import { useCourseBatch } from '@/context/BatchContext'
 import { CourseBatchByID } from '@/types/course-batches'
 import { useInstructors } from '@/context/InstructorContext'
 
+import { TRAINING_BY_ID } from '@/types/trainees'
+
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
+
+import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 import { useReactToPrint } from 'react-to-print'
 import { CCR } from '@/Components/Page/Forms/TrainingForms'
@@ -43,18 +46,21 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
     const { courseCodes } = useClients()
     const { data: allInstructors } = useInstructors()
 
-    const [year, setYear] = useState<string>('')
-    const [room, setRoom] = useState<string>('')
-    const [assessor, setAssessor] = useState<string>('')
-    const [instructor, setInstructor] = useState<string>('')
-    const [practicumSite, setSite] = useState<string>('')
-    const [practicumDate, setDate] = useState<string>('')
-    const [classNo, setClassNo] = useState<string>('')
-
     const [loading, setLoading] = useState<boolean>(false)
+    const [trainingsArr, setTrainingsArr] = useState<TRAINING_BY_ID[]>([])
 
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
-    const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
+    useEffect(() => {
+        const fetchData = () => {
+            const tempTrainingsArr = allTrainingData?.filter((training) => 
+                (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) 
+                    && training.batch.toString() === batchID
+                )
+            setTrainingsArr(tempTrainingsArr || [])
+            console.log("TRAININGS ARR: ", tempTrainingsArr)
+        }
+        fetchData()
+    }, [])
     const formattedDate = end_date === '' ? formatDateToShort(start_date) :getFormatDate(`${start_date} - ${end_date}`)
 
     const componentRef = useRef<HTMLDivElement | null>(null);
@@ -75,6 +81,50 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
             duration: timer,
             isClosable: true,
         })
+    }
+
+    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>, trainingId: string) => {
+        const { id, value } = e.target;
+
+        setTrainingsArr((prev) =>
+            prev.map((training) =>
+            training.id === trainingId
+                ? { ...training, [id]: value } // update only the changed field
+                : training
+            )
+        )
+    }
+
+    const handleUpdateData = async () => {
+        if (trainingsArr.length === 0) return;
+
+        setLoading(true);
+
+        try {
+            const actor = localStorage.getItem('customToken');
+
+            // Create an array of promises — one for each training document to update
+            const updatePromises = trainingsArr.map((training) => {
+            const updatedData = {
+                written: training.written,
+                practical: training.practical,
+                cert_no: training.cert_no,
+                // include other fields you want to update
+            };
+            // Assuming you have your update function like:
+            // await UPDATE_TRAINING(training.id, updatedData, actor)
+            return UPDATE_TRAINING(training.id, updatedData, actor);
+            });
+            // Wait for all updates to complete
+            await Promise.all(updatePromises);
+
+            handleToast('All marks have been recorded successfully!', '', 5000, 'success');
+        } catch (error) {
+            console.error('ERROR DETECTED: ', error);
+            handleToast('An error occurred while updating data.', '', 5000, 'error');
+        } finally {
+            setLoading(false);
+        }
     }
 
     return(
@@ -151,13 +201,13 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                     <Text>For Practical, If course is not a simulator type, Input 101 for Performed.</Text>
                     <Text>If status of a trainee is Incomplete, Input 102 on both written and practical fields.</Text>
                 </Box>
-                <Button size='sm' shadow='md' colorScheme='blue' bgColor='blue.700'>Save Grades</Button>
+                <Button onClick={handleUpdateData} isLoading={loading} loadingText='Saving...' size='sm' shadow='md' colorScheme='blue' bgColor='blue.700'>Save Grades</Button>
             </Box>
             <Box w='100%' display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                 <Box display='flex' w='100%' mb='2' borderBottom='1px solid black' justifyContent='center' alignItems='center'>
                     {/** Table Header */}
                         <Box w='20px'>
-                            <Text>No.</Text>
+                            <Text>No</Text>
                         </Box>
                         <Box w='300px' fontWeight='normal' display='flex' alignItems='center' flexDir='column' justifyContent='center'>
                             <Text>{`Name of Trainee`}</Text>
@@ -169,15 +219,15 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                         <Box w='100px'  >
                             <Text>Registration No.</Text>
                         </Box>
-                        <Text w='100px'>{`Written (%)`}</Text>
-                        <Text w='100px'>{`Practical (%)`}</Text>
-                        <Text w='100px'>
+                        <Text w='100px' textAlign='center'>{`Written (%)`}</Text>
+                        <Text w='100px' textAlign='center'>{`Practical (%)`}</Text>
+                        <Text w='100px' textAlign='center'>
                             Passed
                         </Text>
-                        <Box w='100px' >
+                        <Box w='100px' textAlign='center'>
                             <Text >Failed</Text>
                         </Box>
-                        <Box w='100px'>
+                        <Box w='100px' textAlign='center'>
                             <Text >Incomplete</Text>
                         </Box>
                         <Box w='200px' >
@@ -185,69 +235,58 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                         </Box>
                 </Box>
                 {/** Table Body */}
-                {trainingsArr// Create a shallow copy to avoid mutating the original array
-                ?.slice() // Create a shallow copy to avoid mutating the original array
-                .sort((a, b) => {
-                    const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
-                    const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
-            
-                    // Extract numeric parts of the registration number
-                    const [yearA, numberA] = regNoA.split('-').map(Number);
-                    const [yearB, numberB] = regNoB.split('-').map(Number);
-            
-                    // Compare by year first, then by number
-                    if (yearA !== yearB) {
-                        return yearA - yearB;
-                    }
-                    return numberA - numberB;
-                }).map((training, index) => {
-                    const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
-                    const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
-                    return(
-                        <Box w='100%' key={training.id} display='flex' justifyContent='center' alignItems='center' textTransform='uppercase' mb='3' fontWeight={'normal'} fontFamily='Calibri'>
-                            <Text w='20px' >
-                                {(index + 1)}
-                            </Text>
-                            <Text w='300px' textAlign='center'>
-                                {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
-                            </Text>
-                            <Text w='50px' >
-                                {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
-                            </Text>
-                            <Text w='100px' >
-                                {`Reg-${registrations?.reg_no}`}
-                            </Text>
-                            <Text w='100px' >
-                                <Input size='sm' shadow='md' />
-                            </Text>
-                            <Text w='100px' >
-                                <Input size='sm' shadow='md' />
-                            </Text>
-                            <Text w='100px'  >
-                                {training?.practical === 101 ? (training?.written) >= 75 && '✓' : ((training?.written + training?.practical) / 2) >= 75 && '✓'}
-                            </Text>
-                            <Text w='100px'  >
-                                {training?.written !== 0 && training?.practical !== 0 && (
-                                    training?.practical === 101
-                                    ? (training?.written < 75 || training?.written >= 1) && '✓'
-                                    : ((training?.written + training?.practical) / 2 < 75 ||
-                                        (training?.written + training?.practical) / 2 >= 1) && '✓'
-                                )}
-                            </Text>
-                            <Text w='100px'  >
-                                {training?.written !== 0 && training?.practical !== 0 && (
-                                    training?.written === 102 && training?.practical === 102 ? '✓' : '🗙'
-                                )}
-                            </Text>
-                            <Text w='200px' >
-                                {training?.written !== 0 && training?.practical !== 0 && (
-                                    training?.written === 102 && training?.practical === 102 ? '✓' : '🗙'
-                                )}
-                            </Text>
-                        </Box>
-                    )
-                })}
-                
+                {Array.isArray(trainingsArr) && trainingsArr.length > 0 && (trainingsArr.sort((a, b) => {
+                        const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '0-0';
+                        const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '0-0';
+
+                        const [yearA, numberA] = regNoA.split('-').map(Number);
+                        const [yearB, numberB] = regNoB.split('-').map(Number);
+
+                        return yearA === yearB ? numberA - numberB : yearA - yearB;
+                    }).map((training, index) => {
+                        const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
+                        const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
+                        return(
+                            <Box w='100%' key={training.id} display='flex' justifyContent='center' alignItems='center' textTransform='uppercase' mb='3' fontWeight={'normal'} fontFamily='Calibri'>
+                                <Text w='20px' >
+                                    {(index + 1)}
+                                </Text>
+                                <Text w='300px' textAlign='center'>
+                                    {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
+                                </Text>
+                                <Text w='50px' >
+                                    {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                </Text>
+                                <Text w='100px' >
+                                    {`Reg-${registrations?.reg_no}`}
+                                </Text>
+                                <Text w='100px' >
+                                    <Input id='written' onChange={(e) => handleOnChange(e, training.id)} value={training.written} size='sm' shadow='md' />
+                                </Text>
+                                <Text w='100px' >
+                                    <Input id='practical' onChange={(e) => handleOnChange(e, training.id)} value={training.practical} size='sm' shadow='md' />
+                                </Text>
+                                <Text w='100px'  textAlign='center' >
+                                    {Number(training?.practical) === 101 || Number(training?.practical) === 102 ? Number(training?.written) >= 75 && '✓' : ((Number(training?.written) + Number(training?.practical)) / 2) >= 75 && '✓'}
+                                </Text>
+                                <Text w='100px'  textAlign='center' >
+                                    {Number(training?.written) !== 0 && Number(training?.practical) !== 0 && (
+                                        Number(training?.practical) === 101 || Number(training?.practical) === 102
+                                        ? (Number(training?.written) < 75) && '✓'
+                                        : ((Number(training?.written) + Number(training?.practical)) / 2 < 75) && '✓'
+                                    )}
+                                </Text>
+                                <Text w='100px'  textAlign='center' >
+                                    {Number(training?.written) !== 0 && Number(training?.practical) !== 0 || (
+                                        Number(training?.written) === 0 && Number(training?.practical) === 0 ? '✓' : '🗙'
+                                    )}
+                                </Text>
+                                <Text w='200px' >
+                                    <Input id='cert_no' value={training.cert_no} onChange={(e) => handleOnChange(e, training.id)} shadow='md' size='sm' />
+                                </Text>
+                            </Box>
+                        )})
+                    )}
             </Box>
         </Box>
         <Box w='100%' 

@@ -121,7 +121,7 @@ export const addRegistrationDetails = async (ref_id: string, payment_fee: number
                 regType: 2,
                 marketing: marketing,
                 otherMarketing: '',
-                reg_accountType: account_type === 0 ? account_type : 1,
+                reg_accountType: account_type,
             }  
             const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
             return idRef.id

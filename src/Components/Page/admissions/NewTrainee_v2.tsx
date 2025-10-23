@@ -506,7 +506,7 @@ export default function NewTrainee_v2(){
                                             <FormLabel htmlFor={`fee-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
                                                 Course Fee
                                             </FormLabel>
-                                            <Input id={`fee-${index}`} value={tempCourses[index]?.course_fee} readOnly />
+                                            <Input id={`fee-${index}`} value={tempCourses[index]?.course_fee} readOnly /> 
                                         </FormControl>
                                     </Box>
                                     <Box display="flex" flexDir={{ base: "column", md: "row" }} gap="4" pt="3" pb="8">

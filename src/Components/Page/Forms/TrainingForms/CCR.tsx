@@ -177,21 +177,14 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                             </GridItem>
                         </Grid>
                         {/** Table Body */}
-                        {trainingsArr// Create a shallow copy to avoid mutating the original array
-                        ?.slice() // Create a shallow copy to avoid mutating the original array
-                        .sort((a, b) => {
-                            const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
-                            const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
-                    
-                            // Extract numeric parts of the registration number
+                        {Array.isArray(trainingsArr) && trainingsArr.length > 0 && (trainingsArr.sort((a, b) => {
+                            const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '0-0';
+                            const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '0-0';
+
                             const [yearA, numberA] = regNoA.split('-').map(Number);
                             const [yearB, numberB] = regNoB.split('-').map(Number);
-                    
-                            // Compare by year first, then by number
-                            if (yearA !== yearB) {
-                                return yearA - yearB;
-                            }
-                            return numberA - numberB;
+
+                            return yearA === yearB ? numberA - numberB : yearA - yearB;
                         }).map((training, index) => {
                             const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                             const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
@@ -225,30 +218,29 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                                         {`${training.written}%`}
                                     </GridItem>
                                     <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                        {training.practical === 101 ? 'P' : `${training.practical}%`}
+                                        {Number(training.practical) === 101 ? 'P' : Number(training.practical) === 102 ? 'N/A' : `${training.practical}%`}
                                     </GridItem>
                                     <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                        {training?.practical === 101 ? (training?.written) >= 75 && '✓' : ((training?.written + training?.practical) / 2) >= 75 && '✓'}
+                                        {Number(training?.practical) === 101 || Number(training?.practical) === 102 ? Number(training?.written) >= 75 && '✓' : ((Number(training?.written) + Number(training?.practical)) / 2) >= 75 && '✓'}
                                     </GridItem>
                                     <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                        {training?.written !== 0 && training?.practical !== 0 && (
-                                            training?.practical === 101
-                                            ? (training?.written < 75 || training?.written >= 1) && '✓'
-                                            : ((training?.written + training?.practical) / 2 < 75 ||
-                                                (training?.written + training?.practical) / 2 >= 1) && '✓'
+                                        {Number(training?.written) !== 0 && Number(training?.practical) !== 0 && (
+                                            Number(training?.practical) === 101 || Number(training?.practical) === 102
+                                            ? (Number(training?.written) < 75 ) && '✓'
+                                            : ((Number(training?.written) + Number(training?.practical)) / 2 < 75) && '✓'
                                         )}
                                     </GridItem>
                                     <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                        {training?.written !== 0 && training?.practical !== 0 && (
-                                            training?.written === 102 && training?.practical === 102 ? '✓' : '🗙'
+                                        {Number(training?.written) !== 0 && Number(training?.practical) !== 0 || (
+                                            Number(training?.written) === 0 && Number(training?.practical) === 0 && '✓'
                                         )}
                                     </GridItem>
                                     <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
-                                        {''}
+                                        {training?.cert_no}
                                     </GridItem>
                                 </Grid>
-                            )
-                        })}
+                            )})
+                        )}
                         {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
                         {(trainingsArr ?? []).length > 0 && (
                             <Grid templateColumns="0.2in 2.08in 0.88in 0.84in 0.6in 1.15in 0.56in 0.56in 0.56in 0.56in 0.56in 1.91in" h='0.17in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
