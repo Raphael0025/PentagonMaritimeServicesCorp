@@ -196,97 +196,100 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                 </Box>
             </Box>
             <Box display='flex' mb='5' justifyContent='space-between'>
-                <Box color='red'>
-                    <Text>Note:</Text>
-                    <Text>For Practical, If course is not a simulator type, Input 101 for Performed.</Text>
-                    <Text>If status of a trainee is Incomplete, Input 102 on both written and practical fields.</Text>
+                <Box p='2' borderRadius='5px' border='1px dotted black'>
+                    <Text color='red' fontWeight='bold'>Legend:</Text>
+                    <Text fontWeight='normal' fontSize='8pt'>{`Performed (P): Input 101 on the Practical Field`}</Text>
+                    <Text fontWeight='normal' fontSize='8pt'>{`Not applicable (N/A): Input 102 on the Practical Field`}</Text>
+                    <Text fontWeight='normal' fontSize='8pt'>{`For Incomplete, both written and practical fields must be set to zero (0).`}</Text>
                 </Box>
                 <Button onClick={handleUpdateData} isLoading={loading} loadingText='Saving...' size='sm' shadow='md' colorScheme='blue' bgColor='blue.700'>Save Grades</Button>
             </Box>
-            <Box w='100%' display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                <Box display='flex' w='100%' mb='2' borderBottom='1px solid black' justifyContent='center' alignItems='center'>
-                    {/** Table Header */}
-                        <Box w='20px'>
-                            <Text>No</Text>
-                        </Box>
-                        <Box w='300px' fontWeight='normal' display='flex' alignItems='center' flexDir='column' justifyContent='center'>
-                            <Text>{`Name of Trainee`}</Text>
-                            <Text>{`(LastName, First Name, Middle name)`}</Text>
-                        </Box>
-                        <Box w='50px'  >
-                            <Text>Rank</Text>
-                        </Box>
-                        <Box w='100px'  >
-                            <Text>Registration No.</Text>
-                        </Box>
-                        <Text w='100px' textAlign='center'>{`Written (%)`}</Text>
-                        <Text w='100px' textAlign='center'>{`Practical (%)`}</Text>
-                        <Text w='100px' textAlign='center'>
-                            Passed
-                        </Text>
-                        <Box w='100px' textAlign='center'>
-                            <Text >Failed</Text>
-                        </Box>
-                        <Box w='100px' textAlign='center'>
-                            <Text >Incomplete</Text>
-                        </Box>
-                        <Box w='200px' >
-                            Training Certificate Number
-                        </Box>
-                </Box>
-                {/** Table Body */}
-                {Array.isArray(trainingsArr) && trainingsArr.length > 0 && (trainingsArr.sort((a, b) => {
-                        const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '0-0';
-                        const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '0-0';
-
-                        const [yearA, numberA] = regNoA.split('-').map(Number);
-                        const [yearB, numberB] = regNoB.split('-').map(Number);
-
-                        return yearA === yearB ? numberA - numberB : yearA - yearB;
-                    }).map((training, index) => {
-                        const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
-                        const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
-                        return(
-                            <Box w='100%' key={training.id} display='flex' justifyContent='center' alignItems='center' textTransform='uppercase' mb='3' fontWeight={'normal'} fontFamily='Calibri'>
-                                <Text w='20px' >
-                                    {(index + 1)}
-                                </Text>
-                                <Text w='300px' textAlign='center'>
-                                    {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
-                                </Text>
-                                <Text w='50px' >
-                                    {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
-                                </Text>
-                                <Text w='100px' >
-                                    {`Reg-${registrations?.reg_no}`}
-                                </Text>
-                                <Text w='100px' >
-                                    <Input id='written' onChange={(e) => handleOnChange(e, training.id)} value={training.written} size='sm' shadow='md' />
-                                </Text>
-                                <Text w='100px' >
-                                    <Input id='practical' onChange={(e) => handleOnChange(e, training.id)} value={training.practical} size='sm' shadow='md' />
-                                </Text>
-                                <Text w='100px'  textAlign='center' >
-                                    {Number(training?.practical) === 101 || Number(training?.practical) === 102 ? Number(training?.written) >= 75 && '✓' : ((Number(training?.written) + Number(training?.practical)) / 2) >= 75 && '✓'}
-                                </Text>
-                                <Text w='100px'  textAlign='center' >
-                                    {Number(training?.written) !== 0 && Number(training?.practical) !== 0 && (
-                                        Number(training?.practical) === 101 || Number(training?.practical) === 102
-                                        ? (Number(training?.written) < 75) && '✓'
-                                        : ((Number(training?.written) + Number(training?.practical)) / 2 < 75) && '✓'
-                                    )}
-                                </Text>
-                                <Text w='100px'  textAlign='center' >
-                                    {Number(training?.written) !== 0 && Number(training?.practical) !== 0 || (
-                                        Number(training?.written) === 0 && Number(training?.practical) === 0 ? '✓' : '🗙'
-                                    )}
-                                </Text>
-                                <Text w='200px' >
-                                    <Input id='cert_no' value={training.cert_no} onChange={(e) => handleOnChange(e, training.id)} shadow='md' size='sm' />
-                                </Text>
+            <Box display='flex' justifyContent='center' alignItems='center' w='100%'>
+                <Box w='70%' display='flex' flexDir='column' justifyContent='center' alignItems='center'>
+                    <Box display='flex' w='100%' mb='2' borderBottom='1px solid black' justifyContent='center' alignItems='center'>
+                        {/** Table Header */}
+                            <Box w='20px'>
+                                <Text>No</Text>
                             </Box>
-                        )})
-                    )}
+                            <Box w='300px' fontWeight='normal' display='flex' alignItems='center' flexDir='column' justifyContent='center'>
+                                <Text fontWeight='bold'>{`Name of Trainee`}</Text>
+                                <Text>{`(LastName, First Name, Middle name)`}</Text>
+                            </Box>
+                            <Box w='50px'  textAlign='center'>
+                                <Text>Rank</Text>
+                            </Box>
+                            <Box w='100px'  textAlign='center'>
+                                <Text>Registration No.</Text>
+                            </Box>
+                            <Text w='100px' textAlign='center'>{`Written (%)`}</Text>
+                            <Text w='100px' textAlign='center'>{`Practical (%)`}</Text>
+                            <Text w='100px' textAlign='center'>
+                                Passed
+                            </Text>
+                            <Box w='100px' textAlign='center'>
+                                <Text >Failed</Text>
+                            </Box>
+                            <Box w='100px' textAlign='center'>
+                                <Text >Incomplete</Text>
+                            </Box>
+                            <Box w='200px' textAlign='center'>
+                                Training Certificate Number
+                            </Box>
+                    </Box>
+                    {/** Table Body */}
+                    {Array.isArray(trainingsArr) && trainingsArr.length > 0 && (trainingsArr.sort((a, b) => {
+                            const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '0-0';
+                            const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '0-0';
+
+                            const [yearA, numberA] = regNoA.split('-').map(Number);
+                            const [yearB, numberB] = regNoB.split('-').map(Number);
+
+                            return yearA === yearB ? numberA - numberB : yearA - yearB;
+                        }).map((training, index) => {
+                            const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
+                            const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
+                            return(
+                                <Box w='100%' key={training.id} borderColor='black' borderBottomStyle='dotted' borderBottomWidth='0.5pt' display='flex' justifyContent='center' alignItems='center' textTransform='uppercase' mb='3' fontWeight={'normal'} fontFamily='Calibri'>
+                                    <Text w='20px' >
+                                        {(index + 1)}
+                                    </Text>
+                                    <Text w='300px' textAlign='center'>
+                                        {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
+                                    </Text>
+                                    <Text w='50px' textAlign='center'>
+                                        {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    </Text>
+                                    <Text w='100px' textAlign='center'>
+                                        {`Reg-${registrations?.reg_no}`}
+                                    </Text>
+                                    <Text w='100px' display='flex' justifyContent='center' alignItems='center'>
+                                        <Input id='written' w='50%' onChange={(e) => handleOnChange(e, training.id)} value={training.written} size='sm' shadow='md' />
+                                    </Text>
+                                    <Text w='100px' display='flex' justifyContent='center' alignItems='center'>
+                                        <Input id='practical' w='50%' onChange={(e) => handleOnChange(e, training.id)} value={Number(training.practical) === 102 ? 'N/A' : Number(training.practical) === 101 ? 'P' : training.practical} size='sm' shadow='md' />
+                                    </Text>
+                                    <Text w='100px'  textAlign='center' >
+                                        {Number(training?.practical) === 101 || Number(training?.practical) === 102 ? Number(training?.written) >= 75 && '✓' : ((Number(training?.written) + Number(training?.practical)) / 2) >= 75 && '✓'}
+                                    </Text>
+                                    <Text w='100px'  textAlign='center' >
+                                        {Number(training?.written) !== 0 && Number(training?.practical) !== 0 && (
+                                            Number(training?.practical) === 101 || Number(training?.practical) === 102
+                                            ? (Number(training?.written) < 75) && '✓'
+                                            : ((Number(training?.written) + Number(training?.practical)) / 2 < 75) && '✓'
+                                        )}
+                                    </Text>
+                                    <Text w='100px'  textAlign='center' >
+                                        {Number(training?.written) !== 0 && Number(training?.practical) !== 0 || (
+                                            Number(training?.written) === 0 && Number(training?.practical) === 0 ? '✓' : '🗙'
+                                        )}
+                                    </Text>
+                                    <Text w='200px' display='flex' justifyContent='center'>
+                                        <Input id='cert_no' value={training.cert_no} onChange={(e) => handleOnChange(e, training.id)} shadow='md' size='sm' />
+                                    </Text>
+                                </Box>
+                            )})
+                        )}
+                </Box>
             </Box>
         </Box>
         <Box w='100%' 
