@@ -75,9 +75,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                         {/** Table Header */}
                         <Grid mb='7' templateColumns="2.28in 3.47in 0.56in 0.56in 1.68in 1.91in" gap={0} fontSize='8pt' h='1.82in' fontWeight='bold' textAlign='center' fontFamily='Calibri' >
                             <GridItem display='flex' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='center'>
-                                <Box fontSize='8pt' w='2.28in' 
-                                    h={(course?.course_name ?? '').length > 50 ? '0.66in' : '0.36in'}
-                                    ps='2' textAlign='start' borderBottom='1px solid black'>
+                                <Box fontSize='8pt' w='2.28in' h={'0.36in'} ps='2' textAlign='start' lineHeight='1.0'  borderBottom='1px solid black'>
                                     <Text>{`Training Course: `} <Text as='span' fontWeight='bold' fontSize='6pt'>{course?.course_name.toUpperCase()}</Text></Text>
                                 </Box>
                                 <Box fontSize='7pt' w='2.28in' ps='2' textAlign='start' borderBottom='1px solid black'>
@@ -157,7 +155,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                             <GridItem display='flex' flexDir='column' alignItems='center' border="0.5pt solid black" borderRight="none" >
                                 <Box h='0.95in' display='flex' justifyContent='center' alignItems='center'>
                                     <Text h='100%' display='flex' justifyContent='center' alignItems='center' > 
-                                        Result of Assessment
+                                        Result of the Assessment
                                     </Text>
                                 </Box>
                                 <Box display='flex' alignItems='center' textTransform='uppercase' h='1.15in'>
@@ -346,12 +344,12 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                                                 {batch?.room?.toLowerCase() === 'online' && (
                                                     <Box 
                                                     position='absolute' 
-                                                    top='10px' 
+                                                    top='15px' 
                                                     left='50%' 
                                                     transform="translateX(-50%)" 
                                                     zIndex={2} 
                                                     >
-                                                        <NextImage src={eSignSrc} width='80' height='20' alt='signature' />
+                                                        <NextImage src={eSignSrc} width='100' height='20' alt='signature' />
                                                     </Box>
                                                 )}
                                                 <Text position='relative' zIndex={1} w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>

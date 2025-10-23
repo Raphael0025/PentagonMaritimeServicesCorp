@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import NextImage from 'next/image'
 import React from 'react';
 import { useState, useRef } from 'react'
 import { Box, Text, Input, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
@@ -406,10 +406,10 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                             </Grid>
                         );
                     })}
-                </Box>
+                </Box> 
                 {/** Footer */}
                 <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' mt='8'>
-                    <Box w='25%' display='flex' justifyContent='center' alignItems='center'   flexDir='column'>
+                    <Box w='25%' display='flex' position='relative' justifyContent='center' alignItems='center'   flexDir='column'>
                         {(() => {
                             const ins = allInstructors?.find((i) => i.id === batch?.instructor)
 
@@ -419,9 +419,11 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                             return(
                                 <>
                                     {batch?.room?.toLowerCase() === 'online' && (
-                                        <Image src={eSignSrc} width='100' height='50' objectFit='contain' alt='signature' />
+                                        <Box position='absolute' top='-20px' left='50%' transform="translateX(-50%)" zIndex={2} >
+                                            <NextImage src={eSignSrc} width='100' height='20' alt='signature' />
+                                        </Box>
                                     )}
-                                    <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
+                                    <Text mt='8' position='relative' zIndex={1} w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
                                         {(() => {
                                             if (!ins) return batch?.instructor || 'No Instructor';
 
