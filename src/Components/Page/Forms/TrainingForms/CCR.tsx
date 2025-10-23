@@ -114,7 +114,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                                     <Box w='1.12in' display='flex' alignItems='start' ps='2' justifyContent='start' flexDir='column' border='1px solid black' borderTop='none' borderLeft='none' >
                                         <Text fontWeight='bold'>Written:</Text>
                                         <Text>{batch?.practicumDate}</Text>
-                                        <Text>{batch?.room}</Text>
+                                        <Text>{batch?.room?.toUpperCase() === 'ONLINE' ? batch?.room?.toUpperCase() : 'PENTAGON OFFICE'}</Text>
                                     </Box>
                                     <Box w='1.16in' display='flex' alignItems='start' ps='2' justifyContent='start' flexDir='column' border='1px solid black' borderTop='none' borderLeft='none' borderRight='none'>
                                         <Text fontWeight='bold'>Practical:</Text>
