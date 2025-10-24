@@ -333,7 +333,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                             <GridItem display="flex" borderBottom='1px solid black' justifyContent="center" alignItems="center">
                                 <Box textAlign='center' position='relative' fontWeight='bolder' w='100%'>
                                     {(() => {
-                                        const ins = allInstructors?.find((i) => i.id === batch?.instructor)
+                                        const ins = allInstructors?.find((i) => i.id === batch?.assessor)
                 
                                         const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                         //const suffix = ins?.rank === 'CAPT' ? ', MM' : ''
@@ -354,7 +354,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                                                 )}
                                                 <Text position='relative' zIndex={1} w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
                                                     {(() => {
-                                                        if (!ins) return batch?.instructor || 'No Instructor';
+                                                        if (!ins) return batch?.assessor || 'No Assessor';
                 
                                                         // Add 'MM' if rank is 'CAPT'
                                                         const suffix = ins.rank === 'CAPT' ? ', MM' : '';
