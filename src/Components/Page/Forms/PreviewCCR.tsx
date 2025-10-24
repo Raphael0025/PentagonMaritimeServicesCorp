@@ -292,19 +292,16 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                 </Box>
             </Box>
         </Box>
+        <Box mt='6' borderTop='1px solid black' py='4' w='100%' display='flex' justifyContent='space-between' alignItems='center'>
+            <Text>PRINTABLE COURSE COMPLETION</Text>
+            <Button onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Course Completion</Button>
+        </Box>
         <Box w='100%' 
             ref={componentRef} 
-            className="printable-content"
+            // className="printable-content"
         >
             <CCR batch={batch} trainingsArr={trainingsArr} />
         </Box>
-        <Box mt='24' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
-            <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
-            <Button 
-            // isDisabled={ batch.room === ''} 
-            onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Course Completion</Button>
-        </Box>
-        
         </>
     )
 }

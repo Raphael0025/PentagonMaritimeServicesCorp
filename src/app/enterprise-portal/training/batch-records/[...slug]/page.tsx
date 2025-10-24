@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef} from 'react'
 
-import { Box, Text, useToast, Menu, MenuButton, MenuList, MenuItem, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, } from '@chakra-ui/react'
+import { Box, Text, useToast, Menu, MenuButton, MenuList, MenuItem, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, ModalCloseButton, } from '@chakra-ui/react'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { CourseBatchByID } from '@/types/course-batches'
@@ -239,8 +239,9 @@ export default function Page({params}: PageProps){
         {/** Attendance & CCR */}
         <Modal size='full' isOpen={isOpenER} onClose={onCloseER} >
             <ModalOverlay />
-            <ModalContent px={4}>
+            <ModalContent px={4} pb='28'>
                 <ModalHeader color='blue.700'>{`Preview of ${form}`}</ModalHeader>
+                <ModalCloseButton />
                 <ModalBody display={'flex'} flexDir='column' alignItems='center' >
                     {form === 'Attendance Form' ? (
                         <PreviewAttendance onClose={onCloseER} batch={batchDetails} batch_no={batch} batchID={batchID} courseID={course?.id ?? ''} start_date={startD} end_date={endD} course={`${course?.course_name === undefined ? '' : `${course?.course_name}`}`} courseCode={`${course?.course_code === undefined ? '' : `${course?.course_code}`}`} />
