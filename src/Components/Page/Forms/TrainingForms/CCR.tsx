@@ -39,7 +39,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
         <Box w='100%'>
             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                 {/** Header */}
-                <Box display='flex' justifyContent='space-between' alignItems='center' w='80%'>
+                <Box display='flex' justifyContent='space-between' alignItems='center' w='85%'>
                     <ChakraImage src='/Logo.jpg' width={'2.81in'} height={'0.66in'} alt='logo'/>
                     <Box >
                         <Text display='flex' justifyContent='end' alignItems='center' fontSize='9pt' fontFamily='Calibri, Arial, sans-serif' fontWeight='normal'>
@@ -68,17 +68,17 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                         </Text>
                     </Box>
                 </Box>
-                <Text py='' display='flex' justifyContent='center' w='80%' fontFamily='Arial, sans-serif' fontWeight='bold' fontSize='15pt'>COURSE COMPLETION REPORT</Text>
-                <Text py='2' as='i' display='flex' justifyContent='end' w='80%' fontFamily='Calibri' fontWeight='bold' fontSize='7pt'>FM-03-11-02 REV.02</Text>
+                <Text py='' display='flex' justifyContent='center' w='85%' fontFamily='Arial, sans-serif' fontWeight='bold' fontSize='15pt'>COURSE COMPLETION REPORT</Text>
+                <Text py='2' as='i' display='flex' justifyContent='end' w='85%' fontFamily='Calibri' fontWeight='bold' fontSize='7pt'>FM-03-11-02 REV.02</Text>
                 <Box display='flex' justifyContent='center' alignItems='center'>
                     <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                         {/** Table Header */}
-                        <Grid mb='7' templateColumns="2.28in 3.47in 0.56in 0.56in 1.68in 1.91in" gap={0} fontSize='8pt' h='1.82in' fontWeight='bold' textAlign='center' fontFamily='Calibri' >
+                        <Grid mb='7' templateColumns="2.78in 3.47in 0.56in 0.56in 1.68in 1.91in" gap={0} fontSize='8pt' h='1.82in' fontWeight='bold' textAlign='center' fontFamily='Calibri' >
                             <GridItem display='flex' flexDir='column' border="0.5pt solid black" borderRight="none" justifyContent='start' alignItems='center'>
-                                <Box fontSize='8pt' w='2.28in' h={'0.36in'} ps='2' textAlign='start' lineHeight='1.0'  borderBottom='1px solid black'>
+                                <Box fontSize='8pt' w='2.78in' h={'0.36in'} pt='1' ps='2' textAlign='start' lineHeight='1.0'  borderBottom='1px solid black'>
                                     <Text>{`Training Course: `} <Text as='span' fontWeight='bold' fontSize='6pt'>{course?.course_name.toUpperCase()}</Text></Text>
                                 </Box>
-                                <Box fontSize='7pt' w='2.28in' ps='2' textAlign='start' borderBottom='1px solid black'>
+                                <Box fontSize='7pt' w='2.78in' ps='2' textAlign='start' borderBottom='1px solid black'>
                                     <Box display='flex'>
                                         <Box display='flex'>
                                             <Text mr='2'>
@@ -99,22 +99,22 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                                     </Box>
                                     <Text>{`(Regular)`}</Text>
                                 </Box>
-                                <Box fontSize='7pt' w='2.28in' ps='2' textAlign='start' borderBottom='1px solid black'>
+                                <Box fontSize='7pt' w='2.78in' ps='2' textAlign='start' borderBottom='1px solid black'>
                                     <Text>
                                         {`Class No: (N/A)   Training Duration:(N/A)`}
                                     </Text>
                                     <Text>{`(For re-sit)`}</Text>
                                 </Box>
-                                <Box border='1px solid black' fontSize='8pt' w='2.28in' borderRight='none' textAlign='start' ps='2' borderTop='none' borderLeft='none' >
+                                <Box border='1px solid black' fontSize='8pt' w='2.78in' borderRight='none' textAlign='start' ps='2' borderTop='none' borderLeft='none' >
                                     Date and Place of Assessment:
                                 </Box>
                                 <Box display='flex' fontSize='7pt'>
-                                    <Box w='1.12in' display='flex' alignItems='start' ps='2' justifyContent='start' flexDir='column' border='1px solid black' borderTop='none' borderLeft='none' >
+                                    <Box w='1.38in' display='flex' alignItems='start' ps='2' justifyContent='start' flexDir='column' border='1px solid black' borderTop='none' borderLeft='none' >
                                         <Text fontWeight='bold'>Written:</Text>
                                         <Text>{batch?.practicumDate}</Text>
                                         <Text>{batch?.room?.toUpperCase() === 'ONLINE' ? batch?.room?.toUpperCase() : 'PENTAGON OFFICE'}</Text>
                                     </Box>
-                                    <Box w='1.16in' display='flex' alignItems='start' ps='2' justifyContent='start' flexDir='column' border='1px solid black' borderTop='none' borderLeft='none' borderRight='none'>
+                                    <Box w='1.40in' display='flex' alignItems='start' ps='2' justifyContent='start' flexDir='column' border='1px solid black' borderTop='none' borderLeft='none' borderRight='none'>
                                         <Text fontWeight='bold'>Practical:</Text>
                                         <Text>{batch?.room?.toUpperCase() === 'ONLINE' ? 'N/A' : batch?.practicumDate}</Text>
                                         <Text>{batch?.practicumSite?.toUpperCase() === 'ONLINE' ? 'N/A' : batch?.practicumSite}</Text>
@@ -132,7 +132,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                                     </Text>
                                 </Box>
                                 <Box display='flex' alignItems='center'  h='1.75in'>
-                                    <Box display='flex' justifyContent='center' alignItems='center' border='1px solid black' borderLeft='none' borderBottom='none' w='0.88in' h='100%'>
+                                    <Box display='flex' justifyContent='center' alignItems='center' border='1px solid black' borderLeft=' none' borderBottom='none' w='0.88in' h='100%'>
                                         <Text transform='rotate(-90deg)' >{`Date of Birth (mm/dd/yyyy)`}</Text>
                                     </Box>
                                     <Box display='flex' justifyContent='center' alignItems='center' border='1px solid black' borderLeft='none' borderBottom='none' w='0.86in' h='100%'>
@@ -187,7 +187,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                             const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                             const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                             return(
-                                <Grid key={training.id} templateColumns="0.2in 2.08in 0.88in 0.84in 0.6in 1.15in 0.56in 0.56in 0.56in 0.56in 0.56in 1.91in" h='0.17in'  textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
+                                <Grid key={training.id} templateColumns="0.2in 2.58in 0.88in 0.84in 0.6in 1.15in 0.56in 0.56in 0.56in 0.56in 0.56in 1.91in" h='0.17in'  textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
                                     <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                         {(index + 1)}
                                     </GridItem>
@@ -241,7 +241,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                         )}
                         {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
                         {(trainingsArr ?? []).length > 0 && (
-                            <Grid templateColumns="0.2in 2.08in 0.88in 0.84in 0.6in 1.15in 0.56in 0.56in 0.56in 0.56in 0.56in 1.91in" h='0.17in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                            <Grid templateColumns="0.2in 2.58in 0.88in 0.84in 0.6in 1.15in 0.56in 0.56in 0.56in 0.56in 0.56in 1.91in" h='0.17in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {(trainingsArr?.length || 0) + 1}
                                 </GridItem>
@@ -285,7 +285,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                             [...Array(24 - (trainingsArr ?? []).length - 1)].map((_, index) => {
                             const startingIndex = (trainingsArr?.length || 0) + 1 // Start numbering after the last data row
                             return (
-                                <Grid key={index} templateColumns="0.2in 2.08in 0.88in 0.84in 0.6in 1.15in 0.56in 0.56in 0.56in 0.56in 0.56in 1.91in" h='0.17in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                                <Grid key={index} templateColumns="0.2in 2.58in 0.88in 0.84in 0.6in 1.15in 0.56in 0.56in 0.56in 0.56in 0.56in 1.91in" h='0.17in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                                     <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                         {startingIndex + index + 1}
                                     </GridItem>
@@ -326,7 +326,7 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                             );
                         })}
                         {/** Footer */}
-                        <Grid templateColumns="0.2in 2.08in 0.88in 0.84in 0.6in 2.27in 0.56in 0.56in 0.56in 1.91in" h='0.17in' fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                        <Grid templateColumns="0.2in 2.58in 0.88in 0.84in 0.6in 2.27in 0.56in 0.56in 0.56in 1.91in" h='0.17in' fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                             <GridItem display="flex" border='1px solid black' borderTop='none' borderRight='none' justifyContent="center" alignItems="center">
                                 {/* Empty cell */}
                             </GridItem>

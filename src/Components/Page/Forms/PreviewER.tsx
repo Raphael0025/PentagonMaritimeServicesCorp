@@ -200,6 +200,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {allInstructors && allInstructors.map((i) => (
                                         <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
                                     ))}
+                                    <option value={'N/A'}>N/A</option>
                                 </Select>
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
