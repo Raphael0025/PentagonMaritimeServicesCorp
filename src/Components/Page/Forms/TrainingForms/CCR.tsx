@@ -15,8 +15,7 @@ import { useInstructors } from '@/context/InstructorContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
-import { parsingTimestamp, ToastStatus } from '@/types/handling'
-import { splitTextAtWordBoundary } from '@/handlers/util_handler';
+import { parsingTimestamp } from '@/types/handling'
 
 interface TFProps {
     batch: CourseBatchByID | null;
