@@ -15,8 +15,7 @@ import { useInstructors } from '@/context/InstructorContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
-import { parsingTimestamp, ToastStatus } from '@/types/handling'
-import { splitTextAtWordBoundary } from '@/handlers/util_handler';
+import { parsingTimestamp } from '@/types/handling'
 
 interface TFProps {
     batch: CourseBatchByID | null;
@@ -396,7 +395,6 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                         const ins = allInstructors?.find((i) => i.id === batch?.instructor)
 
                         const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                        const suffix = ins?.rank === 'CAPT' ? ', MM' : ''
                     
                         return(
                             <>

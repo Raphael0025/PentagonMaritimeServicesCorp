@@ -170,7 +170,7 @@ export default function Page(){
     return(
         <>
             <main className="w-full space-y-3">
-            <Box className="w-full flex justify-between">
+                <Box className="w-full flex justify-between">
                     <Box className="w-full flex">
                         <InputGroup w="40%" className="shadow-md rounded-lg">
                         <InputLeftAddon>

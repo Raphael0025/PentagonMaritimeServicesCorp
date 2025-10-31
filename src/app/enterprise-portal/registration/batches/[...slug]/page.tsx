@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef} from 'react'
 
 import { Box, Text, useToast, Menu, MenuButton, MenuList, MenuItem, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, } from '@chakra-ui/react'
-import 'animate.css'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { useCourses } from '@/context/CourseContext'

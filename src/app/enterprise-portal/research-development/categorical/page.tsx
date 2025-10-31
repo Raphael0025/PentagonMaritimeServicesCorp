@@ -76,6 +76,7 @@ export default function Page(){
 
     const handleRange = (day: string, numOfDays: number) => {
         const dateRanges = generateDateRanges(day, 5, numOfDays.toString());
+        console.log(dateRanges)
         setDateRange(dateRanges)
     }
 
@@ -103,7 +104,7 @@ export default function Page(){
 
             await addTypeCatalog('Vessel', vessel, 'categorical', actor)
         }catch(error){
-
+            console.error(error)
         }finally{
             setLoading(false)
             handleToast('Save Successfully', 'New Data added...', 4000, 'success')
