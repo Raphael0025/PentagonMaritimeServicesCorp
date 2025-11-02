@@ -138,7 +138,7 @@ export interface REGISTRATION {
 export interface TRAINING {
     reg_ref_id: string;
 
-    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel
+    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel | 8 - absent
     course_fee: number;
     course: string;
     start_date: string;

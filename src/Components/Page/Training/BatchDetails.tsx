@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react'
 import {
     Box, Text, Button, Input, InputGroup, Alert, AlertIcon, AlertTitle, AlertDescription, InputLeftAddon, Textarea, Select, useToast, useDisclosure,
     Modal, DrawerHeader, DrawerBody, DrawerFooter, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, ModalCloseButton, ModalOverlay, ModalContent, ModalHeader,
-    ModalBody, ModalFooter, Checkbox, CheckboxGroup,
-    VisuallyHidden
+    ModalBody, ModalFooter, Checkbox, CheckboxGroup
 } from '@chakra-ui/react';
 
 import { TRAINING_BY_ID } from '@/types/trainees'

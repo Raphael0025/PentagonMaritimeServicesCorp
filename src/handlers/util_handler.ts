@@ -45,6 +45,57 @@ export const getFormatDateWithTime = (date: Date | null): string => {
     return date.toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true})
 }
 
+export const trainingModeColor = (value: string) => {
+    switch(value){
+        case 'f2f':
+            return 'cyan.200';
+        case 'f2fm':
+            return 'cyan.400';
+        case 'f2ft':
+            return 'cyan.600';
+        case 'f2fp':
+            return 'cyan.800';
+        case 'ol':
+            return 'blue.100';
+        case 'olm':
+            return 'blue.300';
+        case 'olt':
+            return 'blue.500';
+        case 'olp':
+            return 'blue.700';
+        default:
+            return '';
+    }
+}
+
+export const trainingModeFontColor = (value: string) => {
+    switch(value){
+        case 'f2ft':
+        case 'olt':
+        case 'olp':
+            return 'white';
+        default:
+            return '';
+    }
+}
+
+export const backgroundColor = (value: number) => {
+    switch(value){
+        case 3:
+            return '';
+        case 4:
+            return 'blue.400';
+        case 6:
+            return 'green.400';
+        case 7:
+            return 'red.500';
+        case 8:
+            return 'red.400';
+        default:
+            return '';
+    }
+}
+
 const borderTextColorMap: Record<string, Record<number, string>> = {
     status: {
         0: 'blue.700',
