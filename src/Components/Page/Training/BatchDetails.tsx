@@ -153,6 +153,16 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
             [id]: value
         }))
     }
+    
+    const OnChangeBatchDetailsSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const { id, value } = e.target
+
+        setBatchDetails((prev) => ({
+            ...prev,
+            [id]: value
+        }))
+    }
+
     const OnChangeBatchDetailsTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const { id, value } = e.target
 
@@ -364,8 +374,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                     <Box display='flex' justifyContent='space-between'>
                         <InputGroup shadow='md' mr='2' w='50%' size='sm'>
                             <InputLeftAddon>Instructor:</InputLeftAddon>
-                            {/* <Input id='act_ins' type='text' value={batch.act_ins} onChange={OnChangeBatchDetails} /> */}
-                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetails}>
+                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetailsSelect}>
                                 <option hidden>{`${batch.act_ins ? (allInstructors?.find((i) => i.id === batch.act_ins)?.name || batch.act_ins) : 'Select Instructor'}`}</option>
                                 {allInstructors && allInstructors.map((i) => (
                                     <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
@@ -374,8 +383,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                         </InputGroup>
                         <InputGroup shadow='md' w='50%' size='sm'>
                             <InputLeftAddon>Assessor:</InputLeftAddon>
-                            {/* <Input id='act_ass' value={batch.act_ass} type='text' onChange={OnChangeBatchDetails} /> */}
-                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetails}>
+                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetailsSelect}>
                                 <option hidden>{`${batch.act_ass ? (allInstructors?.find((i) => i.id === batch.act_ass)?.name || batch.act_ass) : 'Select Assessor'}`}</option>
                                 {allInstructors && allInstructors.map((i) => (
                                     <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
