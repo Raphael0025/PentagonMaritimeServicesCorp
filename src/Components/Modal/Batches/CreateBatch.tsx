@@ -97,6 +97,8 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                         room: '',
                         instructor: '',
                         assessor: '',
+                        act_ins: '',
+                        act_ass: '',
                     }
                     const batch_id = await GENERATE_BATCH(newBatchRecord, actor) 
                     await Promise.all(

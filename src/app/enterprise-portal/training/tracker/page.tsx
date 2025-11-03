@@ -215,7 +215,7 @@ export default function TrackerPage(){
 
         }
         fetchData()
-    },[monthSelected, yearSelected, allTraining, allPrevTraining])
+    },[monthSelected, yearSelected, allTraining, filterCourse, filterCompany, allPrevTraining])
 
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear()
@@ -270,7 +270,6 @@ export default function TrackerPage(){
     return(
     <>
         <Box>
-            <Text>TRAINING TRACKER</Text>
             {/** Helpful Widgets, 
              * Gets Total Company Charge | Total Trainee Charge |
              * Total f2f Modular |
@@ -284,42 +283,42 @@ export default function TrackerPage(){
                 * F2f/INS = f2ft + f2fp +f2f
                 * Blended = purely blended
             * */}
-            <Box display='flex' fontWeight='normal' justifyContent='space-between' gap='4' mb='2'>
+            <Box display='flex' fontWeight='normal' justifyContent='space-between' gap='8' mb='2'>
                 <Box display='flex' w='50%' justifyContent='space-between'>
-                    <Box>
-                        <Box>
+                    <Box w='100%'>
+                        <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
                             <Text>Company</Text>
-                            <Text>{totalCompanyC}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalCompanyC}</Text>
                         </Box>
-                        <Box>
+                        <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
                             <Text>Trainee</Text>
-                            <Text>{totalTraineeC}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalTraineeC}</Text>
                         </Box>
                     </Box>
-                    <Box>
-                        <Box>
+                    <Box w='100%'>
+                        <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
                             <Text>F2F/MODULAR</Text>
-                            <Text>{totalF2FM}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalF2FM}</Text>
                         </Box>
-                        <Box>
+                        <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
                             <Text>OL/MODULAR</Text>
-                            <Text>{totalOLM}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalOLM}</Text>
                         </Box>
                     </Box>
-                    <Box>
-                        <Box>
+                    <Box w='100%'>
+                        <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
                             <Text>F2F/INS</Text>
-                            <Text>{totalF2FINS}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalF2FINS}</Text>
                         </Box>
-                        <Box>
+                        <Box p='1' px='3' border='1px solid black' w='100%'>
                             <Text>OL/INS</Text>
-                            <Text>{totalOLIns}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalOLIns}</Text>
                         </Box>
                     </Box>
-                    <Box>
-                        <Box>
+                    <Box w='100%'>
+                        <Box p='1' px='3' border='1px solid black' w='100%'>
                             <Text>BLENDED</Text>
-                            <Text>{totalBlended}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalBlended}</Text>
                         </Box>
                     </Box>
                 </Box>
@@ -375,7 +374,7 @@ export default function TrackerPage(){
                             <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
                         ))}
                     </Select>
-                    {(filterCourse !== '')&& (
+                    {(filterCourse !== '' || filterCompany !== '')&& (
                         <Button w='50%' mr={4} onClick={() => { setCompanyFilter(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                     )}
                     <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
@@ -486,8 +485,8 @@ export default function TrackerPage(){
                                 <Text w="180px" >
                                 {(() => {
                                     const trainingBatch = courseBatch?.find((batch) => batch.id === training.batch)
-                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.assessor);
-                                    if (!ins) return trainingBatch?.assessor || 'No Instructor';
+                                    const ins = allInstructors?.find((i) => i.id === (trainingBatch?.act_ins || trainingBatch?.instructor));
+                                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
 
                                     // Add 'MM' if rank is 'CAPT'
                                     const suffix = ins.rank === 'CAPT' ? ', MM' : '';
@@ -597,8 +596,8 @@ export default function TrackerPage(){
                                 <Text w="180px" >
                                 {(() => {
                                     const trainingBatch = courseBatch?.find((batch) => batch.id === training.batch)
-                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.assessor);
-                                    if (!ins) return trainingBatch?.assessor || 'No Instructor';
+                                    const ins = allInstructors?.find((i) => i.id === (trainingBatch?.act_ins || trainingBatch?.instructor));
+                                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
 
                                     // Add 'MM' if rank is 'CAPT'
                                     const suffix = ins.rank === 'CAPT' ? ', MM' : '';

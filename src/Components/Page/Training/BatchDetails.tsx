@@ -19,6 +19,7 @@ import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useClients } from '@/context/ClientCompanyContext'
+import { useInstructors } from '@/context/InstructorContext'
 
 import { UPDATE_BATCH } from '@/lib/course_batches_controller'
 
@@ -38,6 +39,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     const { allData: allRegistrations } = useRegistrations()
     const { data: allCourses } = useCourses()
     const { data: allClients, courseCodes } = useClients()
+    const { data: allInstructors } = useInstructors()
     
     const [course, setCourse] = useState<CoursesById>(initCoursesById)
     const [batch, setBatchDetails] = useState<CourseBatchByID>(initCourseBatch)
@@ -322,21 +324,75 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                         <Input id='room' value={batch.room} placeholder={`e.g., Room 1-7 only`} type='text' onChange={OnChangeBatchDetails} />
                     </InputGroup>
                 </Box>
-                <Box mt='2' >
-                    <InputGroup mb='2' shadow='md' size='sm'>
-                        <InputLeftAddon>Instructor:</InputLeftAddon>
-                        <Input id='instructor' value={batch.instructor} placeholder={`Type here instructor's name`} type='text' onChange={OnChangeBatchDetails} />
-                    </InputGroup>
-                    <InputGroup shadow='md' size='sm'>
-                        <InputLeftAddon>Training Mode:</InputLeftAddon>
-                        <Select onChange={(e) => {setBatchDetails((prev) => ({...prev, training_mode: e.target.value}))}} value={batch.training_mode}>
-                            <option label='Select Training Mode' hidden />
-                            {trainingModes.map((arr, index) => (
-                                <option key={index} label={arr.label} value={arr.value}/>
-                            ))}
-                        </Select>
-                    </InputGroup>
+                <Box mt='2' fontSize='10pt'>
+                    <Box fontWeight='normal' mb='2' >
+                        <Text fontWeight='bold' >Declared Instructor & Assessor:</Text>
+                        <Box display='flex' justifyContent='space-between'>
+                            <Box >
+                                <Text fontWeight='bold'>Instructor:</Text>
+                                <Text>
+                                {(() => {
+                                    const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
+                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.instructor);
+                                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                    return `${ins.rank} ${ins.name}${suffix}`;
+                                })()} 
+                                </Text>
+                            </Box>
+                            <Box >
+                                <Text fontWeight='bold'>Assessor:</Text>
+                                <Text>
+                                {(() => {
+                                    const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
+                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.assessor);
+                                    if (!ins) return trainingBatch?.assessor || 'No Instructor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                    return `${ins.rank} ${ins.name}${suffix}`;
+                                })()} 
+                                </Text>
+                            </Box>
+                        </Box>
+                    </Box>
                 </Box>
+                <Box mt='2' >
+                    <Text fontSize='10pt'>Actual Instructor & Assessor:</Text>
+                    <Box display='flex' justifyContent='space-between'>
+                        <InputGroup shadow='md' mr='2' w='50%' size='sm'>
+                            <InputLeftAddon>Instructor:</InputLeftAddon>
+                            {/* <Input id='act_ins' type='text' value={batch.act_ins} onChange={OnChangeBatchDetails} /> */}
+                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetails}>
+                                <option hidden>{`${batch.act_ins ? (allInstructors?.find((i) => i.id === batch.act_ins)?.name || batch.act_ins) : 'Select Instructor'}`}</option>
+                                {allInstructors && allInstructors.map((i) => (
+                                    <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                ))}
+                            </Select>
+                        </InputGroup>
+                        <InputGroup shadow='md' w='50%' size='sm'>
+                            <InputLeftAddon>Assessor:</InputLeftAddon>
+                            {/* <Input id='act_ass' value={batch.act_ass} type='text' onChange={OnChangeBatchDetails} /> */}
+                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetails}>
+                                <option hidden>{`${batch.act_ass ? (allInstructors?.find((i) => i.id === batch.act_ass)?.name || batch.act_ass) : 'Select Assessor'}`}</option>
+                                {allInstructors && allInstructors.map((i) => (
+                                    <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                ))}
+                            </Select>
+                        </InputGroup>
+                    </Box>
+                </Box>
+                <InputGroup mt='2' shadow='md' size='sm'>
+                    <InputLeftAddon>Training Mode:</InputLeftAddon>
+                    <Select onChange={(e) => {setBatchDetails((prev) => ({...prev, training_mode: e.target.value}))}} value={batch.training_mode}>
+                        <option label='Select Training Mode' hidden />
+                        {trainingModes.map((arr, index) => (
+                            <option key={index} label={arr.label} value={arr.value}/>
+                        ))}
+                    </Select>
+                </InputGroup>
             </DrawerHeader>
             <DrawerBody>
                 <Box mt='2' >

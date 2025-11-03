@@ -11,6 +11,8 @@ export interface CourseBatch{
     room: string;
     instructor: string;
     assessor: string;
+    act_ins: string;
+    act_ass: string;
 }
 
 export interface CourseBatchByID extends CourseBatch{
@@ -39,4 +41,6 @@ export const initCourseBatch = {
     remarks: '',
     createdAt: Timestamp.now(),
     updateAt: Timestamp.now(),
+    act_ins: '',
+    act_ass: '',
 }

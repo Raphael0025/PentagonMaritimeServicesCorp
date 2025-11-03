@@ -63,6 +63,8 @@ export const trainingModeColor = (value: string) => {
             return 'blue.500';
         case 'olp':
             return 'blue.700';
+        case 'blended':
+            return 'orange.400';
         default:
             return '';
     }
