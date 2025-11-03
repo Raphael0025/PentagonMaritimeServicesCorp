@@ -352,47 +352,49 @@ export const CHANGE_AT = async (training_id: string, reg_doc: REGISTRATION_BY_ID
 } 
 
 export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
-    try{
-        // this part fetches the latest registration number then increments it, 
-        // but if no data is found it initializes a registration number
-        
-        const reg_Collection_Snapshot = await getDocs(registration)
-        
-        // Filter documents with the matching reg_type
+    try {
+        const reg_Collection_Snapshot = await getDocs(registration);
+
+        // 🔹 Filter docs by regType to maintain separate numbering per type
         const filteredDocs = reg_Collection_Snapshot.docs.filter(
             (doc) => doc.data().regType === reg_type
-        )
-        
+        );
+
         const currentYear = new Date().getFullYear();
         let maxNum = 0;
 
-        filteredDocs.forEach(doc => {
-            const regNo = doc.data().reg_no; // e.g., "Reg-2025-10000"
+        // 🔹 Extract max reg_no for this regType
+        filteredDocs.forEach((doc) => {
+            const regNo = doc.data().reg_no; // e.g., "2025-1001"
+            if (!regNo) return;
             const parts = regNo.split("-");
-            const numPart = parseInt(parts[1]); // directly get the number part
-            if (numPart > maxNum) {
+            const numPart = parseInt(parts[1]);
+            if (!isNaN(numPart) && numPart > maxNum) {
                 maxNum = numPart;
             }
         });
 
-        const maxRegNo = `${currentYear}-${maxNum + 1}`;
-        
-        // on this part, it fetches all documents with the same reg_ref_id in training collection
-        const tQuery = query(training, where('reg_ref_id', '==', registration_id))
-        const tQSnapshot = await getDocs(tQuery)
-        const data: TRAINING_BY_ID[] = []
+        // 🔹 Generate new reg_no safely
+        const newRegNo = `${currentYear}-${maxNum + 1}`;
+
+        // 🔹 Fetch training documents using same registration
+        const tQuery = query(training, where("reg_ref_id", "==", registration_id));
+        const tQSnapshot = await getDocs(tQuery);
+        const data: TRAINING_BY_ID[] = [];
 
         if (!tQSnapshot.empty) {
-            const currDate = new Date()
-            const currDateString = `${currDate.getFullYear()}-${String(currDate.getMonth()+1).padStart(2, "0")}-${String(currDate.getDate()).padStart(2, "0")}`
-            
-            tQSnapshot.forEach((doc) => {
-                const docData = doc.data() as TRAINING_BY_ID;
-                docData.id = doc.id
+            const currDate = new Date();
+            const currDateString = `${currDate.getFullYear()}-${String(
+                currDate.getMonth() + 1
+            ).padStart(2, "0")}-${String(currDate.getDate()).padStart(2, "0")}`;
+
+            tQSnapshot.forEach((docSnap) => {
+                const docData = docSnap.data() as TRAINING_BY_ID;
+                docData.id = docSnap.id;
                 data.push(docData);
-            })
-            // then it ensures that some of the documents have enrolled (3) and enrolled date are the same as the current date
-            const hasRegStat3 = data.some((doc) => doc.reg_status === 3)
+            });
+
+            const hasRegStat3 = data.some((doc) => doc.reg_status === 3);
             const hasMatchingDate = data.some((doc) => {
                 if (doc.date_enrolled instanceof Timestamp) {
                     const enrolledDate = doc.date_enrolled.toDate();
@@ -402,72 +404,105 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                     return enrolledDateString === currDateString;
                 }
                 return false;
-            })
+            });
 
-            if (hasRegStat3 && hasMatchingDate) { 
-                // If both are true, then update the reg_status of the document to enrolled (3) and its date_enrolled
-                const trainingRef = doc(firestore, 'TRAINING', training_id);
-                const newStatus = {
-                    batch,
-                    regType: reg_type === 0 ? reg_type : 1,
-                    reg_status: 3, // Set reg_status to 3 (enrolled)
-                    date_enrolled: Timestamp.now()  // Set current date as enrollment date
-                };
-                await updateDoc(trainingRef, { ...newStatus });
-            } else if(!hasRegStat3){
-                // on this condition, check if the fetched training documents with the same reg_ref_id
-                // if some of them have 3 as values for reg_status 
-                const trainingRef = doc(firestore, 'TRAINING', training_id);
-                const regRef = doc(firestore, 'REGISTRATION', registration_id);
-                
-                const newStatus = {
-                    batch,
-                    regType: reg_type === 0 ? reg_type : 1,
-                    reg_status: 3, // Set reg_status to 3 (enrolled)
-                    date_enrolled: Timestamp.now()  // Set current date as enrollment date
-                }
-                await updateDoc(trainingRef, { ...newStatus })
+            // 🔹 Check if the registration type matches the current training’s regType
+            const regRefSnap = await getDoc(doc(firestore, "REGISTRATION", registration_id));
+            const existingRegType = regRefSnap.exists() ? regRefSnap.data().regType : null;
 
-                const newRegInfo = {
-                    reg_no: maxRegNo,
-                    regType: reg_type === 0 ? reg_type : 1,  
-                }
-                await updateDoc(regRef, { ...newRegInfo })
-            } else { 
-                // then here, if the conditions are not met, it will create a new registration document that links to the
-                // and creates a new registration number
+            // 🔸 If the regType differs, we must create a new REGISTRATION doc
+            if (existingRegType !== null && existingRegType !== reg_type) {
                 const newRegistration: REGISTRATION = {
-                    trainee_ref_id: trainee_id,         // You can adjust the reference field as needed
-                    reg_no: maxRegNo,                  // Use the incremented reg_no
-                    regApproach: 0,                    
-                    traineeType: 0,    
-                    regType: reg_type === 0 ? reg_type : 1,                
-                    payment_status: 2,                 
-                    payment_mode: 0,                   
-                    payment_balance: 0,                
-                    date_registered: Timestamp.now(),  // Current timestamp
-                    reg_remarks: '',
-                    marketing: '',
-                    otherMarketing: '',
-                    reg_accountType: reg_account_type === 0 ? reg_account_type : 1,              
+                    trainee_ref_id: trainee_id,
+                    reg_no: newRegNo,
+                    regApproach: 0,
+                    traineeType: 0,
+                    regType: reg_type,
+                    payment_status: 2,
+                    payment_mode: 0,
+                    payment_balance: 0,
+                    date_registered: Timestamp.now(),
+                    reg_remarks: "",
+                    marketing: "",
+                    otherMarketing: "",
+                    reg_accountType: reg_account_type,
                 };
-                const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
 
-                const trainingRef = doc(firestore, 'TRAINING', training_id)
-                const newStatus= {
+                const idRef = await addDoc(registration, { ...newRegistration });
+
+                const trainingRef = doc(firestore, "TRAINING", training_id);
+                const newStatus = {
                     batch,
                     reg_ref_id: idRef.id,
-                    regType: reg_type === 0 ? reg_type : 1,
+                    regType: reg_type,
                     reg_status: 3,
-                    date_enrolled: Timestamp.now()
-                }
-                await updateDoc(trainingRef, {...newStatus})
+                    date_enrolled: Timestamp.now(),
+                };
+
+                await updateDoc(trainingRef, { ...newStatus });
+                await addLog(actor, "Registration was enrolled successfully", "TRAINING", training_id);
+                return;
             }
-            return data
-        } 
-        await addLog(actor, 'Registration was enrolled successfully', 'TRAINING', training_id)
-    }catch(error){
-        throw error
+
+            // 🔹 Existing regType matches
+            if (hasRegStat3 && hasMatchingDate) {
+                const trainingRef = doc(firestore, "TRAINING", training_id);
+                await updateDoc(trainingRef, {
+                    batch,
+                    regType: reg_type,
+                    reg_status: 3,
+                    date_enrolled: Timestamp.now(),
+                });
+            } else if (!hasRegStat3) {
+                const trainingRef = doc(firestore, "TRAINING", training_id);
+                const regRef = doc(firestore, "REGISTRATION", registration_id);
+
+                await updateDoc(trainingRef, {
+                    batch,
+                    regType: reg_type,
+                    reg_status: 3,
+                    date_enrolled: Timestamp.now(),
+                });
+
+                await updateDoc(regRef, {
+                    reg_no: newRegNo,
+                    regType: reg_type,
+                });
+            } else {
+                const newRegistration: REGISTRATION = {
+                    trainee_ref_id: trainee_id,
+                    reg_no: newRegNo,
+                    regApproach: 0,
+                    traineeType: 0,
+                    regType: reg_type,
+                    payment_status: 2,
+                    payment_mode: 0,
+                    payment_balance: 0,
+                    date_registered: Timestamp.now(),
+                    reg_remarks: "",
+                    marketing: "",
+                    otherMarketing: "",
+                    reg_accountType: reg_account_type,
+                };
+
+                const idRef = await addDoc(registration, { ...newRegistration });
+
+                const trainingRef = doc(firestore, "TRAINING", training_id);
+                await updateDoc(trainingRef, {
+                    batch,
+                    reg_ref_id: idRef.id,
+                    regType: reg_type,
+                    reg_status: 3,
+                    date_enrolled: Timestamp.now(),
+                });
+            }
+
+            await addLog(actor, "Registration was enrolled successfully", "TRAINING", training_id);
+            return data;
+        }
+    } catch (error) {
+        console.error("ENROLL_COURSE error:", error);
+        throw error;
     }
 }
 

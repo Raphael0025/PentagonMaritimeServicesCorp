@@ -377,7 +377,7 @@ export default function Page(){
                                                     <Text w="100px">{training.end_date === '' ? '--' : training.end_date}</Text>    
                                                 </Box>
                                             </Box>
-                                            <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>    
+                                            <Text w="100px" bgColor={training.accountType === 0 ? 'blue.300' : 'green.400'} borderRadius='5px' _hover={{fontWeight: '700'}} >{training.accountType === 0 ? 'crew' : 'company'}</Text>     
                                             <Text w="100px" >{`₱ ${training.course_fee}`}</Text>    
                                             <Tooltip w='250px' label={trainee.vessel.toUpperCase() }>
                                                 <Text noOfLines={1} w='100px'>
