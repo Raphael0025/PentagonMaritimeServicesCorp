@@ -140,6 +140,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
         {label: 'Online MODULAR', value: 'olm'},
         {label: 'Online THEORETICAL', value: 'olt'},
         {label: 'Online PRACTICAL', value: 'olp'},
+        {label: 'Blended', value: 'blended'},
     ]
 
     const OnChangeBatchDetails = (e: React.ChangeEvent<HTMLInputElement>) => {

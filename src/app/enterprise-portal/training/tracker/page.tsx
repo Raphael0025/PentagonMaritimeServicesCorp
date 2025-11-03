@@ -1,9 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Box, Text, Input, Textarea, Spinner, Center, Button, Checkbox, InputLeftAddon, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
+
+import { TRAINING_BY_ID } from '@/types/trainees'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -41,10 +43,180 @@ export default function TrackerPage(){
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
-
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
-
     
+    const [currTraining, setCurrTraining] = useState<TRAINING_BY_ID[] | null>(null)
+    const [prevTraining, setPrevTraining] = useState<TRAINING_BY_ID[] | null>(null)
+
+    const [totalTraineeC, setTraineeCharge] = useState<number>(0)
+    const [totalCompanyC, setCompanyCharge] = useState<number>(0)
+    const [totalF2FINS, setF2fIns] = useState<number>(0)
+    const [totalOLIns, setOLIns] = useState<number>(0)
+    const [totalF2FM, setF2FM] = useState<number>(0)
+    const [totalOLM, setOLM] = useState<number>(0)
+    const [totalBlended, setBlended] = useState<number>(0)
+
+    useEffect(() => {
+        const fetchData = () => {
+            const prevData = allPrevTraining && allPrevTraining.sort((a, b) => {
+                // Get course names from allCourses or courseCodes
+                const courseA =
+                allCourses?.find((course) => course.id === a.course)?.course_code?.toLowerCase() ||
+                courseCodes?.find((course) => course.id === a.course)?.company_course_code?.toLowerCase() ||
+                '';
+                const courseB =
+                allCourses?.find((course) => course.id === b.course)?.course_code?.toLowerCase() ||
+                courseCodes?.find((course) => course.id === b.course)?.company_course_code?.toLowerCase() ||
+                '';
+        
+                // Compare alphabetically by course name
+                if (courseA < courseB) return -1;
+                if (courseA > courseB) return 1;
+        
+                // If same course, compare by batch number (ascending)
+                const batchA =
+                courseBatch?.find((batch) => batch.id === a.batch)?.batch_no || 0;
+                const batchB =
+                courseBatch?.find((batch) => batch.id === b.batch)?.batch_no || 0;
+        
+                return batchA - batchB;
+            })
+            .filter((t) => t.reg_status >= 3 && t.regType === 0 )
+            .filter((t) => {
+                const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
+                const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
+                if (!trainee) return false;
+                if (filterCompany === '') return true;
+
+                return trainee.company === filterCompany
+                //allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
+            })
+            .filter((t) => {
+                if (!filterCourse || filterCourse === '') return true;
+
+                return (
+                    allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
+                    courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+                )
+            })
+            .filter((t) => {
+                // Example: "Mon, Oct 1"
+                const monthFromStartDate = t.start_date?.split(', ')[1]?.split(' ')[0]; // e.g., "Oct"
+            
+                // Map month abbreviations to indices (0–11)
+                const monthMap: Record<string, number> = {
+                    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+                    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+                };
+            
+                // Convert extracted month (e.g. "Oct") to its index
+                const trainingMonthIndex = monthMap[monthFromStartDate.toLowerCase()];
+            
+                // Keep only if start_date month matches the selected month
+                return trainingMonthIndex === monthSelected;
+            })
+
+            const currData = allTraining && allTraining.sort((a, b) => {
+                // Get course names from allCourses or courseCodes
+                const courseA =
+                allCourses?.find((course) => course.id === a.course)?.course_code?.toLowerCase() ||
+                courseCodes?.find((course) => course.id === a.course)?.company_course_code?.toLowerCase() ||
+                '';
+                const courseB =
+                allCourses?.find((course) => course.id === b.course)?.course_code?.toLowerCase() ||
+                courseCodes?.find((course) => course.id === b.course)?.company_course_code?.toLowerCase() ||
+                '';
+        
+                // Compare alphabetically by course name
+                if (courseA < courseB) return -1;
+                if (courseA > courseB) return 1;
+        
+                // If same course, compare by batch number (ascending)
+                const batchA =
+                courseBatch?.find((batch) => batch.id === a.batch)?.batch_no || 0;
+                const batchB =
+                courseBatch?.find((batch) => batch.id === b.batch)?.batch_no || 0;
+        
+                return batchA - batchB;
+            })
+            .filter((t) => t.reg_status >= 3 && t.regType === 0 )
+            .filter((t) => {
+                const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
+                const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
+                if (!trainee) return false;
+                if (filterCompany === '') return true;
+
+                return trainee.company === filterCompany
+                //allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
+            })
+            .filter((t) => {
+                if (!filterCourse || filterCourse === '') return true;
+
+                return (
+                    allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
+                    courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+                )
+            })
+            .filter((t) => {
+                // Example: "Mon, Oct 1"
+                const monthFromStartDate = t.start_date?.split(', ')[1]?.split(' ')[0]; // e.g., "Oct"
+            
+                // Map month abbreviations to indices (0–11)
+                const monthMap: Record<string, number> = {
+                    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+                    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+                };
+            
+                // Convert extracted month (e.g. "Oct") to its index
+                const trainingMonthIndex = monthMap[monthFromStartDate.toLowerCase()];
+            
+                // Keep only if start_date month matches the selected month
+                return trainingMonthIndex === monthSelected;
+            })
+            if(!currData && !prevData) return
+
+            const mergedData = [...(currData ?? []), ...(prevData ?? [])];
+
+            // 1️⃣ Total trainees by account type
+            const traineeChargeCount = mergedData.filter(t => t.accountType === 0).length;
+            const companyChargeCount = mergedData.filter(t => t.accountType === 1).length;
+
+            // 2️⃣ Total by training mode
+            let f2fIns = 0;
+            let olIns = 0;
+            let f2fM = 0;
+            let olM = 0;
+            let blended = 0;
+
+            mergedData.forEach(training => {
+                const batch = courseBatch?.find(batch => batch.id === training.batch);
+                const mode = batch?.training_mode?.toLowerCase();
+
+                if (!mode) return;
+
+                if (mode ===" f2f" || mode === "f2ft" || mode === "f2fp") f2fIns++;
+                else if (mode === "ol" || mode === "olt" || mode === "olp") olIns++;
+                else if (mode === "olm") olM++;
+                else if (mode === "f2fm") f2fM++;
+                else if (mode === "blended") blended++;
+            });
+
+            // 3️⃣ Set the states
+            setCurrTraining(currData ?? []);
+            setPrevTraining(prevData ?? []);
+
+            setTraineeCharge(traineeChargeCount);
+            setCompanyCharge(companyChargeCount);
+            setF2fIns(f2fIns);
+            setOLIns(olIns);
+            setF2FM(f2fM);
+            setOLM(olM);
+            setBlended(blended);
+
+        }
+        fetchData()
+    },[monthSelected, yearSelected, allTraining, allPrevTraining])
+
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear()
     const startYear = parseInt(deployYDate, 10)
@@ -108,10 +280,70 @@ export default function TrackerPage(){
                 * Total f2f theoretical | Total f2f Practical | Total f2f Both Prac & Theo
                 * total ol theoretical | Total ol Practical | Total OL Both Prac & Theo 
             * Solution:
-                *  
+                * OL/INS = olt + olp + ol
+                * F2f/INS = f2ft + f2fp +f2f
+                * Blended = purely blended
             * */}
-            <Box>
-
+            <Box display='flex' fontWeight='normal' justifyContent='space-between' gap='4' mb='2'>
+                <Box display='flex' w='50%' justifyContent='space-between'>
+                    <Box>
+                        <Box>
+                            <Text>Company</Text>
+                            <Text>{totalCompanyC}</Text>
+                        </Box>
+                        <Box>
+                            <Text>Trainee</Text>
+                            <Text>{totalTraineeC}</Text>
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Box>
+                            <Text>F2F/MODULAR</Text>
+                            <Text>{totalF2FM}</Text>
+                        </Box>
+                        <Box>
+                            <Text>OL/MODULAR</Text>
+                            <Text>{totalOLM}</Text>
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Box>
+                            <Text>F2F/INS</Text>
+                            <Text>{totalF2FINS}</Text>
+                        </Box>
+                        <Box>
+                            <Text>OL/INS</Text>
+                            <Text>{totalOLIns}</Text>
+                        </Box>
+                    </Box>
+                    <Box>
+                        <Box>
+                            <Text>BLENDED</Text>
+                            <Text>{totalBlended}</Text>
+                        </Box>
+                    </Box>
+                </Box>
+                <Box display='flex' w='50%' justifyContent='space-between' mb='4'>
+                    <Box ms='4' w='100%'>
+                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='green.400'>
+                            <Text>GRADUATED</Text>
+                        </Box>
+                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='blue.400'>
+                            <Text color='white'>PENDING</Text>
+                        </Box>
+                    </Box>
+                    <Box w='100%'>
+                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='yellow.400'>
+                            <Text>WITHDRAW</Text>
+                        </Box>
+                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='red.400'>
+                            <Text>ABSENT</Text>
+                        </Box>
+                    </Box>
+                    <Box display='flex' justifyContent='center' alignItems='center' w='100%' textAlign='center' bgColor='red.500'>
+                        <Text color='white'>CANCELLED</Text>
+                    </Box>
+                </Box>
             </Box>
             <Box mb='2' className="w-full flex justify-between">
                 <Box className="w-full flex">
@@ -188,77 +420,20 @@ export default function TrackerPage(){
                     <Center py={8}>
                         <Text fontWeight="medium" color="gray.500">No training records found.</Text>
                     </Center>
-                ) : (allPrevTraining && allPrevTraining.sort((a, b) => {
-                        // Get course names from allCourses or courseCodes
-                        const courseA =
-                        allCourses?.find((course) => course.id === a.course)?.course_code?.toLowerCase() ||
-                        courseCodes?.find((course) => course.id === a.course)?.company_course_code?.toLowerCase() ||
-                        '';
-                        const courseB =
-                        allCourses?.find((course) => course.id === b.course)?.course_code?.toLowerCase() ||
-                        courseCodes?.find((course) => course.id === b.course)?.company_course_code?.toLowerCase() ||
-                        '';
-                
-                        // Compare alphabetically by course name
-                        if (courseA < courseB) return -1;
-                        if (courseA > courseB) return 1;
-                
-                        // If same course, compare by batch number (ascending)
-                        const batchA =
-                        courseBatch?.find((batch) => batch.id === a.batch)?.batch_no || 0;
-                        const batchB =
-                        courseBatch?.find((batch) => batch.id === b.batch)?.batch_no || 0;
-                
-                        return batchA - batchB;
-                    })
-                    .filter((t) => t.reg_status >= 3 && t.regType === 0 )
-                    .filter((t) => {
-                        const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
-                        const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
-                        if (!trainee) return false;
-                        if (filterCompany === '') return true;
-
-                        return trainee.company === filterCompany
-                        //allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
-                    })
-                    .filter((t) => {
-                        if (!filterCourse || filterCourse === '') return true;
-
-                        return (
-                            allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
-                            courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+                ) : (prevTraining?.map((training) => {
+                    
+                        const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
+                        const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
+                        const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
+                        //const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
+                        
+                        if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
                         )
-                    })
-                    .filter((t) => {
-                        // Example: "Mon, Oct 1"
-                        const monthFromStartDate = t.start_date?.split(', ')[1]?.split(' ')[0]; // e.g., "Oct"
-                    
-                        // Map month abbreviations to indices (0–11)
-                        const monthMap: Record<string, number> = {
-                            jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-                            jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
-                        };
-                    
-                        // Convert extracted month (e.g. "Oct") to its index
-                        const trainingMonthIndex = monthMap[monthFromStartDate.toLowerCase()];
-                    
-                        // Keep only if start_date month matches the selected month
-                        return trainingMonthIndex === monthSelected;
-                    })
-                    .map((training) => {
-                    
-                    const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
-                    const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
-                    const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
-                    //const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
-                    
-                    if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
                     ){
                         return(
                             <Box key={training.id} borderRadius='5px' color={training.reg_status === 7 ? 'white' : 'black'} bgColor={backgroundColor(training.reg_status)} w='2650px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
@@ -357,77 +532,19 @@ export default function TrackerPage(){
                     <Center py={8}>
                         <Text fontWeight="medium" color="gray.500">No training records found.</Text>
                     </Center>
-                ) : (allTraining && allTraining.sort((a, b) => {
-                        // Get course names from allCourses or courseCodes
-                        const courseA =
-                        allCourses?.find((course) => course.id === a.course)?.course_code?.toLowerCase() ||
-                        courseCodes?.find((course) => course.id === a.course)?.company_course_code?.toLowerCase() ||
-                        '';
-                        const courseB =
-                        allCourses?.find((course) => course.id === b.course)?.course_code?.toLowerCase() ||
-                        courseCodes?.find((course) => course.id === b.course)?.company_course_code?.toLowerCase() ||
-                        '';
-                
-                        // Compare alphabetically by course name
-                        if (courseA < courseB) return -1;
-                        if (courseA > courseB) return 1;
-                
-                        // If same course, compare by batch number (ascending)
-                        const batchA =
-                        courseBatch?.find((batch) => batch.id === a.batch)?.batch_no || 0;
-                        const batchB =
-                        courseBatch?.find((batch) => batch.id === b.batch)?.batch_no || 0;
-                
-                        return batchA - batchB;
-                    })
-                    .filter((t) => t.reg_status >= 3 && t.regType === 0 )
-                    .filter((t) => {
-                        const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
-                        const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
-                        if (!trainee) return false;
-                        if (filterCompany === '') return true;
-
-                        return trainee.company === filterCompany
-                        //allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
-                    })
-                    .filter((t) => {
-                        if (!filterCourse || filterCourse === '') return true;
-
-                        return (
-                            allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
-                            courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+                ) : (currTraining?.map((training) => {
+                        const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
+                        const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
+                        const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
+                        //const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
+                        
+                        if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
                         )
-                    })
-                    .filter((t) => {
-                        // Example: "Mon, Oct 1"
-                        const monthFromStartDate = t.start_date?.split(', ')[1]?.split(' ')[0]; // e.g., "Oct"
-                    
-                        // Map month abbreviations to indices (0–11)
-                        const monthMap: Record<string, number> = {
-                            jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-                            jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
-                        };
-                    
-                        // Convert extracted month (e.g. "Oct") to its index
-                        const trainingMonthIndex = monthMap[monthFromStartDate.toLowerCase()];
-                    
-                        // Keep only if start_date month matches the selected month
-                        return trainingMonthIndex === monthSelected;
-                    })
-                    .map((training) => {
-                    
-                    const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
-                    const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
-                    const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
-                    //const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
-                    
-                    if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
                     ){
                         return(
                             <Box key={training.id} borderRadius='5px' color={training.reg_status === 7 ? 'white' : 'black'} bgColor={backgroundColor(training.reg_status)} w='2650px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
