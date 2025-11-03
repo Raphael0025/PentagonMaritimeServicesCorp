@@ -39,6 +39,8 @@ export default function TrackerPage(){
 
     const [filterCourse, setCFilter] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
+    const [filterInstructor, setInstructorFilter] = useState('')
+    const [filterMode, setModeFilter] = useState('')
 
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
@@ -90,6 +92,35 @@ export default function TrackerPage(){
 
                 return trainee.company === filterCompany
                 //allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
+            })
+            .filter((t) => {
+                if (!filterInstructor) return true;
+                
+                const batch = courseBatch?.find((b) => b.id === t.batch);
+                // Prioritize act_instructor if exists
+                const instructorId = batch?.act_ins || batch?.instructor;
+                return instructorId === filterInstructor;
+            })
+            .filter((t) => {
+                if (!filterMode) return true;
+            
+                const batch = courseBatch?.find((b) => b.id === t.batch);
+                const mode = batch?.training_mode?.toLowerCase() || '';
+            
+                switch (filterMode.toLowerCase()) {
+                    case 'f2f':
+                        return ['f2f', 'f2ft', 'f2fp'].includes(mode);
+                    case 'ol':
+                        return ['ol', 'olt', 'olp'].includes(mode);
+                    case 'blended':
+                        return mode === 'blended';
+                    case 'f2fm':
+                        return mode === 'f2fm';
+                    case 'olm':
+                        return mode === 'olm';
+                    default:
+                        return true;
+                }
             })
             .filter((t) => {
                 if (!filterCourse || filterCourse === '') return true;
@@ -148,6 +179,35 @@ export default function TrackerPage(){
 
                 return trainee.company === filterCompany
                 //allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
+            })
+            .filter((t) => {
+                if (!filterInstructor) return true;
+            
+                const batch = courseBatch?.find((b) => b.id === t.batch);
+                // Prioritize act_instructor if exists
+                const instructorId = batch?.act_ins || batch?.instructor;
+                return instructorId === filterInstructor;
+            })
+            .filter((t) => {
+                if (!filterMode) return true;
+            
+                const batch = courseBatch?.find((b) => b.id === t.batch);
+                const mode = batch?.training_mode?.toLowerCase() || '';
+            
+                switch (filterMode.toLowerCase()) {
+                    case 'f2f':
+                        return ['f2f', 'f2ft', 'f2fp'].includes(mode);
+                    case 'ol':
+                        return ['ol', 'olt', 'olp'].includes(mode);
+                    case 'blended':
+                        return mode === 'blended';
+                    case 'f2fm':
+                        return mode === 'f2fm';
+                    case 'olm':
+                        return mode === 'olm';
+                    default:
+                        return true;
+                }
             })
             .filter((t) => {
                 if (!filterCourse || filterCourse === '') return true;
@@ -215,7 +275,7 @@ export default function TrackerPage(){
 
         }
         fetchData()
-    },[monthSelected, yearSelected, allTraining, filterCourse, filterCompany, allPrevTraining])
+    },[monthSelected, yearSelected, allTraining, filterCourse, filterInstructor, filterMode, filterCompany, allPrevTraining])
 
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear()
@@ -346,18 +406,18 @@ export default function TrackerPage(){
             </Box>
             <Box mb='2' className="w-full flex justify-between">
                 <Box className="w-full flex">
-                    <InputGroup w="40%" className="shadow-md rounded-lg">
-                    <InputLeftAddon>
-                        <SearchIcon color="#a1a1a1" size="18" />
-                    </InputLeftAddon>
-                    <Input
-                        placeholder="Name, Enrolled Date, Registration No..."
-                        value={searchTerm}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+                    <InputGroup w="50%" className="shadow-md rounded-lg">
+                        <InputLeftAddon>
+                            <SearchIcon color="#a1a1a1" size="18" />
+                        </InputLeftAddon>
+                        <Input
+                            placeholder="Name, Enrolled Date, Registration No..."
+                            value={searchTerm}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </InputGroup>
                 </Box>
-                <Box w='80%' display='flex' >
+                <Box w='90%' display='flex' >
                     <Select size='sm' mr='4' value={filterCourse} onChange={(e) => {setCFilter(e.target.value);}} shadow='md'>
                         <option hidden>Filter Course</option>
                         {allCourses && [...allCourses]
@@ -374,8 +434,27 @@ export default function TrackerPage(){
                             <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
                         ))}
                     </Select>
-                    {(filterCourse !== '' || filterCompany !== '')&& (
-                        <Button w='50%' mr={4} onClick={() => { setCompanyFilter(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
+                    {/* Instructor Filter */}
+                    <Select size='sm' mr='4' value={filterInstructor} onChange={(e) => setInstructorFilter(e.target.value)} shadow='md'>
+                        <option hidden>Filter Instructor</option>
+                        {allInstructors && [...allInstructors]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((ins) => (
+                            <option key={ins.id} value={ins.id}>{ins.name.toUpperCase()}</option>
+                        ))}
+                    </Select>
+
+                    {/* Mode of Training Filter */}
+                    <Select size='sm' mr='4' value={filterMode} onChange={(e) => setModeFilter(e.target.value)} shadow='md'>
+                        <option hidden>Filter Mode</option>
+                        <option value='f2f'>F2F/INS</option>
+                        <option value='ol'>OL/INS</option>
+                        <option value='blended'>Blended</option>
+                        <option value='f2fm'>F2F-Modular</option>
+                        <option value='olm'>OL-Modular</option>
+                    </Select>
+                    {(filterCourse || filterCompany || filterInstructor || filterMode) && (
+                        <Button w='50%' mr={4} onClick={() => { setCompanyFilter(''); setInstructorFilter(''), setModeFilter(''), setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                     )}
                     <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
                 </Box>
