@@ -146,6 +146,7 @@ export default function Page() {
                     let batch: string = '1'
                     const actorType: number = 1
                     await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 1, reg_account_type, actor)
+                    console.log(true)
                     
                     // const training = allTraining?.find((t) => t.id === training_id) // Get training doc using training_id === t.id
                     // if(!training){
