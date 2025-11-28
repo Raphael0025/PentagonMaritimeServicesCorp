@@ -98,6 +98,32 @@ export const backgroundColor = (value: number) => {
     }
 }
 
+export const BackgroundTypeColor = (value: string) => {
+    switch(value.toLowerCase()){
+        case 'announcement':
+            return 'yellow.50'
+        case 'alert':
+            return 'red.50'
+        case 'info':
+            return 'blue.50'
+        default:
+            return 'No Match'
+    }
+}
+
+export const FontTypeColor = (value: string) => {
+    switch(value.toLowerCase()){
+        case 'announcement':
+            return 'yellow.700'
+        case 'alert':
+            return 'red.700'
+        case 'info':
+            return 'blue.700'
+        default:
+            return 'No Match'
+    }
+}
+
 const borderTextColorMap: Record<string, Record<number, string>> = {
     status: {
         0: 'blue.700',

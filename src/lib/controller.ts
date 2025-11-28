@@ -102,6 +102,18 @@ export const loginUser = async (userCode: string, password: string) => {
             
             throw new Error('Incorrect password');
         }
+        const roleRef = doc(collection(firestore, 'USER_ROLES'), user.user_role); // assuming your roles collection is "companyRoles"
+        const roleSnap = await getDoc(roleRef);
+        
+        if (!roleSnap.exists()) {
+            throw new Error("Assigned user role not found");
+        }
+        
+        const roleData = roleSnap.data();
+        
+        const deptList = roleData.permissions.map((p: any) => p.department)
+        const uniqueDepartments = [...new Set(deptList)]
+
         // Initialize arrays for department, rank, and job position tokens
         const departmentTokens: string[] = [];
         const rankTokens: string[] = [];
@@ -111,9 +123,6 @@ export const loginUser = async (userCode: string, password: string) => {
         if (user.roles && typeof user.roles === 'object') {
             // Iterate over each role object in user.roles
             Object.values(user.roles).forEach((role: any) => {
-                if (role.department) {
-                    departmentTokens.push(role.department);
-                }
                 if (role.rank !== undefined) {
                     rankTokens.push(role.rank.toString());
                 }
@@ -124,7 +133,6 @@ export const loginUser = async (userCode: string, password: string) => {
         }
 
         // Concatenate multiple values into a single string separated by "/"
-        const departmentToken = departmentTokens.length > 0 ? departmentTokens.join('/') : 'NoDepartments';
         const rankToken = rankTokens.length > 0 ? rankTokens.join('/') : 'NoRanks';
         const jobPositionToken = jobPositionTokens.length > 0 ? jobPositionTokens.join('/') : 'NoJobPositions';
 
@@ -132,10 +140,11 @@ export const loginUser = async (userCode: string, password: string) => {
         localStorage.setItem('customToken', user.full_name);
         localStorage.setItem('tokenID', user.id);
         localStorage.setItem('pfpToken', user.pfp);
-        localStorage.setItem('departmentToken', departmentToken);
         localStorage.setItem('rankToken', rankToken);
         localStorage.setItem('jobPositionToken', jobPositionToken);
         localStorage.setItem('phone', user.phone)
+        localStorage.setItem('roleToken', user.user_role)
+        localStorage.setItem('departmentToken', JSON.stringify(uniqueDepartments))
 
         return user;
     } catch (error) {

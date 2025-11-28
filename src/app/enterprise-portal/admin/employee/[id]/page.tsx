@@ -5,13 +5,14 @@ import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { QueryIcon, EditIcon, TrashIcon} from '@/Components/Icons'
 import { SignIcon, HistoryIcon, FamilyIcon, EducIcon, EmergencyIcon, GovtIcon, WorkIcon } from '@/Components/SideIcons'
-import { Tooltip, Box, Button, Center, Input, useToast, FormControl, Select, Heading, Text, useDisclosure, Avatar, Table, Thead, Tbody, Tfoot, Tr, Th, Td, TableContainer, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerFooter,} from '@chakra-ui/react'
+import { Tooltip, Box, Button, Center, Input, useToast, FormControl, Select, Heading, Text, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, useDisclosure, Avatar, Table, Thead, Tbody, Tfoot, Tr, Th, Td, TableContainer, Modal, ModalCloseButton, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerFooter,} from '@chakra-ui/react'
 import { GetAllCompanyUsers, initGetAllCompanyUsers, Role, EducationalAttainment, WorkExperience, ImmediateDependents, TrainingHistory, initWorkExp, initInsertPosition, initEducation, initDependents, initTrainings} from '@/types/company_users'
-import { editStaffDetails } from '@/lib/company_user_controller'
+import { editStaffDetails, ASSIGN_ROLE } from '@/lib/company_user_controller'
 import { useCompanyUsers } from '@/context/CompanyUserContext'
 import { formatDateWithDay, formatDateToWords, formatDateWithDayToWords } from '@/types/handling'
 import DatePicker from 'react-datepicker'
 import SignatureCanvas from 'react-signature-canvas'
+import { useRoles } from '@/context/UserRolesContext'
 
 interface PageProps {
     params: { id: string }; // Adjust the type according to your actual data structure
@@ -20,6 +21,7 @@ interface PageProps {
 export default function Page({params}: PageProps){
     const router = useRouter()
     const toast = useToast()
+    const { data: allRoles } = useRoles()
     const fileInputRef = useRef<HTMLInputElement | null>(null)
     const signInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -44,6 +46,7 @@ export default function Page({params}: PageProps){
 
     const [isEmpty, setFields] = useState<boolean>(true)
     const [arr, setArr] = useState<string>('')
+    const [user_role, setRole] = useState<string>('')
     const [actor, setActor] = useState<string | null>('')
 
     const [customStartDate, setCustomStartDate] = useState<Date | null>(new Date())
@@ -59,6 +62,7 @@ export default function Page({params}: PageProps){
     const {isOpen: isAlertOpen, onOpen: onOpenAlert, onClose: onCloseAlert} = useDisclosure()
     const {isOpen: isSaveOpen, onOpen: onOpenSave, onClose: onCloseSave} = useDisclosure()
     const {isOpen: isImageOpen, onOpen: onOpenImage, onClose: onCloseImage} = useDisclosure()
+    const {isOpen: isOpenRole, onOpen: onOpenRole, onClose: onCloseRole} = useDisclosure()
 
     const [sign, setSign] = useState<string>('')
     const [previewImage, setPreviewImage] = useState<string>('')
@@ -463,6 +467,35 @@ export default function Page({params}: PageProps){
         })
     }
 
+    const handleUpdatedRole = async () => {
+        setLoading(true)
+        new Promise<void>((resolve, reject) => {
+            setTimeout(async () => {
+                try {
+                    await ASSIGN_ROLE(company_staff.id, user_role, actor)
+                    resolve()
+                } catch (error) {
+                    reject(error)
+                }
+            }, 2000) // Adjust the delay time (4000ms = 4 seconds) as needed
+        })
+        .then(() => {
+            toast({
+                title: `User Role has been updated successfully by ${actor}`,
+                position: 'top-right',
+                variant: 'left-accent',
+                status: 'success',
+            })
+        })
+        .catch((error) => {
+            console.error(error)
+        })
+        .finally(() => {
+            setLoading(false)
+            onCloseRole()
+        })
+    }
+
     const handlePfpFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files
         if (file && file.length > 0) {
@@ -499,6 +532,7 @@ export default function Page({params}: PageProps){
         setSignImage(false)
         setSignDigital(false)
     }
+
     const handledeleteObject = (keyVal: string, key: string) => {
         let updatedRoles: Record<string, any> = {}
         switch(key){
@@ -736,7 +770,6 @@ export default function Page({params}: PageProps){
                             </Box>
                         </Box>
                     </Box>
-                    
                     <Box className='flex flex-col space-y-3'>
                         <Box className='flex space-x-2  items-start w-full'>
                             <EmergencyIcon size='24' color='#a1a1a1' />
@@ -769,7 +802,6 @@ export default function Page({params}: PageProps){
                             </Box>
                         </Box>
                     </Box>
-
                     <Box className='flex justify-between flex-col space-y-5 '>
                         <Box className='flex justify-between items-center w-full'>
                             <Box className='flex space-x-2  items-start w-full'>
@@ -926,9 +958,149 @@ export default function Page({params}: PageProps){
                             </Table>
                         </TableContainer>
                     </Box>
+                    <Box className='flex justify-between flex-col space-y-2 '>
+                        <Box className='flex justify-between items-center w-full'>
+                            <Box className='flex space-x-2  items-start w-full'>
+                                <FamilyIcon size='24' color='#a1a1a1' />
+                                <Heading as='h4' size='sm' fontWeight='bold' className='text-gray'>{`User Role Permissions`}</Heading>
+                            </Box>
+                        </Box>
+                        {(() => {
+                            const role = allRoles?.find(role => role.id === company_staff.user_role);
+                            if (!role) {
+                                return (
+                                    <>
+                                        <Text _hover={{fontWeight: 'bold', cursor: 'pointer'}} onClick={onOpenRole}>Assign New Role</Text> 
+                                    </>
+                                )
+                            }
+                            return (
+                                <Box >
+                                    <Text display='flex' gap='2' fontSize='lg' textAlign='start' fontWeight='600'>
+                                        <Text w='50px' textAlign='center' fontWeight='600'>
+                                            {`Role:`}
+                                        </Text>
+                                        <Text onClick={onOpenRole} _hover={{fontWeight: 'bold', cursor: 'pointer'}} w='500px' fontWeight='normal' >
+                                            {role.role_name}
+                                        </Text>
+                                    </Text>
+                                    <Box display='flex' borderRadius='5px' p='2' textAlign='center' justifyContent='space-between' bgColor='blue.700' color='white' >
+                                        <Text w='250px' textAlign='center'>Feature/Module</Text>
+                                        <Text w='100px' textAlign='center'>View/Access</Text>
+                                        <Text w='100px' textAlign='center'>Create/Add</Text>
+                                        <Text w='100px' textAlign='center'>Modify/Edit</Text>
+                                        <Text w='100px' textAlign='center'>Delete/Remove</Text>
+                                        <Text w='100px' textAlign='center'>Export/Print</Text>
+                                        <Text w='250px' textAlign='center'>Remarks/Special Notes</Text>
+                                    </Box>
+                                    <Box className='space-y-2 px-4' display='flex' justifyContent='space-between'>
+                                        <Box w='250px' >
+                                            {role.permissions.map((perm, index) => (
+                                                <Box key={index} mb='2'>
+                                                    <Text textAlign='start' display='flex' justifyContent={'space-between'}>
+                                                        <Text fontWeight='bold'>
+                                                            {perm.feature} 
+                                                        </Text>
+                                                        <Text >
+                                                            {`(${perm.department})`}
+                                                        </Text>
+                                                    </Text>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                        <Box w='100px' display='flex' flexDirection='column' gap='2'>
+                                            {role.permissions.map((perm, index) => (
+                                                <Text key={index} textAlign='center'>{perm.allowed.includes('read') ? '✔️' : '❌'}</Text>
+                                            ))}
+                                        </Box>
+                                        <Box w='100px' display='flex' flexDirection='column' gap='2'>
+                                            {role.permissions.map((perm, index) => (
+                                                <Text key={index} textAlign='center'>{perm.allowed.includes('create') ? '✔️' : '❌'}</Text>
+                                            ))}
+                                        </Box>
+                                        <Box w='100px' display='flex' flexDirection='column' gap='2'>
+                                            {role.permissions.map((perm, index) => (
+                                                <Text key={index} textAlign='center'>{perm.allowed.includes('update') ? '✔️' : '❌'}</Text>
+                                            ))}
+                                        </Box>
+                                        <Box w='100px' display='flex' flexDirection='column' gap='2'>
+                                            {role.permissions.map((perm, index) => (
+                                                <Text key={index} textAlign='center'>{perm.allowed.includes('delete') ? '✔️' : '❌'}</Text>
+                                            ))}
+                                        </Box>
+                                        <Box w='100px' display='flex' flexDirection='column' gap='2'>
+                                            {role.permissions.map((perm, index) => (
+                                                <Text key={index} textAlign='center'>{perm.allowed.includes('print') ? '✔️' : '❌'}</Text>
+                                            ))}
+                                        </Box>
+                                        <Box w='250px' gap='2' display='flex' flexDirection='column'>
+                                            {role.permissions.map((perm, index) => (
+                                                <Text key={index} textAlign='center' textTransform='capitalize'>
+                                                    {`View: ${perm.scope === 'both' ? 'Both Dated & BD' : perm.scope} Records`}
+                                                </Text>
+                                            ))}
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            );
+                        })()}
+                    </Box>
                 </section>)}
             </form>
         </main>
+        <Modal isOpen={isOpenRole} size='xl' onClose={onCloseRole}>
+            <ModalOverlay />
+            <ModalContent px={4}>
+                <ModalHeader w='100%'>
+                    <Text color='blue.700'>{company_staff.user_role !== '' ? 'Change Assigned Role' : 'Assign a Role' }</Text>
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody >
+                    <Accordion allowToggle>
+                        {allRoles && allRoles.map((role) => (
+                            <AccordionItem key={role.id} fontWeight="normal" borderBottom="1px solid #eee" padding="8px" >
+                                <AccordionButton bg={user_role === role.id ? 'blue.400' : ''} _hover={{color: 'black', bg: 'gray.100'}} display='flex' justifyContent='space-between'>
+                                    <Text onClick={() => {setRole(role.id === user_role ? '' : role.id)}} fontSize="md" fontWeight="bold">
+                                        {role.role_name}
+                                    </Text>
+                                    <AccordionIcon />
+                                </AccordionButton>
+                                {/* Loop through each permission */}
+                                {role.permissions.map((perm, i) => (
+                                    <AccordionPanel key={i} mt="2" border='1px solid #ccc' borderRadius='5px' p='2' ml="4">
+                                        <Text fontWeight="semibold">
+                                            {perm.department} – {perm.feature}
+                                        </Text>
+                                        {/* Allowed Actions */}
+                                        <Text>Allowed To:</Text>
+                                        <Box borderTop='1px solid #ccc' borderRadius='5px' p='2' display='flex' gap='4'>
+                                            {perm.allowed.length > 0 ? (
+                                                perm.allowed.map((action, j) => (
+                                                    <Text key={j} textTransform='uppercase' fontSize="xs">
+                                                        • {action === 'read' ? 'view' : action}
+                                                    </Text>
+                                                ))
+                                            ) : (
+                                                <Text fontSize="sm" opacity={0.6}>
+                                                    No actions allowed
+                                                </Text>
+                                            )}
+                                        </Box>
+                                        {/* Scope */}
+                                        <Text ml="4" mt="1" fontSize="xs" textTransform='uppercase' fontStyle="italic" color="green.600">
+                                            Scope: {perm.scope || "none"}
+                                        </Text>
+                                    </AccordionPanel>
+                                ))}
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                </ModalBody>
+                <ModalFooter borderTopWidth='2px' display='flex' justifyContent='center'>
+                    <Button isDisabled={user_role === ''} isLoading={loading} loadingText='Updating Role...' shadow='md' bgColor='blue.700' colorScheme='blue' onClick={handleUpdatedRole}>{`Update Assigned Role`}</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         <Drawer size='xl' placement='right' isOpen={isPositionOpen} onClose={() => handleArrayState('roles')} >
             <DrawerOverlay />
             <DrawerContent px={6}>

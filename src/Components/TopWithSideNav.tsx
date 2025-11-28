@@ -4,25 +4,40 @@ import { usePathname, useRouter  } from 'next/navigation';
 import Link from 'next/link'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Center, Text, Wrap, WrapItem, useDisclosure, List, ListItem, Tooltip, Avatar, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from '@chakra-ui/react'
-import 'animate.css';
-import {HelpIcon, BellIcon, SysAdIcon, TicketIcon, RADIcon } from '@/Components/Icons'
+import { getFormatTimeDate, BackgroundTypeColor, FontTypeColor } from '@/handlers/util_handler' 
+
+import { Box, Button, Center, Text, Wrap, WrapItem, useDisclosure, List, ListItem, Tooltip, Avatar, AvatarBadge, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react'
+import {HelpIcon, BellIcon, SysAdIcon, TicketIcon, InventoryIcon, RADIcon, AlertIcon, InfoIcon, AnnouncementIcon, } from '@/Components/Icons'
 import {CalendarIcon, CashIcon, DeBugIcon, FeedbackIcon, UserIcon, HomeIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, SupportIcon, TrainingIcon, BankIcon, AdminFolderIcon, ListIcon } from '@/Components/SideIcons'
-import { useCompanyUsers } from '@/context/CompanyUserContext'
 import TicketingModal from '@/Components/Modal/System/TicketingModal'
 
+import { useRoles } from '@/context/UserRolesContext'
+import { useCompanyUsers } from '@/context/CompanyUserContext'
+import { useComms } from '@/context/CommunicationContext'
+import { CommunicaitonsByID, initCommunicationsByID } from '@/types/communication'
+
+import { UPDATE_READ_MESSAGE } from '@/lib/communications_controller'
 
 export default function TopWithSideNav() {
     const pathname = usePathname()
-    const {data: allCompanyUsers} = useCompanyUsers()
-    const [customToken, setCustomToken] = useState<string>();
+    const router = useRouter()
+
+    const { data: allCompanyUsers } = useCompanyUsers()
+    const { data: allRoles } = useRoles()
+    const { data: allComms } = useComms()
+
+    const [customToken, setCustomToken] = useState<string>()
+    const [role, setRole] = useState<string>('')
     const [pfp, setPfp] = useState<string | null>(null);
+
     const { isOpen, onOpen, onClose} = useDisclosure()
     const { isOpen: isOpenTicket, onOpen: onOpenTicket, onClose: onCloseTicket} = useDisclosure()
-    const router = useRouter()
+    const { isOpen: isOpenNotif, onOpen: onOpenNotif, onClose: onCloseNotif} = useDisclosure()
 
     const [current, setCurrent] = useState<string>('')
     const [permittedDept, setPermittedDept] = useState<string[]>([]);
+    const [notifications, setNotifs] = useState<CommunicaitonsByID[]>([])
+    const [viewMessage, setViewMessage] = useState<CommunicaitonsByID>(initCommunicationsByID)
     
     const pathParts = pathname.split('/'); // Split the pathname by '/'
     const homePath = `/${pathParts[2]}`;
@@ -31,19 +46,25 @@ export default function TopWithSideNav() {
         const token = localStorage.getItem('customToken')
         const departmentsToken = localStorage.getItem('departmentToken')
          // Extract the home path, which is the second part of the pathname
+        const rolePermissions = localStorage.getItem('role_permissions')
+
         setCurrent(homePath)
         if(token === null){
             router.push('/login')
         } else {
-            setCustomToken(token)
-            
-            if (departmentsToken) {
-                // Split the departments token into an array if it is not null
-                const departmentsArray = departmentsToken.split('/');
-                // Adding new departments to the existing array
-                setPermittedDept([...departmentsArray]);
+            try {
+                if (departmentsToken) {
+                    const parsedDepartments = JSON.parse(departmentsToken) as string[]; // ← IMPORTANT
+                    setPermittedDept(parsedDepartments);
+                } else {
+                    setPermittedDept([]);
+                }
+            } catch (e) {
+                console.error("Invalid departmentToken:", e);
+                setPermittedDept([]);
             }
         }
+        setRole(rolePermissions || '')
     }, [])
     
     useEffect(() => {
@@ -55,13 +76,31 @@ export default function TopWithSideNav() {
             return getActor === staff.full_name;
         });
 
-        setPfp(company_staff?.pfp || getPfp);
-    }, [allCompanyUsers]);
+        setPfp(company_staff?.pfp || getPfp)
+
+        const filteredNotifications = allComms && company_staff ? allComms.filter((comm) => comm.recipient === company_staff.id) : []
+        setNotifs(filteredNotifications)
+    }, [allCompanyUsers, allComms]);
 
     const shouldHideNavbar = pathname?.startsWith('/enterprise-portal/admin/candidates/new-candidate')
 
     if (shouldHideNavbar) {
         return null; // Don't render anything if conditions are met
+    }
+
+    const handleReadMessage = async (doc_id: string) => {
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    await UPDATE_READ_MESSAGE(doc_id)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        })
     }
 
     return (
@@ -75,19 +114,43 @@ export default function TopWithSideNav() {
                         <PopoverTrigger>
                             <Button bg='#FFFFFF00' _hover={{bg: '#FFFFFF00'}} p={0}>
                                 <Avatar bg='#FFFFFF00' _hover={{bg: '#FFFFFF00'}} size='xs' icon={<BellIcon />}>
+                                    {notifications.length > 0 && (
+                                        <AvatarBadge bg='red' boxSize='1.25em' />
+                                    )}
                                 </Avatar>
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent w='500px'>
+                        <PopoverContent w='350px'>
                             <PopoverHeader fontWeight='semibold'>Notifications</PopoverHeader>
                             <PopoverArrow />
-                            <PopoverBody className='overflow-y-auto' h='200px'>
-                                <Text className='py-2 font-normal border-b border-gray-300'>Notif 1</Text>
+                            <PopoverBody className='overflow-y-auto' h='300px'>
+                                {notifications.length === 0 ? (
+                                    <>
+                                        <Text textAlign='center'>No Notifications received yet...</Text>
+                                    </>
+                                ): (
+                                    notifications.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds).map((n) => {
+                                        return(
+                                        <Box key={n.id} onClick={() => {setViewMessage(n); handleReadMessage(n.id); onOpenNotif();}} borderRadius='5px' _hover={{cursor: 'pointer', bgColor: 'cyan.100'}} bgColor={!n.read ? 'gray.100' : ''} borderBottom='1px solid #E2E8F0' mb={2} p={2} >
+                                            <Box display='flex' alignItems='center' mb={1}>
+                                                {n.type === 'alert' && <AlertIcon size={'22'} color={'#9B2C2C'} />}
+                                                {n.type === 'announcement' && <AnnouncementIcon size={'22'} color={'#D69E2E'} />}
+                                                {n.type === 'info' && <InfoIcon size={'22'} color={'#2b6cb0'} />}
+                                                <Box ms='2'>
+                                                    <Text fontSize='sm' fontWeight={!n.read ? 'bold' : 'normal'}>{n.title}</Text>
+                                                </Box>
+                                            </Box>
+                                            <Text fontWeight='normal' fontSize='8pt'>
+                                                {n.createdAt ? getFormatTimeDate(n.createdAt.toDate()) : ''}
+                                            </Text>
+                                        </Box>
+                                    )})
+                                )}
                             </PopoverBody>
                             <PopoverFooter>
-                                <Link href='/enterprise-portal/notifications' onClick={() => {setCurrent('notifications')}} className='flex space-x-2 items-center hover:cursor-pointer' >
+                                <Text onClick={(e) => {e.preventDefault(); (document.activeElement as HTMLElement)?.blur(); router.push('/enterprise-portal/notifications'); setCurrent('notifications'); }} className='flex space-x-2 items-center hover:cursor-pointer' >
                                     <ListIcon size={'22'} color={'#a1a1a1'} />See all
-                                </Link>
+                                </Text>
                             </PopoverFooter>
                         </PopoverContent>
                     </Popover>
@@ -229,7 +292,48 @@ export default function TopWithSideNav() {
                     </ModalBody>
                 </ModalContent>
             </Modal>
-
+            {/** View Message Modal */}
+            <Modal isOpen={isOpenNotif} onClose={() => {setViewMessage(initCommunicationsByID); onCloseNotif();}} size='lg'>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader display={'flex'} alignItems='center' gap='2'>
+                        <Text mr={2}> {viewMessage.title} </Text>
+                        <Text px='1' borderRadius='full' fontSize='xs' borderWidth='1px' bgColor={BackgroundTypeColor(viewMessage.type)} borderColor={FontTypeColor(viewMessage.type)} color={FontTypeColor(viewMessage.type)} textAlign='center'>{viewMessage.type.toUpperCase()}</Text>
+                    </ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Box>
+                            <Box display='flex' justifyContent='space-between'>
+                                <Box display='flex'>
+                                    <Text textAlign='center' mr={2}>{viewMessage.read ? 'Seen' : ''}</Text>
+                                    <Text textAlign='center'>
+                                        {viewMessage.read ? getFormatTimeDate(viewMessage.read_at.toDate()) : ''}
+                                    </Text>
+                                </Box>
+                            </Box>
+                            <Box display='flex'>
+                                <Text mr={2}>From:</Text>
+                                <Text fontWeight='normal'>{viewMessage.sender}</Text>
+                            </Box>
+                            <Box display='flex'>
+                                <Text mr={2}>To:</Text>
+                                <Text fontWeight='normal'>{(allCompanyUsers && allCompanyUsers?.find((user) => user.id === viewMessage.recipient)?.full_name) ?? "Unknown User"}</Text>
+                            </Box>
+                            <Box borderColor='gray.400' borderTopWidth='1px' pt='2' mt='3'>
+                                <Text fontWeight='normal'>{viewMessage.message}</Text>
+                            </Box>
+                        </Box>
+                    </ModalBody>
+                    <ModalFooter display='flex' px='4' borderTopWidth='1px' borderColor='gray.400' justifyContent='space-between'>
+                        <Box display='flex'>
+                            <Text textAlign='center' mr={2}>Sent At:</Text>
+                            <Text fontWeight='normal' textAlign='center'>
+                                {viewMessage.createdAt ? getFormatTimeDate(viewMessage.createdAt.toDate()) : ''}
+                            </Text>
+                        </Box>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
         </>
     )
 }
@@ -237,34 +341,32 @@ export default function TopWithSideNav() {
 // default staff navigation
 const navigateStaff = [
 
+    {name: 'Inventory', href: 'inventory-management/master-list', activeIcon: <InventoryIcon size={'34'} color={'#0D70AB'} />, inActive: <InventoryIcon size={'26'} color={'#a1a1a1'} />},
+    
     {name: 'Tickets', href: 'tickets', activeIcon: <TicketIcon size={'34'} color={'#0D70AB'} />, inActive: <TicketIcon size={'26'} color={'#a1a1a1'} />},
     
     {name: 'Purchase Request', href: 'accounting/pr', activeIcon: <PurchaseIcon size={'34'} color={'#0D70AB'} />, inActive: <PurchaseIcon size={'26'} color={'#a1a1a1'} />},
     
     {name: 'Cash Advance', href: 'accounting/ca', activeIcon: <CashIcon size={'34'} color={'#0D70AB'} />, inActive: <CashIcon size={'26'} color={'#a1a1a1'} />},
-    
-    {name: 'Leave', href: 'admin/lf', activeIcon: <LeaveIcon size={'34'} color={'#0D70AB'} />, inActive: <LeaveIcon size={'26'} color={'#a1a1a1'} />},
-    
-    {name: 'Role Permissions', href: 'admin/roles', activeIcon: <RolesIcon size={'34'} color={'#0D70AB'} />, inActive: <RolesIcon size={'26'} color={'#a1a1a1'} />},
 
-]
+] 
 
 // Department Links
 const navigateDepartments = [
     {name: 'Training', href: 'training', activeIcon: <TrainingIcon size={'34'} color={'#0D70AB'} />, inActive: <TrainingIcon size={'26'} color={'#a1a1a1'} />},
-    
+    //
     {name: 'Registration', href: 'registration/pending', activeIcon: <RegistrationIcon size={'34'} color={'#0D70AB'} />, inActive: <RegistrationIcon size={'26'} color={'#a1a1a1'} />},
-    
+    //
     {name: 'Accounting', href: 'accounting/acknowledge', activeIcon: <BankIcon size={'34'} color={'#0D70AB'} />, inActive: <BankIcon size={'26'} color={'#a1a1a1'} />},
-    
+    //
     {name: 'Marketing', href: 'marketing/clients', activeIcon: <SalesIcon size={'34'} color={'#0D70AB'} />, inActive: <SalesIcon size={'26'} color={'#a1a1a1'} />},
-    
+    //
     {name: 'Admin', href: 'admin', activeIcon: <AdminFolderIcon size={'34'} color={'#0D70AB'} />, inActive: <AdminFolderIcon size={'26'} color={'#a1a1a1'} />},
-    
+    //
     {name: 'R&D', href: 'research-development', activeIcon: <RADIcon size={'34'} color={'#0D70AB'} />, inActive: <RADIcon size={'26'} color={'#a1a1a1'} />},
-    
+    //
     {name: 'System Admin', href: 'sys-admin/tickets', activeIcon: <SysAdIcon size={'34'} color={'#0D70AB'} />, inActive: <SysAdIcon size={'26'} color={'#a1a1a1'} />},
-    
+    //
 ]
 
 // QMR and higher ups

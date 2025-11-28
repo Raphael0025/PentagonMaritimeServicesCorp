@@ -53,6 +53,7 @@ export const getUserPerStatusOf = async (emp_status: string, company_users: GetA
             application_type: company_user.application_type,
             department: departments.join(" / "),
             job_position: jobPositions.join(" / "),
+            user_role: company_user.user_role,
         };
         CompanyUsersPerStatus.push(candidate);
     })
