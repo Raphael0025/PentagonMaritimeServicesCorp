@@ -37,6 +37,7 @@ export default function TopWithSideNav() {
     const [current, setCurrent] = useState<string>('')
     const [permittedDept, setPermittedDept] = useState<string[]>([]);
     const [notifications, setNotifs] = useState<CommunicaitonsByID[]>([])
+    const [hasReadAll, isReadAll] = useState<boolean>(false)
     const [viewMessage, setViewMessage] = useState<CommunicaitonsByID>(initCommunicationsByID)
     
     const pathParts = pathname.split('/'); // Split the pathname by '/'
@@ -80,6 +81,8 @@ export default function TopWithSideNav() {
 
         const filteredNotifications = allComms && company_staff ? allComms.filter((comm) => comm.recipient === company_staff.id) : []
         setNotifs(filteredNotifications)
+        const hasUnreadNotifs = filteredNotifications.some(n => !n.read)
+        isReadAll(filteredNotifications.some(n => !n.read))
     }, [allCompanyUsers, allComms]);
 
     const shouldHideNavbar = pathname?.startsWith('/enterprise-portal/admin/candidates/new-candidate')
@@ -114,7 +117,7 @@ export default function TopWithSideNav() {
                         <PopoverTrigger>
                             <Button bg='#FFFFFF00' _hover={{bg: '#FFFFFF00'}} p={0}>
                                 <Avatar bg='#FFFFFF00' _hover={{bg: '#FFFFFF00'}} size='xs' icon={<BellIcon />}>
-                                    {notifications.length > 0 && (
+                                    {(notifications.length > 0 && hasReadAll) && (
                                         <AvatarBadge bg='red' boxSize='1.25em' />
                                     )}
                                 </Avatar>

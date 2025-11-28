@@ -422,9 +422,9 @@ export default function Tickets(){
                 <ModalHeader>Delete this Role</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody fontWeight='normal'>
-                    <Text>Are you sure you want to delete this role?</Text>
-                    <Text>The moment you delete it, Users with this role will won't have any permissions to the features set to it in the system.</Text>
-                    <Text>Yet, they can be assigned with a different role.</Text>
+                    <Text>{`Are you sure you want to delete this role?`}</Text>
+                    <Text>{`The moment you delete it, Users with this role will won't have any permissions to the features set to it in the system.`}</Text>
+                    <Text>{`Yet, they can be assigned with a different role.`}</Text>
                 </ModalBody>
                 <ModalFooter display={'flex'} justifyContent='center'>
                     <Button isLoading={isLoading} onClick={() => {handleDeleteRole(userRole.id);}} colorScheme='red' shadow='md' loadingText='Deleting Role...'>Yes, Delete it</Button>
