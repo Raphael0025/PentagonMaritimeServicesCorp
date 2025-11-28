@@ -50,7 +50,7 @@ export default function TabInventory() {
                 <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'supplier' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/inventory-management/supplier' onClick={() => {handleClick('supplier')}}>Supplier</Link>
             )}
             {canAccess("Borrower's Log") && (
-                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'borrowersLog' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/inventory-management/borrowers-log' onClick={() => {handleClick('borrowersLog')}}>Borrower's Log</Link>
+                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'borrowersLog' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/inventory-management/borrowers-log' onClick={() => {handleClick('borrowersLog')}}>{`Borrower's Log`}</Link>
             )}
         </nav>
     )
