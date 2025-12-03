@@ -19,9 +19,10 @@ interface PageProps {
     onClose: () => void;
     reg_id: string;
     reg_Type: number;
+    permissions: any;
 }
 
-export default function EditRegistration({onClose, reg_id, reg_Type}: PageProps){
+export default function EditRegistration({onClose, reg_id, reg_Type, permissions}: PageProps){
     const { lastMonthReg: allRegistrations } = useRegistrations()
     const { data: allTraining } = useTraining()
     const { data: allTrainee } = useTrainees()
@@ -82,6 +83,10 @@ export default function EditRegistration({onClose, reg_id, reg_Type}: PageProps)
         })
     }
 
+    const canDo = (feature: string) => {
+        return permissions.some((p: { allowed: string | string[]; }) => p.allowed.includes(feature));
+    }
+
     return(
     <>
     <Box>
@@ -93,7 +98,11 @@ export default function EditRegistration({onClose, reg_id, reg_Type}: PageProps)
             <Box display='flex' justifyContent='space-between'>
                 <Box display='flex'>
                     <Text mr='2'>Account Type:</Text>
-                    <Text onClick={() => {onOpenAT(); setRegID(fetchedReg?.id ?? ''); setAT(fetchedReg?.reg_accountType ?? 0);}} _hover={{color: 'blue.700'}} className='hover:cursor-pointer'>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
+                    {canDo("update") ? (
+                        <Text onClick={() => {onOpenAT(); setRegID(fetchedReg?.id ?? ''); setAT(fetchedReg?.reg_accountType ?? 0);}} _hover={{color: 'blue.700'}} className='hover:cursor-pointer'>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
+                    ) : (
+                        <Text>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
+                    )}
                 </Box>
                 <Box display='flex' >
                     <Text color='gray.600' mr='3'>Registraion Number:</Text>
@@ -101,36 +110,60 @@ export default function EditRegistration({onClose, reg_id, reg_Type}: PageProps)
                 </Box>
             </Box>
             <Box display='flex' justifyContent='end' py='3'>
-                <Button size='xs' onClick={() => {onOpenTraining(); setAccType(fetchedReg?.reg_accountType ?? 0); setCID(companyID); setRegID(fetchedReg?.id ?? '');}} colorScheme='blue' bgColor='blue.700' shadow='md'>Add Training</Button>
+                {canDo("create") && (
+                    <Button size='xs' onClick={() => {onOpenTraining(); setAccType(fetchedReg?.reg_accountType ?? 0); setCID(companyID); setRegID(fetchedReg?.id ?? '');}} colorScheme='blue' bgColor='blue.700' shadow='md'>Add Training</Button>
+                )}
             </Box>
             <Box mt='2'>
                 <Box p='2' borderBottom='1px' bgColor='blue.700' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
                     <Text color='#fff' w='50%' textTransform={'uppercase'} fontSize='12px'>Course</Text>
                     <Text color='#fff' w='50%' textTransform={'uppercase'} fontSize='12px'>Course Fee</Text>
                     <Text color='#fff' w='100%' textTransform={'uppercase'} fontSize='12px'>Training Dates</Text>
-                    <Text color='#fff' w='50%' display='flex' justifyContent='end' textTransform={'uppercase'} fontSize='12px'>Action</Text>
+                    {canDo("update") && (
+                        <Text color='#fff' w='50%' display='flex' justifyContent='end' textTransform={'uppercase'} fontSize='12px'>Action</Text>
+                    )}
                 </Box>
-                {allTraining && allTraining.filter((train) => train.reg_status === 3 && train.regType === reg_Type && train.reg_ref_id === reg_id)
+                {allTraining && allTraining.filter((train) => (train.reg_status === 3 || train.reg_status === 6) && train.regType === reg_Type && train.reg_ref_id === reg_id)
                 .map((train) => {
 
                     const course = allCourses?.find((course) => course.id === train.course)?.course_code || courseCodes?.find((course) => course.id === train.course)?.company_course_code || ''
 
                     return(
                         <Box key={train.id} p='2' borderBottom='1px' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
-                            <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
-                            <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
-                            <Text w='100%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
-                                <Text as='span' mr='3'>{train.start_date}</Text>
-                                {train.end_date !== '' && (
+                            {canDo("update") ? (
                                 <>
-                                    <Text as='span' mr='3'>to</Text>
-                                    <Text as='span'>{train.end_date}</Text>
+                                    <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
+                                    <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
+                                    <Text w='100%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
+                                        <Text as='span' mr='3'>{train.start_date}</Text>
+                                        {train.end_date !== '' && (
+                                        <>
+                                            <Text as='span' mr='3'>to</Text>
+                                            <Text as='span'>{train.end_date}</Text>
+                                        </>
+                                        )}
+                                    </Text>
                                 </>
-                                )}
-                            </Text>
-                            <Box w='50%' display='flex' justifyContent='end' >
-                                <Button colorScheme='red' onClick={() => {onOpenRB(); setTID(train.id); setRegID(reg_id);}} size='xs' shadow='md'>Rollback</Button>
-                            </Box>
+                            ) : (
+                                <>
+                                    <Text w='50%' className='hover:cursor-pointer' textTransform={'uppercase'} fontSize='12px'>{course}</Text>
+                                    <Text w='50%' className='hover:cursor-pointer' textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
+                                    <Text w='100%' className='hover:cursor-pointer' >
+                                        <Text as='span' mr='3'>{train.start_date}</Text>
+                                        {train.end_date !== '' && (
+                                        <>
+                                            <Text as='span' mr='3'>to</Text>
+                                            <Text as='span'>{train.end_date}</Text>
+                                        </>
+                                        )}
+                                    </Text>
+                                </>
+                            )}
+                            {canDo("update") && (
+                                <Box w='50%' display='flex' justifyContent='end' mr='2'>
+                                    <Button colorScheme='blue' onClick={() => {onOpenTraining(); setAccType(fetchedReg?.reg_accountType ?? 0); setCID(companyID); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md' mr='2'>Edit</Button>
+                                </Box>
+                            )}
                         </Box>
                     )
                 })}

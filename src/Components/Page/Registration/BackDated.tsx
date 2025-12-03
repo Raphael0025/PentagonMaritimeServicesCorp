@@ -11,7 +11,7 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
-import { useRank } from '@/context/RankContext'
+import { useRank } from '@/context/RankContext' 
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { marketBGColor, marketFontColor } from '@/handlers/util_handler'

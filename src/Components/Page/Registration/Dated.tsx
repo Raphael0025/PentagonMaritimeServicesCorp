@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Box, Text, Input, Textarea, Button, InputLeftAddon, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
@@ -12,13 +12,14 @@ import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 import { useRank } from '@/context/RankContext'
+import { useRoles } from '@/context/UserRolesContext'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { marketBGColor, marketFontColor } from '@/handlers/util_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
 import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
-import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
+import AdmissionForm from '@/Components/Page/Forms/AdmissionForm' 
 import { EditRegistration } from '@/Components/Modal/Registration'
 
 import { SAVE_REMARKS, UPDATE_TRAINEE, UPDATE_TRAINING, UPDATE_REGISTRATION } from '@/lib/trainee_controller'
@@ -38,6 +39,7 @@ export default function Page(){
     const { data: allTrainee } = useTrainees()
     const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
+    const { data: allRoles } = useRoles()
     const { lastMonthReg: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [searchTerm, setSearch] = useState<string>('')
@@ -67,6 +69,31 @@ export default function Page(){
         content: () => componentRef.current,
         documentTitle: `${traineeName}_REGISTRATION_FORM.pdf`,
     })
+
+    const [permissions, setPermissions] = useState<any[]>([])
+    
+    useEffect(() => {
+        const fetchData = () => {
+            const role = localStorage.getItem('roleToken');
+            if (!role) return;
+
+            const userRole = allRoles?.find(r => r.id === role)
+            if (!userRole) return;
+
+            // Check whether the found role belongs to the training department
+            const permissions = userRole.permissions.filter(
+                (p: any) => p.department === "Registration" && p.feature === "Registrations"
+            )
+            console.log(permissions)
+            console.log(permissions[0].allowed.includes("print"))
+            setPermissions(permissions)
+        }
+        fetchData()
+    }, [])
+
+    const canDo = (feature: string) => {
+        return permissions.some(p => p.allowed.includes(feature));
+    }
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
         toast({
@@ -213,7 +240,9 @@ export default function Page(){
                             <Button w='50%' mr={4} onClick={() => {setFilter(''); setCompanyFilter(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                         )}
                         <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
-                        <Button w='60%' bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm' shadow='md'>Print Forms</Button>
+                        {canDo("print") && (
+                            <Button w='60%' bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm' shadow='md'>Print Forms</Button>
+                        )}
                     </Box>
                 </Box>
                 <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto'}}>
@@ -369,7 +398,11 @@ export default function Page(){
                                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
                                                 <Text w="150px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
                                             </Tooltip>     
-                                            <Text w="150px" color={marketFontColor(trainee.marketing)} bgColor={marketBGColor(trainee.marketing)} borderRadius='5px' _hover={{fontWeight: '700'}} onClick={() => {setTraineeRef(trainee); setTrainingRef(training.id); setRegRef(registration.id); onOpenMarketing();}} className='hover:cursor-pointer'>
+                                            <Text w="150px" color={marketFontColor(trainee.marketing)} bgColor={marketBGColor(trainee.marketing)} borderRadius='5px' _hover={{fontWeight: '700'}} onClick={() => {
+                                                    if(canDo("update")){
+                                                        setTraineeRef(trainee); setTrainingRef(training.id); setRegRef(registration.id); onOpenMarketing();
+                                                    }
+                                                }} className='hover:cursor-pointer'>
                                                 {trainee?.marketing === 'OTHERS' ?  trainee?.otherMarketing : trainee?.marketing === '' ? 'N/A' : trainee?.marketing}
                                             </Text>      
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
@@ -446,7 +479,7 @@ export default function Page(){
                 <ModalOverlay />
                 <ModalContent>
                     <ModalBody >
-                        <EditRegistration onClose={onCloseReg} reg_id={regNum} reg_Type={0}/>
+                        <EditRegistration onClose={onCloseReg} reg_id={regNum} reg_Type={0} permissions={permissions} />
                     </ModalBody>
                 </ModalContent>
             </Modal>

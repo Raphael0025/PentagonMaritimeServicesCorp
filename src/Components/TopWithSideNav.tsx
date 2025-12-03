@@ -11,6 +11,8 @@ import {HelpIcon, BellIcon, SysAdIcon, TicketIcon, InventoryIcon, RADIcon, Alert
 import {CalendarIcon, CashIcon, DeBugIcon, FeedbackIcon, UserIcon, HomeIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, SupportIcon, TrainingIcon, BankIcon, AdminFolderIcon, ListIcon } from '@/Components/SideIcons'
 import TicketingModal from '@/Components/Modal/System/TicketingModal'
 
+import 'animate.css'
+
 import { useRoles } from '@/context/UserRolesContext'
 import { useCompanyUsers } from '@/context/CompanyUserContext'
 import { useComms } from '@/context/CommunicationContext'
@@ -116,10 +118,17 @@ export default function TopWithSideNav() {
                     <Popover isLazy>
                         <PopoverTrigger>
                             <Button bg='#FFFFFF00' _hover={{bg: '#FFFFFF00'}} p={0}>
-                                <Avatar bg='#FFFFFF00' _hover={{bg: '#FFFFFF00'}} size='xs' icon={<BellIcon />}>
-                                    {(notifications.length > 0 && hasReadAll) && (
-                                        <AvatarBadge bg='red' boxSize='1.25em' />
-                                    )}
+                                <Avatar bg='#FFFFFF00' _hover={{bg: '#FFFFFF00'}} size='xs' 
+                                    icon={
+                                        (notifications.length > 0 && hasReadAll) ? 
+                                            (<Box className='animate__animated animate__swing animate__infinite	infinite'>
+                                                <BellIcon />
+                                                <Box position='absolute' top='-1px' right='-1px' width='8px' height='8px' bg='red.600' borderRadius='full' />
+                                            </Box>) 
+                                            : 
+                                            <BellIcon />
+                                    }
+                                >
                                 </Avatar>
                             </Button>
                         </PopoverTrigger>
