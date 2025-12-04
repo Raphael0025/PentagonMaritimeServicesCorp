@@ -14,6 +14,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 import { useInstructors } from '@/context/InstructorContext'
 import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
+import { useRoles } from '@/context/UserRolesContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
@@ -45,6 +46,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const { data: allTrainee } = useTrainees()
     const { courseCodes } = useClients()
     const { data: courseBatch } = useCourseBatch()
+    const { data: allRoles } = useRoles()
     
     const [year, setYear] = useState<string>('')
     const [room, setRoom] = useState<string>('')
@@ -67,6 +69,28 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         fetchData()
     }, [batchID])
 
+    const [permissions, setPermissions] = useState<any[]>([])
+    
+    useEffect(() => {
+        const fetchData = () => {
+            const role = localStorage.getItem('roleToken');
+            if (!role) return;
+
+            const userRole = allRoles?.find(r => r.id === role)
+            if (!userRole) return;
+
+            // Check whether the found role belongs to the training department
+            const permissions = userRole.permissions.filter(
+                (p: any) => p.department === "Registration" && p.feature === "Batch Records"
+            )
+            setPermissions(permissions)
+        }
+        fetchData()
+    }, [])
+
+    const canDo = (feature: string) => {
+        return permissions.some(p => p.allowed.includes(feature));
+    }
 
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
@@ -181,21 +205,21 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Room No:</Text>
-                                <Input w='30%' value={batch?.room} shadow='md' id='room' onChange={handleBatchOnChange} />
+                                <Input w='30%' isDisabled={!canDo('update')} value={batch?.room} shadow='md' id='room' onChange={handleBatchOnChange} />
                             </Box>
                         </Box>
                         <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
-                                <Input w='100%' value={batch?.practicumSite} shadow='md' id='practicumSite' onChange={handleBatchOnChange} />
+                                <Input w='100%' isDisabled={!canDo('update')} value={batch?.practicumSite} shadow='md' id='practicumSite' onChange={handleBatchOnChange} />
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
-                                <Input w='100%' shadow='md' value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
+                                <Input w='100%' shadow='md' isDisabled={!canDo('update')} value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
-                                <Select id='assessor' shadow='md' onChange={handleBatchOnChangeSelect} >
+                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
                                     <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
                                     {allInstructors && allInstructors.map((i) => (
                                         <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
@@ -206,7 +230,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
                                 {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
-                                <Select id='instructor' shadow='md' onChange={handleBatchOnChangeSelect} >
+                                <Select id='instructor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
                                     <option hidden>{`${batch.instructor ? (allInstructors?.find((i) => i.id === batch.instructor)?.name || batch.instructor) : 'Select Instructor'}`}</option>
                                     {allInstructors && allInstructors.map((i) => (
                                         <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
@@ -219,7 +243,9 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Text fontWeight='bold'>Note:</Text>
                                 <Text color='red' fontWeight='normal'>{`Kindly save details above before printing the Enrollment Report (ER).`}</Text>
                             </Text>
-                            <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                            {canDo('update') && (
+                                <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                            )}
                         </Box>
                     </Box>
                     )}
@@ -355,7 +381,9 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
-            <Button isDisabled={ batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
+            {canDo('print') && (
+                <Button isDisabled={ batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
+            )}
         </Box>
         </>
     );

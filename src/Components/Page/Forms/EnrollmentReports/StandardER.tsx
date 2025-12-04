@@ -75,7 +75,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     <Box w='50%'>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Course`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${courseCode.toUpperCase()}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' fontSize='6pt' borderColor='black' w='100%'>{`${course.toUpperCase()}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Schedule`}</Text>
@@ -87,7 +87,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Instructor`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>
                                 {(() => {
                                     const ins = allInstructors?.find((i) => i.id === instructor);
                                     if (!ins) return instructor || 'No Instructor';
@@ -114,7 +114,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Assessor `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>
                                 {(() => {
                                     const assessor_name = allInstructors?.find((i) => i.id === assessor);
                                     if (!assessor_name) return assessor || 'No Assessor';

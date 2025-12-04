@@ -84,8 +84,6 @@ export default function Page(){
             const permissions = userRole.permissions.filter(
                 (p: any) => p.department === "Registration" && p.feature === "Registrations"
             )
-            console.log(permissions)
-            console.log(permissions[0].allowed.includes("print"))
             setPermissions(permissions)
         }
         fetchData()

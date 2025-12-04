@@ -84,10 +84,8 @@ export default function Page() {
 
             // Check whether the found role belongs to the training department
             const permissions = userRole.permissions.filter(
-                (p: any) => p.department === "Registration" && p.feature === "Registrations"
+                (p: any) => p.department === "Registration" && p.feature === "Pending"
             )
-            console.log(permissions)
-            console.log(permissions[0].allowed.includes("print"))
             setPermissions(permissions)
         }
         fetchData()

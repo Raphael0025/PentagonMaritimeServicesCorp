@@ -12,6 +12,7 @@ import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useRank } from '@/context/RankContext'
+import { useRoles } from '@/context/UserRolesContext'
 
 import { getFormatDateWithTime } from '@/handlers/util_handler'
 
@@ -36,6 +37,7 @@ export default function Page({params}: PageProps){
     const { allData: allRegistrations } = useRegistrations()
     const { data: allRanks } = useRank()
     const { courseCodes } = useClients()
+    const { data: allRoles } = useRoles()
 
     const { isOpen: isOpenMod, onOpen: onOpenMod, onClose: onCloseMod } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
@@ -62,6 +64,29 @@ export default function Page({params}: PageProps){
     const [rank, setRank] = useState<number | null>(0)
     const [dept, setDept] = useState<string | null>('')
     const [classification, setClass] = useState<number | null>(0)
+    
+    const [permissions, setPermissions] = useState<any[]>([])
+    
+    useEffect(() => {
+        const fetchData = () => {
+            const role = localStorage.getItem('roleToken');
+            if (!role) return;
+
+            const userRole = allRoles?.find(r => r.id === role)
+            if (!userRole) return;
+
+            // Check whether the found role belongs to the training department
+            const permissions = userRole.permissions.filter(
+                (p: any) => p.department === "Registration" && p.feature === "Batch Records"
+            )
+            setPermissions(permissions)
+        }
+        fetchData()
+    }, [])
+
+    const canDo = (feature: string) => {
+        return permissions.some(p => p.allowed.includes(feature));
+    }
     
     useEffect(() => {
         const fetchData = () => {
@@ -156,14 +181,18 @@ export default function Page({params}: PageProps){
                 <Box w='30%'>
                     <Box display='flex' alignItems='end' justifyContent='space-between'>
                         <Text className='text-lg'>Batch List</Text>
-                        <Button onClick={onOpenMod} size='xs' py='4' colorScheme='blue' fontWeight='normal' bgColor='blue.700' shadow='md'>Create Batch</Button>
+                        {canDo('create') && (
+                            <Button onClick={onOpenMod} size='xs' py='4' colorScheme='blue' fontWeight='normal' bgColor='blue.700' shadow='md'>Create Batch</Button>
+                        )}
                     </Box>
                     <Box className='p-4 space-y-3 w-full'>
                         <Box fontSize='14px' color='gray.600' className='w-full flex border-b p-3 space-x-4 items-center'>
                             <Text w='30%'>Batch #</Text>
                             <Text w='100%'>Schedule</Text>
                             <Text w='40%'>No. of Days</Text>
-                            <Text w='30%'>Action</Text>
+                            {canDo('update') && (
+                                <Text w='30%'>Action</Text>
+                            )}
                         </Box>
                         {courseBatch && courseBatch.filter((batch) => batch.course === course?.id).length > 0 ? 
                             courseBatch && courseBatch.filter((batch) => batch.course === course?.id)
@@ -176,10 +205,12 @@ export default function Page({params}: PageProps){
                                         <Text w='30%'>{batch.batch_no}</Text>
                                         <Text w='100%'>{`${batch.start_date} ${batch.end_date !== '' ? ` to ${batch.end_date}` : ''}`}</Text>
                                         <Text w='40%'>{batch.numOfDays === 1 ? `${batch.numOfDays} Day` : `${batch.numOfDays} Days`}</Text>
-                                        <Box w='30%' >
-                                            <Button onClick={() => {onOpenEdit(); setBatch(batch.batch_no.toString()); setBatchID(batch.id)}} size='xs' borderRadius='5px' w='100%' colorScheme='blue' className='hover:cursor-pointer'>Edit</Button>
-                                            <Button onClick={() => {onOpenRemove(); setBatch(batch.batch_no.toString()); setBatchID(batch.id)}} size='xs' borderRadius='5px' w='100%' mt='2' colorScheme='red' className='hover:cursor-pointer'>Remove</Button>
-                                        </Box>
+                                        {canDo('update') && (
+                                            <Box w='30%' >
+                                                <Button onClick={() => {onOpenEdit(); setBatch(batch.batch_no.toString()); setBatchID(batch.id)}} size='xs' borderRadius='5px' w='100%' colorScheme='blue' className='hover:cursor-pointer'>Edit</Button>
+                                                <Button onClick={() => {onOpenRemove(); setBatch(batch.batch_no.toString()); setBatchID(batch.id)}} size='xs' borderRadius='5px' w='100%' mt='2' colorScheme='red' className='hover:cursor-pointer'>Remove</Button>
+                                            </Box>
+                                        )}
                                     </Box>
                                     <Box mt='3' display='flex' alignItems='center'>
                                         <Text fontSize='11px' as='span' color='gray.500' mr='3'>Created At:</Text>

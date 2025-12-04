@@ -12,7 +12,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import {useRank} from '@/context/RankContext'
 
 import { parsingTimestamp, } from '@/types/handling'
-import './reg_admission.css'
+//import './reg_admission.css'
 
 import { reformatTrainingSched, validateEnrolledDates } from '@/handlers/trainee_handler'
 

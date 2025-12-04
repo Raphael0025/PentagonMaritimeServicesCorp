@@ -25,7 +25,7 @@ import { EditRegistration } from '@/Components/Modal/Registration'
 import { SAVE_REMARKS, UPDATE_TRAINEE, UPDATE_TRAINING, UPDATE_REGISTRATION } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
-import './Registration.css'
+//import './Registration.css'
 import { deployYDate } from '@/types/utils' 
 import { fullMonth } from '@/handlers/util_handler'
 
@@ -84,8 +84,6 @@ export default function Page(){
             const permissions = userRole.permissions.filter(
                 (p: any) => p.department === "Registration" && p.feature === "Registrations"
             )
-            console.log(permissions)
-            console.log(permissions[0].allowed.includes("print"))
             setPermissions(permissions)
         }
         fetchData()
