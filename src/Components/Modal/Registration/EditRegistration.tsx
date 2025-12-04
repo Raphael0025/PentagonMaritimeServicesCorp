@@ -161,7 +161,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                             )}
                             {canDo("update") && (
                                 <Box w='50%' display='flex' justifyContent='end' mr='2'>
-                                    <Button colorScheme='blue' onClick={() => {onOpenTraining(); setAccType(fetchedReg?.reg_accountType ?? 0); setCID(companyID); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md' mr='2'>Edit</Button>
+                                    <Button colorScheme='red' onClick={() => {onOpenTraining(); setAccType(fetchedReg?.reg_accountType ?? 0); setCID(companyID); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md' mr='2'>Rollback</Button>
                                 </Box>
                             )}
                         </Box>
