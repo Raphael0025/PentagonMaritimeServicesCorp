@@ -40,7 +40,7 @@ export default function Page({regNum, tab}: UIProps){
         return <Text>No trainee information found.</Text>;
     }
 
-    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status === 3 : t.reg_status === 2));
+    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status === 3 || t.reg_status === 6 : t.reg_status === 2 || t.reg_status === 6));
     if (!trainings || trainings.length === 0) {
         return <Text>No trainings found.</Text>;
     }

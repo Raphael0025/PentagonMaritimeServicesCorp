@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Box, Text, Input, Button, InputLeftAddon, Menu, MenuList, MenuButton, IconButton, MenuItem, MenuGroup, MenuDivider, MenuOptionGroup, MenuItemOption, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionIcon, AccordionItem, Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent, ModalFooter, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
 import { DotsIcon, ViewDocIcon, SearchIcon, StopIcon, } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
@@ -13,6 +13,7 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
+import { useRoles } from '@/context/UserRolesContext'
 
 import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
 import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
@@ -38,6 +39,7 @@ export default function Page() {
     const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
     const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { data: allRoles } = useRoles()
 
     const [activeBtn, setActiveBtn] = useState<string>('')
     const [loadBtn, setLoadBtn] = useState<boolean>(true)
@@ -69,6 +71,31 @@ export default function Page() {
         content: () => componentRef.current,
         documentTitle: `${traineeName} REGISTRATION_FORM.pdf`,
     })
+
+    const [permissions, setPermissions] = useState<any[]>([])
+    
+    useEffect(() => {
+        const fetchData = () => {
+            const role = localStorage.getItem('roleToken');
+            if (!role) return;
+
+            const userRole = allRoles?.find(r => r.id === role)
+            if (!userRole) return;
+
+            // Check whether the found role belongs to the training department
+            const permissions = userRole.permissions.filter(
+                (p: any) => p.department === "Registration" && p.feature === "Registrations"
+            )
+            console.log(permissions)
+            console.log(permissions[0].allowed.includes("print"))
+            setPermissions(permissions)
+        }
+        fetchData()
+    }, [])
+
+    const canDo = (feature: string) => {
+        return permissions.some(p => p.allowed.includes(feature));
+    }
 
     // Function to filter registrations based on search
     const filteredRegistrations = allRegistrations?.filter((reg) => reg.regType !== 3).filter((registration) => {
@@ -241,7 +268,9 @@ export default function Page() {
                 </InputGroup>
                 <Box>
                     <Button mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='md' shadow='md'>Filter Date</Button>
-                    <Button colorScheme='blue' onClick={onOpenRegister} bgColor='#1c437e' size='md' shadow='md'>Register</Button>
+                    {canDo("print") && (
+                        <Button colorScheme='blue' onClick={onOpenRegister} bgColor='#1c437e' size='md' shadow='md'>Register</Button>
+                    )}
                 </Box>
             </Box>
             <Box className="w-full px-5 space-y-3">
@@ -255,7 +284,9 @@ export default function Page() {
                     <Text w="40%" className="text-center">email</Text>
                     {/* <Text w="50%" className="text-center">Payment Balance</Text> */}
                     <Text w="40%" className="text-center">contact no</Text>
-                    <Text w="30%" className="text-center">action</Text>
+                    {canDo('create') && (
+                        <Text w="30%" className="text-center">action</Text>
+                    )}
                 </Box>
                 <Box className='px-3' style={{maxHeight: '700px', overflowY: 'auto'}}>
                     <Accordion allowToggle className="space-y-3">
@@ -289,27 +320,29 @@ export default function Page() {
                                             </Text>
                                             <Text w="40%" className="text-xs text-center lowercase">{traineeFound.email}</Text>
                                             <Text w="40%" className="text-xs text-center">{traineeFound.contact_no}</Text>
-                                            <Box p={0} w='30%'>
-                                                <Menu isLazy  >
-                                                    <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
-                                                    <MenuList className='space-y-1 text-start'>
-                                                        <MenuGroup title='Actions'>
-                                                            <MenuItem onClick={(e) => {e.stopPropagation(); setTrainee(`${traineeFound.last_name.toUpperCase()}, ${traineeFound.first_name.toUpperCase()} ${traineeFound.middle_name === '' || traineeFound.middle_name.toLowerCase() === 'n/a' ? '' : `${traineeFound.middle_name.charAt(0).toUpperCase()}.`} ${traineeFound.suffix === '' || traineeFound.suffix.toLowerCase() === 'n/a'  ? '' : traineeFound.suffix.toUpperCase()}`); onOpenReg(); setRegID(registration.id);}}>
-                                                                <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
-                                                                <span className='ps-2' style={{fontSize: '14px'}}>View Registration</span>
-                                                            </MenuItem>
-                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenTraining(); setAccType(registration.reg_accountType); setCID(traineeFound.company); setRegID(registration.id);}}>
-                                                                <span className='ps-2'><PlusIcon size={'24'} color={'#0D70AB'} /></span>
-                                                                <span className='ps-2' style={{fontSize: '14px'}}>Add Training</span>
-                                                            </MenuItem>
-                                                            <MenuItem onClick={(e) => {e.stopPropagation(); onOpenCancel(); setTID(''); setRegID(registration.id);}}>
-                                                                <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
-                                                                <span className='ps-2' style={{fontSize: '14px'}}>Cancel Registration</span>
-                                                            </MenuItem>
-                                                        </MenuGroup>
-                                                    </MenuList>
-                                                </Menu>
-                                            </Box>
+                                            {canDo('update') && (
+                                                <Box p={0} w='30%'>
+                                                    <Menu isLazy  >
+                                                        <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
+                                                        <MenuList className='space-y-1 text-start'>
+                                                            <MenuGroup title='Actions'>
+                                                                <MenuItem onClick={(e) => {e.stopPropagation(); setTrainee(`${traineeFound.last_name.toUpperCase()}, ${traineeFound.first_name.toUpperCase()} ${traineeFound.middle_name === '' || traineeFound.middle_name.toLowerCase() === 'n/a' ? '' : `${traineeFound.middle_name.charAt(0).toUpperCase()}.`} ${traineeFound.suffix === '' || traineeFound.suffix.toLowerCase() === 'n/a'  ? '' : traineeFound.suffix.toUpperCase()}`); onOpenReg(); setRegID(registration.id);}}>
+                                                                    <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
+                                                                    <span className='ps-2' style={{fontSize: '14px'}}>View Registration</span>
+                                                                </MenuItem>
+                                                                <MenuItem onClick={(e) => {e.stopPropagation(); onOpenTraining(); setAccType(registration.reg_accountType); setCID(traineeFound.company); setRegID(registration.id);}}>
+                                                                    <span className='ps-2'><PlusIcon size={'24'} color={'#0D70AB'} /></span>
+                                                                    <span className='ps-2' style={{fontSize: '14px'}}>Add Training</span>
+                                                                </MenuItem>
+                                                                <MenuItem onClick={(e) => {e.stopPropagation(); onOpenCancel(); setTID(''); setRegID(registration.id);}}>
+                                                                    <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
+                                                                    <span className='ps-2' style={{fontSize: '14px'}}>Cancel Registration</span>
+                                                                </MenuItem>
+                                                            </MenuGroup>
+                                                        </MenuList>
+                                                    </Menu>
+                                                </Box>
+                                            )}
                                         </AccordionButton>
                                         <AccordionPanel display='flex' flexDir='column'  gridGap={3}>
                                             <Box className='uppercase w-full p-3 border rounded text-center shadow-md' bg='#dcdee1' display='flex' justifyContent='between' >
@@ -320,7 +353,9 @@ export default function Page() {
                                                 <Text className='text-zinc-500' w='100%'>end date</Text>
                                                 <Text className='text-zinc-500' w='100%'>duration</Text>
                                                 <Text className='text-zinc-500' w='100%'>status</Text>
-                                                <Text className='text-zinc-500' w='100%'>action</Text>
+                                                {canDo('update') &&  (
+                                                    <Text className='text-zinc-500' w='100%'>action</Text>
+                                                )}
                                             </Box>
                                             {allTraining && allTraining?.filter((training) => training.reg_ref_id === registration.id && training.reg_status < 3).map((training) => (
                                                 <Box key={training.id} className='py-3 px-5 items-center text-center border-b rounded' display='flex' justifyContent='between'>
@@ -332,34 +367,36 @@ export default function Page() {
                                                     <Text w='100%' className='text-xs uppercase'>{training.start_date}</Text>
                                                     <Text w='100%' className='text-xs uppercase'>{training.end_date !== '' ? training.end_date : '--'}</Text>
                                                     <Text w='100%' className='text-xs uppercase'>{training.numOfDays > 1 ? `${training.numOfDays} days` : `${training.numOfDays} day`}</Text>
-                                                    {training.reg_status === 0 ? (
+                                                    {training.reg_status === 0 && canDo('update') ? (
                                                         <Button w='100%' onClick={() => {handleAcknowledge(training.id, training, traineeFound?.email, traineeFound?.last_name, traineeFound?.first_name)}} colorScheme='blue' className="text-xs uppercase text-center" size='xs' py={4} variant='link' isLoading={activeBtn === training.id} loadingText='Acknowledging...'>Acknowledge</Button>
-                                                    ) : training.reg_status === 2 ? (
+                                                    ) : training.reg_status === 2 && canDo('update') ? (
                                                         <Button w='90%' onClick={() => {handleEnrollmentBD(training.id, registration.id, traineeFound.id, training.accountType)}} colorScheme='green' className="text-xs uppercase text-center" size='xs' py={4} variant='link' isLoading={activeBtn === training.id} isDisabled={!loadBtn} loadingText='Enrolling...'>Enroll Course</Button>
                                                     ) :(
                                                         <Text w='100%' className={`${training.reg_status === 1 ? 'text-yellow-500' : training.reg_status === 2 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
                                                     )}
-                                                    <Box w='100%'>
-                                                        <Menu isLazy  >
-                                                            <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
-                                                            <MenuList className='space-y-1 text-start'>
-                                                                <MenuGroup title='Training Details'>
-                                                                    <MenuItem onClick={(e) => {e.stopPropagation(); setTD('ts'); setCID(traineeFound.company); setTS(training.id); onOpenTS();}}>
-                                                                        <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
-                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Edit Training Details</span>
-                                                                    </MenuItem>
-                                                                    <MenuItem onClick={(e) => {e.stopPropagation();  setRegID(registration.id); setTS(training.id); onOpenAT();}}>
-                                                                        <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
-                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Change Account Type</span>
-                                                                    </MenuItem>
-                                                                    <MenuItem onClick={(e) => {e.stopPropagation(); setTID(training.id); setTraining(allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''); setRegID(''); onOpenCancel();}}>
-                                                                        <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
-                                                                        <span className='ps-2' style={{fontSize: '14px'}}>Cancel Training</span>
-                                                                    </MenuItem>
-                                                                </MenuGroup>
-                                                            </MenuList>
-                                                        </Menu>
-                                                    </Box>
+                                                    {canDo('update') &&  (
+                                                        <Box w='100%'>
+                                                            <Menu isLazy  >
+                                                                <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
+                                                                <MenuList className='space-y-1 text-start'>
+                                                                    <MenuGroup title='Training Details'>
+                                                                        <MenuItem onClick={(e) => {e.stopPropagation(); setTD('ts'); setCID(traineeFound.company); setTS(training.id); onOpenTS();}}>
+                                                                            <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
+                                                                            <span className='ps-2' style={{fontSize: '14px'}}>Edit Training Details</span>
+                                                                        </MenuItem>
+                                                                        <MenuItem onClick={(e) => {e.stopPropagation();  setRegID(registration.id); setTS(training.id); onOpenAT();}}>
+                                                                            <span className='ps-2'><ViewDocIcon size={'24'} color={'#0D70AB'} /></span>
+                                                                            <span className='ps-2' style={{fontSize: '14px'}}>Change Account Type</span>
+                                                                        </MenuItem>
+                                                                        <MenuItem onClick={(e) => {e.stopPropagation(); setTID(training.id); setTraining(allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''); setRegID(''); onOpenCancel();}}>
+                                                                            <span className='ps-2'><StopIcon size={'24'} color={'#df0017'} /></span>
+                                                                            <span className='ps-2' style={{fontSize: '14px'}}>Cancel Training</span>
+                                                                        </MenuItem>
+                                                                    </MenuGroup>
+                                                                </MenuList>
+                                                            </Menu>
+                                                        </Box>
+                                                    )}
                                                 </Box>
                                             ))}
                                         </AccordionPanel>

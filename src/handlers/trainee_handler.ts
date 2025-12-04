@@ -18,8 +18,9 @@ export const handleRegStatus = (status: number) => {
         case 0:
             return 'Acknowledge';
         case 1:
-        case 2:
             return 'Acknowledged';
+        case 2:
+            return 'To Enroll';
         case 3:
             return 'Enrolled';
         case 4:

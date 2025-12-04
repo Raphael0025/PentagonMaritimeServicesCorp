@@ -143,6 +143,9 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         </>
                                         )}
                                     </Text>
+                                    <Box w='50%' display='flex' justifyContent='end' mr='2'>
+                                        <Button colorScheme='red' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md' mr='2'>Rollback</Button>
+                                    </Box>
                                 </>
                             ) : (
                                 <>
@@ -158,11 +161,6 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         )}
                                     </Text>
                                 </>
-                            )}
-                            {canDo("update") && (
-                                <Box w='50%' display='flex' justifyContent='end' mr='2'>
-                                    <Button colorScheme='red' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md' mr='2'>Rollback</Button>
-                                </Box>
                             )}
                         </Box>
                     )
