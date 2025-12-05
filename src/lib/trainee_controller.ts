@@ -148,6 +148,10 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string, 
                 cert_released: Timestamp.now(),
                 cert_status: 0,
                 cert_no: '',
+                attendance: false,
+                ccr: false,
+                assessment: false,
+                evaluation: false,
                 practical: 0,
                 written: 0,
                 result: 0,
@@ -182,6 +186,10 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string, ma
                 cert_released: Timestamp.now(),
                 cert_status: 0,
                 cert_no: '',
+                attendance: false,
+                ccr: false,
+                assessment: false,
+                evaluation: false,
                 practical: 0,
                 written: 0,
                 result: 0,
@@ -260,6 +268,16 @@ export const UPDATE_TRAINING = async (training_id: string, updateTrainingDoc: Pa
         const trainingRef = doc(firestore, 'TRAINING', training_id)
         await updateDoc(trainingRef, updateTrainingDoc)
     }catch(error){
+        throw error
+    }
+}
+
+export const UPDATE_TRAINING_FORMS = async (training_id: string, updateTrainingDoc: Partial<TRAINING>, actor: string | null) => {
+    try{
+        const trainingRef = doc(firestore, 'TRAINING', training_id)
+        await setDoc(trainingRef, updateTrainingDoc, {merge: true})
+    }catch(error){
+        console.error(error)
         throw error
     }
 }

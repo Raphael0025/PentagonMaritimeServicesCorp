@@ -21,7 +21,7 @@ import { handleRegStatus } from '@/handlers/trainee_handler'
 import { deployYDate } from '@/types/utils' 
 import { fullMonth, backgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
 
-import { UPDATE_TRAINING } from '@/lib/trainee_controller'
+import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -58,6 +58,12 @@ export default function TrackerPage(){
     const [totalOLM, setOLM] = useState<number>(0)
     const [totalBlended, setBlended] = useState<number>(0)
 
+    const [totalGrad, setGrad] = useState<number>(0)
+    const [totalPending, setPending] = useState<number>(0)
+    const [totalAbsent, setAbsent] = useState<number>(0)
+    const [totalCancelled, setCancelled] = useState<number>(0)
+    const [totalWithdraw, setWithdraw] = useState<number>(0)
+
     useEffect(() => {
         const fetchData = () => {
             const prevData = allPrevTraining && allPrevTraining.sort((a, b) => {
@@ -83,7 +89,7 @@ export default function TrackerPage(){
         
                 return batchA - batchB;
             })
-            .filter((t) => t.reg_status >= 3 && t.regType === 0 )
+            .filter((t) => t.reg_status >= 3 && t.regType === 0 && t.batch !== "1" )
             .filter((t) => {
                 const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
                 const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
@@ -170,7 +176,7 @@ export default function TrackerPage(){
         
                 return batchA - batchB;
             })
-            .filter((t) => t.reg_status >= 3 && t.regType === 0 )
+            .filter((t) => t.reg_status >= 3 && t.regType === 0 && t.batch !== '1')
             .filter((t) => {
                 const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
                 const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
@@ -242,23 +248,55 @@ export default function TrackerPage(){
             const companyChargeCount = mergedData.filter(t => t.accountType === 1).length;
 
             // 2️⃣ Total by training mode
-            let f2fIns = 0;
-            let olIns = 0;
-            let f2fM = 0;
-            let olM = 0;
-            let blended = 0;
+            let f2fIns = 0, olIns = 0, f2fM = 0, olM = 0, blended = 0, ttlGrad = 0, ttlPending = 0, ttlCancel = 0, ttlAbsent = 0, ttlWithdraw = 0;
 
             mergedData.forEach(training => {
                 const batch = courseBatch?.find(batch => batch.id === training.batch);
                 const mode = batch?.training_mode?.toLowerCase();
+                const regStatus = training.reg_status
 
                 if (!mode) return;
 
-                if (mode ===" f2f" || mode === "f2ft" || mode === "f2fp") f2fIns++;
-                else if (mode === "ol" || mode === "olt" || mode === "olp") olIns++;
-                else if (mode === "olm") olM++;
-                else if (mode === "f2fm") f2fM++;
-                else if (mode === "blended") blended++;
+                if (mode === "f2f" || mode === "f2ft" || mode === "f2fp"){
+                    f2fIns++;
+                    if(regStatus === 6) ttlGrad++;
+                    else if (regStatus === 5) ttlPending++;
+                    else if (regStatus === 7) ttlCancel++;
+                    else if (regStatus === 8) ttlAbsent++;
+                    else if (regStatus === 9) ttlWithdraw++;
+                } 
+                else if (mode === "ol" || mode === "olt" || mode === "olp"){
+                    olIns++;
+                    if(regStatus === 6) ttlGrad++;
+                    else if (regStatus === 5) ttlPending++;
+                    else if (regStatus === 7) ttlCancel++;
+                    else if (regStatus === 8) ttlAbsent++;
+                    else if (regStatus === 9) ttlWithdraw++;
+                } 
+                else if (mode === "olm"){
+                    olM++;
+                    if(regStatus === 6) ttlGrad++;
+                    else if (regStatus === 5) ttlPending++;
+                    else if (regStatus === 7) ttlCancel++;
+                    else if (regStatus === 8) ttlAbsent++;
+                    else if (regStatus === 9) ttlWithdraw++;
+                } 
+                else if (mode === "f2fm"){
+                    f2fM++;
+                    if(regStatus === 6) ttlGrad++;
+                    else if (regStatus === 5) ttlPending++;
+                    else if (regStatus === 7) ttlCancel++;
+                    else if (regStatus === 8) ttlAbsent++;
+                    else if (regStatus === 9) ttlWithdraw++;
+                } 
+                else if (mode === "blended"){
+                    blended++;
+                    if(regStatus === 6) ttlGrad++;
+                    else if (regStatus === 5) ttlPending++;
+                    else if (regStatus === 7) ttlCancel++;
+                    else if (regStatus === 8) ttlAbsent++;
+                    else if (regStatus === 9) ttlWithdraw++;
+                } 
             });
 
             // 3️⃣ Set the states
@@ -272,7 +310,11 @@ export default function TrackerPage(){
             setF2FM(f2fM);
             setOLM(olM);
             setBlended(blended);
-
+            setGrad(ttlGrad);
+            setPending(ttlPending);
+            setAbsent(ttlAbsent);
+            setCancelled(ttlCancel);
+            setWithdraw(ttlWithdraw);
         }
         fetchData()
     },[monthSelected, yearSelected, allTraining, filterCourse, filterInstructor, filterMode, filterCompany, allPrevTraining])
@@ -320,6 +362,48 @@ export default function TrackerPage(){
             }, 500)
         }).then(() => {
             handleToast('Status Updated Successfully!', `Crew's training status has been updated successfully.`, 5000, 'success')
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setLoading(false)
+        })
+    }
+
+    const handleComplianceStatus = (trainingID: string, complianceForm: string) => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const updateStat: Partial<TRAINING_BY_ID> = {}
+                    switch(complianceForm){
+                        case 'attendance':
+                            const currentAttendance = currTraining?.find(t => t.id === trainingID)?.attendance || prevTraining?.find(t => t.id === trainingID)?.attendance || false
+                            updateStat.attendance = !currentAttendance
+                            break;
+                        case 'assessment':
+                            const currentAssessment = currTraining?.find(t => t.id === trainingID)?.assessment || prevTraining?.find(t => t.id === trainingID)?.assessment || false
+                            updateStat.assessment = !currentAssessment
+                            break;
+                        case 'ccr':
+                            const currentCcr = currTraining?.find(t => t.id === trainingID)?.ccr || prevTraining?.find(t => t.id === trainingID)?.ccr || false
+                            updateStat.ccr = !currentCcr
+                            break;
+                        case 'evaluation':
+                            const currentEvaluation = currTraining?.find(t => t.id === trainingID)?.evaluation || prevTraining?.find(t => t.id === trainingID)?.evaluation || false
+                            updateStat.evaluation = !currentEvaluation
+                            break;
+                        default:
+                            break;
+                    }
+                    await UPDATE_TRAINING_FORMS(trainingID, updateStat, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() => {
+            handleToast(`${complianceForm.charAt(0).toUpperCase()+complianceForm.slice(1)} Successfully Complied!`, `Trainee has complied their ${complianceForm}.`, 5000, 'success')
         }).catch((error) => {
             console.error("ERROR DETECTED: ", error)
         }).finally(() => {
@@ -384,23 +468,28 @@ export default function TrackerPage(){
                 </Box>
                 <Box display='flex' w='50%' justifyContent='space-between' mb='4'>
                     <Box ms='4' w='100%'>
-                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='green.400'>
-                            <Text>GRADUATED</Text>
+                        <Box w='100%' py='1' h='50%' textAlign='center' bgColor='green.400'>
+                            <Text fontWeight='bold' >GRADUATED</Text>
+                            <Text>{`${totalGrad} trainee${totalGrad === 1 ? '' : 's'}`}</Text>
                         </Box>
-                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='blue.400'>
-                            <Text color='white'>PENDING</Text>
+                        <Box w='100%' py='1' h='50%' color='white' textAlign='center' bgColor='blue.400'>
+                            <Text fontWeight='bold' >WITHDRAW</Text>
+                            <Text>{`${totalWithdraw} trainee${totalWithdraw === 1 ? '' : 's'}`}</Text>
                         </Box>
                     </Box>
                     <Box w='100%'>
-                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='yellow.400'>
-                            <Text>WITHDRAW</Text>
+                        <Box w='100%' py='1' h='50%' textAlign='center' bgColor='yellow.400'>
+                            <Text fontWeight='bold' >PENDING</Text>
+                            <Text>{`${totalPending} trainee${totalPending === 1 ? '' : 's'}`}</Text>
                         </Box>
-                        <Box display='flex' justifyContent='center' alignItems='center' w='100%' h='50%' textAlign='center' bgColor='red.400'>
-                            <Text>ABSENT</Text>
+                        <Box w='100%' py='1' h='50%' textAlign='center' bgColor='red.400'>
+                            <Text fontWeight='bold' >ABSENT</Text>
+                            <Text>{`${totalAbsent} trainee${totalAbsent === 1 ? '' : 's'}`}</Text>
                         </Box>
                     </Box>
-                    <Box display='flex' justifyContent='center' alignItems='center' w='100%' textAlign='center' bgColor='red.500'>
-                        <Text color='white'>CANCELLED</Text>
+                    <Box w='100%' display='flex' flexDir='column' justifyContent='center' alignItems='center' color='white' textAlign='center' bgColor='red.500'>
+                        <Text fontWeight='bold' >CANCELLED</Text>
+                        <Text>{`${totalCancelled} trainee${totalCancelled === 1 ? '' : 's'}`}</Text>
                     </Box>
                 </Box>
             </Box>
@@ -556,16 +645,16 @@ export default function TrackerPage(){
                                 })()}
                                 <Select isDisabled={loading} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='100px' shadow='md' >
                                     <option value={3} hidden>{handleRegStatus(training.reg_status)}</option>
-                                    <option className='text-black' value={6}>Graduated</option>
-                                    <option className='text-black' value={4}>On-Hold</option>
-                                    <option className='text-black' value={7}>Cancelled</option>
-                                    <option className='text-black' value={8}>Absent</option>
+                                    <option value={6}>Graduated</option>
+                                    <option value={5}>Pending</option>
+                                    <option value={7}>Cancelled</option>
+                                    <option value={8}>Absent</option>
                                 </Select>
                                 <Text w="180px" >
                                 {(() => {
                                     const trainingBatch = courseBatch?.find((batch) => batch.id === training.batch)
-                                    const ins = allInstructors?.find((i) => i.id === (trainingBatch?.act_ins || trainingBatch?.instructor));
-                                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
+                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.act_ins);
+                                    if (!ins) return trainingBatch?.act_ins || 'No Instructor';
 
                                     // Add 'MM' if rank is 'CAPT'
                                     const suffix = ins.rank === 'CAPT' ? ', MM' : '';
@@ -573,16 +662,16 @@ export default function TrackerPage(){
                                 })()}    
                                 </Text>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'attendance')}} isChecked={training?.attendance} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'assessment')}} isChecked={training?.assessment} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'ccr')}} isChecked={training?.ccr} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'evaluation')}} isChecked={training?.evaluation} shadow='md' />
                                 </Box>  
                                 <Button onClick={() => {
                                     // setID(training.id); 
@@ -667,16 +756,16 @@ export default function TrackerPage(){
                                 })()}
                                 <Select isDisabled={loading} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='100px' shadow='md' >
                                     <option value={3} hidden>{handleRegStatus(training.reg_status)}</option>
-                                    <option className='text-black' value={6}>Graduated</option>
-                                    <option className='text-black' value={4}>On-Hold</option>
-                                    <option className='text-black' value={7}>Cancelled</option>
-                                    <option className='text-black' value={8}>Absent</option>
+                                    <option value={6}>Graduated</option>
+                                    <option value={5}>Pending</option>
+                                    <option value={7}>Cancelled</option>
+                                    <option value={8}>Absent</option>
                                 </Select>
                                 <Text w="180px" >
                                 {(() => {
                                     const trainingBatch = courseBatch?.find((batch) => batch.id === training.batch)
-                                    const ins = allInstructors?.find((i) => i.id === (trainingBatch?.act_ins || trainingBatch?.instructor));
-                                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
+                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.act_ins);
+                                    if (!ins) return trainingBatch?.act_ins || 'No Instructor';
 
                                     // Add 'MM' if rank is 'CAPT'
                                     const suffix = ins.rank === 'CAPT' ? ', MM' : '';
@@ -684,16 +773,16 @@ export default function TrackerPage(){
                                 })()}
                                 </Text>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>    
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'attendance')}} isChecked={training?.attendance} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>    
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'assessment')}} isChecked={training?.assessment} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>    
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'ccr')}} isChecked={training?.ccr} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='green' defaultChecked/>    
+                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'evaluation')}} isChecked={training?.evaluation} shadow='md' />
                                 </Box>  
                                 <Button onClick={() => {
                                     // setID(training.id); 

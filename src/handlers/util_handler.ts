@@ -48,7 +48,7 @@ export const getFormatDateWithTime = (date: Date | null): string => {
 export const trainingModeColor = (value: string) => {
     switch(value){
         case 'f2f':
-            return 'cyan.200';
+            return 'cyan.900';
         case 'f2fm':
             return 'cyan.400';
         case 'f2ft':
@@ -75,6 +75,7 @@ export const trainingModeFontColor = (value: string) => {
         case 'f2ft':
         case 'olt':
         case 'olp':
+        case 'f2f':
             return 'white';
         default:
             return '';
@@ -87,6 +88,8 @@ export const backgroundColor = (value: number) => {
             return '';
         case 4:
             return 'blue.400';
+        case 5:
+            return 'yellow.400';
         case 6:
             return 'green.400';
         case 7:

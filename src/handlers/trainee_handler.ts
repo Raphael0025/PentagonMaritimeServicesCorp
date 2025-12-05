@@ -29,6 +29,10 @@ export const handleRegStatus = (status: number) => {
             return 'Pending';
         case 6:
             return 'Graduated';
+        case 7:
+            return 'Cancelled';
+        case 8:
+            return 'Absent';
         default:
             return 'null';
     }

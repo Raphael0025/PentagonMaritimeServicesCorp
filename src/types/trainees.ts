@@ -154,6 +154,10 @@ export interface TRAINING {
     cert_released: Timestamp;
     cert_status: number; // 0 - pending | 1 - released
     cert_no: string;
+    attendance: boolean;
+    ccr: boolean;
+    assessment: boolean;
+    evaluation: boolean;
     practical: number;
     written: number;
     result: number;
@@ -182,6 +186,10 @@ export const initTraining = {
     cert_released: Timestamp.now(),
     cert_status: 0, // 0 - pending | 1 - released
     cert_no: '',
+    attendance: false,
+    ccr: false,
+    assessment: false,
+    evaluation: false,
     practical: 0,
     written: 0,
     result: 0,
