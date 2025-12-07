@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Input, Textarea, Spinner, Center, Button, Checkbox, InputLeftAddon, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Input, Textarea, Spinner, Center, Button, Checkbox, InputLeftAddon, FormControl, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
 
@@ -37,6 +37,9 @@ export default function TrackerPage(){
     const [searchTerm, setSearch] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
 
+    const [remarks, setRemarks] = useState<string>('')
+    const [t_id, setID] = useState<string>('')
+
     const [filterCourse, setCFilter] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
     const [filterInstructor, setInstructorFilter] = useState('')
@@ -46,6 +49,7 @@ export default function TrackerPage(){
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
+    const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     
     const [currTraining, setCurrTraining] = useState<TRAINING_BY_ID[] | null>(null)
     const [prevTraining, setPrevTraining] = useState<TRAINING_BY_ID[] | null>(null)
@@ -369,6 +373,32 @@ export default function TrackerPage(){
         })
     }
 
+    const handleRemarks = () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const updateStat = {
+                        train_remarks: remarks,
+                    }
+                    await UPDATE_TRAINING(t_id, updateStat, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() => {
+            handleToast('Remarks Saved Successfully!', ``, 5000, 'success')
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setRemarks('')
+            setID('')
+            setLoading(false)
+        })
+    }
+
     const handleComplianceStatus = (trainingID: string, complianceForm: string) => {
         setLoading(true)
         new Promise<void>((res, rej) => {
@@ -543,7 +573,7 @@ export default function TrackerPage(){
                         <option value='olm'>OL-Modular</option>
                     </Select>
                     {(filterCourse || filterCompany || filterInstructor || filterMode) && (
-                        <Button w='50%' mr={4} onClick={() => { setCompanyFilter(''); setInstructorFilter(''), setModeFilter(''), setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
+                        <Button w='50%' mr={4} onClick={() => { setCompanyFilter(''); setInstructorFilter(''); setModeFilter(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                     )}
                     <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
                 </Box>
@@ -593,7 +623,8 @@ export default function TrackerPage(){
                         const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                         const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
                         //const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
-                        
+                        const trainingMode = courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `${courseBatch.find((batch) => batch.id === training.batch)?.training_mode}` : ''
+
                         if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -603,7 +634,7 @@ export default function TrackerPage(){
                         )
                     ){
                         return(
-                            <Box key={training.id} borderRadius='5px' color={training.reg_status === 7 ? 'white' : 'black'} bgColor={backgroundColor(training.reg_status)} w='2650px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                            <Box key={training.id} _hover={{bgColor: 'blue.100'}} borderRadius='5px' color={training.reg_status === 7 ? 'white' : 'black'} bgColor={backgroundColor(training.reg_status)} w='2650px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                                 <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                     <Box className='w-full flex space-x-3'>
                                         <Text w="100px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
@@ -635,14 +666,9 @@ export default function TrackerPage(){
                                     </Box>
                                 </Box>
                                 <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
-                                {(() => {
-                                    const trainingMode = courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `${courseBatch.find((batch) => batch.id === training.batch)?.training_mode}` : ''
-                                    return(
-                                        <Text w="100px" p='1' borderRadius='5px' color={trainingModeFontColor(trainingMode)} bgColor={trainingModeColor(trainingMode)}>
-                                            {`${trainingMode}`}
-                                        </Text>  
-                                    )
-                                })()}
+                                <Text w="100px" p='1' borderRadius='5px' color={trainingModeFontColor(trainingMode)} bgColor={trainingModeColor(trainingMode)}>
+                                    {`${trainingMode}`}
+                                </Text>
                                 <Select isDisabled={loading} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='100px' shadow='md' >
                                     <option value={3} hidden>{handleRegStatus(training.reg_status)}</option>
                                     <option value={6}>Graduated</option>
@@ -662,24 +688,20 @@ export default function TrackerPage(){
                                 })()}    
                                 </Text>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'attendance')}} isChecked={training?.attendance} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'attendance')}} isChecked={training?.attendance} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'assessment')}} isChecked={training?.assessment} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'assessment')}} isChecked={training?.assessment} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'ccr')}} isChecked={training?.ccr} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'ccr')}} isChecked={training?.ccr} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'evaluation')}} isChecked={training?.evaluation} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'evaluation')}} isChecked={training?.evaluation} shadow='md' />
                                 </Box>  
-                                <Button onClick={() => {
-                                    // setID(training.id); 
-                                    // setRemarks(training.train_remarks); 
-                                    // onOpenRm();
-                                    }} size='sm' p={0} variant='link' w='300px'>
-                                    <Text className={`${training.train_remarks === '' ? 'text-gray-400' : 'text-cyan-600'}`}>
-                                        {training.train_remarks === '' ? 'None' : 'View'}
+                                <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
+                                    <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
+                                        {training.train_remarks === '' ? 'None' : training.train_remarks}
                                     </Text>
                                 </Button>                                     
                             </Box>
@@ -704,7 +726,8 @@ export default function TrackerPage(){
                         const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                         const reg_num = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
                         //const reg_id = allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
-                        
+                        const trainingMode = courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `${courseBatch.find((batch) => batch.id === training.batch)?.training_mode}` : ''
+
                         if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -714,7 +737,7 @@ export default function TrackerPage(){
                         )
                     ){
                         return(
-                            <Box key={training.id} borderRadius='5px' color={training.reg_status === 7 ? 'white' : 'black'} bgColor={backgroundColor(training.reg_status)} w='2650px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                            <Box key={training.id} _hover={{bgColor: 'blue.100'}} borderRadius='5px' color={training.reg_status === 7 ? 'white' : 'black'} bgColor={backgroundColor(training.reg_status)} w='2650px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                                 <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                     <Box className='w-full flex space-x-3'>
                                         <Text w="100px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
@@ -746,14 +769,9 @@ export default function TrackerPage(){
                                     </Box>
                                 </Box>
                                 <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
-                                {(() => {
-                                    const trainingMode = courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `${courseBatch.find((batch) => batch.id === training.batch)?.training_mode}` : ''
-                                    return(
-                                        <Text w="100px" p='1' borderRadius='5px' color={trainingModeFontColor(trainingMode)} bgColor={trainingModeColor(trainingMode)}>
-                                            {`${trainingMode}`}
-                                        </Text>  
-                                    )
-                                })()}
+                                <Text w="100px" p='1' borderRadius='5px' color={trainingModeFontColor(trainingMode)} bgColor={trainingModeColor(trainingMode)}>
+                                    {`${trainingMode}`}
+                                </Text>  
                                 <Select isDisabled={loading} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='100px' shadow='md' >
                                     <option value={3} hidden>{handleRegStatus(training.reg_status)}</option>
                                     <option value={6}>Graduated</option>
@@ -773,24 +791,20 @@ export default function TrackerPage(){
                                 })()}
                                 </Text>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'attendance')}} isChecked={training?.attendance} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'attendance')}} isChecked={training?.attendance} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'assessment')}} isChecked={training?.assessment} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'assessment')}} isChecked={training?.assessment} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'ccr')}} isChecked={training?.ccr} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'ccr')}} isChecked={training?.ccr} shadow='md' />
                                 </Box>  
                                 <Box w="100px" >
-                                    <Checkbox colorScheme='blue' onChange={(e) => {handleComplianceStatus(training.id, 'evaluation')}} isChecked={training?.evaluation} shadow='md' />
+                                    <Checkbox colorScheme='blue' onChange={() => {handleComplianceStatus(training.id, 'evaluation')}} isChecked={training?.evaluation} shadow='md' />
                                 </Box>  
-                                <Button onClick={() => {
-                                    // setID(training.id); 
-                                    // setRemarks(training.train_remarks); 
-                                    // onOpenRm();
-                                    }} size='sm' p={0} variant='link' w='300px'>
-                                    <Text className={`${training.train_remarks === '' ? 'text-gray-400' : 'text-cyan-600'}`}>
-                                        {training.train_remarks === '' ? 'None' : 'View'}
+                                <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
+                                    <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
+                                        {training.train_remarks === '' ? 'None' : training.train_remarks}
                                     </Text>
                                 </Button>                                     
                             </Box>
@@ -800,6 +814,21 @@ export default function TrackerPage(){
                 </Box>
             </Box>
         </Box>
+        <Modal isOpen={isOpenRemarks} scrollBehavior='inside' onClose={() => {setRemarks(''); setID(''); onCloseRemarks();}}>
+            <ModalOverlay />
+            <ModalContent px='2'>
+                <ModalHeader>Training Remarks</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <FormControl>
+                        <Textarea value={remarks} onChange={(e) => setRemarks(e.target.value)} placeholder='Type here your remarks...' fontWeight='normal' shadow='md' minH='150px'></Textarea>
+                    </FormControl>
+                </ModalBody>
+                <ModalFooter display='flex' borderTopWidth='1px' borderColor='gray.500'>
+                    <Button onClick={handleRemarks} isLoading={loading} loadingText='Saving...' colorScheme='blue' shadow='md' size='sm' bgColor='blue.700'>Save Remarks</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
             <ModalOverlay />
             <ModalContent px={4}>

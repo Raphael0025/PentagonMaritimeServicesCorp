@@ -243,10 +243,10 @@ export default function Page(){
                         )}
                     </Box>
                 </Box>
-                <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto'}}>
-                    <Box w='100%' h='700px' className='custom-scrollbar' style={{ scrollbarWidth: 'thin',}}>
-                        <Box w="100%" h='100%' className="custom-scrollbar rounded space-y-3" style={{  overflowX: 'auto', boxSizing: 'border-box',  msOverflowStyle: 'none'}}>
-                            <Box w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
+                <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto',}}>
+                    <Box w='100%' h='700px' >
+                        <Box w="100%" h='100%' className=" rounded space-y-3" style={{  overflowX: 'auto', boxSizing: 'border-box', scrollbarWidth: 'thin', msOverflowStyle: 'none'}}>
+                            <Box w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap',  }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Box className="space-x-3 flex w-full" justifyContent='center' alignItems='center'>
                                         <Text w="150px" className="text-center">Enrolled Date</Text>
@@ -302,7 +302,7 @@ export default function Page(){
                                 <Text w="300px" className="text-center pr-5">Remarks</Text>
                             </Box>
                             {allTraining && allTraining.sort((a, b) => {
-                                    return a.date_enrolled.toMillis() - b.date_enrolled.toMillis();
+                                    return b.date_enrolled.toMillis() - a.date_enrolled.toMillis();
                                 }).filter((t) => t.reg_status >= 3 && t.regType === 1 )
                                 .filter((t) => {
                                     const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
@@ -347,7 +347,7 @@ export default function Page(){
                                     )
                                 ){
                                     return(
-                                        <Box key={training.id} w='4150px' className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                                        <Box key={training.id} _hover={{bgColor: 'blue.100', borderBottomWidth: '1px', borderColor: 'blue.700'}} w='4150px' className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
                                                     <Text w="150px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
@@ -373,9 +373,11 @@ export default function Page(){
                                                     </Text>                                        
                                                     <Text w="100px">{trainee.srn}</Text>                                        
                                                     <Text w='150px' >{parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</Text>
-                                                    <Text w="180px">{trainee.birthPlace}</Text>
-                                                    <Tooltip w='250px' label={trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}>
-                                                        <Text noOfLines={1} w='250px'>
+                                                    <Tooltip w='200px' textTransform='uppercase' textAlign='center' label={trainee.birthPlace}>
+                                                        <Text noOfLines={1} w="180px">{trainee.birthPlace}</Text>
+                                                    </Tooltip>
+                                                    <Tooltip w='250px' textTransform='uppercase' textAlign='center' label={trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}>
+                                                        <Text noOfLines={1} w='260px'>
                                                             {trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}
                                                         </Text>                                        
                                                     </Tooltip>
@@ -384,7 +386,9 @@ export default function Page(){
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
                                                     <Text w="100px">{trainee.contact_no}</Text>    
-                                                    <Text w="180px" className='lowercase'>{trainee.email}</Text>    
+                                                    <Tooltip textAlign='center' w='300px' label={trainee.email} >
+                                                        <Text noOfLines={1} w="180px" className='lowercase'>{trainee.email}</Text>    
+                                                    </Tooltip>    
                                                 </Box>
                                             </Box>
                                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
