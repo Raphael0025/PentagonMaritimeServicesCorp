@@ -55,6 +55,9 @@ export default function TabTraining() {
             {canAccess("Analytics") && (
                 <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'analytics' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/training/analytics' onClick={() => {handleClick('analytics')}}>Analytics</Link>
             )}
+            {canAccess("Analytics") && (
+                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'course_mats' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/training/course-materials' onClick={() => {handleClick('course_mats')}}>Course Materials</Link>
+            )}
         </nav>
     )
 } 

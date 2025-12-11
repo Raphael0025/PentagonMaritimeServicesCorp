@@ -48,8 +48,12 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     const [selectedEmails, setSelectedEmails] = useState<string[]>([])
 
     // instructor details
-    const [notes, setNote] = useState<string>('')
+    const [note1, setNote1] = useState<string>('')
+    const [note2, setNote2] = useState<string>('')
     const [email, setEmail] = useState<string>('')
+    const [gmeet_link, setGMeet_Link] = useState<string>('')
+    const [gmeet_code, setGMeet_Code] = useState<string>('')
+    const [c_presentation_link, setPresentationLink] = useState<string>('')
 
     const [loading ,setLoading] = useState<boolean>(false)
     const [loadTrainees ,setLoadTrainees] = useState<boolean>(false)
@@ -231,9 +235,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             course_name: courseFound?.course_name, 
                             schedule, 
                             time: timeArr[0], 
-                            training_mode: (batch.training_mode === 'olm' ? 'Online-Modular' : 'Online'), 
                             class_code, 
-                            tro_contact: contact, 
                             staff, 
                             position 
                         })
@@ -260,7 +262,18 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
             setTimeout( async () => {
                 try{
                     const courseFound = allCourses?.find((c) => c.id === batch.course)
-                    const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
+                    const startDateArr = batch.start_date.split(',')
+                    const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
+                    const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
+                    const class_code = courseFound?.class_code
+
+                    const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
+                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.act_ins);
+                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
+
+                    // Add 'MM' if rank is 'CAPT'
+                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                    const intructor_name = `${ins.rank} ${ins.name}${suffix}`;
 
                     const route = '/api/training-advise/notify-instructor'
                     
@@ -270,7 +283,8 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
 
                         return `${rank?.toUpperCase()} ${trainee?.last_name.toUpperCase()}, ${trainee?.first_name.toUpperCase()} ${middleInitial}`;
                     })
-                    
+                    console.log(note1)
+
                     await fetch(route, {
                         method: 'POST',
                         headers: {
@@ -280,11 +294,15 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             to: email, 
                             course_code: courseFound?.course_code, 
                             course_name: courseFound?.course_name, 
-                            time_duration: timeArr[0], 
+                            time_duration: batch.time_duration, 
                             trainees: listOfTrainees,
-                            notes,
-                            instructor: batch.instructor,
-                            tro_contact: contact, 
+                            note1,
+                            schedule,
+                            gmeet_code,
+                            gmeet_link,
+                            class_code,
+                            presentation_link: c_presentation_link,
+                            instructor: intructor_name,
                             staff, 
                             position 
                         })
@@ -300,12 +318,19 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
             console.error('Error: ', error)
         }).finally(() =>{
             onModClose()
-            setNote('')
+            setNote1('')
+            setNote2('')
             setEmail('')
             setShow(true)
             setLoadInstructor(false)
         })
     }
+
+    const handleNotes = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        setNote2(value);
+        setNote1(value.replace(/\n/g, "<br>"));
+    };
 
     return(
         <>
@@ -516,16 +541,18 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                                     {show ? 'Notify Instructor' : 'Hide'}
                                 </Button>
                                 <Box display={show ? 'none' : ''} >
-                                    <Input placeholder='Instructor Email' onChange={(e) => setEmail(e.target.value)} />
-                                    <Textarea placeholder='Place your notes here...' mt='4' onChange={(e) => setNote(e.target.value)} />
+                                    <Input size='sm' fontWeight='normal' placeholder='Instructor Email' onChange={(e) => setEmail(e.target.value)} mb='2' />
+                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Code' onChange={(e) => setGMeet_Code(e.target.value)} mb='2' />
+                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Link' onChange={(e) => setGMeet_Link(e.target.value)} mb='2' />
+                                    <Input size='sm' fontWeight='normal' placeholder='Course Presentation Link' onChange={(e) => setPresentationLink(e.target.value)} mb='2' />
+                                    <Textarea fontWeight='normal' placeholder='Place your notes here...' value={note2} mt='4' onChange={handleNotes} />
                                 </Box>
                             </Box>
-
                         </Box>
                     </ModalBody>
                     <ModalFooter>
                         <Button isLoading={loadTrainees} loadingText='Notifying Trainees...' isDisabled={selectedEmails.length === 0 || loadInstructor} bgColor='blue.700' colorScheme='blue' shadow='md' mr={3} onClick={handleNotifyTrainees}>Notify Trainees</Button>
-                        <Button isLoading={loadInstructor} loadingText='Notifying Instructor...' isDisabled={notes === '' || email === '' || loadTrainees} bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handleNotifyInstructor}>Notify Instructor</Button>
+                        <Button isLoading={loadInstructor} loadingText='Notifying Instructor...' isDisabled={email === '' || loadTrainees} bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handleNotifyInstructor}>Notify Instructor</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

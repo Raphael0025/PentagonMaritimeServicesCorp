@@ -11,8 +11,6 @@ import {HelpIcon, BellIcon, SysAdIcon, TicketIcon, InventoryIcon, RADIcon, Alert
 import {CalendarIcon, CashIcon, DeBugIcon, FeedbackIcon, UserIcon, HomeIcon, LogoutIcon, PurchaseIcon, RegistrationIcon, RolesIcon, SalesIcon, LeaveIcon, SettingsIcon, SupportIcon, TrainingIcon, BankIcon, AdminFolderIcon, ListIcon } from '@/Components/SideIcons'
 import TicketingModal from '@/Components/Modal/System/TicketingModal'
 
-import 'animate.css'
-
 import { useRoles } from '@/context/UserRolesContext'
 import { useCompanyUsers } from '@/context/CompanyUserContext'
 import { useComms } from '@/context/CommunicationContext'
