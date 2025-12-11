@@ -79,11 +79,11 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Schedule`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${schedule} ${year}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${schedule} ${year}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Practicum Site`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${site}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${site}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Instructor`}</Text>
@@ -102,15 +102,15 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     <Box w='50%'>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Class No `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batchNo}`}</Text>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batchNo}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Room No `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${room}`}</Text>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>{`${room}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Practicum Date `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${practicumDate}`}</Text>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>{`${practicumDate}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Assessor `}</Text>

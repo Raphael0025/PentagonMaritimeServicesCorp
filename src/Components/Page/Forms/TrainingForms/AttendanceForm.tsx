@@ -72,19 +72,19 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                 <Box w='47%'>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Course:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${course?.course_code.toUpperCase()}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' fontSize='6pt' w='100%'>{`${course?.course_name.toUpperCase()}`}</Text>
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Schedule:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${formattedDate}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${formattedDate}`}</Text>
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Practicum Site:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.practicumSite}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.practicumSite}`}</Text>
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Instructor:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>
                             {(() => {
                                 const ins = allInstructors?.find((i) => i.id === batch?.instructor);
                                 if (!ins) return batch?.instructor || 'No Instructor';
@@ -99,19 +99,19 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                 <Box w='45%'>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Class No: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.batch_no}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.batch_no}`}</Text>
                     </Box>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Room No: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.room}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.room}`}</Text>
                     </Box>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Practicum Date: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.practicumDate}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.practicumDate}`}</Text>
                     </Box>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Assessor: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>
                             {(() => {
                                 const ins = allInstructors?.find((i) => i.id === batch?.assessor);
                                 if (!ins) return batch?.assessor || 'No Instructor';
