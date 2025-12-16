@@ -673,15 +673,15 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
                                 <FormControl display='flex' flexDir={{ base: 'column', md: 'row' }} gap='2' textTransform='uppercase'>
                                     <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
                                         <FormLabel htmlFor='month' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>MONTH</FormLabel>
-                                        <Input id='month' value={month} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                        <Input id='month' type='number' value={month} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     </FormControl>
                                     <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
                                         <FormLabel htmlFor='day' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>DAY</FormLabel>
-                                        <Input id='day' value={day} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                        <Input id='day' type='number' value={day} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 01' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     </FormControl>
                                     <FormControl isRequired display='flex' flexDir='column' gap='0' justifyContent='center' alignItems='start' textTransform='uppercase'>
                                         <FormLabel htmlFor='year' py='2' fontWeight='600' m='0' p='0' ps='2' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>YEAR</FormLabel>
-                                        <Input id='year' value={year} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 2002' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                        <Input id='year' type='number' value={year} shadow='md' textTransform='uppercase' onChange={(e) => {handleDate(e)}} placeholder='e.g. 2002' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     </FormControl>
                                 </FormControl>
                                 <FormHelperText fontWeight='600' fontSize='10px'>Note: Please enter your birth date using digits (01/01/2001)</FormHelperText>
@@ -756,7 +756,7 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
                             </FormControl>
                             <FormControl isRequired isInvalid={trainee.contact_no === trainee.e_contact && trainee.e_contact !== ''} textTransform='uppercase'>
                                 <FormLabel htmlFor='e_contact' py='2' fontWeight='600' fontSize='0.5625rem' textTransform='uppercase' color='blue.700'>Emergency Contact No.:</FormLabel>
-                                <Input id='e_contact' value={trainee?.e_contact} onChange={handleOnChange} textTransform='uppercase' type='tel' placeholder='e.g. 09xxxxxxxxx' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                <Input id='e_contact' value={trainee?.e_contact} onChange={handleOnChange} textTransform='uppercase' type='number' placeholder='e.g. 09xxxxxxxxx' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                 <FormErrorMessage fontWeight='500' fontSize='12px'>
                                     Emergency Contact# must not be the same as personal contact#.
                                 </FormErrorMessage>

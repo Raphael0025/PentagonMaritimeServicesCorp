@@ -5,6 +5,29 @@
 This document outlines the tasks and improvements planned for the project. Each task is categorized by its status and priority.
 
 ## Tasks
+- [] **Registration**
+    - [] Online Enrollment Form, Number type for birthdates
+    - [] Analytics, finish it
+    - [] Buttons ( []Rollback | []Cancel and Move to BD | []Just Cancel )
+    - [] modify status look in registrations tab
+    - [] include bd when creating batches / think about this one
+    - [] remove permissions of same date in batch records
+    - [] update code for when status of trainee is greater than 3 (Enrolled) it is still editable in the registrations
+    - [] Trainee Tab, Include previous trainings of Crew
+
+- [] **Training**
+    - [] Certification Module
+    - [] Re-think how to duplicate if a training is cancelled and used in a later batch
+    - [] Analytics
+    - [] Once Graduated Update Certification
+    - [] Course Materials
+
+- [] **Inventory**
+    - [] Do this inventory
+
+- [] **Misc.**
+    - [] Include Leave Form Digital
+    - [] Include Purchase Request Form Digital
 
 ### High Priority
 
@@ -30,7 +53,7 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Create Transfer from BD to Dated or vice versa
         - [] Implement Number of days in Edit training schedule
         - [] Refactor edit enrolled date
-        - [] implement new feature when rollbacked reg doesn't change its reg_no value
+        - [-] implement new feature when rollbacked reg doesn't change its reg_no value
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:
