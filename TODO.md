@@ -6,7 +6,7 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 ## Tasks
 - [] **Registration**
-    - [] Online Enrollment Form, Number type for birthdates
+    - [*] Online Enrollment Form, Number type for birthdates
     - [] Analytics, finish it
     - [] Buttons ( []Rollback | []Cancel and Move to BD | []Just Cancel )
     - [] modify status look in registrations tab
