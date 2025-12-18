@@ -267,7 +267,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             <ModalHeader >Set to Non-Appearance</ModalHeader>
             <ModalBody display={'flex'} flexDir='column' justifyContent={'center'} alignItems='center'>
                 <Text fontSize={'base'} textAlign='center'>
-                    Are you sure to make this training Non-Appearance.
+                    {`Are you sure to make this training Non-Appearance.`}
                 </Text>
             </ModalBody>
             <ModalFooter display='flex' justifyContent={'center'}>
@@ -283,7 +283,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             <ModalCloseButton />
             <ModalBody display={'flex'} flexDir='column' justifyContent={'center'} alignItems='center'>
                 <Text fontSize={'base'} textAlign='center'>
-                    Are you sure to Cancel this training, this action is permanent and cannot be undone.
+                    {`Are you sure to Cancel this training, this action is permanent and cannot be undone.`}
                 </Text>
             </ModalBody>
             <ModalFooter display='flex' justifyContent={'center'}>
@@ -298,7 +298,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             <ModalCloseButton />
             <ModalBody display={'flex'} flexDir='column' justifyContent={'center'} alignItems='center'>
                 <Text fontSize={'base'} textAlign='center'>
-                    This process isn't fully functionable at the moment... You will be informed once the button can be utilize.
+                    {`This process isn't fully functionable at the moment... You will be informed once the button can be utilize.`}
                 </Text>
             </ModalBody>
             <ModalFooter display='flex' justifyContent={'center'}>
