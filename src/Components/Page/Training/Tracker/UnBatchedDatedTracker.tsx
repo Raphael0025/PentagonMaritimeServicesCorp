@@ -39,11 +39,15 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
     const { allData: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [loading, setLoading] = useState<boolean>(false)
+    const staff: string | null = localStorage.getItem('customToken')
+    const [position, setPosition] = useState<string | null>('')
+    const [selectedEmails, setSelectedEmails] = useState<string[]>([])
 
     const [remarks, setRemarks] = useState<string>('')
     const [t_id, setID] = useState<string>('')
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
+    const {isOpen: isModOpen, onOpen: onModOpen, onClose: onModClose} = useDisclosure()
     
     const handleComplianceStatus = (trainingID: string, complianceForm: string) => {
         setLoading(true)
@@ -146,6 +150,51 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
         }).finally(() => {
             setRemarks('')
             setID('')
+            setLoading(false)
+        })
+    }
+
+    const handleNotifyTrainees = () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout( async () => {
+                try{
+                    //const courseFound = allCourses?.find((c) => c.id === batch.course)
+                    //const startDateArr = batch.start_date.split(',')
+                    //const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
+                    //const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
+                    //const class_code = courseFound?.class_code
+                    //const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
+
+                    //const route = batch.training_mode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
+                    // await fetch(route, {
+                    //     method: 'POST',
+                    //     headers: {
+                    //     'Content-Type': 'application/json',
+                    //     }, 
+                    //     body: JSON.stringify({
+                    //         bcc: selectedEmails, 
+                    //         course_code: courseFound?.course_code, 
+                    //         course_name: courseFound?.course_name, 
+                    //         //schedule, 
+                    //         //time: timeArr[0], 
+                    //         class_code, 
+                    //         staff, 
+                    //         position 
+                    //     })
+                    // })
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() =>{
+            handleToast( 'Notified Trainees Successfully!', `Trainees have been successfully sent the training details via email.`, 5000, 'success' )
+        }).catch((error) => {
+            console.error('Error: ', error)
+        }).finally(() =>{
+            onModClose()
+            setSelectedEmails([])
             setLoading(false)
         })
     }

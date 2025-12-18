@@ -6,15 +6,15 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 ## Tasks
 - [] **Registration**
-    - [*] Online Enrollment Form, Number type for birthdates
-    - [] Analytics, finish it
-    - [*] Buttons ( []Rollback | []Cancel and Move to BD | []Just Cancel )
-        - [] functionalities
-    - [] modify status look in registrations tab
-    - [] include bd when creating batches / think about this one
-    - [] remove permissions of same date in batch records
-    - [] update code for when status of trainee is greater than 3 (Enrolled) it is still editable in the registrations
     - [] Trainee Tab, Include previous trainings of Crew
+    - [] Analytics, finish it
+    - [] include bd when creating batches / think about this one
+    - [*] Buttons ( [*]Rollback | []Cancel and Move to BD | [*]Just Cancel )
+        - [] functionalities for Move to BD
+    - [*] Online Enrollment Form, Number type for birthdates
+    - [*] modify status look in registrations tab
+    - [*] remove permissions of same date in batch records
+    - [*] update code for when status of trainee is greater than 3 (Enrolled) it is still editable in the registrations
 
 - [] **Training**
     - [] Create button for training mode inside tracker for easy update

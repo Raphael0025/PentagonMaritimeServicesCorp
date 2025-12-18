@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { Box, Text, Input, Textarea, Spinner, Center, Button, Checkbox, InputLeftAddon, FormControl, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Input, Spinner, Center, Button, InputLeftAddon, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
 
@@ -16,12 +16,8 @@ import { useCourseBatch } from '@/context/BatchContext'
 import { useRank } from '@/context/RankContext'
 import { useInstructors } from '@/context/InstructorContext'
 
-import { parsingTimestamp, ToastStatus } from '@/types/handling'
-import { handleRegStatus } from '@/handlers/trainee_handler'
 import { deployYDate } from '@/types/utils' 
-import { fullMonth, backgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
-
-import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller'
+import { fullMonth, } from '@/handlers/util_handler'
 
 import { BatchedDated, UnBatchedDated, BDTracker } from '@/Components/Page/Training/Tracker'
 
@@ -246,11 +242,6 @@ export default function TrackerPage(){
         }
         fetchData()
     },[monthSelected, yearSelected, allTrainingData, filterCharge, filterCourse, filterInstructor, filterMode, filterCompany])
-
-    const nonDatedData = useMemo(
-        () => allTData?.filter(t => t.regType === 1),
-        [allTData]
-    );
 
     const batchedData = useMemo(
         () => allTData?.filter(t => t.regType === 0).filter(t => t.batch !== '1'),
