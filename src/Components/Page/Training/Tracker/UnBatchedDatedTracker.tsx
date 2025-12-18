@@ -171,6 +171,7 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                 </Box>
                 <Text w='100px'>Payment Mode</Text>
                 <Text w='105px'>Status</Text>
+                <Text w='105px'>Action</Text>
                 <Text w='300px'>Remarks</Text>
             </Box>
             {/** Current Month Data Table */}
@@ -232,6 +233,9 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
                             <Text w='100px'>
                                 {handleRegStatus(training.reg_status)}
+                            </Text>
+                            <Text w='100px'>
+                                Send Email
                             </Text>
                             <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
                                 <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>

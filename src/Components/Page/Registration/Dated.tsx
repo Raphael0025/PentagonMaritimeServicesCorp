@@ -364,7 +364,7 @@ export default function Page(){
                                                     <Text w="130px">
                                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                                                     </Text>                                        
-                                                    <Text w='100px' className={`${training.reg_status >= 3 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
+                                                    <Text w='100px' borderRadius='5px' bgColor={`${training.reg_status === 6 ? 'green.500' : ''}`} className={`${training.reg_status === 3 ? 'text-green-500 font-bolder' : training.reg_status === 9 ? 'text-yellow-500' : training.reg_status === 7 ? 'text-red-700' : training.reg_status === 6 ? 'text-white' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
                                                     <Text w="150px">{`${trainee.last_name}`}</Text>                                        
                                                     <Text w="150px">{`${trainee.first_name}`}</Text>                                        
                                                     <Text w="150px">{trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''}</Text>                                        

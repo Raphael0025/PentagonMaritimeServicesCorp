@@ -96,6 +96,8 @@ export const backgroundColor = (value: number) => {
             return 'red.500';
         case 8:
             return 'red.400';
+        case 9:
+            return 'yellow.600';
         default:
             return '';
     }

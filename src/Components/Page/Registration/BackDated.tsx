@@ -252,7 +252,7 @@ export default function Page(){
                                         <Text w="150px" className="text-center">Enrolled Date</Text>
                                         {/* <Text w="150px" className="text-center">Trainee Type</Text> */}
                                         <Text w="150px" className="text-center">Registration No.</Text>
-                                        <Text w="130px" className="text-center">Batch</Text>
+                                        {/* <Text w="130px" className="text-center">Batch</Text> */}
                                         <Text w="130px" className="text-center">Course</Text>
                                         <Text w="100px" className="text-center">status</Text>
                                         <Box width='580px' display='flex' alignItems='center' flexDir='column'>
@@ -357,13 +357,13 @@ export default function Page(){
                                                     <Text w="150px" _hover={{color: 'blue.700'}} onClick={() => {setRegNum(reg_id); onOpenReg();}} className='hover:cursor-pointer'>
                                                         {`Reg-${reg_num}`}
                                                     </Text>                                        
-                                                    <Text w="130px">
+                                                    {/* <Text w="130px">
                                                         {`${courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `B${courseBatch.find((batch) => batch.id === training.batch)?.batch_no}` : ''}`}
-                                                    </Text>                                        
+                                                    </Text>                                         */}
                                                     <Text w="130px">
                                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                                                     </Text>                                        
-                                                    <Text w='100px' className={`${training.reg_status >= 3 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
+                                                    <Text w='100px' borderRadius='5px' bgColor={`${training.reg_status === 6 ? 'green.500' : ''}`} className={`${training.reg_status === 3 ? 'text-green-500 font-bolder' : training.reg_status === 9 ? 'text-yellow-500' : training.reg_status === 7 ? 'text-red-700' : training.reg_status === 6 ? 'text-white' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
                                                     <Text w="150px">{`${trainee.last_name}`}</Text>                                        
                                                     <Text w="150px">{`${trainee.first_name}`}</Text>                                        
                                                     <Text w="150px">{trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''}</Text>                                        

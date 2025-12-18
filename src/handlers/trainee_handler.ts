@@ -33,6 +33,8 @@ export const handleRegStatus = (status: number) => {
             return 'Cancelled';
         case 8:
             return 'Absent';
+        case 9:
+            return 'Non-Appearance';
         default:
             return 'null';
     }

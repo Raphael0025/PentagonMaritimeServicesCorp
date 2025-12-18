@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Box, Text, Button, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react'
+import { Box, Text, Button, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
-import { useClients } from '@/context/ClientCompanyContext';
-import { useTrainees } from '@/context/TraineeContext';
+import { useClients } from '@/context/ClientCompanyContext'
+import { useTrainees } from '@/context/TraineeContext'
+import { useRoles } from '@/context/UserRolesContext'
 
 import { CloseIcon } from '@/Components/Icons';
 import { Course, CourseFee, TrainingDate, AccountType } from './EditTraining'
@@ -27,6 +28,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     const { data: allTraining } = useTraining()
     const { data: allTrainee } = useTrainees()
     const { data: allCourses } = useCourses()
+    const { data: allRoles } = useRoles()
     const { courseCodes } = useClients()
     
     const { isOpen: isOpenCourse, onOpen: onOpenCourse, onClose: onCloseCourse } = useDisclosure()
@@ -35,6 +37,9 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     const { isOpen: isOpenAT, onOpen: onOpenAT, onClose: onCloseAT } = useDisclosure()
     const { isOpen: isOpenRB, onOpen: onOpenRB, onClose: onCloseRB } = useDisclosure()
     const { isOpen: isOpenTraining, onOpen: onOpenTraining, onClose: onCloseTraining } = useDisclosure()
+    const { isOpen: isOpenCancelT, onOpen: onOpenCancelT, onClose: onCloseCancelT } = useDisclosure()
+    const { isOpen: isOpenNA, onOpen: onOpenNA, onClose: onCloseNA } = useDisclosure()
+    const { isOpen: isOpenMBD, onOpen: onOpenMBD, onClose: onCloseMBD } = useDisclosure()
     
     const [cID, setCID] = useState<string>('')
     const [account_type, setAccType] = useState<number>(0)
@@ -44,7 +49,8 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     const [at, setAT] = useState<number>(0)
     const [loading, setLoading] = useState<boolean>(false)
     const [trainingDoc, setTraining] = useState<TRAINING_BY_ID>(initTraining)
-
+    const [permittedTo, setPermittedTo] = useState<string>('')
+    
     const fetchedReg = allRegistrations?.find((reg) => reg.id === reg_id)
     const companyID = allTrainee?.find((t) => t.id === fetchedReg?.trainee_ref_id)?.company || ''
 
@@ -83,6 +89,47 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
         })
     }
 
+    const handlTrainingStatus = async (newStatus: number) => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const updateStat = {
+                        reg_status: newStatus,
+                    }
+                    await UPDATE_TRAINING(trainingID, updateStat, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                    console.error(error)
+                }
+            }, 500)
+        }).catch((error) => {
+            console.error(error)
+        }).finally(() => {
+            setLoading(false)
+            onClose()
+            onCloseNA()
+            onCloseCancelT()
+            setRegID('')
+            setTID('')
+        })
+    }
+
+    useEffect(() => {
+        const fetchData = () => {
+            const role = localStorage.getItem('roleToken')
+            const UserRole = allRoles?.find((item) => item.id === role)
+
+            if(!UserRole) return
+
+            const roleScope = UserRole?.permissions.find((r) => r.feature === 'Pending')?.scope || ''
+            setPermittedTo(roleScope)
+        }
+        fetchData()
+    },[])
+
     const canDo = (feature: string) => {
         return permissions.some((p: { allowed: string | string[]; }) => p.allowed.includes(feature));
     }
@@ -118,12 +165,12 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                 <Box p='2' borderBottom='1px' bgColor='blue.700' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
                     <Text color='#fff' w='50%' textTransform={'uppercase'} fontSize='12px'>Course</Text>
                     <Text color='#fff' w='50%' textTransform={'uppercase'} fontSize='12px'>Course Fee</Text>
-                    <Text color='#fff' w='100%' textTransform={'uppercase'} fontSize='12px'>Training Dates</Text>
+                    <Text color='#fff' w='80%' textTransform={'uppercase'} fontSize='12px'>Training Dates</Text>
                     {canDo("update") && (
-                        <Text color='#fff' w='50%' display='flex' justifyContent='end' textTransform={'uppercase'} fontSize='12px'>Action</Text>
+                        <Text color='#fff' w='50%' display='flex' justifyContent='center' textTransform={'uppercase'} fontSize='12px'>Action</Text>
                     )}
                 </Box>
-                {allTraining && allTraining.filter((train) => (train.reg_status === 3 || train.reg_status === 6) && train.regType === reg_Type && train.reg_ref_id === reg_id)
+                {allTraining && allTraining.filter((train) => (train.reg_status >= 3) && train.regType === reg_Type && train.reg_ref_id === reg_id)
                 .map((train) => {
 
                     const course = allCourses?.find((course) => course.id === train.course)?.course_code || courseCodes?.find((course) => course.id === train.course)?.company_course_code || ''
@@ -143,8 +190,15 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         </>
                                         )}
                                     </Text>
-                                    <Box w='50%' display='flex' justifyContent='end' mr='2'>
-                                        <Button colorScheme='red' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md' mr='2'>Rollback</Button>
+                                    <Box w='50%' display='flex' flexDir='column' gap='1' justifyContent='end'>
+                                        {['bd', 'both'].some(p => permittedTo.includes(p)) && (
+                                            <Button fontWeight='normal' colorScheme='yellow' onClick={() => {onOpenNA(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Non-Appearance</Button>
+                                        )}
+                                        {(['dated', 'both'].some(p => permittedTo.includes(p)) && canDo('delete')) && (
+                                            <Button fontWeight='normal' colorScheme='teal' onClick={() => {onOpenMBD(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Move to BD</Button>
+                                        )}
+                                        <Button fontWeight='normal' colorScheme='blue' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Rollback</Button>
+                                        <Button fontWeight='normal' colorScheme='red' onClick={() => {onOpenCancelT(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Cancel Training</Button>
                                     </Box>
                                 </>
                             ) : (
@@ -207,7 +261,51 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             </ModalFooter>
         </ModalContent>
     </Modal>
-    
+    <Modal isOpen={isOpenNA} onClose={onCloseNA}>
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader >Set to Non-Appearance</ModalHeader>
+            <ModalBody display={'flex'} flexDir='column' justifyContent={'center'} alignItems='center'>
+                <Text fontSize={'base'} textAlign='center'>
+                    Are you sure to make this training Non-Appearance.
+                </Text>
+            </ModalBody>
+            <ModalFooter display='flex' justifyContent={'center'}>
+                <Button onClick={onCloseNA} mr='3' variant='outline' colorScheme='red' shadow='md'>Cancel</Button>
+                <Button onClick={() => handlTrainingStatus(9)} isLoading={loading} loadingText='Updating Status...' colorScheme='blue' bgColor='blue.700' shadow='md'>Proceed</Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+    <Modal isOpen={isOpenCancelT} onClose={onCloseCancelT}>
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader >Cancel Training</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody display={'flex'} flexDir='column' justifyContent={'center'} alignItems='center'>
+                <Text fontSize={'base'} textAlign='center'>
+                    Are you sure to Cancel this training, this action is permanent and cannot be undone.
+                </Text>
+            </ModalBody>
+            <ModalFooter display='flex' justifyContent={'center'}>
+                <Button onClick={() => handlTrainingStatus(7)} isLoading={loading} loadingText='Cancelling Training...' colorScheme='blue' bgColor='blue.700' shadow='md'>Proceed</Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+    <Modal isOpen={isOpenMBD} onClose={onCloseMBD}>
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader >Move to Backdated</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody display={'flex'} flexDir='column' justifyContent={'center'} alignItems='center'>
+                <Text fontSize={'base'} textAlign='center'>
+                    This process isn't fully functionable at the moment... You will be informed once the button can be utilize.
+                </Text>
+            </ModalBody>
+            <ModalFooter display='flex' justifyContent={'center'}>
+                <Button onClick={() => onClose()} isLoading={loading} loadingText='Moving to Backdated...' colorScheme='blue' bgColor='blue.700' shadow='md'>Close</Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
     </>
     )
 }
