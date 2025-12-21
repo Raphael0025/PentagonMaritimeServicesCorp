@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { Box, Text, Input, Spinner, Center, Button, InputLeftAddon, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Input, Spinner, Center, Button, InputLeftAddon, Select, InputGroup, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
 
@@ -13,7 +13,6 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
-import { useRank } from '@/context/RankContext'
 import { useInstructors } from '@/context/InstructorContext'
 
 import { deployYDate } from '@/types/utils' 
@@ -22,8 +21,6 @@ import { fullMonth, } from '@/handlers/util_handler'
 import { BatchedDated, UnBatchedDated, BDTracker } from '@/Components/Page/Training/Tracker'
 
 export default function TrackerPage(){
-    const toast = useToast()
-    const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
     const { data: allTrainee } = useTrainees()
     const { data: courseBatch } = useCourseBatch()

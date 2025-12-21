@@ -1,26 +1,21 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Input, Textarea, Spinner, Center, Button, Checkbox, InputLeftAddon, FormControl, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
-import { SearchIcon } from '@/Components/Icons';
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import { Box, Text, Input, Textarea, Spinner, Center, Button, Alert, AlertIcon, AlertTitle, AlertDescription, FormControl, InputLeftAddon, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 
 import { TRAINING_BY_ID } from '@/types/trainees'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleRegStatus } from '@/handlers/trainee_handler'
-import { deployYDate } from '@/types/utils' 
-import { fullMonth, backgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
+import { backgroundColor } from '@/handlers/util_handler'
 
 import { useRank } from '@/context/RankContext'
 import { useCourses } from '@/context/CourseContext'
-import { useCourseBatch } from '@/context/BatchContext'
 import { useClients } from '@/context/ClientCompanyContext'
-import { useInstructors } from '@/context/InstructorContext'
 import { useTrainees } from '@/context/TraineeContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 
-import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller'
+import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 interface UnBatchedDatedProps {
     //setSched: (value: string) => void;
@@ -33,14 +28,18 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
     const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
     const { data: allTrainee } = useTrainees()
-    const { data: courseBatch } = useCourseBatch()
-    const { data: allInstructors } = useInstructors()
-    const { data: allClients, courseCodes } = useClients()
-    const { allData: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { allData: allRegData, } = useRegistrations()
+    const { courseCodes } = useClients()
 
     const [loading, setLoading] = useState<boolean>(false)
     const staff: string | null = localStorage.getItem('customToken')
     const [position, setPosition] = useState<string | null>('')
+    const [schedule, setSchedule] = useState<string>('')
+    const [traineeName, setTraineeName] = useState<string>('')
+    const [displayEmail, setEmailDisplay] = useState<string>('')
+    const [time, setTime] = useState<string>('')
+    const [trainingMode, setTrainingMode] = useState<string>('')
+    const [courseID, setCourse] = useState<string>('')
     const [selectedEmails, setSelectedEmails] = useState<string[]>([])
 
     const [remarks, setRemarks] = useState<string>('')
@@ -48,49 +47,24 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     const {isOpen: isModOpen, onOpen: onModOpen, onClose: onModClose} = useDisclosure()
-    
-    const handleComplianceStatus = (trainingID: string, complianceForm: string) => {
-        setLoading(true)
-        new Promise<void>((res, rej) => {
-            setTimeout(async () => {
-                try{
-                    const actor = localStorage.getItem('customToken')
-                    const updateStat: Partial<TRAINING_BY_ID> = {}
-                    switch(complianceForm){
-                        case 'attendance':
-                            const currentAttendance = trainings?.find(t => t.id === trainingID)?.attendance || false
-                            updateStat.attendance = !currentAttendance
-                            break;
-                        case 'assessment':
-                            const currentAssessment = trainings?.find(t => t.id === trainingID)?.assessment || false
-                            updateStat.assessment = !currentAssessment
-                            break;
-                        case 'ccr':
-                            const currentCcr = trainings?.find(t => t.id === trainingID)?.ccr || false
-                            updateStat.ccr = !currentCcr
-                            break;
-                        case 'evaluation':
-                            const currentEvaluation = trainings?.find(t => t.id === trainingID)?.evaluation || false
-                            updateStat.evaluation = !currentEvaluation
-                            break;
-                        default:
-                            break;
-                    }
-                    await UPDATE_TRAINING_FORMS(trainingID, updateStat, actor)
-                    res()
-                }catch(error){
-                    rej(error)
-                }
-            }, 500)
-        }).then(() => {
-            handleToast(`${complianceForm.charAt(0).toUpperCase()+complianceForm.slice(1)} Successfully Complied!`, `Trainee has complied their ${complianceForm}.`, 5000, 'success')
-        }).catch((error) => {
-            console.error("ERROR DETECTED: ", error)
-        }).finally(() => {
-            setLoading(false)
-        })
-    }
 
+    useEffect(() => {
+        const getDept = localStorage.getItem('departmentToken');
+        const getPosition = localStorage.getItem('jobPositionToken')
+
+        const posArr = getPosition ? getPosition.split('/') : []
+    
+        if (getDept) {
+            const deptArr = getDept.split('/');
+            const targetDept = 'Training';
+            const index = deptArr.indexOf(targetDept);
+    
+            if (index !== -1) {
+                const correspondPosition = posArr[index]
+                setPosition(correspondPosition)
+            }
+        }
+    }, [])
     
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
         toast({
@@ -101,30 +75,6 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
             status: status,
             duration: timer,
             isClosable: true,
-        })
-    }
-
-    const handleStatus = async (trainingID: string, newStatus: number) => {
-        setLoading(true)
-        new Promise<void>((res, rej) => {
-            setTimeout(async () => {
-                try{
-                    const actor = localStorage.getItem('customToken')
-                    const updateStat = {
-                        reg_status: newStatus,
-                    }
-                    await UPDATE_TRAINING(trainingID, updateStat, actor)
-                    res()
-                }catch(error){
-                    rej(error)
-                }
-            }, 500)
-        }).then(() => {
-            handleToast('Status Updated Successfully!', `Crew's training status has been updated successfully.`, 5000, 'success')
-        }).catch((error) => {
-            console.error("ERROR DETECTED: ", error)
-        }).finally(() => {
-            setLoading(false)
         })
     }
 
@@ -159,42 +109,48 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
         new Promise<void>((res, rej) => {
             setTimeout( async () => {
                 try{
-                    //const courseFound = allCourses?.find((c) => c.id === batch.course)
-                    //const startDateArr = batch.start_date.split(',')
-                    //const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
-                    //const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
-                    //const class_code = courseFound?.class_code
-                    //const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
+                    const courseFound = allCourses?.find((course) => {
+                        if (course.id === courseID) {
+                            return true;
+                        }
+                        const courseCode = courseCodes?.find((code) => code.id === courseID);
+                        return course.id === courseCode?.id_course_ref;
+                    });
+                    const class_code = courseFound?.class_code
 
-                    //const route = batch.training_mode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
-                    // await fetch(route, {
-                    //     method: 'POST',
-                    //     headers: {
-                    //     'Content-Type': 'application/json',
-                    //     }, 
-                    //     body: JSON.stringify({
-                    //         bcc: selectedEmails, 
-                    //         course_code: courseFound?.course_code, 
-                    //         course_name: courseFound?.course_name, 
-                    //         //schedule, 
-                    //         //time: timeArr[0], 
-                    //         class_code, 
-                    //         staff, 
-                    //         position 
-                    //     })
-                    // })
+                    const route = trainingMode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
+                    await fetch(route, {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        }, 
+                        body: JSON.stringify({
+                            bcc: selectedEmails, 
+                            course_code: courseFound?.course_code, 
+                            course_name: courseFound?.course_name, 
+                            schedule, 
+                            time, 
+                            class_code, 
+                            staff, 
+                            position 
+                        })
+                    })
                     res()
                 }catch(error){
                     rej(error)
                 }
             }, 500)
         }).then(() =>{
-            handleToast( 'Notified Trainees Successfully!', `Trainees have been successfully sent the training details via email.`, 5000, 'success' )
+            handleToast( 'Notified Trainee Successfully!', `Trainees have been successfully sent the training details via email.`, 5000, 'success' )
         }).catch((error) => {
             console.error('Error: ', error)
         }).finally(() =>{
             onModClose()
             setSelectedEmails([])
+            setSchedule('')
+            setCourse('')
+            setTime('')
+            setTrainingMode('')
             setLoading(false)
         })
     }
@@ -239,7 +195,6 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                     const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                     const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
                     //const reg_id = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
-                    const trainingMode = courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `${courseBatch.find((batch) => batch.id === training.batch)?.training_mode}` : ''
 
                     if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -283,9 +238,16 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                             <Text w='100px'>
                                 {handleRegStatus(training.reg_status)}
                             </Text>
-                            <Text w='100px'>
-                                Send Email
-                            </Text>
+                            <Button colorScheme='blue' size='xs' shadow='md' w='100px' onClick={() => {
+                                    setSchedule(training.end_date !== '' ? `${training.start_date.toUpperCase()} to ${training.end_date.toUpperCase()}` : `${training.start_date.toUpperCase()}`); 
+                                    setSelectedEmails(prev => [...prev, trainee.email]); 
+                                    setCourse(training.course);
+                                    setTraineeName(`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name}`);
+                                    setEmailDisplay(trainee.email);
+                                    onModOpen(); 
+                                }} _hover={{cursor: 'pointer'}}>
+                                Notify Trainee
+                            </Button>
                             <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
                                 <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
                                     {training.train_remarks === '' ? 'None' : training.train_remarks}
@@ -309,6 +271,55 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                 </ModalBody>
                 <ModalFooter display='flex' borderTopWidth='1px' borderColor='gray.500'>
                     <Button onClick={handleRemarks} isLoading={loading} loadingText='Saving...' colorScheme='blue' shadow='md' size='sm' bgColor='blue.700'>Save Remarks</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isModOpen} onClose={onModClose} size='xl'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader color='blue.700' textTransform='uppercase' fontWeight='bold'>TRAINING ADVISORY</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Alert status='info' display='flex' alignItems='start' flexDirection='column' gap={2} mb={4}>
+                        <Box display='inline-flex'>
+                            <AlertIcon />
+                            <AlertTitle>Note:</AlertTitle>
+                        </Box>
+                        <AlertDescription lineHeight='0.9rem' fontWeight='normal'>
+                            This will send an email notifying the trainee of the training details. Please ensure that the email address is valid and correct before proceeding, one incorrect detail may cause of not sending/advising the trainees.
+                        </AlertDescription>
+                    </Alert>
+                    <Box>
+                        <Box display='flex' flexDir='column' justifyContent='space-between'>
+                            <Box mb='2'>
+                                <Text color='gray.600'>{`This will send the training details to the trainee below:`}</Text>
+                                <Box display='flex'>
+                                    <Text fontWeight='bold' mr='2'>{`Trainee:`}</Text>
+                                    <Text fontWeight='normal'>{`${traineeName.toUpperCase()}`}</Text>
+                                </Box>
+                                <Box display='flex'>
+                                    <Text fontWeight='bold' mr='2'>{`Email:`}</Text>
+                                    <Text fontWeight='normal'>{`${displayEmail}`}</Text>
+                                </Box>
+                            </Box>
+                            <InputGroup shadow='md' mb='2' w='100%' size='sm'>
+                                <InputLeftAddon>Time:</InputLeftAddon>
+                                <Input id='time_duration' type='text' value={time} placeholder={`e.g., 7:00am-5:00pm`} onChange={(e) => setTime(e.target.value)} />
+                            </InputGroup>
+                            <InputGroup shadow='md' w='100%' size='sm'>
+                                <InputLeftAddon>Trainng Mode:</InputLeftAddon>
+                                <Select shadow='md' borderRadius='5px' onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTrainingMode(e.target.value)}>
+                                    <option hidden>Select Training Mode</option>
+                                    <option value={'ol/ins'}>With Instructor</option>
+                                    <option value={'olm'}>Modular</option>
+                                </Select>
+                            </InputGroup>
+                            
+                        </Box>
+                    </Box>
+                </ModalBody>
+                <ModalFooter>
+                    <Button isLoading={loading} isDisabled={time === '' && trainingMode === ''} loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' mr={3} onClick={handleNotifyTrainees}>Notify Trainee</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

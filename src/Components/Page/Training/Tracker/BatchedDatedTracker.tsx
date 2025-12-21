@@ -35,7 +35,7 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
     const { data: allTrainee } = useTrainees()
     const { data: courseBatch } = useCourseBatch()
     const { data: allInstructors } = useInstructors()
-    const { data: allClients, courseCodes } = useClients()
+    const { courseCodes } = useClients()
     const { allData: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [loading, setLoading] = useState<boolean>(false)

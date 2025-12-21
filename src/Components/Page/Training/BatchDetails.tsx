@@ -63,7 +63,6 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     // User | Training Department Staff
     // Details provided upon user login
     const staff: string | null = localStorage.getItem('customToken')
-    const contact: string | null = localStorage.getItem('phone')
     const [position, setPosition] = useState<string | null>('')
 
     useEffect(() => {
