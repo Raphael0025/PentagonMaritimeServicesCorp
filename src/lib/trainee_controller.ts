@@ -194,6 +194,7 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string, ma
                 practical: 0,
                 written: 0,
                 result: 0,
+                trainingMode: '',
                 train_remarks: '',
                 regType: 2,
                 batch: '1',
