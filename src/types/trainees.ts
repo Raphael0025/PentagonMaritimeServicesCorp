@@ -150,6 +150,7 @@ export interface TRAINING {
     batch: string;
     regType: number; // 2 - def | 0 - dated | 1 - bd
     
+    trainingMode: string;
     isCertified: boolean;
     cert_released: Timestamp;
     cert_status: number; // 0 - pending | 1 - released
@@ -182,6 +183,7 @@ export const initTraining = {
     batch: '',
     regType: 0, // 2 - def | 0 - dated | 1 - bd
     
+    trainingMode: '',
     isCertified: false,
     cert_released: Timestamp.now(),
     cert_status: 0, // 0 - pending | 1 - released

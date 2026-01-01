@@ -1,16 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Box, Text, Input, Textarea, Spinner, Center, Button, Checkbox, InputLeftAddon, FormControl, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
-import { SearchIcon } from '@/Components/Icons';
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import React, { useState } from 'react'
+import { Box, Text, Textarea, Spinner, Center, Button, Checkbox, Select, FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 
 import { TRAINING_BY_ID } from '@/types/trainees'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleRegStatus } from '@/handlers/trainee_handler'
-import { deployYDate } from '@/types/utils' 
-import { fullMonth, backgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
+import { backgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
 
 import { useRank } from '@/context/RankContext'
 import { useCourses } from '@/context/CourseContext'
@@ -23,7 +20,6 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller'
 
 interface BatchedDatedProps {
-    //setSched: (value: string) => void;
     searchTerm: string;
     trainings: TRAINING_BY_ID[];
 }
@@ -36,7 +32,7 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
     const { data: courseBatch } = useCourseBatch()
     const { data: allInstructors } = useInstructors()
     const { courseCodes } = useClients()
-    const { allData: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { allData: allRegData } = useRegistrations()
 
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -219,7 +215,11 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                                         {`Reg-${reg_num}`}
                                     </Text>        
                                     <Text w="80px">
-                                        {allCourses?.find((course) => course.id === training.course)?.trainingMode === 0 ? 'Non' : 'Simu' }
+                                    {(() => {
+                                        const courseCode = courseCodes?.find((code) => code.id === training.course);
+                                        const courseFound = allCourses?.find((course) => course.id === training.course || course.id === courseCode?.id_course_ref)
+                                        return courseFound?.trainingMode === 0 ? 'Non' : 'Simu'
+                                    })()}
                                     </Text>                                
                                     <Text w="80px">
                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}

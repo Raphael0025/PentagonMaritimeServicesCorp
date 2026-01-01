@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import { Box, Text, Input, Textarea, Spinner, Center, Button, Checkbox, InputLeftAddon, FormControl, Select, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react'
+import { Box, Text, Input, Textarea, Spinner, Center, Button, ButtonGroup, Checkbox, InputLeftAddon, FormControl, Select, InputGroup, useDisclosure, useToast, Alert, AlertTitle, AlertDescription, AlertIcon, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
 
@@ -36,6 +36,19 @@ export default function BDTracker (){
 
     const [searchTerm, setSearch] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
+
+    const staff: string | null = localStorage.getItem('customToken')
+    const [position, setPosition] = useState<string | null>('')
+    const [schedule, setSchedule] = useState<string>('')
+    const [traineeName, setTraineeName] = useState<string>('')
+    const [training_ID, setTrainingID] = useState<string>('')
+    const [displayEmail, setEmailDisplay] = useState<string>('')
+    const [time, setTime] = useState<string>('')
+    const [trainingMode, setTrainingMode] = useState<string>('')
+    const [courseID, setCourse] = useState<string>('')
+    const [selectedEmails, setSelectedEmails] = useState<string[]>([])
+
+    const [togglePanel, setToggle] = useState<boolean>(true)
     const [remarks, setRemarks] = useState<string>('')
     const [t_id, setID] = useState<string>('')
 
@@ -49,6 +62,7 @@ export default function BDTracker (){
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
+    const { isOpen: isOpenMod, onOpen: onOpenMod, onClose: onModClose } = useDisclosure()
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     
     const [allTData, setAllTData] = useState<TRAINING_BY_ID[] | null>(null)
@@ -77,12 +91,12 @@ export default function BDTracker (){
                     const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
                     if(!registration) return false;
                     
-                    const currYear = new Date().getFullYear()
+                    //jconst currYear = new Date().getFullYear()
 
                     const splitRegNo = registration.reg_no.split('-')
                     const regYear = Number(splitRegNo[0])
                     
-                    return regYear === currYear
+                    return regYear === yearSelected
                 })
                 .filter((t) => t.reg_status >= 3 && t.regType === 1)
                 .sort((a, b) => {
@@ -298,6 +312,30 @@ export default function BDTracker (){
         })
     }
 
+    const handleTrainingMode = async () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const updateStat = {
+                        trainingMode,
+                    }
+                    await UPDATE_TRAINING(training_ID, updateStat, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() => {
+            handleToast('Status Updated Successfully!', `Crew's training status has been updated successfully.`, 5000, 'success')
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setLoading(false)
+        })
+    }
+    
     const handleStatus = async (trainingID: string, newStatus: number) => {
         setLoading(true)
         new Promise<void>((res, rej) => {
@@ -347,6 +385,69 @@ export default function BDTracker (){
             setLoading(false)
         })
     }
+
+    const handleNotifyTrainees = () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout( async () => {
+                try{
+                    const courseFound = allCourses?.find((course) => {
+                        if (course.id === courseID) {
+                            return true;
+                        }
+                        const courseCode = courseCodes?.find((code) => code.id === courseID);
+                        return course.id === courseCode?.id_course_ref;
+                    });
+                    const class_code = courseFound?.class_code
+
+                    const route = trainingMode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
+                    await fetch(route, {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        }, 
+                        body: JSON.stringify({
+                            bcc: selectedEmails, 
+                            course_code: courseFound?.course_code, 
+                            course_name: courseFound?.course_name, 
+                            schedule, 
+                            time, 
+                            class_code, 
+                            staff, 
+                            position 
+                        })
+                    })
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() =>{
+            handleToast( 'Notified Trainee Successfully!', `Trainees have been successfully sent the training details via email.`, 5000, 'success' )
+        }).catch((error) => {
+            console.error('Error: ', error)
+        }).finally(() =>{
+            onModClose()
+            setSelectedEmails([])
+            setSchedule('')
+            setCourse('')
+            setTime('')
+            setTrainingMode('')
+            setLoading(false)
+        })
+    }
+
+    const trainingModes = [
+        {label: 'Face-to-Face BOTH THEORETICAL &  PRACTICAL', value: 'f2f'},
+        {label: 'Face-to-Face MODULAR', value: 'f2fm'},
+        {label: 'Face-to-Face THEORETICAL', value: 'f2ft'},
+        {label: 'Face-to-Face PRACTICAL', value: 'f2fp'},
+        {label: 'Online BOTH THEORETICAL &  PRACTICAL', value: 'ol'},
+        {label: 'Online MODULAR', value: 'olm'},
+        {label: 'Online THEORETICAL', value: 'olt'},
+        {label: 'Online PRACTICAL', value: 'olp'},
+        {label: 'Blended', value: 'blended'},
+    ]
 
     return(
         <>
@@ -535,14 +636,24 @@ export default function BDTracker (){
                                 <Box px='1' className='w-full flex space-x-3'>
                                     <Text w="15px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
                                     <Text w="100px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
-                                    <Text w="150px" _hover={{color: 'blue.700'}} onClick={() => {
-                                        // setRegNum(reg_id); 
-                                        // onOpenReg();
+                                    <Text w="150px" _hover={{cursor: 'pointer', color: 'blue.700'}} onClick={() => {
+                                            setSchedule(training.end_date !== '' ? `${training.start_date.toUpperCase()} to ${training.end_date.toUpperCase()}` : `${training.start_date.toUpperCase()}`); 
+                                            setSelectedEmails(prev => [...prev, trainee.email]); 
+                                            setCourse(training.course);
+                                            setTrainingMode(training?.trainingMode || '');
+                                            setTrainingID(training.id);
+                                            setTraineeName(`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name}`);
+                                            setEmailDisplay(trainee.email);
+                                            onOpenMod();
                                         }} className='hover:cursor-pointer'>
                                         {`Reg-${reg_num}`}
                                     </Text>        
                                     <Text w="80px">
-                                        {allCourses?.find((course) => course.id === training.course)?.trainingMode === 0 ? 'Non' : 'Simu' }
+                                        {(() => {
+                                            const courseCode = courseCodes?.find((code) => code.id === training.course);
+                                            const courseFound = allCourses?.find((course) => course.id === training.course || course.id === courseCode?.id_course_ref)
+                                            return courseFound?.trainingMode === 0 ? 'Non' : 'Simu'
+                                        })()}
                                     </Text>                                
                                     <Text w="80px">
                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
@@ -561,7 +672,7 @@ export default function BDTracker (){
                             </Box>
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
                             <Text w="100px" p='1' borderRadius='5px' color={trainingModeFontColor(trainingMode)} bgColor={trainingModeColor(trainingMode)}>
-                                {`${trainingMode}`}
+                                {`${training?.trainingMode ?? '--'}`}
                             </Text>  
                             <Select isDisabled={loading} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='100px' shadow='md' >
                                 <option value={3} hidden>{handleRegStatus(training.reg_status)}</option>
@@ -601,6 +712,78 @@ export default function BDTracker (){
             }))}
             </Box>
         </Box>
+        <Modal isOpen={isOpenMod} onClose={() => {setSelectedEmails([]); setTrainingID(''); setToggle(true); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
+            <ModalOverlay />
+            <ModalContent px='2'>
+                <ModalHeader>
+                {togglePanel ? (
+                    <Text>Training Mode</Text>
+                ) : (
+                    <Text>Training Advisory</Text>
+                )}
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Box display='flex' justifyContent='end' mb='1'>
+                        <ButtonGroup isAttached size='sm' shadow='md'>
+                            <Button size='sm' onClick={() => setToggle(false)} fontWeight='normal' colorScheme='blue' variant={!togglePanel ? 'solid' : 'outline'}>Notify Trainee</Button>
+                            <Button size='sm' onClick={() => setToggle(true)} fontWeight='normal' colorScheme='blue' variant={togglePanel ? 'solid' : 'outline'}>Training Mode</Button>
+                        </ButtonGroup>
+                    </Box>
+                    {!togglePanel ? (
+                        <>
+                        <Box borderTop='1px solid' pt='1'>
+                            <Box display='flex' flexDir='column' justifyContent='space-between'>
+                                <Box mb='2'>
+                                    <Text color='gray.600' fontWeight='bold'>{`This will send the training details to the trainee displayed below. Please ensure that a training mode is selected before proceeding:`}</Text>
+                                    <Box display='flex'>
+                                        <Text fontWeight='bold' mr='2'>{`Trainee:`}</Text>
+                                        <Text fontWeight='normal'>{`${traineeName.toUpperCase()}`}</Text>
+                                    </Box>
+                                    <Box display='flex'>
+                                        <Text fontWeight='bold' mr='2'>{`Email:`}</Text>
+                                        <Text fontWeight='normal'>{`${displayEmail}`}</Text>
+                                    </Box>
+                                </Box>
+                                <Box display='flex'>
+                                    <Text fontWeight='bold' mr='2'>{`Training Mode:`}</Text>
+                                    <Text fontWeight='normal'>{`${trainingModes.find((tm) => tm.value === trainingMode)?.label.toUpperCase() || ''}`}</Text>
+                                </Box>
+                                <InputGroup shadow='md' my='2' w='100%' size='sm'>
+                                    <InputLeftAddon>Time:</InputLeftAddon>
+                                    <Input id='time_duration' type='text' value={time} placeholder={`e.g., 7:00am-5:00pm`} onChange={(e) => setTime(e.target.value)} />
+                                </InputGroup>
+                            </Box>
+                        </Box>
+                        <Alert status='info' display='flex' alignItems='start' flexDirection='column' gap={2} mt={3}>
+                            <Box display='inline-flex'>
+                                <AlertIcon />
+                                <AlertTitle>Note:</AlertTitle>
+                            </Box>
+                            <AlertDescription lineHeight='0.9rem' fontWeight='normal'>
+                                This will send an email notifying the trainee of the training details. Please ensure the training mode has been set. Also, Please ensure that the email address is valid and correct before proceeding, one incorrect detail may cause of not sending/advising the trainees.
+                            </AlertDescription>
+                        </Alert>
+                        </>
+                    ) : (   
+                    <>
+                    <Box mt='2' display='flex' flexDir='column'>
+                        {trainingModes.map((mode, index) => (
+                            <Button _hover={{bgColor: 'cyan.500', color: 'white', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${trainingMode === mode.value ? 'solid' : 'outline'}`} key={index} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setTrainingMode(mode.value)}>{mode.label}</Button>
+                        ))}
+                    </Box>
+                    </>
+                    )}
+                </ModalBody>
+                <ModalFooter>
+                    {togglePanel ? (
+                        <Button isLoading={loading} isDisabled={trainingMode === ''} loadingText='Updating...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleTrainingMode}>Set Training Mode</Button>
+                    ) : (
+                        <Button isLoading={loading} isDisabled={time === '' } loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleNotifyTrainees}>Notify Trainee</Button>
+                    )}
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         <Modal isOpen={isOpenRemarks} scrollBehavior='inside' onClose={() => {setRemarks(''); setID(''); onCloseRemarks();}}>
             <ModalOverlay />
             <ModalContent px='2'>

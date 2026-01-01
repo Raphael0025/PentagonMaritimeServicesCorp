@@ -69,12 +69,12 @@ export default function TrackerPage(){
                     const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
                     if(!registration) return false;
                     
-                    const currYear = new Date().getFullYear()
+                    //const currYear = new Date().getFullYear()
 
                     const splitRegNo = registration.reg_no.split('-')
                     const regYear = Number(splitRegNo[0])
                     
-                    return regYear === currYear
+                    return regYear === yearSelected
                 })
                 .filter(t => {
                     const start = t.start_date.toLowerCase();

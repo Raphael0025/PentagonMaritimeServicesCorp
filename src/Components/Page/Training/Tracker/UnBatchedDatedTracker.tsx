@@ -18,7 +18,6 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 interface UnBatchedDatedProps {
-    //setSched: (value: string) => void;
     searchTerm: string;
     trainings: TRAINING_BY_ID[];
 }
@@ -217,7 +216,11 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                                         {`Reg-${reg_num}`}
                                     </Text>        
                                     <Text w="80px">
-                                        {allCourses?.find((course) => course.id === training.course)?.trainingMode === 0 ? 'Non' : 'Simu' }
+                                        {(() => {
+                                            const courseCode = courseCodes?.find((code) => code.id === training.course);
+                                            const courseFound = allCourses?.find((course) => course.id === training.course || course.id === courseCode?.id_course_ref)
+                                            return courseFound?.trainingMode === 0 ? 'Non' : 'Simu'
+                                        })()}
                                     </Text>                                
                                     <Text w="80px">
                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
@@ -274,7 +277,7 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                 </ModalFooter>
             </ModalContent>
         </Modal>
-        <Modal isOpen={isModOpen} onClose={onModClose} size='xl'>
+        <Modal isOpen={isModOpen} onClose={() => {setSelectedEmails([]); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} size='xl'>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader color='blue.700' textTransform='uppercase' fontWeight='bold'>TRAINING ADVISORY</ModalHeader>
@@ -319,7 +322,7 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                     </Box>
                 </ModalBody>
                 <ModalFooter>
-                    <Button isLoading={loading} isDisabled={time === '' && trainingMode === ''} loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' mr={3} onClick={handleNotifyTrainees}>Notify Trainee</Button>
+                    <Button isLoading={loading} isDisabled={time === '' && trainingMode === ''} loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleNotifyTrainees}>Notify Trainee</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

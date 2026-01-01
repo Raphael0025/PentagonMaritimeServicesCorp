@@ -12,19 +12,20 @@ export default function Page(){
     const [courseID, setCourseID] = useState<string>('')
 
     // Helper: convert "Thu, Apr 10" to "2025-04-10"
-    const convertStartDate = (startDate: string): string | null => {
+    const convertStartDate = (batchYear: number, startDate: string): string | null => {
         if (!startDate) return null;
         const [_, monthAbbr, dayStr] = startDate.split(' ');
         const day = parseInt(dayStr);
         const month = new Date(`${monthAbbr} 1, 2000`).getMonth(); // Get month index
         const year = new Date().getFullYear(); // Default to current year or improve this logic if you have the year stored elsewhere
 
-        return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        return `${batchYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     };
 
     const events = courseBatch
         ?.map((batch) => {
-            const convertedDate = convertStartDate(batch.start_date);
+            const getBatchYear = batch.createdAt.toDate().getFullYear()
+            const convertedDate = convertStartDate(getBatchYear, batch.start_date);
             return convertedDate
                 ? { 
                     id: batch.id,
