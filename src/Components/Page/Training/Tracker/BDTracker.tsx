@@ -40,6 +40,8 @@ export default function BDTracker (){
     const staff: string | null = localStorage.getItem('customToken')
     const [position, setPosition] = useState<string | null>('')
     const [schedule, setSchedule] = useState<string>('')
+    const [actualSchedule, setActSched] = useState<string>('')
+    const [cert_date, setCertDate] = useState<string>('')
     const [traineeName, setTraineeName] = useState<string>('')
     const [training_ID, setTrainingID] = useState<string>('')
     const [displayEmail, setEmailDisplay] = useState<string>('')
@@ -175,9 +177,9 @@ export default function BDTracker (){
 
             let f2fIns = 0, olIns = 0, f2fM = 0, olM = 0, blended = 0, ttlGrad = 0, ttlPending = 0, ttlCancel = 0, ttlAbsent = 0, ttlWithdraw = 0;
 
-            allTrainData.filter((t) => t.batch === '1').forEach(training => {
-                const batch = courseBatch?.find(batch => batch.id === training.batch);
-                const mode = batch?.training_mode?.toLowerCase();
+            allTrainData.forEach(training => {
+                //const batch = courseBatch?.find(batch => batch.id === training.batch);
+                const mode = training?.trainingMode?.toLowerCase();
                 const regStatus = training.reg_status
 
                 if (!mode) return;
@@ -400,7 +402,7 @@ export default function BDTracker (){
                     });
                     const class_code = courseFound?.class_code
 
-                    const route = trainingMode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
+                    const route = trainingMode === 'olm' ? '/api/training-advise/bd-olm' : '/api/training-advise/bd-olt';
                     await fetch(route, {
                         method: 'POST',
                         headers: {
@@ -410,7 +412,8 @@ export default function BDTracker (){
                             bcc: selectedEmails, 
                             course_code: courseFound?.course_code, 
                             course_name: courseFound?.course_name, 
-                            schedule, 
+                            schedule: cert_date,
+                            actual_sched: actualSchedule,
                             time, 
                             class_code, 
                             staff, 
@@ -431,6 +434,8 @@ export default function BDTracker (){
             setSelectedEmails([])
             setSchedule('')
             setCourse('')
+            setActSched('')
+            setCertDate('')
             setTime('')
             setTrainingMode('')
             setLoading(false)
@@ -712,7 +717,7 @@ export default function BDTracker (){
             }))}
             </Box>
         </Box>
-        <Modal isOpen={isOpenMod} onClose={() => {setSelectedEmails([]); setTrainingID(''); setToggle(true); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
+        <Modal isOpen={isOpenMod} onClose={() => {setSelectedEmails([]); setTrainingID(''); setToggle(true); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
             <ModalOverlay />
             <ModalContent px='2'>
                 <ModalHeader>
@@ -752,6 +757,14 @@ export default function BDTracker (){
                                 <InputGroup shadow='md' my='2' w='100%' size='sm'>
                                     <InputLeftAddon>Time:</InputLeftAddon>
                                     <Input id='time_duration' type='text' value={time} placeholder={`e.g., 7:00am-5:00pm`} onChange={(e) => setTime(e.target.value)} />
+                                </InputGroup>
+                                <InputGroup shadow='md' my='2' w='100%' size='sm'>
+                                    <InputLeftAddon>Actual Training Schedule:</InputLeftAddon>
+                                    <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd`} onChange={(e) => setActSched(e.target.value)} />
+                                </InputGroup>
+                                <InputGroup shadow='md' my='2' w='100%' size='sm'>
+                                    <InputLeftAddon>Certificate Date:</InputLeftAddon>
+                                    <Input id='cert_date' type='text' value={cert_date} placeholder={`MMM dd, YYYY`} onChange={(e) => setCertDate(e.target.value)} />
                                 </InputGroup>
                             </Box>
                         </Box>

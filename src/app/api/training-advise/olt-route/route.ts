@@ -27,7 +27,7 @@ export async function POST(request: NextRequest){
             from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
             to: `undisclosed-recipients:;`,
             bcc: bcc,
-            subject: `${course_code} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
+            subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest){
                                 <p class="subhead"><strong>PLEASE READ THIS MESSAGE IN FULL. IT CONTAINS IMPORTANT DETAILS FOR YOUR UPCOMING TRAINING.</strong></p>
                                 <div class="section">
                                     <p><strong>TRAINING DETAILS:</strong><br>
-                                    Course Training: ${course_name} (${course_code})<br>
+                                    Course Training: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
                                     When: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
                                     Where: Google Classroom and Google Meet<br>
                                     Classroom code: <strong>${class_code}</strong></p>

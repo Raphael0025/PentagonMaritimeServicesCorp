@@ -8,6 +8,7 @@ export async function POST(request: NextRequest){
             course_code, 
             course_name, 
             schedule, 
+            actual_sched,
             time, 
             class_code, 
             staff, 
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest){
             from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
             to: `undisclosed-recipients:;`,
             bcc: bcc,
-            subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
+            subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -123,9 +124,10 @@ export async function POST(request: NextRequest){
                             <main class="email-body">
                                 <p class="subhead"><strong>PLEASE READ THIS MESSAGE IN FULL. IT CONTAINS IMPORTANT DETAILS FOR YOUR UPCOMING TRAINING.</strong></p>
                                 <div class="section">
-                                    <p><strong>TRAINING DETAILS:</strong><br>
-                                    Course Training: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
-                                    When: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
+                                    <p><strong>TRAINING:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
+                                    <strong>When:</strong><br>
+                                    Certificate Date: ${schedule}<br>
+                                    Training date and time: ${actual_sched}, ${currentYear} - ${time} (PH Time)<br>
                                     Where: Google Classroom (Online Modular)<br>
                                     Classroom code: <strong>${class_code}</strong></p>
                                 </div>

@@ -8,6 +8,7 @@ export async function POST(request: NextRequest){
             course_code, 
             course_name, 
             schedule, 
+            actual_sched,
             time, 
             class_code, 
             staff, 
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest){
             from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
             to: `undisclosed-recipients:;`,
             bcc: bcc,
-            subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
+            subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -123,14 +124,15 @@ export async function POST(request: NextRequest){
                             <main class="email-body">
                                 <p class="subhead"><strong>PLEASE READ THIS MESSAGE IN FULL. IT CONTAINS IMPORTANT DETAILS FOR YOUR UPCOMING TRAINING.</strong></p>
                                 <div class="section">
-                                    <p><strong>TRAINING DETAILS:</strong><br>
-                                    Course Training: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
-                                    When: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
-                                    Where: Google Classroom (Online Modular)<br>
+                                    <p><strong>TRAINING:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
+                                    <strong>When:</strong><br>
+                                    Certificate Date: ${schedule}<br>
+                                    Training date and time: ${actual_sched}, ${currentYear} - ${time} (PH Time)<br>
+                                    Where: Google Classroom and Google Meet<br>
                                     Classroom code: <strong>${class_code}</strong></p>
                                 </div>
                                 <div class="section">
-                                    <p><strong>Important: <i></i>YOU DO NOT NEED TO JOIN GOOGLE MEET.</i></strong> Please access and complete the materials in Google Classroom.<br>
+                                    <p><strong>Important: <i></i>YOU NEED TO JOIN GOOGLE MEET.</i></strong> Please access and complete the materials in Google Classroom.<br>
                                     <p><strong>How to join Google Classroom:</strong></p>
                                     <ul>
                                         <li><strong>Mobile users:</strong> <a href='https://drive.google.com/file/d/1kjBjrzcpow5dFQ5LtWPAgFz1Rf5nuScF/view?usp=drive_link' target='_blank' >Click here</a></li>

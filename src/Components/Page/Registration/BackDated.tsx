@@ -578,11 +578,20 @@ export default function Page(){
                                     )
                                 })
                                 .sort((a, b) => {
-                                    const [yearA, numA] = a.reg_no.split('-').map(Number);
-                                    const [yearB, numB] = b.reg_no.split('-').map(Number);
+                                    const [yearA, monthA, numA] = a.reg_no.split('-').map(Number);
+                                    const [yearB, monthB, numB] = b.reg_no.split('-').map(Number);
                         
-                                    // Compare by year first, then by the number part
+                                    // Handle invalid or missing values gracefully
+                                    if (isNaN(yearA) || isNaN(monthA) || isNaN(numA)) return 1; // Place invalid `a` after valid `b`
+                                    if (isNaN(yearB) || isNaN(monthB) || isNaN(numB)) return -1; // Place invalid `b` after valid `a`
+
+                                    // Compare by year first
                                     if (yearA !== yearB) return yearB - yearA;
+
+                                    // Compare by month next
+                                    if (monthA !== monthB) return monthB - monthA;
+
+                                    // Finally, compare by the number part
                                     return numB - numA;
                                 })
                                 .map((reg) => {

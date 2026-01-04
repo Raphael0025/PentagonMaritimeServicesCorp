@@ -384,18 +384,37 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
         )
         
         const currentYear = new Date().getFullYear();
-        let maxNum = 0;
+        const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
 
-        filteredDocs.forEach(doc => {
-            const regNo = doc.data().reg_no; // e.g., "Reg-2025-10000"
+        let maxNum = 0, reg_num = '';
+        const year_month = `${currentYear}-${currentMonth}`
+        
+        const filterDocsByYear = filteredDocs.filter(doc => {
+            const regNo = doc.data().reg_no; // e.g., "2025-01-10000"
             const parts = regNo.split("-");
-            const numPart = parseInt(parts[1]); // directly get the number part
-            if (numPart > maxNum) {
-                maxNum = numPart;
-            }
-        });
+            const yearPart = parseInt(parts[0]);
 
-        const maxRegNo = `${currentYear}-${maxNum + 1}`;
+            return yearPart === currentYear;
+        })
+
+        const numOfDigits = reg_type === 0 ? 4 : 5 
+        let series_str = (maxNum + 1).toString()
+
+        if(filterDocsByYear.length === 0){
+            reg_num = `${year_month}-${series_str.padStart(numOfDigits, '0')}`;
+        } else {
+            filterDocsByYear.forEach(doc => {
+                const regNo = doc.data().reg_no; // e.g., "2025-01-10000"
+                const parts = regNo.split("-");
+                const numPart = parseInt(parts[2]); // directly get the number part
+                
+                if (numPart > maxNum) {
+                    maxNum = numPart;
+                }
+            });
+            series_str = (maxNum + 1).toString()
+            reg_num = `${year_month}-${series_str.padStart(numOfDigits, '0')}`;
+        }
         
         // on this part, it fetches all documents with the same reg_ref_id in training collection
         const tQuery = query(training, where('reg_ref_id', '==', registration_id))
@@ -403,7 +422,9 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
         const data: TRAINING_BY_ID[] = []
 
         if (!tQSnapshot.empty) {
+            //This get current date of the day
             const currDate = new Date()
+            //This converts the current date into a string
             const currDateString = `${currDate.getFullYear()}-${String(currDate.getMonth()+1).padStart(2, "0")}-${String(currDate.getDate()).padStart(2, "0")}`
             
             tQSnapshot.forEach((doc) => {
@@ -434,18 +455,18 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 if(regData.regType === reg_type){
                     const newStatus = {
                         batch,
-                        regType: reg_type === 0 ? reg_type : 1,
+                        regType: reg_type,
                         reg_status: 3, // Set reg_status to 3 (enrolled)
                         date_enrolled: Timestamp.now()  // Set current date as enrollment date
                     };
-                   await updateDoc(trainingRef, { ...newStatus })
+                    await updateDoc(trainingRef, { ...newStatus })
                 } else {
                     const newRegistration: REGISTRATION = {
                         trainee_ref_id: trainee_id,         // You can adjust the reference field as needed
-                        reg_no: maxRegNo,                  // Use the incremented reg_no
+                        reg_no: reg_num,                  // Use the incremented reg_no
                         regApproach: 0,                    
                         traineeType: 0,    
-                        regType: reg_type === 0 ? reg_type : 1,                
+                        regType: reg_type,                
                         payment_status: 2,                 
                         payment_mode: 0,                   
                         payment_balance: 0,                
@@ -453,7 +474,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                         reg_remarks: '',
                         marketing: '',
                         otherMarketing: '',
-                        reg_accountType: reg_account_type === 0 ? reg_account_type : 1,              
+                        reg_accountType: reg_account_type,              
                     };
                     const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
 
@@ -461,7 +482,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                     const newStatus= {
                         batch,
                         reg_ref_id: idRef.id,
-                        regType: reg_type === 0 ? reg_type : 1,
+                        regType: reg_type,
                         reg_status: 3,
                         date_enrolled: Timestamp.now()
                     }
@@ -475,15 +496,15 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 
                 const newStatus = {
                     batch,
-                    regType: reg_type === 0 ? reg_type : 1,
+                    regType: reg_type,
                     reg_status: 3, // Set reg_status to 3 (enrolled)
                     date_enrolled: Timestamp.now()  // Set current date as enrollment date
                 }
                 await updateDoc(trainingRef, { ...newStatus })
 
                 const newRegInfo = {
-                    reg_no: maxRegNo,
-                    regType: reg_type === 0 ? reg_type : 1,  
+                    reg_no: reg_num,
+                    regType: reg_type,  
                 }
                 await updateDoc(regRef, { ...newRegInfo })
             } else { 
@@ -491,10 +512,10 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 // and creates a new registration number
                 const newRegistration: REGISTRATION = {
                     trainee_ref_id: trainee_id,         // You can adjust the reference field as needed
-                    reg_no: maxRegNo,                  // Use the incremented reg_no
+                    reg_no: reg_num,                  // Use the incremented reg_no
                     regApproach: 0,                    
                     traineeType: 0,    
-                    regType: reg_type === 0 ? reg_type : 1,                
+                    regType: reg_type,                
                     payment_status: 2,                 
                     payment_mode: 0,                   
                     payment_balance: 0,                
@@ -502,7 +523,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                     reg_remarks: '',
                     marketing: '',
                     otherMarketing: '',
-                    reg_accountType: reg_account_type === 0 ? reg_account_type : 1,              
+                    reg_accountType: reg_account_type,              
                 };
                 const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
 
@@ -510,7 +531,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 const newStatus= {
                     batch,
                     reg_ref_id: idRef.id,
-                    regType: reg_type === 0 ? reg_type : 1,
+                    regType: reg_type,
                     reg_status: 3,
                     date_enrolled: Timestamp.now()
                 }
