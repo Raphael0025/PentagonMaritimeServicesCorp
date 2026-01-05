@@ -271,14 +271,21 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                         const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                 
                         // Extract numeric parts of the registration number
-                        const [yearA, numberA] = regNoA.split('-').map(Number);
-                        const [yearB, numberB] = regNoB.split('-').map(Number);
+                        const [yearA, monthA, numA] = regNoA.split('-').map(Number);
+                        const [yearB, monthB, numB] = regNoB.split('-').map(Number);
                 
-                        // Compare by year first, then by number
-                        if (yearA !== yearB) {
-                            return yearA - yearB;
-                        }
-                        return numberA - numberB;
+                        // Handle invalid or missing values gracefully
+                        if (isNaN(yearA) || isNaN(monthA) || isNaN(numA)) return 1; // Place invalid `a` after valid `b`
+                        if (isNaN(yearB) || isNaN(monthB) || isNaN(numB)) return -1; // Place invalid `b` after valid `a`
+
+                        // Compare by year first
+                        if (yearA !== yearB) return yearB - yearA;
+
+                        // Compare by month next
+                        if (monthA !== monthB) return monthB - monthA;
+
+                        // Finally, compare by the number part
+                        return numA - numB;
                     }).map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)

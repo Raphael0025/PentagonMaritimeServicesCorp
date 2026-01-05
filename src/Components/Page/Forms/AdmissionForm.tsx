@@ -1,6 +1,5 @@
 'use client'
 
-import { useRef } from 'react'
 import { Box, Text, Grid, Image, GridItem } from '@chakra-ui/react'
 
 import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
@@ -10,10 +9,8 @@ import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
-import { useCourseBatch } from '@/context/BatchContext'
 import {useRank} from '@/context/RankContext'
 
-import { useReactToPrint } from 'react-to-print'
 import './reg_admission.css'
 
 import { reformatTrainingSched } from '@/handlers/trainee_handler'
@@ -26,15 +23,8 @@ interface UIProps {
 
 export default function Page({regNum, tab, traineeName}: UIProps){
 
-    const componentRef = useRef<HTMLDivElement | null>(null);
-    const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `${traineeName}_ADMISSION_FORM.pdf`,
-    })
-
-    const { data: courseBatch } = useCourseBatch()
     const { data: allRanks } = useRank()
-    const { data: allClients, courseCodes } = useClients()
+    const { courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
     const { data: allTraining } = useTraining()
     const { data: allCourses } = useCourses()

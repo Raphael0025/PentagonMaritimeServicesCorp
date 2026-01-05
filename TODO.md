@@ -7,7 +7,7 @@ This document outlines the tasks and improvements planned for the project. Each 
 ## Tasks
 - [] **Registration**
     - [] Trainee Tab, Include previous trainings of Crew
-    - [] Analytics, finish it
+    - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
     - [] include bd when creating batches / think about this one
     - [*] Buttons ( [*]Rollback | []Cancel and Move to BD | [*]Just Cancel )
         - [] functionalities for Move to BD
@@ -15,12 +15,14 @@ This document outlines the tasks and improvements planned for the project. Each 
     - [*] modify status look in registrations tab
     - [*] remove permissions of same date in batch records
     - [*] update code for when status of trainee is greater than 3 (Enrolled) it is still editable in the registrations
+    - [] Include Payments for Registration 
 
 - [] **Training**
-    - [] Create button for training mode inside tracker for easy update
+    - [*] Create button for training mode inside tracker for easy update
+    - [] CHANGE OR ADD INSTRUCTOR inside tracker for BD for easy update
     - [] Certification Module
     - [] Re-think how to duplicate if a training is cancelled and used in a later batch
-    - [] Analytics
+    - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
     - [] Once Graduated Update Certification
     - [] Course Materials
 
