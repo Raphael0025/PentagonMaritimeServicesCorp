@@ -50,7 +50,7 @@ export default function BDTracker (){
     const [courseID, setCourse] = useState<string>('')
     const [selectedEmails, setSelectedEmails] = useState<string[]>([])
 
-    const [togglePanel, setToggle] = useState<boolean>(true)
+    const [togglePanel, setToggle] = useState<string>('t_mode')
     const [remarks, setRemarks] = useState<string>('')
     const [t_id, setID] = useState<string>('')
 
@@ -90,15 +90,20 @@ export default function BDTracker (){
                     return a.date_enrolled.toMillis() - b.date_enrolled.toMillis();
                 })
                 .filter((t) => {
-                    const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
-                    if(!registration) return false;
+                    // Filter by enrolled date and also sorted according to course
+                    const enrolledDate = t.date_enrolled.toDate();
+                    return enrolledDate.getFullYear() === yearSelected && enrolledDate.getMonth() === monthSelected;
+                    // Code block below will be retain until no longer needed
                     
-                    //jconst currYear = new Date().getFullYear()
+                    //// const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
+                    //// if(!registration) return false;
+                    //// const currYear = new Date().getFullYear()
 
-                    const splitRegNo = registration.reg_no.split('-')
-                    const regYear = Number(splitRegNo[0])
+                    //// const splitRegNo = registration.reg_no.split('-')
+                    //// const regYear = Number(splitRegNo[0])
                     
-                    return regYear === yearSelected
+                    //// return regYear === yearSelected
+                    
                 })
                 .filter((t) => t.reg_status >= 3 && t.regType === 1)
                 .sort((a, b) => {
@@ -111,11 +116,11 @@ export default function BDTracker (){
                     allCourses?.find((course) => course.id === b.course)?.course_code?.toLowerCase() ||
                     courseCodes?.find((course) => course.id === b.course)?.company_course_code?.toLowerCase() ||
                     '';
-            
+                    
                     // Compare alphabetically by course name
                     if (courseA < courseB) return -1;
                     if (courseA > courseB) return 1;
-            
+                    
                     return courseA.localeCompare(courseB);
                 })
                 .filter((t) => {
@@ -132,7 +137,7 @@ export default function BDTracker (){
                 })
                 .filter((t) => {
                     if (!filterInstructor) return true;
-                
+                    
                     const batch = courseBatch?.find((b) => b.id === t.batch);
                     // Prioritize act_instructor if exists
                     const instructorId = batch?.act_ins || batch?.instructor;
@@ -140,10 +145,10 @@ export default function BDTracker (){
                 })
                 .filter((t) => {
                     if (!filterMode) return true;
-                
+                    
                     const batch = courseBatch?.find((b) => b.id === t.batch);
                     const mode = batch?.training_mode?.toLowerCase() || '';
-                
+                    
                     switch (filterMode.toLowerCase()) {
                         case 'f2f':
                             return ['f2f', 'f2ft', 'f2fp'].includes(mode);
@@ -161,7 +166,7 @@ export default function BDTracker (){
                 })
                 .filter((t) => {
                     if (!filterCourse || filterCourse === '') return true;
-
+                    
                     return (
                         allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
                         courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
@@ -717,83 +722,109 @@ export default function BDTracker (){
             }))}
             </Box>
         </Box>
-        <Modal isOpen={isOpenMod} onClose={() => {setSelectedEmails([]); setTrainingID(''); setToggle(true); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
+        <Modal isOpen={isOpenMod} onClose={() => {setSelectedEmails([]); setTrainingID(''); setToggle('t_mode'); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
             <ModalOverlay />
             <ModalContent px='2'>
                 <ModalHeader>
-                {togglePanel ? (
-                    <Text>Training Mode</Text>
-                ) : (
-                    <Text>Training Advisory</Text>
-                )}
+                {(() => {
+                    switch(togglePanel){
+                        case 't_mode': 
+                            return (<Text>Training Mode</Text>);  
+                        case 'instructor': 
+                            return (<Text>Instructor Assignment</Text>);
+                        case 'notify': 
+                            return (<Text>Training Advisory</Text>);
+                        default: 
+                            return (<Text>Training Advisory</Text>);
+                    }
+                })()}
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <Box display='flex' justifyContent='end' mb='1'>
                         <ButtonGroup isAttached size='sm' shadow='md'>
-                            <Button size='sm' onClick={() => setToggle(false)} fontWeight='normal' colorScheme='blue' variant={!togglePanel ? 'solid' : 'outline'}>Notify Trainee</Button>
-                            <Button size='sm' onClick={() => setToggle(true)} fontWeight='normal' colorScheme='blue' variant={togglePanel ? 'solid' : 'outline'}>Training Mode</Button>
+                            <Button size='sm' onClick={() => setToggle('notify')} fontWeight='normal' colorScheme='blue' variant={togglePanel === 'notify' ? 'solid' : 'outline'}>Notify Trainee</Button>
+                            <Button size='sm' onClick={() => setToggle('t_mode')} fontWeight='normal' colorScheme='blue' variant={togglePanel === 't_mode' ? 'solid' : 'outline'}>Training Mode</Button>
+                            <Button size='sm' onClick={() => setToggle('instructor')} fontWeight='normal' colorScheme='blue' variant={togglePanel === 'instructor' ? 'solid' : 'outline'}>Instructor</Button>
                         </ButtonGroup>
                     </Box>
-                    {!togglePanel ? (
-                        <>
-                        <Box borderTop='1px solid' pt='1'>
-                            <Box display='flex' flexDir='column' justifyContent='space-between'>
-                                <Box mb='2'>
-                                    <Text color='gray.600' fontWeight='bold'>{`This will send the training details to the trainee displayed below. Please ensure that a training mode is selected before proceeding:`}</Text>
-                                    <Box display='flex'>
-                                        <Text fontWeight='bold' mr='2'>{`Trainee:`}</Text>
-                                        <Text fontWeight='normal'>{`${traineeName.toUpperCase()}`}</Text>
-                                    </Box>
-                                    <Box display='flex'>
-                                        <Text fontWeight='bold' mr='2'>{`Email:`}</Text>
-                                        <Text fontWeight='normal'>{`${displayEmail}`}</Text>
+                    {(() => {
+                    switch(togglePanel){
+                        case 't_mode':  
+                            return (
+                                <Box mt='2' display='flex' flexDir='column'>
+                                    {trainingModes.map((mode, index) => (
+                                        <Button _hover={{bgColor: 'cyan.500', color: 'white', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${trainingMode === mode.value ? 'solid' : 'outline'}`} key={index} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setTrainingMode(mode.value)}>{mode.label}</Button>
+                                    ))}
+                                </Box>
+                            );
+                        case 'instructor':  
+                            return (
+                                <Box mt='2' display='flex' flexDir='column'>
+                                    {trainingModes.map((mode, index) => (
+                                        <Button _hover={{bgColor: 'cyan.500', color: 'white', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${trainingMode === mode.value ? 'solid' : 'outline'}`} key={index} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setTrainingMode(mode.value)}>{mode.label}</Button>
+                                    ))}
+                                </Box>
+                            );
+                        case 'notify':  
+                            return (
+                                <>
+                                <Box borderTop='1px solid' pt='1'>
+                                    <Box display='flex' flexDir='column' justifyContent='space-between'>
+                                        <Box mb='2'>
+                                            <Text color='gray.600' fontWeight='bold'>{`This will send the training details to the trainee displayed below. Please ensure that a training mode is selected before proceeding:`}</Text>
+                                            <Box display='flex'>
+                                                <Text fontWeight='bold' mr='2'>{`Trainee:`}</Text>
+                                                <Text fontWeight='normal'>{`${traineeName.toUpperCase()}`}</Text>
+                                            </Box>
+                                            <Box display='flex'>
+                                                <Text fontWeight='bold' mr='2'>{`Email:`}</Text>
+                                                <Text fontWeight='normal'>{`${displayEmail}`}</Text>
+                                            </Box>
+                                        </Box>
+                                        <Box display='flex'>
+                                            <Text fontWeight='bold' mr='2'>{`Training Mode:`}</Text>
+                                            <Text fontWeight='normal'>{`${trainingModes.find((tm) => tm.value === trainingMode)?.label.toUpperCase() || ''}`}</Text>
+                                        </Box>
+                                        <InputGroup shadow='md' my='2' w='100%' size='sm'>
+                                            <InputLeftAddon>Time:</InputLeftAddon>
+                                            <Input id='time_duration' type='text' value={time} placeholder={`e.g., 7:00am-5:00pm`} onChange={(e) => setTime(e.target.value)} />
+                                        </InputGroup>
+                                        <InputGroup shadow='md' my='2' w='100%' size='sm'>
+                                            <InputLeftAddon>Actual Training Schedule:</InputLeftAddon>
+                                            <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd`} onChange={(e) => setActSched(e.target.value)} />
+                                        </InputGroup>
+                                        <InputGroup shadow='md' my='2' w='100%' size='sm'>
+                                            <InputLeftAddon>Certificate Date:</InputLeftAddon>
+                                            <Input id='cert_date' type='text' value={cert_date} placeholder={`MMM dd, YYYY`} onChange={(e) => setCertDate(e.target.value)} />
+                                        </InputGroup>
                                     </Box>
                                 </Box>
-                                <Box display='flex'>
-                                    <Text fontWeight='bold' mr='2'>{`Training Mode:`}</Text>
-                                    <Text fontWeight='normal'>{`${trainingModes.find((tm) => tm.value === trainingMode)?.label.toUpperCase() || ''}`}</Text>
-                                </Box>
-                                <InputGroup shadow='md' my='2' w='100%' size='sm'>
-                                    <InputLeftAddon>Time:</InputLeftAddon>
-                                    <Input id='time_duration' type='text' value={time} placeholder={`e.g., 7:00am-5:00pm`} onChange={(e) => setTime(e.target.value)} />
-                                </InputGroup>
-                                <InputGroup shadow='md' my='2' w='100%' size='sm'>
-                                    <InputLeftAddon>Actual Training Schedule:</InputLeftAddon>
-                                    <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd`} onChange={(e) => setActSched(e.target.value)} />
-                                </InputGroup>
-                                <InputGroup shadow='md' my='2' w='100%' size='sm'>
-                                    <InputLeftAddon>Certificate Date:</InputLeftAddon>
-                                    <Input id='cert_date' type='text' value={cert_date} placeholder={`MMM dd, YYYY`} onChange={(e) => setCertDate(e.target.value)} />
-                                </InputGroup>
-                            </Box>
-                        </Box>
-                        <Alert status='info' display='flex' alignItems='start' flexDirection='column' gap={2} mt={3}>
-                            <Box display='inline-flex'>
-                                <AlertIcon />
-                                <AlertTitle>Note:</AlertTitle>
-                            </Box>
-                            <AlertDescription lineHeight='0.9rem' fontWeight='normal'>
-                                This will send an email notifying the trainee of the training details. Please ensure the training mode has been set. Also, Please ensure that the email address is valid and correct before proceeding, one incorrect detail may cause of not sending/advising the trainees.
-                            </AlertDescription>
-                        </Alert>
-                        </>
-                    ) : (   
-                    <>
-                    <Box mt='2' display='flex' flexDir='column'>
-                        {trainingModes.map((mode, index) => (
-                            <Button _hover={{bgColor: 'cyan.500', color: 'white', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${trainingMode === mode.value ? 'solid' : 'outline'}`} key={index} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setTrainingMode(mode.value)}>{mode.label}</Button>
-                        ))}
-                    </Box>
-                    </>
-                    )}
+                                <Alert status='info' display='flex' alignItems='start' flexDirection='column' gap={2} mt={3}>
+                                    <Box display='inline-flex'>
+                                        <AlertIcon />
+                                        <AlertTitle>Note:</AlertTitle>
+                                    </Box>
+                                    <AlertDescription lineHeight='0.9rem' fontWeight='normal'>
+                                        This will send an email notifying the trainee of the training details. Please ensure the training mode has been set. Also, Please ensure that the email address is valid and correct before proceeding, one incorrect detail may cause of not sending/advising the trainees.
+                                    </AlertDescription>
+                                </Alert>
+                                </>
+                            );
+                        default:  
+                            return null;
+                    }
+                    })()}
                 </ModalBody>
                 <ModalFooter>
-                    {togglePanel ? (
-                        <Button isLoading={loading} isDisabled={trainingMode === ''} loadingText='Updating...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleTrainingMode}>Set Training Mode</Button>
-                    ) : (
-                        <Button isLoading={loading} isDisabled={time === '' } loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleNotifyTrainees}>Notify Trainee</Button>
-                    )}
+                    {(() => {
+                        switch(togglePanel){
+                            case 't_mode':  return <Button isLoading={loading} isDisabled={trainingMode === ''} loadingText='Updating...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleTrainingMode}>Set Training Mode</Button>;
+                            case 'instructor':  return <Button isLoading={loading} isDisabled={time === '' } loadingText='Assigning Instructor...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={() => {}}>Assign Instructor</Button>;
+                            case 'notify':  return <Button isLoading={loading} isDisabled={time === '' } loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleNotifyTrainees}>Notify Trainee</Button>;
+                            default:  return <Button isLoading={loading} isDisabled={time === '' } loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleNotifyTrainees}>Notify Trainee</Button>;
+                        }
+                    })()}
                 </ModalFooter>
             </ModalContent>
         </Modal>
