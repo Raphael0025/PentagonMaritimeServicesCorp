@@ -762,7 +762,7 @@ export default function BDTracker (){
                             return (
                                 <Box mt='2' display='flex' flexDir='column'>
                                     {trainingModes.map((mode, index) => (
-                                        <Button _hover={{bgColor: 'cyan.500', color: 'white', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${trainingMode === mode.value ? 'solid' : 'outline'}`} key={index} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setTrainingMode(mode.value)}>{mode.label}</Button>
+                                        <Button _hover={{bgColor: 'cyan.400', color: 'white', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${trainingMode === mode.value ? 'solid' : 'outline'}`} key={index} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setTrainingMode(mode.value)}>{mode.label}</Button>
                                     ))}
                                 </Box>
                             );
