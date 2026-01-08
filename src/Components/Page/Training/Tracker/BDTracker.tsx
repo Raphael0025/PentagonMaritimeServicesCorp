@@ -47,6 +47,7 @@ export default function BDTracker (){
     const [displayEmail, setEmailDisplay] = useState<string>('')
     const [time, setTime] = useState<string>('')
     const [trainingMode, setTrainingMode] = useState<string>('')
+    const [actual_instructor, setInstructor] = useState<string>('')
     const [courseID, setCourse] = useState<string>('')
     const [selectedEmails, setSelectedEmails] = useState<string[]>([])
 
@@ -393,6 +394,31 @@ export default function BDTracker (){
         })
     }
 
+    const handleInstructor = () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const updateStat = {
+                        act_ins: actual_instructor,
+                    }
+                    await UPDATE_TRAINING(training_ID, updateStat, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() => {
+            handleToast('Instructor Assigned Successfully!', `Trainee's instructor has been assigned successfully.`, 5000, 'success')
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setInstructor('')
+            setLoading(false)
+        })
+    }
+
     const handleNotifyTrainees = () => {
         setLoading(true)
         new Promise<void>((res, rej) => {
@@ -693,9 +719,9 @@ export default function BDTracker (){
                             </Select>
                             <Text w="180px" >
                             {(() => {
-                                const trainingBatch = courseBatch?.find((batch) => batch.id === training.batch)
-                                const ins = allInstructors?.find((i) => i.id === trainingBatch?.act_ins);
-                                if (!ins) return trainingBatch?.act_ins || 'No Instructor';
+                                //const trainingBatch = courseBatch?.find((batch) => batch.id === training.batch)
+                                const ins = allInstructors?.find((i) => i.id === training?.act_ins);
+                                if (!ins) return training?.act_ins || 'No Instructor';
 
                                 // Add 'MM' if rank is 'CAPT'
                                 const suffix = ins.rank === 'CAPT' ? ', MM' : '';
@@ -722,7 +748,7 @@ export default function BDTracker (){
             }))}
             </Box>
         </Box>
-        <Modal isOpen={isOpenMod} onClose={() => {setSelectedEmails([]); setTrainingID(''); setToggle('t_mode'); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
+        <Modal isOpen={isOpenMod} scrollBehavior='inside' onClose={() => {setSelectedEmails([]); setInstructor(''); setTrainingID(''); setToggle('t_mode'); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
             <ModalOverlay />
             <ModalContent px='2'>
                 <ModalHeader>
@@ -761,8 +787,11 @@ export default function BDTracker (){
                         case 'instructor':  
                             return (
                                 <Box mt='2' display='flex' flexDir='column'>
-                                    {trainingModes.map((mode, index) => (
+                                    {/* {trainingModes.map((mode, index) => (
                                         <Button _hover={{bgColor: 'cyan.400', color: 'white', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${trainingMode === mode.value ? 'solid' : 'outline'}`} key={index} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setTrainingMode(mode.value)}>{mode.label}</Button>
+                                    ))} */}
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <Button _hover={{bgColor: 'gray.300', color: 'black', cursor: 'pointer', variant: 'solid' }} colorScheme='blue' variant={`${actual_instructor === i.id ? 'solid' : 'outline'}`} key={i.id} size='sm' fontWeight='normal' mb='2' shadow='md' onClick={() => setInstructor(i.id)}>{i.rank} {i.name}</Button>
                                     ))}
                                 </Box>
                             );
@@ -820,7 +849,7 @@ export default function BDTracker (){
                     {(() => {
                         switch(togglePanel){
                             case 't_mode':  return <Button isLoading={loading} isDisabled={trainingMode === ''} loadingText='Updating...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleTrainingMode}>Set Training Mode</Button>;
-                            case 'instructor':  return <Button isLoading={loading} isDisabled={time === '' } loadingText='Assigning Instructor...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={() => {}}>Assign Instructor</Button>;
+                            case 'instructor':  return <Button isLoading={loading} isDisabled={actual_instructor === '' } loadingText='Assigning Instructor...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleInstructor}>Assign Instructor</Button>;
                             case 'notify':  return <Button isLoading={loading} isDisabled={time === '' } loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleNotifyTrainees}>Notify Trainee</Button>;
                             default:  return <Button isLoading={loading} isDisabled={time === '' } loadingText='Notifying Trainee...' bgColor='blue.700' colorScheme='blue' w='100%' shadow='md' onClick={handleNotifyTrainees}>Notify Trainee</Button>;
                         }

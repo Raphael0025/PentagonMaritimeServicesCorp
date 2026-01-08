@@ -145,7 +145,8 @@ export interface TRAINING {
     numOfDays: number;
     end_date: string;
     accountType: number; // 0 - crew | 1 - company
-    
+    act_ins: string;
+
     date_enrolled: Timestamp;
     batch: string;
     regType: number; // 2 - def | 0 - dated | 1 - bd
@@ -178,6 +179,7 @@ export const initTraining = {
     numOfDays: 0,
     end_date: '',
     accountType: 0, // 0 - crew | 1 - company
+    act_ins: '',
     
     date_enrolled: Timestamp.now(),
     batch: '',

@@ -4,6 +4,10 @@
 
 This document outlines the tasks and improvements planned for the project. Each task is categorized by its status and priority.
 
+### IMPORTANT NOTES
+- Sample RAM and AIIRCA courses, MOJICA and Lato and a different Cert date but still a dated registration. reason for this instance is
+- that it is a dated registration, this is a combined training. Also on this instance, email advise was executed first before the enrollment
+
 ## Tasks
 - [] **Registration**
     - [] Trainee Tab, Include previous trainings of Crew
