@@ -27,7 +27,7 @@ export default function Tickets(){
         },
         {
             dept_name: "Training",
-            features: ["Scheduling", "Training Tracker", "Batch Records", "Certification", "Instructors", "Analytics"]
+            features: ["Registered Trainings", "Scheduling", "Training Tracker", "Batch Records", "Certification", "Instructors", "Analytics"]
         },
         {
             dept_name: "Inventory",

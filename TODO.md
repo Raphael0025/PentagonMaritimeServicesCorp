@@ -10,25 +10,32 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 ## Tasks
 - [] **Registration**
-    - [] Trainee Tab, Include previous trainings of Crew
     - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
+    - [] Include Payments for Registration 
     - [] include bd when creating batches / think about this one
+    - [] Trainee Tab, Include previous trainings of Crew
     - [*] Buttons ( [*]Rollback | []Cancel and Move to BD | [*]Just Cancel )
         - [] functionalities for Move to BD
     - [*] Online Enrollment Form, Number type for birthdates
     - [*] modify status look in registrations tab
     - [*] remove permissions of same date in batch records
     - [*] update code for when status of trainee is greater than 3 (Enrolled) it is still editable in the registrations
-    - [] Include Payments for Registration 
 
 - [] **Training**
-    - [*] Create button for training mode inside tracker for easy update
-    - [] CHANGE OR ADD INSTRUCTOR inside tracker for BD for easy update
+    - [] Implement Send Training Details to instructor in advance on Scheduling
+    - [] For BD tracker, include Actual training dates
     - [] Certification Module
+    - [] Update Instructor for both dated and bd tracker via Tracker tab
+    - [] Re-Create Instructors and assessors Tab with categorize feature
     - [] Re-think how to duplicate if a training is cancelled and used in a later batch
     - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
     - [] Once Graduated Update Certification
     - [] Course Materials
+    - [] Implement Scheduling and Planning
+        - **Details**:
+            Get top delivered courses (Annual, monthly, weekly) then RUP, Mode of training, Instructors, Training Dates
+    - [*] Create button for training mode inside tracker for easy update
+    - [*] CHANGE OR ADD INSTRUCTOR inside tracker for BD for easy update
 
 - [] **Inventory**
     - [] Do this inventory
@@ -45,23 +52,10 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Fixed scroll issue on second page
         - [-] Revised the UI/UX of Online Enrollment Form
         - [ ] Conditional Process for In-house/STCW Courses
-- [] **Training Tab**: Features in Training Tab
-    - **Details**:
-        - [-] Overview Tab
-            - Implemented Email advise for both trainee and instructor
 - [] **Registration Tab**: Features in Registration Tab
     - **Details**:
-        - [-] Fixed Registration Series, reached 10000+ series
-        - [-] Change Training Date
-        - [-] Edit Course Fee
-        - [-] Edit Course Name/Company Course Code
-        - [-] Edit Account Type
-        - [-] Implement Add New Training using current registration doc
-        - [-] Rollback training doc and reg doc  to Pending
-        - [-] Create Transfer from BD to Dated or vice versa
         - [] Implement Number of days in Edit training schedule
         - [] Refactor edit enrolled date
-        - [-] implement new feature when rollbacked reg doesn't change its reg_no value
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:
@@ -72,13 +66,6 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
         - [] Implement New Collection for Prev. companies of crew
 
-- [] **Batch Records**: Enrollment Reports
-    - **Details**:
-        - [-] Create ER Report for (Standard | MDS)
-        - [-] Create function for batch record
-        - [-] Remove function 
-        - [-] Update function 
-        - [-] Print function
         **CAUTION**: It might use a lot of data reads that may lead to increase of cost.
 
 - [] **Attachment**: Implement this feature
@@ -98,11 +85,6 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [*] Delete Reg, If training doc is the last one child of the reg and decided to change AT
             Note: If this happens, old reg cannot be rollback, it will only create a new One
             Note: Tell Reg Dept. to refrain from making mistakes before enrolling
-
-### Medium Priority
-
-- [] **Continuation of Certification**: Certification Development continuation
-    - **Details**: When Urgent Tasks are completed, proceed in finishing the certification 
 
 ### Low Priority
 

@@ -286,7 +286,9 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
 
                         // Finally, compare by the number part
                         return numA - numB;
-                    }).map((training, index) => {
+                    })
+                    .sort((a, b) => parsingTimestamp(a.date_enrolled).getTime() - parsingTimestamp(b.date_enrolled).getTime())
+                    .map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
