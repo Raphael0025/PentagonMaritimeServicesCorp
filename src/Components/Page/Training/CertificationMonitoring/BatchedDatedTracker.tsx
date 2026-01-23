@@ -149,13 +149,10 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
     const formatTrainingDate = (endDate?: string, startDate?: string) => {
         const dateStr = endDate || startDate
         if (!dateStr) return '-'
-
         const date = new Date(dateStr)
         if (isNaN(date.getTime())) return '-'
-
-        // ➕ Add 1 day
+        // Add 1 day
         date.setDate(date.getDate() + 1)
-
         return date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -167,18 +164,18 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}
             <Box w='1850px' bgColor='blue.700' position='sticky' top='0' zIndex='10' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
-                <Text w='15px'>#</Text>
-                <Text w='100px'>Date Created</Text>
-                <Text w='50px'>Batch No.</Text>
-                <Text w='145px'>Certificate No.</Text>
-                <Text w='280px'>Trainee Name</Text>
-                <Text w='80px'>Course</Text>
-                <Text w='150px'>Date Released</Text>
-                <Text w='100px'>Charge</Text>
-                <Text w='105px'>Status</Text>
-                <Text w='200px'>Company</Text>
-                <Text w='150px'>Crewing</Text>
-                <Text w='300px'>Notes</Text>
+                    <Text w='15px'>#</Text>
+                    <Text w='100px'>Date Created</Text>
+                    <Text w='50px'>Batch No.</Text>
+                    <Text w='145px'>Certificate No.</Text>
+                    <Text w='280px'>Trainee Name</Text>
+                    <Text w='80px'>Course</Text>
+                    <Text w='150px'>Date Released</Text>
+                    <Text w='100px'>Charge</Text>
+                    <Text w='105px'>Status</Text>
+                    <Text w='200px'>Company</Text>
+                    <Text w='150px'>Crewing</Text>
+                    <Text w='300px'>Notes</Text>
             </Box>
             {/** Current Month Data Table */}
             <Box>
@@ -195,7 +192,7 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                     const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
                     const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                     const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
-                    //const reg_id = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.id ?? ''
+                    //const reg_id = allRegData?.find((reg) => 
                     const trainingMode = courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `${courseBatch.find((batch) => batch.id === training.batch)?.training_mode}` : ''
 
                     if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
