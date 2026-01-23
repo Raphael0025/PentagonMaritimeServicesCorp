@@ -194,10 +194,10 @@ export default function Page({params}: PageProps){
                             const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                     
                             // Extract numeric parts of the registration number
-                            const [yearA, numberA] = regNoA.split('-').map(Number);
-                            const [yearB, numberB] = regNoB.split('-').map(Number);
-                    
-                            // Compare by year first, then by number
+                            const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
+                            const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
+
+                            // Compare by year first, then by month, then by number
                             if (yearA !== yearB) {
                                 return yearA - yearB;
                             }

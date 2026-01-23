@@ -10,7 +10,6 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 ## Tasks
 - [] **Registration**
-    - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
     - [] Include Payments for Registration 
     - [] include bd when creating batches / think about this one
     - [] Trainee Tab, Include previous trainings of Crew
@@ -22,7 +21,16 @@ This document outlines the tasks and improvements planned for the project. Each 
     - [*] update code for when status of trainee is greater than 3 (Enrolled) it is still editable in the registrations
 
 - [] **Training**
-    - [] Implement Send Training Details to instructor in advance on Scheduling
+-  REMEMBER THIS: CREATE MAIL FEATURE FIRST WITHOUT FIRST GETTING APPROVAL TO USE GMAIL API JUST FOR AWARENESS
+- THEN REMEMBER THIS: AFTER THAT MAIL FEATURE, CREATE THE ACTUAL SCHEDS FOR BD AND THEN CERTIFICATION DO IT NOW BEFORE 12 OR 1 PM
+    - [] SELF-PROJECT ON SUNDAY: ACCOMPLISH THIS BUILT-IN SYSTEM MAIL
+    - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
+    - [] Implement Send Training Details to instructor in advance on Instructors Tab
+        - [] if certain field is empty, it will send only the course presentation link for review
+        - [] if certain field is not empty, it will send the whole training details
+    - [] Implement Send Training Details even if not enrolled, separate tab or create a modal inside either scheduling or tracker
+    - [] Implement Send Training Details for dated on this case, dated included already in a batch and suddenly training mode is modular
+    - [] Implement Send Training Details on this case
     - [] For BD tracker, include Actual training dates
     - [] Certification Module
     - [] Update Instructor for both dated and bd tracker via Tracker tab

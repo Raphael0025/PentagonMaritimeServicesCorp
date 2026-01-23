@@ -241,8 +241,8 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                             const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '0-0';
                             const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '0-0';
 
-                            const [yearA, numberA] = regNoA.split('-').map(Number);
-                            const [yearB, numberB] = regNoB.split('-').map(Number);
+                            const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
+                            const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
 
                             return yearA === yearB ? numberA - numberB : yearA - yearB;
                         }).map((training, index) => {

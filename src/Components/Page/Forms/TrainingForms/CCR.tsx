@@ -178,8 +178,8 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                             const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '0-0';
                             const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '0-0';
 
-                            const [yearA, numberA] = regNoA.split('-').map(Number);
-                            const [yearB, numberB] = regNoB.split('-').map(Number);
+                            const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
+                            const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
 
                             return yearA === yearB ? numberA - numberB : yearA - yearB;
                         }).map((training, index) => {
@@ -339,22 +339,22 @@ export default function AttendanceForm({ batch, trainingsArr}: TFProps) {
                                     
                                         return(
                                             <>
-                                                <Text mt='3' mb='2'>Certified Correct</Text>
+                                                <Text  mt='3' mb='2'>Certified Correct</Text>
                                                 {batch?.room?.toLowerCase() === 'online' && (
                                                     <Box 
-                                                    position='absolute' 
-                                                    top='15px' 
-                                                    left='50%' 
-                                                    transform="translateX(-50%)" 
-                                                    zIndex={2} 
+                                                        position='absolute' 
+                                                        top='5px' 
+                                                        left='50%' 
+                                                        transform="translateX(-50%)" 
+                                                        zIndex={2} 
+                                                        //h='150px'
                                                     >
-                                                        <NextImage src={eSignSrc} width='100' height='20' alt='signature' />
+                                                        <ChakraImage src={eSignSrc} h='85' alt='signature' />
                                                     </Box>
                                                 )}
                                                 <Text position='relative' zIndex={1} w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
                                                     {(() => {
                                                         if (!ins) return batch?.assessor || 'No Assessor';
-                
                                                         // Add 'MM' if rank is 'CAPT'
                                                         const suffix = ins.rank === 'CAPT' ? ', MM' : '';
                                                         return `${ins.rank} ${ins.name}${suffix}`;

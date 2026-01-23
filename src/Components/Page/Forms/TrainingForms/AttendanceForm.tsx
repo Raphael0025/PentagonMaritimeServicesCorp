@@ -197,8 +197,8 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                         const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                 
                         // Extract numeric parts of the registration number
-                        const [yearA, numberA] = regNoA.split('-').map(Number);
-                        const [yearB, numberB] = regNoB.split('-').map(Number);
+                        const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
+                        const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
                 
                         // Compare by year first, then by number
                         if (yearA !== yearB) {
@@ -400,7 +400,7 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                             <>
                                 {batch?.room?.toLowerCase() === 'online' && (
                                     <Box position='absolute' top='-20px' left='50%' transform="translateX(-50%)" zIndex={2} >
-                                        <NextImage src={eSignSrc} width='100' height='20' alt='signature' />
+                                        <ChakraImage src={eSignSrc} h='85' alt='signature' />
                                     </Box>
                                 )}
                                 <Text mt='8' position='relative' zIndex={1} w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>

@@ -156,6 +156,7 @@ export interface TRAINING {
     cert_released: Timestamp;
     cert_status: number; // 0 - pending | 1 - released
     cert_no: string;
+
     attendance: boolean;
     ccr: boolean;
     assessment: boolean;
@@ -163,6 +164,7 @@ export interface TRAINING {
     practical: number;
     written: number;
     result: number;
+    
     marketing: string;
     otherMarketing: string;
     train_remarks: string;
