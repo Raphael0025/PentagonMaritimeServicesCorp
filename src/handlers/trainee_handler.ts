@@ -40,6 +40,17 @@ export const handleRegStatus = (status: number) => {
     }
 }
 
+export const handleCertStatus = (status: number) => {
+    switch(status){
+        case 0:
+            return 'PENDING';
+        case 1:
+            return 'RELEASED';
+        default:
+            return 'null';
+    }
+}
+
 export const shortenMonth = (month: string): string => {
     const monthMap: { [key: string]: string } = {
         January: 'Jan',

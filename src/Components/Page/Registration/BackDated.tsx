@@ -246,7 +246,7 @@ export default function Page(){
                 <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto',}}>
                     <Box w='100%' h='700px' >
                         <Box w="100%" h='100%' className=" rounded space-y-3" style={{  overflowX: 'auto', boxSizing: 'border-box', scrollbarWidth: 'thin', msOverflowStyle: 'none'}}>
-                            <Box w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap',  }} >
+                            <Box position='sticky' top='0' zIndex='10' w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap',  }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Box className="space-x-3 flex w-full" justifyContent='center' alignItems='center'>
                                         <Text w="150px" className="text-center">Enrolled Date</Text>

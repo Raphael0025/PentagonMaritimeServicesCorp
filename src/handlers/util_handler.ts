@@ -103,6 +103,17 @@ export const backgroundColor = (value: number) => {
     }
 }
 
+export const certBackgroundColor = (value: number) => {
+    switch(value){
+        case 0:
+                return 'red.400';
+        case 1:
+            return 'green.400';
+        default:
+            return '';
+    }
+}
+
 export const BackgroundTypeColor = (value: string) => {
     switch(value.toLowerCase()){
         case 'announcement':

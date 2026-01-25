@@ -616,7 +616,7 @@ export default function BDTracker (){
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}
             <Text>BackDated Training Records</Text>
-            <Box w='2650px' bgColor='blue.700' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
+            <Box position='sticky' top='0' zIndex='10' w='2650px' bgColor='blue.700' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
                 <Text w='15px'>#</Text>
                 <Text w='100px'>Date Endorsed</Text>
                 <Text w='150px'>Registration No.</Text>

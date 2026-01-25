@@ -286,8 +286,8 @@ export default function TrackerPage(){
             {isDated ? (
             <>
                 <Box display='flex' fontWeight='normal' justifyContent='space-between' gap='8' mb='2'>
-                    <Box display='flex' w='30%' justifyContent='space-between'>
-                        <Box w='100%'>
+                    <Box w='30%' justifyContent='space-between'>
+                        <Box w='100%' display='flex'>
                             <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
                                 <Text>Company</Text>
                                 <Text fontWeight='bold' textAlign='center' >{totalCompanyC}</Text>
@@ -296,17 +296,17 @@ export default function TrackerPage(){
                                 <Text>Trainee</Text>
                                 <Text fontWeight='bold' textAlign='center' >{totalTraineeC}</Text>
                             </Box>
-                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                            <Box p='1' px='3' border='1px solid black' borderBottom='none' w='100%'>
                                 <Text>Total of Enrollees</Text>
                                 <Text fontWeight='bold' textAlign='center' >{(totalTraineeC + totalCompanyC)}</Text>
                             </Box>
                         </Box>
-                        <Box w='100%'>
-                            <Box p='1' px='3' border='1px solid black' borderBottom='none' w='100%'>
+                        <Box w='100%' display='flex'>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
                                 <Text>Certificate Released</Text>
                                 <Text fontWeight='bold' textAlign='center' >{totalF2FM}</Text>
                             </Box>
-                            <Box p='1' px='3' border='1px solid black' borderBottom='none' w='100%'>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
                                 <Text>Pending Certificates</Text>
                                 <Text fontWeight='bold' textAlign='center' >{totalOLM}</Text>
                             </Box>
@@ -352,25 +352,6 @@ export default function TrackerPage(){
                                 <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
                             ))}
                         </Select>
-                        {/* Instructor Filter */}
-                        <Select size='sm' mr='4' value={filterInstructor} onChange={(e) => setInstructorFilter(e.target.value)} shadow='md'>
-                            <option hidden>Filter Instructor</option>
-                            {allInstructors && [...allInstructors]
-                            .sort((a, b) => a.name.localeCompare(b.name))
-                            .map((ins) => (
-                                <option key={ins.id} value={ins.id}>{ins.name.toUpperCase()}</option>
-                            ))}
-                        </Select>
-
-                        {/* Mode of Training Filter */}
-                        <Select size='sm' mr='4' value={filterMode} onChange={(e) => setModeFilter(e.target.value)} shadow='md'>
-                            <option hidden>Filter Mode</option>
-                            <option value='f2f'>F2F/INS</option>
-                            <option value='ol'>OL/INS</option>
-                            <option value='blended'>Blended</option>
-                            <option value='f2fm'>F2F-Modular</option>
-                            <option value='olm'>OL-Modular</option>
-                        </Select>
                         {(filterCourse || filterCompany || filterInstructor || filterCharge || filterMode) && (
                             <Button w='50%' mr={4} onClick={() => { setChargeType(''); setCompanyFilter(''); setInstructorFilter(''); setModeFilter(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                         )}
@@ -380,13 +361,10 @@ export default function TrackerPage(){
                 {loading ? (
                     <Center py={8}>
                         <Spinner size="lg" color="blue.500" mr={3} />
-                        <Text fontWeight="medium" color="gray.600">Loading Training Records...</Text>
+                        <Text fontWeight="medium" color="gray.600">Loading Certification Records...</Text>
                     </Center>
-                ) : (hasNoBatch ? (
-                        <UnBatchedDated searchTerm={searchTerm} trainings={unBatchedData || []} />
-                    ) : (
-                        <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} />
-                    )
+                ) : (
+                    <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} />
                 )}
             </>
             ) : (

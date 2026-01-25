@@ -6,8 +6,8 @@ import { Box, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select
 import { TRAINING_BY_ID } from '@/types/trainees'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
-import { handleRegStatus } from '@/handlers/trainee_handler'
-import { backgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
+import { handleCertStatus } from '@/handlers/trainee_handler'
+import { certBackgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
 
 import { useRank } from '@/context/RankContext'
 import { useCourses } from '@/context/CourseContext'
@@ -166,15 +166,16 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
             <Box w='1850px' bgColor='blue.700' position='sticky' top='0' zIndex='10' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
                     <Text w='15px'>#</Text>
                     <Text w='100px'>Date Created</Text>
-                    <Text w='50px'>Batch No.</Text>
-                    <Text w='145px'>Certificate No.</Text>
-                    <Text w='280px'>Trainee Name</Text>
+                    <Text w='50px'>Batch</Text>
+                    <Text w='200px'>Certificate No.</Text>
+                    <Text w='350px'>Trainee Name</Text>
                     <Text w='80px'>Course</Text>
                     <Text w='150px'>Date Released</Text>
                     <Text w='100px'>Charge</Text>
-                    <Text w='105px'>Status</Text>
+                    <Text w='120px'>Status</Text>
                     <Text w='200px'>Company</Text>
                     <Text w='150px'>Crewing</Text>
+                    <Text w='300px'>Certificate</Text>
                     <Text w='300px'>Notes</Text>
             </Box>
             {/** Current Month Data Table */}
@@ -182,11 +183,11 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
             {!trainings ? (
                 <Center py={8}>
                     <Spinner size="lg" color="blue.500" mr={3} />
-                    <Text fontWeight="medium" color="gray.600">Loading current month training records...</Text>
+                    <Text fontWeight="medium" color="gray.600">Loading current month certification records...</Text>
                 </Center>
             ) : trainings.length === 0 ? (
                 <Center py={8}>
-                    <Text fontWeight="medium" color="gray.500">No training records found.</Text>
+                    <Text fontWeight="medium" color="gray.500">No certification records found.</Text>
                 </Center>
             ) : (trainings?.map((training: TRAINING_BY_ID, index: number) => {
                     const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
@@ -204,29 +205,31 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                     )
                 ){
                     return(
-                        <Box key={training.id} _hover={{bgColor: 'blue.100', color: 'black'}} borderRadius='5px' color={training.reg_status === 7 ? 'white' : 'black'} w='1850px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
-                            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                <Box px='1' className='w-full flex space-x-3'>
-                                    <Text w="15px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
-                                    <Text w="100px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
-                                    <Text w="50px">
-                                        {`${courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `B${courseBatch.find((batch) => batch.id === training.batch)?.batch_no}` : ''}`}
-                                    </Text>                                        
-                                    <Text w="150px" _hover={{color: 'blue.700'}} onClick={() => {
-                                        // setRegNum(reg_id); 
-                                        // onOpenReg();
-                                        }} className='hover:cursor-pointer'>
-                                        {`${training.cert_no}`}
-                                    </Text>                                   
-                                    <Text w="280px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
-                                    <Text w="80px">
-                                        {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
-                                    </Text> 
-                                </Box>
-                            </Box>
+                        <Box key={training.id} _hover={{bgColor: 'blue.100', color: 'black'}} borderRadius='5px' color={training.cert_status === 7 ? 'white' : 'black'} w='1850px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-3 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                            <Text w="15px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
+                            <Text w="100px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
+                            <Text w="50px">
+                                {`${courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `B${courseBatch.find((batch) => batch.id === training.batch)?.batch_no}` : ''}`}
+                            </Text>                                        
+                            <Text w="200px" _hover={{color: 'blue.700'}} onClick={() => {
+                                // setRegNum(reg_id); 
+                                // onOpenReg();
+                                }} className='hover:cursor-pointer'>
+                                {`${training.cert_no}`}
+                            </Text>                                   
+                            <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
+                            <Text w="80px">
+                                {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
+                            </Text> 
                             <Text w="150px" >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
-                            <Text w="105px" >{training.cert_status === 0 ? 'PENDING' : 'RELEASED'}</Text>  
+                            <Select bgColor={certBackgroundColor(training.cert_status)}  isDisabled={loading} 
+                            //onChange={(e) => handleStatus(training.id, Number(e.target.value))} 
+                            borderRadius='5px' size='xs' w='120px' shadow='md' >
+                                <option value={0} hidden>{handleCertStatus(training.cert_status)}</option>
+                                <option value={0}>PENDING</option>
+                                <option value={1}>RELEASED</option>
+                            </Select>
                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
                                 <Text w="200px" noOfLines={1} className='text-wrap'>
                                     {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
@@ -235,6 +238,11 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
                                 <Text w="150px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
                             </Tooltip>  
+                            <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
+                                <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
+                                    {training.train_remarks === '' ? 'None' : training.train_remarks}
+                                </Text>
+                            </Button>                                     
                             <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
                                 <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
                                     {training.train_remarks === '' ? 'None' : training.train_remarks}

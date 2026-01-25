@@ -66,15 +66,18 @@ export default function TrackerPage(){
             setLoading(true)
             const allTrainData = allTrainingData && allTrainingData
                 .filter((t) => {
-                    const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
-                    if(!registration) return false;
+                    if(!t.batch) return false;
                     
-                    //const currYear = new Date().getFullYear()
-
-                    const splitRegNo = registration.reg_no.split('-')
-                    const regYear = Number(splitRegNo[0])
-                    
-                    return regYear === yearSelected
+                    const batch = courseBatch?.find((b) => b.id === t.batch);
+                    if (!batch?.createdAt) return false;
+                
+                    // Firestore Timestamp → JS Date
+                    const createdDate = batch.createdAt.toDate();
+                
+                    return (
+                        createdDate.getMonth() === monthSelected &&
+                        createdDate.getFullYear() === yearSelected
+                    );
                 })
                 .filter(t => {
                     const start = t.start_date.toLowerCase();
@@ -89,27 +92,37 @@ export default function TrackerPage(){
                     );
                 })
                 .sort((a, b) => {
-                    // Get course names from allCourses or courseCodes
-                    const courseA =
-                    allCourses?.find((course) => course.id === a.course)?.course_code?.toLowerCase() ||
-                    courseCodes?.find((course) => course.id === a.course)?.company_course_code?.toLowerCase() ||
-                    '';
-                    const courseB =
-                    allCourses?.find((course) => course.id === b.course)?.course_code?.toLowerCase() ||
-                    courseCodes?.find((course) => course.id === b.course)?.company_course_code?.toLowerCase() ||
-                    '';
-            
-                    // Compare alphabetically by course name
-                    if (courseA < courseB) return -1;
-                    if (courseA > courseB) return 1;
-            
-                    // If same course, compare by batch number (ascending)
-                    const batchA =
-                    courseBatch?.find((batch) => batch.id === a.batch)?.batch_no || 0;
-                    const batchB =
-                    courseBatch?.find((batch) => batch.id === b.batch)?.batch_no || 0;
-            
-                    return batchA - batchB;
+                    /* ======================
+                    1️⃣ COURSE SORT
+                    ====================== */
+                    const courseA = allCourses?.find((c) => c.id === a.course)?.course_code?.toLowerCase() ||
+                        courseCodes?.find((c) => c.id === a.course)?.company_course_code?.toLowerCase() ||
+                        '';
+                    const courseB = allCourses?.find((c) => c.id === b.course)?.course_code?.toLowerCase() ||
+                        courseCodes?.find((c) => c.id === b.course)?.company_course_code?.toLowerCase() ||
+                        '';
+                    if (courseA !== courseB) {
+                        return courseA.localeCompare(courseB);
+                    }
+                    /* ======================
+                    2️⃣ BATCH NUMBER SORT
+                    ====================== */
+                    const batchA = courseBatch?.find((batch) => batch.id === a.batch)?.batch_no ?? 0;
+                    const batchB = courseBatch?.find((batch) => batch.id === b.batch)?.batch_no ?? 0;
+                    if (batchA !== batchB) {
+                        return batchA - batchB;
+                    }
+                    /* ======================
+                    3️⃣ REGISTRATION NO SORT
+                    ====================== */
+                    const regNoA = allRegData?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
+                    const regNoB = allRegData?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
+                    // Expected format: YYYY-MM-NNN (or similar)
+                    const [yearA, monthA, numA] = regNoA.split('-').map(Number);
+                    const [yearB, monthB, numB] = regNoB.split('-').map(Number);
+                    if (yearA !== yearB) return yearA - yearB;
+                    if (monthA !== monthB) return monthA - monthB;
+                    return (numA ?? 0) - (numB ?? 0);
                 })
                 .filter((t) => t.reg_status >= 3 )
                 .filter((t) => {
