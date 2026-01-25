@@ -194,9 +194,9 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         {['bd', 'both'].some(p => permittedTo.includes(p)) && (
                                             <Button fontWeight='normal' colorScheme='yellow' onClick={() => {onOpenNA(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Non-Appearance</Button>
                                         )}
-                                        {(['dated', 'both'].some(p => permittedTo.includes(p)) && canDo('delete')) && (
+                                        {/* {(['dated', 'both'].some(p => permittedTo.includes(p)) && canDo('delete')) && (
                                             <Button fontWeight='normal' colorScheme='teal' onClick={() => {onOpenMBD(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Move to BD</Button>
-                                        )}
+                                        )} */}
                                         <Button fontWeight='normal' colorScheme='blue' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Rollback</Button>
                                         <Button fontWeight='normal' colorScheme='red' onClick={() => {onOpenCancelT(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Cancel Training</Button>
                                     </Box>
