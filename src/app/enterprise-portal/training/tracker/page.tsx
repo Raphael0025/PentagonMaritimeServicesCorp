@@ -54,7 +54,7 @@ export default function TrackerPage(){
     const [totalF2FM, setF2FM] = useState<number>(0)
     const [totalOLM, setOLM] = useState<number>(0)
     const [totalBlended, setBlended] = useState<number>(0)
-
+    
     const [totalGrad, setGrad] = useState<number>(0)
     const [totalPending, setPending] = useState<number>(0)
     const [totalAbsent, setAbsent] = useState<number>(0)
@@ -66,26 +66,32 @@ export default function TrackerPage(){
             setLoading(true)
             const allTrainData = allTrainingData && allTrainingData
                 .filter((t) => {
-                    if(!t.batch) return false;
-                    
-                    const batch = courseBatch?.find((b) => b.id === t.batch);
-                    if (!batch?.createdAt) return false;
-                
-                    // Firestore Timestamp → JS Date
-                    const createdDate = batch.createdAt.toDate();
-                
-                    return (
-                        createdDate.getMonth() === monthSelected &&
-                        createdDate.getFullYear() === yearSelected
-                    );
+                    if(!t.batch) {
+                        return false;
+                    } 
+                    else if (!hasNoBatch) {
+                        const batch = courseBatch?.find((b) => b.id === t.batch);
+                        if (!batch?.createdAt) return false;
+                        
+                        // Firestore Timestamp → JS Date
+                        const createdDate = batch.createdAt.toDate();
+                        
+                        return (
+                            createdDate.getMonth() === monthSelected &&
+                            createdDate.getFullYear() === yearSelected
+                        );
+                    } 
+                    else {    
+                        return true;
+                    }
                 })
                 .filter(t => {
                     const start = t.start_date.toLowerCase();
                     const end = t.end_date.toLowerCase();
-                
+                    
                     const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
                     const trimmedMonth = months[monthSelected]; // convert number → "jan"
-                
+                    
                     return (
                         (start.includes(trimmedMonth) && end.includes(trimmedMonth)) ||
                         (end === '' && start.includes(trimmedMonth))
@@ -121,7 +127,7 @@ export default function TrackerPage(){
                     const [yearA, monthA, numA] = regNoA.split('-').map(Number);
                     const [yearB, monthB, numB] = regNoB.split('-').map(Number);
                     if (yearA !== yearB) return yearA - yearB;
-                    if (monthA !== monthB) return monthA - monthB;
+                    //if (monthA !== monthB) return monthA - monthB;
                     return (numA ?? 0) - (numB ?? 0);
                 })
                 .filter((t) => t.reg_status >= 3 )
@@ -342,15 +348,19 @@ export default function TrackerPage(){
                                 <Text>F2F/INS</Text>
                                 <Text fontWeight='bold' textAlign='center' >{totalF2FINS}</Text>
                             </Box>
-                            <Box p='1' px='3' border='1px solid black' w='100%'>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
                                 <Text>OL/INS</Text>
                                 <Text fontWeight='bold' textAlign='center' >{totalOLIns}</Text>
                             </Box>
                         </Box>
                         <Box w='100%'>
-                            <Box p='1' px='3' border='1px solid black' w='100%'>
+                            <Box p='1' px='3' border='1px solid black' borderBottom='none' w='100%'>
                                 <Text>BLENDED</Text>
                                 <Text fontWeight='bold' textAlign='center' >{totalBlended}</Text>
+                            </Box>
+                            <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
+                                <Text>&nbsp;</Text>
+                                <Text>&nbsp;</Text>
                             </Box>
                         </Box>
                     </Box>

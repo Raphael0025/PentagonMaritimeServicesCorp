@@ -364,7 +364,7 @@ export default function TrackerPage(){
                         <Text fontWeight="medium" color="gray.600">Loading Certification Records...</Text>
                     </Center>
                 ) : (
-                    <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} />
+                    <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} setTrainings={setAllTData} />
                 )}
             </>
             ) : (

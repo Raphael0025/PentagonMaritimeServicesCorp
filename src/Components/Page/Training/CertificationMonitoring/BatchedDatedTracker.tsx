@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Box, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
-
+import { Timestamp } from 'firebase/firestore'
 import { TRAINING_BY_ID } from '@/types/trainees'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
@@ -22,9 +22,10 @@ import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller
 interface BatchedDatedProps {
     searchTerm: string;
     trainings: TRAINING_BY_ID[];
+    setTrainings: React.Dispatch<React.SetStateAction<TRAINING_BY_ID[]>>
 }
 
-export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedProps){
+export default function BatchedDated ({ searchTerm, trainings, setTrainings }: BatchedDatedProps){
     const toast = useToast()
     const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
@@ -38,6 +39,8 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
 
     const [remarks, setRemarks] = useState<string>('')
     const [t_id, setID] = useState<string>('')
+
+    const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set())
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     
@@ -96,27 +99,51 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
         })
     }
 
-    const handleStatus = async (trainingID: string, newStatus: number) => {
-        setLoading(true)
-        new Promise<void>((res, rej) => {
-            setTimeout(async () => {
-                try{
-                    const actor = localStorage.getItem('customToken')
-                    const updateStat = {
-                        reg_status: newStatus,
-                    }
-                    await UPDATE_TRAINING(trainingID, updateStat, actor)
-                    res()
-                }catch(error){
-                    rej(error)
-                }
-            }, 500)
-        }).then(() => {
-            handleToast('Status Updated Successfully!', `Crew's training status has been updated successfully.`, 5000, 'success')
-        }).catch((error) => {
-            console.error("ERROR DETECTED: ", error)
-        }).finally(() => {
-            setLoading(false)
+    const handleStatus = (trainingID: string, newStatus: number) => {
+    // Mark this row as updating
+    setUpdatingIds(prev => new Set(prev).add(trainingID))
+
+    // 🔥 OPTIMISTIC UI UPDATE (local state)
+    setTrainings(prev =>
+        prev?.map(t =>
+            t.id === trainingID
+                ? { ...t, cert_status: newStatus }
+                : t
+        )
+    )
+
+    const actor = localStorage.getItem('customToken')
+
+        UPDATE_TRAINING(trainingID, {
+            cert_status: newStatus,
+            cert_released: Timestamp.now(),
+        }, actor)
+        .then(() => {
+            handleToast(
+                'Status Updated',
+                'Certificate status updated successfully',
+                3000,
+                'success'
+            )
+        })
+        .catch(error => {
+            console.error(error)
+
+            // ❌ rollback if failed
+            setTrainings(prev =>
+                prev?.map(t =>
+                    t.id === trainingID
+                        ? { ...t, cert_status: 0 }
+                        : t
+                )
+            )
+        })
+        .finally(() => {
+            setUpdatingIds(prev => {
+                const next = new Set(prev)
+                next.delete(trainingID)
+                return next
+            })
         })
     }
 
@@ -172,7 +199,7 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                     <Text w='80px'>Course</Text>
                     <Text w='150px'>Date Released</Text>
                     <Text w='100px'>Charge</Text>
-                    <Text w='120px'>Status</Text>
+                    <Text w='130px'>Status</Text>
                     <Text w='200px'>Company</Text>
                     <Text w='150px'>Crewing</Text>
                     <Text w='300px'>Certificate</Text>
@@ -223,9 +250,7 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                             </Text> 
                             <Text w="150px" >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
-                            <Select bgColor={certBackgroundColor(training.cert_status)}  isDisabled={loading} 
-                            //onChange={(e) => handleStatus(training.id, Number(e.target.value))} 
-                            borderRadius='5px' size='xs' w='120px' shadow='md' >
+                            <Select isDisabled={updatingIds.has(training.id)} bgColor={certBackgroundColor(training.cert_status)} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='130px' shadow='md' >
                                 <option value={0} hidden>{handleCertStatus(training.cert_status)}</option>
                                 <option value={0}>PENDING</option>
                                 <option value={1}>RELEASED</option>
@@ -272,3 +297,4 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
         </>
     )
 }
+
