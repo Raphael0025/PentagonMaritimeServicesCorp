@@ -45,7 +45,7 @@ export default function TrackerPage(){
 
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     
-    const [allTData, setAllTData] = useState<TRAINING_BY_ID[] | null>(null)
+    const [allTData, setAllTData] = useState<TRAINING_BY_ID[]>([])
 
     const [totalTraineeC, setTraineeCharge] = useState<number>(0)
     const [totalCompanyC, setCompanyCharge] = useState<number>(0)
