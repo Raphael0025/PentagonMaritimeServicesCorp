@@ -218,7 +218,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                     const courseFound = allCourses?.find((c) => c.id === batch.course)
                     const startDateArr = batch.start_date.split(',')
                     const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
-                    const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
+                    const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} ${endDateArr[1] === '' ? '' : `to ${endDateArr[1].toUpperCase()}`}` : startDateArr[1].toUpperCase()
                     const class_code = courseFound?.class_code
                     const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
 
