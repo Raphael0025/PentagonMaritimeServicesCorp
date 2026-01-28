@@ -1,4 +1,4 @@
-import { addDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp } from 'firebase/firestore'
+import { addDoc, getDoc, updateDoc, setDoc, writeBatch, doc, getDocs, query, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage'
 import { storage } from './firebase'
 import { app } from './firebase'
@@ -274,6 +274,25 @@ export const UPDATE_TRAINING = async (training_id: string, updateTrainingDoc: Pa
     }catch(error){
         throw error
     }
+}
+
+export async function BATCH_UPDATE_TRAININGS(
+        updates: { id: string; cert_status: number }[],
+        actor: string | null
+    ) {
+    const batch = writeBatch(firestore)
+
+    updates.forEach(({ id, cert_status }) => {
+        const ref = doc(firestore, 'TRAINING', id)
+        batch.update(ref, {
+        cert_status,
+        cert_released: Timestamp.now(),
+        updated_by: actor,
+        updated_at: Timestamp.now(),
+        })
+    })
+
+    await batch.commit()
 }
 
 export const UPDATE_TRAINING_FORMS = async (training_id: string, updateTrainingDoc: Partial<TRAINING>, actor: string | null) => {

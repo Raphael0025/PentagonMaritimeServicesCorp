@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Box, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { Timestamp } from 'firebase/firestore'
 import { TRAINING_BY_ID } from '@/types/trainees'
 
@@ -22,10 +22,12 @@ import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller
 interface BatchedDatedProps {
     searchTerm: string;
     trainings: TRAINING_BY_ID[];
-    setTrainings: React.Dispatch<React.SetStateAction<TRAINING_BY_ID[]>>
+    trainingIDs: string[];
+    setTrainingIDs: React.Dispatch<React.SetStateAction<string[]>>;
+    setFirstSelected: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function BatchedDated ({ searchTerm, trainings, setTrainings }: BatchedDatedProps){
+export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setTrainingIDs, setFirstSelected }: BatchedDatedProps){
     const toast = useToast()
     const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
@@ -36,56 +38,14 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
     const { allData: allRegData } = useRegistrations()
 
     const [loading, setLoading] = useState<boolean>(false)
+    const [certLoading, setCertLoading] = useState<boolean>(false)
 
     const [remarks, setRemarks] = useState<string>('')
     const [t_id, setID] = useState<string>('')
-
-    const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set())
+    const [t_date, setTDate] = useState<Timestamp | undefined>(Timestamp.now())
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
-    
-    const handleComplianceStatus = (trainingID: string, complianceForm: string) => {
-        setLoading(true)
-        new Promise<void>((res, rej) => {
-            setTimeout(async () => {
-                try{
-                    const actor = localStorage.getItem('customToken')
-                    const updateStat: Partial<TRAINING_BY_ID> = {}
-                    switch(complianceForm){
-                        case 'attendance':
-                            const currentAttendance = trainings?.find(t => t.id === trainingID)?.attendance || false
-                            updateStat.attendance = !currentAttendance
-                            break;
-                        case 'assessment':
-                            const currentAssessment = trainings?.find(t => t.id === trainingID)?.assessment || false
-                            updateStat.assessment = !currentAssessment
-                            break;
-                        case 'ccr':
-                            const currentCcr = trainings?.find(t => t.id === trainingID)?.ccr || false
-                            updateStat.ccr = !currentCcr
-                            break;
-                        case 'evaluation':
-                            const currentEvaluation = trainings?.find(t => t.id === trainingID)?.evaluation || false
-                            updateStat.evaluation = !currentEvaluation
-                            break;
-                        default:
-                            break;
-                    }
-                    await UPDATE_TRAINING_FORMS(trainingID, updateStat, actor)
-                    res()
-                }catch(error){
-                    rej(error)
-                }
-            }, 500)
-        }).then(() => {
-            handleToast(`${complianceForm.charAt(0).toUpperCase()+complianceForm.slice(1)} Successfully Complied!`, `Trainee has complied their ${complianceForm}.`, 5000, 'success')
-        }).catch((error) => {
-            console.error("ERROR DETECTED: ", error)
-        }).finally(() => {
-            setLoading(false)
-        })
-    }
-
+    const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
     
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
         toast({
@@ -99,51 +59,52 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
         })
     }
 
-    const handleStatus = (trainingID: string, newStatus: number) => {
-    // Mark this row as updating
-    setUpdatingIds(prev => new Set(prev).add(trainingID))
-
-    // 🔥 OPTIMISTIC UI UPDATE (local state)
-    setTrainings(prev =>
-        prev?.map(t =>
-            t.id === trainingID
-                ? { ...t, cert_status: newStatus }
-                : t
-        )
-    )
-
-    const actor = localStorage.getItem('customToken')
-
-        UPDATE_TRAINING(trainingID, {
-            cert_status: newStatus,
-            cert_released: Timestamp.now(),
-        }, actor)
-        .then(() => {
-            handleToast(
-                'Status Updated',
-                'Certificate status updated successfully',
-                3000,
-                'success'
-            )
+    const handleStatus = async (trainingID: string, newStatus: number) => {
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const updateStat = {
+                        cert_status: newStatus,
+                        cert_released: Timestamp.now(),
+                    }
+                    await UPDATE_TRAINING(trainingID, updateStat, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 50)
+        }).then(() => {
+            handleToast('Status Updated Successfully!', `Crew's certificate status has been updated successfully.`, 5000, 'success')
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
         })
-        .catch(error => {
-            console.error(error)
+    }
 
-            // ❌ rollback if failed
-            setTrainings(prev =>
-                prev?.map(t =>
-                    t.id === trainingID
-                        ? { ...t, cert_status: 0 }
-                        : t
-                )
-            )
-        })
-        .finally(() => {
-            setUpdatingIds(prev => {
-                const next = new Set(prev)
-                next.delete(trainingID)
-                return next
-            })
+    const handleChangeTDate = async () => {
+        setCertLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+                    const updateStat = {
+                        cert_released: t_date || Timestamp.now(),
+                    }
+                    await UPDATE_TRAINING(t_id, updateStat, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 50)
+        }).then(() => {
+            handleToast('Status Updated Successfully!', `Crew's certificate status has been updated successfully.`, 5000, 'success')
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setTDate(Timestamp.now())
+            setCertLoading(false)
+            onCloseEdit()
+            setID('')
         })
     }
 
@@ -169,6 +130,7 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
         }).finally(() => {
             setRemarks('')
             setID('')
+            setCertLoading(false)
             setLoading(false)
         })
     }
@@ -186,24 +148,29 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
         })
     }
 
+    const formatDateForInput = (ts?: Timestamp | undefined) => {
+        if (!ts) return ''
+        return ts.toDate().toISOString().split('T')[0]
+    }
+
     return(
         <>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}
-            <Box w='1850px' bgColor='blue.700' position='sticky' top='0' zIndex='10' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
-                    <Text w='15px'>#</Text>
-                    <Text w='100px'>Date Created</Text>
-                    <Text w='50px'>Batch</Text>
-                    <Text w='200px'>Certificate No.</Text>
-                    <Text w='350px'>Trainee Name</Text>
-                    <Text w='80px'>Course</Text>
-                    <Text w='150px'>Date Released</Text>
-                    <Text w='100px'>Charge</Text>
-                    <Text w='130px'>Status</Text>
-                    <Text w='200px'>Company</Text>
-                    <Text w='150px'>Crewing</Text>
-                    <Text w='300px'>Certificate</Text>
-                    <Text w='300px'>Notes</Text>
+            <Box w='1750px' bgColor='blue.700' position='sticky' top='0' zIndex='9' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
+                <Text w='30px'>#</Text>
+                <Text w='100px'>Date Created</Text>
+                <Text w='50px'>Batch</Text>
+                <Text w='200px'>Certificate No.</Text>
+                <Text w='350px'>Trainee Name</Text>
+                <Text w='80px'>Course</Text>
+                <Text w='120px'>Date Released</Text>
+                <Text w='100px'>Charge</Text>
+                <Text w='160px'>Status</Text>
+                <Text w='200px'>Company</Text>
+                <Text w='150px'>Crewing</Text>
+                <Text w='200px'>Certificate</Text>
+                <Text w='300px'>Notes</Text>
             </Box>
             {/** Current Month Data Table */}
             <Box>
@@ -232,8 +199,8 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
                     )
                 ){
                     return(
-                        <Box key={training.id} _hover={{bgColor: 'blue.100', color: 'black'}} borderRadius='5px' color={training.cert_status === 7 ? 'white' : 'black'} w='1850px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-3 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
-                            <Text w="15px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
+                        <Box key={training.id} _hover={{bgColor: 'blue.100', color: 'black'}} borderRadius='5px' color={training.cert_status === 7 ? 'white' : 'black'} w='1750px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-3 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                            <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
                             <Text w="100px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
                             <Text w="50px">
                                 {`${courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `B${courseBatch.find((batch) => batch.id === training.batch)?.batch_no}` : ''}`}
@@ -248,13 +215,19 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
                             <Text w="80px">
                                 {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                             </Text> 
-                            <Text w="150px" >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
+                            <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
-                            <Select isDisabled={updatingIds.has(training.id)} bgColor={certBackgroundColor(training.cert_status)} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='130px' shadow='md' >
-                                <option value={0} hidden>{handleCertStatus(training.cert_status)}</option>
-                                <option value={0}>PENDING</option>
-                                <option value={1}>RELEASED</option>
-                            </Select>
+                            <Box w='160px' display='flex' gap='2'>
+                                <Checkbox onChange={() => {setFirstSelected(training.cert_status === 0 ? true : false); setTrainingIDs(prev => [...prev, training.id])}} isChecked={training?.id === trainingIDs.find((id) => id === training.id)} />
+                                <Select 
+                                    bgColor={certBackgroundColor(training.cert_status)} 
+                                    onChange={(e) => handleStatus(training.id, Number(e.target.value))} 
+                                    borderRadius='5px' size='xs' shadow='md' >
+                                    <option value={0} hidden>{handleCertStatus(training.cert_status)}</option>
+                                    <option value={0}>PENDING</option>
+                                    <option value={1}>RELEASED</option>
+                                </Select>
+                            </Box>
                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
                                 <Text w="200px" noOfLines={1} className='text-wrap'>
                                     {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
@@ -263,10 +236,8 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
                                 <Text w="150px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
                             </Tooltip>  
-                            <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
-                                <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
-                                    {training.train_remarks === '' ? 'None' : training.train_remarks}
-                                </Text>
+                            <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='200px'>
+                                View
                             </Button>                                     
                             <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
                                 <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
@@ -279,7 +250,26 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
             }))}
             </Box>
         </Box>
-        <Modal isOpen={isOpenRemarks} scrollBehavior='inside' onClose={() => {setRemarks(''); setID(''); onCloseRemarks();}}>
+        {/** Modal for editing released dates */}
+        <Modal size='xs' isOpen={isOpenEdit} onClose={() => {onCloseEdit(); setID(''); setTDate(undefined);}}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader color='blue.700'>Edit Released Date</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <FormControl>
+                        <Input onChange={(e) => {
+                            const value = e.target.value
+                            setTDate(value ? Timestamp.fromDate(new Date(value)) : undefined) }} 
+                            value={formatDateForInput(t_date)} type='date' textAlign='center' fontWeight='normal' />
+                    </FormControl>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={handleChangeTDate} isLoading={certLoading} loadingText='Updating...' colorScheme='blue' shadow='md' size='sm' w='100%' bgColor='blue.700'>UPDATE</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenRemarks} scrollBehavior='inside' onClose={() => {setRemarks(''); setID(''); setTDate(Timestamp.now()); onCloseRemarks();}}>
             <ModalOverlay />
             <ModalContent px='2'>
                 <ModalHeader>Training Remarks</ModalHeader>
@@ -290,11 +280,10 @@ export default function BatchedDated ({ searchTerm, trainings, setTrainings }: B
                     </FormControl>
                 </ModalBody>
                 <ModalFooter display='flex' borderTopWidth='1px' borderColor='gray.500'>
-                    <Button onClick={handleRemarks} isLoading={loading} loadingText='Saving...' colorScheme='blue' shadow='md' size='sm' bgColor='blue.700'>Save Remarks</Button>
+                    <Button onClick={handleRemarks} isLoading={certLoading} loadingText='Saving...' colorScheme='blue' shadow='md' size='sm' bgColor='blue.700'>Save Remarks</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
         </>
     )
 }
-

@@ -47,7 +47,7 @@ export default function TabTraining() {
                 <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'batch-records' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/training/batch-records' onClick={() => {handleClick('batch-records')}}>Batch Records</Link>
             )}
             {canAccess("Certification") && (
-                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'certificate' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/training/certificate-monitoring' onClick={() => {handleClick('certificate')}}>Certification</Link>
+                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'certificate' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/training/certification' onClick={() => {handleClick('certificate')}}>Certification</Link>
             )}
             {canAccess("Instructors") && (
                 <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'instructor' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/training/instructors' onClick={() => {handleClick('instructor')}}>Instructors</Link>
