@@ -116,7 +116,7 @@ export default function TrackerPage(){
                     const batchA = courseBatch?.find((batch) => batch.id === a.batch)?.batch_no ?? 0;
                     const batchB = courseBatch?.find((batch) => batch.id === b.batch)?.batch_no ?? 0;
                     if (batchA !== batchB) {
-                        return batchA - batchB;
+                        return batchB - batchA;
                     }
                     /* ======================
                     3️⃣ REGISTRATION NO SORT
@@ -128,7 +128,7 @@ export default function TrackerPage(){
                     const [yearB, monthB, numB] = regNoB.split('-').map(Number);
                     if (yearA !== yearB) return yearA - yearB;
                     //if (monthA !== monthB) return monthA - monthB;
-                    return (numA ?? 0) - (numB ?? 0);
+                    return (numB ?? 0) - (numA ?? 0);
                 })
                 .filter((t) => t.reg_status >= 3 )
                 .filter((t) => {

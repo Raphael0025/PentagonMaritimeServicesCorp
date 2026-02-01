@@ -32,13 +32,16 @@ This document outlines the tasks and improvements planned for the project. Each 
     - [] Implement Send Training Details for dated on this case, dated included already in a batch and suddenly training mode is modular
     - [] Implement Send Training Details on this case
     - [] For BD tracker, include Actual training dates
-    - [] Certification Module
-    - [] Update Instructor for both dated and bd tracker via Tracker tab
+    - [-] Certification Module
+        - [] Batch Certificates
+        - [] Transmittals
+        - [*] Monitoring
+        - [*] Auto-Generate Cert No. once Graduated
+        - [*] Once Graduated Update Certification
     - [] Re-Create Instructors and assessors Tab with categorize feature
     - [] Re-think how to duplicate if a training is cancelled and used in a later batch
-    - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
-    - [] Once Graduated Update Certification
     - [] Course Materials
+    - [*] Update Instructor for both dated and bd tracker via Tracker tab
     - [] Implement Scheduling and Planning
         - **Details**:
             Get top delivered courses (Annual, monthly, weekly) then RUP, Mode of training, Instructors, Training Dates

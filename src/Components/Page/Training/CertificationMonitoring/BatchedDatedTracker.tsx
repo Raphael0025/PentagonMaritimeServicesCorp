@@ -7,7 +7,7 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleCertStatus } from '@/handlers/trainee_handler'
-import { certBackgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
+import { certBackgroundColor } from '@/handlers/util_handler'
 
 import { useRank } from '@/context/RankContext'
 import { useCourses } from '@/context/CourseContext'
@@ -17,7 +17,7 @@ import { useInstructors } from '@/context/InstructorContext'
 import { useTrainees } from '@/context/TraineeContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 
-import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller'
+import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 interface BatchedDatedProps {
     searchTerm: string;
