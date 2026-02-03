@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect} from 'react';
 import { Box, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons'
+import { Timestamp } from 'firebase/firestore'
 
 import { useTraining } from '@/context/TrainingContext'
 import { useTrainees } from '@/context/TraineeContext'
@@ -12,7 +13,7 @@ import { useCourseBatch } from '@/context/BatchContext'
 import { useInstructors } from '@/context/InstructorContext'
 
 import { CourseBatchByID } from '@/types/course-batches'
-import { BATCH_ANALYSIS } from '@/types/training'
+import { BATCH_ANALYSIS, batchArr } from '@/types/training'
 
 import { ToastStatus } from '@/types/handling'
 import { fullMonth, } from '@/handlers/util_handler'
@@ -34,6 +35,7 @@ export default function Dated () {
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
 
     const [batchCourses, setBatchCourses] = useState<BATCH_ANALYSIS[]>([])
+    const [hasNoBatch, setBatch] = useState<boolean>(true)
     
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear()
@@ -52,68 +54,98 @@ export default function Dated () {
     useEffect(() => {
         if (!allCourses || !courseBatch || !allTrainingData) return
 
-        /** Step 1: Pre-filter batches by selected month & year */
-        const filteredBatches = courseBatch.filter(t => {
-            const start = t.start_date.toLowerCase();
-            const tYear = new Date(t.createdAt).getFullYear()
-
-            const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-            const trimmedMonth = months[monthSelected]; // convert number → "jan"
-            
+        const months = [
+            "jan", "feb", "mar", "apr", "may", "jun",
+            "jul", "aug", "sep", "oct", "nov", "dec"
+        ];
+        const trimmedMonth = months[monthSelected];
+        console.log('Trimmed Month:', trimmedMonth);
+        /* ----------------------------------------
+            1. Filter batches by CREATED date
+        ----------------------------------------- */
+        const filteredBatches = courseBatch && courseBatch.filter((cb) => {
+            const createdDate = cb.createdAt.toDate();
+            console.log(createdDate.getMonth())
+            console.log(createdDate.getFullYear())
             return (
-                (start.includes(trimmedMonth) && tYear === yearSelected)
-            );
+                createdDate.getMonth() === monthSelected &&
+                createdDate.getFullYear() === yearSelected
+            )
         })
 
-        /** Step 2: Group training data by batchId (FAST lookup) */
-        const traineesByBatch = allTrainingData.reduce<Record<string, number>>(
-            (acc, training) => {
-                const batchId = training.batch
-                acc[batchId] = (acc[batchId] || 0) + 1
-                return acc
-            },
-            {}
-        )
+        // Fast lookup map (batchId → batch)
+        const batchMap = new Map(filteredBatches.map(b => [b.id, b]));
+        
+        /* ----------------------------------------
+            2. Filter training data by ACTUAL dates
+        ----------------------------------------- */
+        const allTrainData = allTrainingData && allTrainingData
+            .filter((t) => t.reg_status >= 3 )    
+            .filter((t) => {
+                const start = t.start_date.toLowerCase();
+                const end = t.end_date.toLowerCase();
+                
+                return (
+                    (start.includes(trimmedMonth) && end.includes(trimmedMonth)) ||
+                    (end === '' && start.includes(trimmedMonth))
+                );
+            })
+            .filter(t => batchMap.has(t.batch));
 
-        /** Step 3: Build course analysis */
-        const analysis: BATCH_ANALYSIS[] = allCourses.map(course => {
-            const courseBatches = filteredBatches.filter(
-                batch => batch.course === course.id
+        /* ----------------------------------------
+            3. Build analysis per course
+        ----------------------------------------- */
+        const batchAnalysis = allCourses.reduce<BATCH_ANALYSIS[]>((acc, course) => {
+            const courseBatches = filteredBatches.filter((b) =>{
+                const start = b.start_date.toLowerCase();
+                const end = b.end_date.toLowerCase();
+                
+                return (
+                    (start.includes(trimmedMonth) && end.includes(trimmedMonth)) ||
+                    (end === '' && start.includes(trimmedMonth))
+                );
+            }).filter(
+                b => b.course === course.id
             )
 
-            const traineesPerBatch: Record<string, number> = {}
-            let totalTrainees = 0
+            if (!courseBatches.length) return acc;
 
-            courseBatches.forEach(batch => {
-                const count = traineesByBatch[batch.id] || 0
-                traineesPerBatch[batch.id] = count
-                totalTrainees += count
+            let totalTraineesCount = 0;
+
+            const batches = courseBatches.map((batch) => {
+                const trainees = allTrainData.filter(
+                    t => t.batch === batch.id
+                );
+
+                const delivered = trainees.filter(t => t.reg_status === 6).length;
+                const cancelled = trainees.filter(t => t.reg_status === 7).length;
+                const nonAppearance = trainees.filter(t => t.reg_status === 9).length;
+
+                totalTraineesCount += trainees.length;
+
+                return {
+                    batch_no: batch.batch_no.toString(),
+                    trainees_per_batch: trainees.length.toString(),
+                    delivered: delivered.toString(),
+                    trainingMode: batch.training_mode,
+                    cancelled: cancelled.toString(),
+                    non_appearance: nonAppearance.toString(),
+                    remarks: batch.remarks,
+                }
             })
 
-            return {
-                course: course.id,
-                batches: {
-                    total_batches: courseBatches.length,
-                    total_trainees: totalTrainees,
-                    trainees_per_batch: 0,
-                    delivered: 0,
-                    batch_no: 0,
-                    trainingMode: 'olt',
-                },
-                remarks: '',
-                start_date: courseBatches[0]?.start_date || new Date().toISOString(),
-                createdAt: new Date().toISOString(),
-            }
-        })
-        console.log(analysis)
-        setBatchCourses(analysis)
-        }, [
-            allCourses,
-            courseBatch,
-            allTrainingData,
-            monthSelected,
-            yearSelected,
-        ])
+            acc.push({
+                course: course.course_code,
+                courseType: course.trainingMode.toString(),
+                batches,
+                total_batches: courseBatches.length,
+                total_trainees: totalTraineesCount,
+            })
+            return acc;
+        }, [])
+
+        setBatchCourses(batchAnalysis)
+    }, [ allCourses, courseBatch, allTrainingData, monthSelected, yearSelected ])
 
     return(
         <>
@@ -156,11 +188,69 @@ export default function Dated () {
                 </Box>
                 {/** BODY */}
                 <Box>
-                {batchCourses && batchCourses.map((bc, index) => {
+                {batchCourses && batchCourses
+                .sort((a, b) => a.course.localeCompare(b.course))
+                .map((bc, index) => {
                     return(
-                        <Box key={index}>
-                            <Text>{allCourses && allCourses.find((c) => c.id === bc.course)?.course_code}</Text>
-                            <Text>{bc.total_trainees}</Text>
+                        <Box key={index} display='flex' alignItems='center' textAlign='center' fontWeight='normal' borderBottom='1px solid gray' borderX='1px solid gray'>
+                            <Text w='200px' fontWeight='bold' color={bc.courseType === '1' ? '#0070c0' : 'black'}>{bc.course.toUpperCase()}</Text>
+                            <Box w='140px'>
+                                {bc.batches
+                                .sort((a, b) => b.batch_no.localeCompare(a.batch_no))
+                                .map((b, idx, arr) => 
+                                    <Text key={idx} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
+                                        {b.batch_no}
+                                    </Text>)
+                                }
+                            </Box>
+                            <Text w='140px'>{bc.total_batches}</Text>
+                            <Box w='140px'>
+                                {bc.batches
+                                .sort((a, b) => b.batch_no.localeCompare(a.batch_no))
+                                .map((b, idx, arr) => 
+                                    <Text key={idx} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
+                                        {b.trainees_per_batch}
+                                    </Text>)
+                                }
+                            </Box>
+                            <Text w='140px'>{bc.total_trainees}</Text>
+                            <Box>
+                                {bc.batches.sort((a, b) => b.batch_no.localeCompare(a.batch_no))
+                                .map((b, idx, arr) => (
+                                    <Box key={idx} display='flex' alignItems='center' justifyContent='space-between' borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
+                                        <Text w='140px' borderRight='1px solid gray'>{b.delivered}</Text>
+                                        <Box w='300px' >
+                                            <Box display={'flex'} alignItems='center' justifyContent='space-between'>
+                                                <Text w='50px' bgColor='#eaf1dd' sx={headerStyle} borderRight='1px solid gray'>{['f2f', 'f2ft', 'f2fp'].includes(b.trainingMode) ? b.delivered : <>&nbsp;</>}</Text>
+                                                <Box w='100px' >
+                                                    <Box display='flex' justifyContent='space-between'>
+                                                        <Text bgColor='#daeef3' w='50px' borderX='1px solid gray'>{['ol', 'olt', 'olp'].includes(b.trainingMode) ? b.delivered : <>&nbsp;</>}</Text>
+                                                        <Text bgColor='#daeef3' w='50px' borderRight='1px solid gray'>{b.trainingMode === 'olm' ? b.delivered : <>&nbsp;</>}</Text>
+                                                    </Box>
+                                                </Box>
+                                                <Text w='50px' bgColor='#ddd9c3' sx={headerStyle} >{b.trainingMode === 'f2fm' ? b.delivered : <>&nbsp;</>}</Text>
+                                                <Text w='100px' bgColor='#b6dde8' borderX='1px solid gray'>{b.trainingMode === 'blended' ? b.delivered : <>&nbsp;</>}</Text>
+                                            </Box>
+                                        </Box>
+                                        <Box w='250px' display='flex' alignItems='center' justifyContent='space-between'>
+                                            <Text w='50px' borderRight={'1px solid gray'}>{b.cancelled !== '0' ? b.cancelled : <>&nbsp;</>}</Text> {/** Re-evaluate this status */}
+                                            <Text w='50px' borderRight={'1px solid gray'}>&nbsp;</Text>
+                                            <Text w='50px' borderRight={'1px solid gray'}>&nbsp;</Text>
+                                            <Text w='50px' borderRight={'1px solid gray'}>{b.non_appearance !== '0' ? b.non_appearance : <>&nbsp;</>}</Text> {/** Re-evaluate this status */}
+                                            <Text w='50px'>{b.delivered !== '0' ? b.delivered : <>&nbsp;</>}</Text>
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                            <Text w='300px' >
+                            {bc.batches
+                            .sort((a, b) => b.batch_no.localeCompare(a.batch_no))
+                            .map((b, idx, arr) => 
+                                <Text key={idx} _hover={{cursor: 'pointer'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'}>
+                                    {b.remarks === '' ? 'None' : b.remarks}
+                                </Text>)
+                            }
+                            </Text>
                         </Box>
                     )
                 })}

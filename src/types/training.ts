@@ -14,16 +14,19 @@ export interface BATCH_BY_ID extends BATCH {
 }
 
 export interface BATCH_ANALYSIS {
-    course: string;
-    batches: {
-        batch_no: number;
-        total_batches: number;
-        trainees_per_batch: number;
-        total_trainees: number;
-        delivered: number;
-        trainingMode: string;
-    }
+    course: string; // solve
+    courseType: string; // courses: trainingMode
+    batches: batchArr[];
+    total_trainees: number; // solve
+    total_batches: number; // solve
+}
+
+export interface batchArr {
+    batch_no: string; // solve
+    trainees_per_batch: string; // solve
+    delivered: string; // solve
+    cancelled: string; // solve
+    non_appearance: string; // solve
+    trainingMode: string; // solve
     remarks: string;
-    start_date: string;
-    createdAt: Timestamp;
 }
