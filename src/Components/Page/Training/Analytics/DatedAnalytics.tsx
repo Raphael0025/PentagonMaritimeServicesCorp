@@ -152,7 +152,7 @@ export default function Dated () {
             <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
             <Box h='700px' style={{maxHeight: '750px', overflowY: 'auto', scrollbarWidth: 'thin'}}>
                 {/** HEADER */}
-                <Box py='1' h='60px' display='flex' alignItems='start' textAlign='center' borderRadius={'5px'} bgColor='blue.700' color='white' position='sticky' top='0' zIndex='10'>
+                <Box w='1737px' py='1' h='60px' display='flex' alignItems='start' textAlign='center' borderRadius={'5px'} bgColor='blue.700' color='white' position='sticky' top='0' zIndex='10'>
                     <Box w='200px' sx={headerStyle}> Courses </Box>
                     <Box w='140px' sx={headerStyle}>Batch</Box>
                     <Box w='140px' sx={headerStyle}>Total # of Batches</Box>
@@ -192,7 +192,7 @@ export default function Dated () {
                 .sort((a, b) => a.course.localeCompare(b.course))
                 .map((bc, index) => {
                     return(
-                        <Box key={index} display='flex' alignItems='center' textAlign='center' fontWeight='normal' borderBottom='1px solid gray' borderX='1px solid gray'>
+                        <Box key={index} w='1737px' display='flex' alignItems='center' textAlign='center' fontWeight='normal' borderBottom='1px solid gray' borderX='1px solid gray'>
                             <Text w='200px' fontWeight='bold' color={bc.courseType === '1' ? '#0070c0' : 'black'}>{bc.course.toUpperCase()}</Text>
                             <Box w='140px'>
                                 {bc.batches
