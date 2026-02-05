@@ -17,11 +17,13 @@ export interface BATCH_ANALYSIS {
     course: string; // solve
     courseType: string; // courses: trainingMode
     batches: batchArr[];
+    sortedBatches: batchArr[];
     total_trainees: number; // solve
     total_batches: number; // solve
 }
 
 export interface batchArr {
+    batch_id: string;
     batch_no: string; // solve
     trainees_per_batch: string; // solve
     delivered: string; // solve

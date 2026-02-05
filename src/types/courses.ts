@@ -16,7 +16,7 @@ export interface Courses{
     endTime: Timestamp;
     trainingMode: number; // 0 - NS | 1 - Simu
     numOfDays: number;
-    courseType: number; // 0 - Marina | 1 - In-house  
+    courseType: number; // 0 - Marina | 1 - In-house | 2 - STCW 
 }
 
 export const initCourses = {

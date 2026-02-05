@@ -31,6 +31,19 @@ export const UPDATE_BATCH = async (batch_id: string, updateBatchDoc: Partial<Cou
     }
 }
 
+export const UPDATE_BATCH_ID = async (batch_id: string, updateBatchDoc: Partial<CourseBatchByID>, actor: string | null) => {
+    try{
+        const batchRef = doc(firestore, 'BATCH_RECORDS', batch_id)
+        const newBatchRecord = {
+            ...updateBatchDoc,
+            updateAt: Timestamp.now()
+        }
+        await updateDoc(batchRef, newBatchRecord)
+    }catch(error){
+        throw error
+    }
+}
+
 export const DELETE_BATCH = async (batch_id: string, actor: string | null) => {
     try{
         const batch: DocumentReference = doc(firestore, 'BATCH_RECORDS', batch_id)
