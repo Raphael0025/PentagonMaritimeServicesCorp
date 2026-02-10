@@ -8,13 +8,10 @@ import { addTypeCatalog } from '@/lib/type-controller'
 
 import { useCourses } from '@/context/CourseContext'
 
-import NewCourseForm from '@/Components/NewCourseForm'
-import EditCourseForm from '@/Components/EditCourseForm'
-import { CloseIcon, EditIcon, SearchIcon } from '@/Components/Icons'
+import { SearchIcon } from '@/Components/Icons'
 
-import { ToastStatus, parseTrainingSchedule } from '@/types/handling'
+import { ToastStatus } from '@/types/handling'
 import { generateDateRanges } from '@/handlers/course_handler'
-import { formatTime  } from '@/handlers/course_handler'
 import { CoursesById } from '@/types/courses'
 
 import { deleteCourse } from '@/lib/course_controller'
@@ -29,9 +26,9 @@ export default function Page(){
     const [numRef, setNumRef] = useState<number>(0)
 
     const [dayRef, setDayRef] = useState<string>('')
+    const [search, setSearch] = useState<string>('')
     const [startTimeRef, setStartTimeRef] = useState<Timestamp>(Timestamp.now())
     const [endTimeRef, setEndTimeRef] = useState<Timestamp>(Timestamp.now())
-    const [search, setSearch] = useState<string>('')
 
     const [courseData, setCourseData] = useState<CoursesById[]>([])
     const [dates, setDateRange] = useState<string[]>([])
@@ -39,7 +36,7 @@ export default function Page(){
     const trainingSchedRef = useRef<HTMLButtonElement>(null)
 
     const { isOpen: isScheduleOpen, onOpen: openSchedule, onClose: closeSchedule } = useDisclosure()
-    const { isOpen: isVesselOpen, onOpen: onVesselOpen, onClose: onVesselClose } = useDisclosure()
+    //const { isOpen: isVesselOpen, onOpen: onVesselOpen, onClose: onVesselClose } = useDisclosure()
 
     useEffect(() => {
         const fetchData = () => {

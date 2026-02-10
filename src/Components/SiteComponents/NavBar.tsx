@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation';
 import { usePathname  } from 'next/navigation';
 import { Box, Button, Heading, Link, Image, Text, useDisclosure, List, ListItem, Tooltip, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
-import 'animate.css';
+import { HamburgerIcon } from '@chakra-ui/icons'
 
 export default function NavBar() {
     const pathname = usePathname()
     const router = useRouter();
 
-    const shouldHideNavbar = pathname?.startsWith('/Tester') || pathname?.startsWith('/forms') || pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
+    const shouldHideNavbar = pathname?.startsWith('/certification') || pathname?.startsWith('/Tester') || pathname?.startsWith('/forms') || pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
 
     if (shouldHideNavbar) {
         return null; // Don't render anything if conditions are met
@@ -202,7 +202,7 @@ export default function NavBar() {
                     </Box>
                 </Box>
                 <Box display={{base: 'block', md: 'block', lg:'none'}}>
-                    Burger
+                    <HamburgerIcon boxSize={6}/>
                 </Box>
             </Box>
         </>

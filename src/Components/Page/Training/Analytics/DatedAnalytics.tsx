@@ -175,6 +175,7 @@ export default function Dated () {
                 duration: 3000,
                 isClosable: true,
             })
+            console.error(error)
         } finally {
             setLoading(false)
         }

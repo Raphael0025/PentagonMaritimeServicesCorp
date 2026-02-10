@@ -1,0 +1,451 @@
+'use client'
+
+import React, { useState, useMemo, useRef, useEffect } from 'react'
+import {
+    Box, Image, Text, Input, Button, FormControl, FormLabel,
+    Menu, MenuButton, MenuList, MenuItem,
+    Modal, ModalOverlay, ModalContent, ModalHeader,
+    ModalBody, ModalFooter, ModalCloseButton,
+    InputGroup, InputLeftAddon,
+    useDisclosure, useToast,
+} from '@chakra-ui/react'
+import { ArrowBackIcon, ChevronDownIcon } from '@chakra-ui/icons'
+import { FiBold, FiItalic, FiList, FiAlignLeft, FiAlignCenter } from 'react-icons/fi'
+import { MdOutlineFormatListNumbered } from 'react-icons/md'
+import { SearchIcon } from '@/Components/Icons'
+
+import { useCourses } from '@/context/CourseContext'
+import { useCertification } from '@/context/CertificationContext'
+import { useInstructors } from '@/context/InstructorContext'
+import { CoursesById } from '@/types/courses'
+import { ToastStatus } from '@/types/handling'
+
+import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
+import { SAVED_CERT_TEMPLATE } from '@/lib/certification_controller'
+import { Timestamp } from 'firebase/firestore';
+
+export default function Certificate_Template_Mgmt() {
+    const toast = useToast()
+    const { data: allCourses } = useCourses()
+    const { data: allCertTemplates } = useCertification()
+    const { data: allInstructors } = useInstructors()
+
+    const [search, setSearch] = useState<string>('')
+    const [closeBlur, setCloseBlur] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(false)
+    const [action, setAct] = useState<string>('')
+    const [category, setCategory] = useState('')
+    const [courseID, setCourseID] = useState<string>('')
+    const [courseName, setCourseName] = useState<string>('')
+    const [courseCode, setCourseCode] = useState<string>('')
+    const [versionNumber, setVersionNumber] = useState<string>('')
+    const [companyID, setCompanyID] = useState<string>('')
+
+    // Editor & Title refs
+    const editorRef = useRef<HTMLDivElement>(null)
+    const titleRef = useRef<HTMLDivElement>(null)
+
+    // Controlled states for preview & saving
+    const [certTitleHtml, setCertTitleHtml] = useState('')
+    const [certContentHtml, setCertContentHtml] = useState('')
+
+    const { isOpen: isOpenCert, onOpen: onOpenCert, onClose: onCloseCert } = useDisclosure()
+
+    /* ----------------------------- */
+    /* Load Courses */
+    /* ----------------------------- */
+    const sortedCourses = useMemo(() => {
+        if (!allCourses) return []
+        return [...allCourses].sort((a, b) =>
+            a.course_code.localeCompare(b.course_code)
+        )
+    }, [allCourses])
+
+    const certificates = useMemo(() => {
+        return allCertTemplates ?? []
+    }, [allCertTemplates])
+
+    const certificateVersions = useMemo(() => {
+        if (!courseID) return []
+
+        const cert = certificates.find(
+            cert => cert.courseID === courseID
+        )
+
+        return cert?.versions ?? []
+    }, [certificates, courseID])
+
+    const filteredCourses = sortedCourses.filter(course => {
+        const term = search.toLowerCase()
+        return (
+            course.course_code.toLowerCase().includes(term) ||
+            course.course_name.toLowerCase().includes(term) ||
+            course.code.toLowerCase().includes(term)
+        )
+    })
+
+    /* ----------------------------- */
+    /* Editor helpers */
+    /* ----------------------------- */
+    const exec = (cmd: string, ref: React.RefObject<HTMLDivElement>, value?: string) => {
+        ref.current?.focus()
+        document.execCommand(cmd, false, value)
+        
+        // Update the correct state
+        if (ref === editorRef) {
+            setCertContentHtml(editorRef.current?.innerHTML || '')
+        } else if (ref === titleRef) {
+            setCertTitleHtml(titleRef.current?.innerHTML || '')
+        }
+    }
+
+    const handleEnter = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            document.execCommand('insertLineBreak')
+            setCertContentHtml(editorRef.current?.innerHTML || '')
+        }
+    }
+
+    const handleSaveTemplate = async () => {
+        setLoading(true)
+        const author = localStorage.getItem('customToken')
+        if (!certContentHtml.trim() || !certTitleHtml.trim()) {
+            toast({
+                title: 'Please fill in title and content',
+                status: 'warning',
+                duration: 3000,
+            })
+            return
+        }
+
+        const certData = {
+            courseID: courseID,
+            category: category as 'generic' | 'client',
+            companyID: companyID,
+        }
+
+        const savedCert: CERTIFICATION = {
+            ...certData,
+            versions: [
+                {
+                    version_number: versionNumber,
+                    certTitleHtml: certTitleHtml,
+                    certContentHtml: certContentHtml,
+                    status: 'active',
+                    primary_author: author || 'unknown',
+                    createdAt: Timestamp.now(),
+                    changelogArr: [],
+                },
+            ],
+        }
+        await SAVED_CERT_TEMPLATE(savedCert, author || 'unknown')
+
+        toast({
+            title: 'Certificate saved successfully',
+            status: 'success',
+            duration: 3000,
+        })
+
+        // Clear editor after save
+        setCertTitleHtml('')
+        setCertContentHtml('')
+        setLoading(false)
+        if (editorRef.current) editorRef.current.innerHTML = ''
+        if (titleRef.current) titleRef.current.innerHTML = ''
+
+        onCloseCert()
+    }
+
+    return (
+    <>
+        <Box>
+            <Box> 
+                <Text className='text-lg text-sky-700'>{'Courses'}</Text> 
+            </Box>
+            <Box className='flex space-x-4' > 
+                <Box className='w-full space-y-3' > 
+                    <Box className='flex items-center justify-between'> 
+                        <Box className='w-1/2' _hover={{boxShadow:'4px 4px 6px 0px #e6e6e6, 0 0px 0px rgba(0, 0, 0, .15)'}}> 
+                            <InputGroup > 
+                                <InputLeftAddon >
+                                    <SearchIcon size={'20'} color={'#a1a1a1'} /> 
+                                </InputLeftAddon> 
+                                <Input onChange={(e) => setSearch(e.target.value)} value={search} placeholder='Search by Code, Course Code or Name...' type='text' fontSize='sm' borderRadius='5px' autoComplete='off' _focus={{ boxShadow:'0px 0px 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}}/> 
+                            </InputGroup> 
+                        </Box> 
+                    </Box> 
+                    <Box className='space-y-3 ' style={{height: '750px'}}> 
+                        <Box className='h-full space-y-2'> 
+                            <Box className='border-b py-2 px-2 bg-sky-700 rounded border-gray-400 flex justify-between'> 
+                                <Text w='40%' className='text-center text-white '>Course Code</Text> 
+                                <Text w='100%' className='text-center text-white '>Course</Text> 
+                                <Text w='50%' className='text-center text-white '>Training Mode</Text> 
+                                <Text w='50%' className='text-center text-white '>Course Type</Text> 
+                                <Text w='50%' className='text-center text-white '>QR Code</Text> 
+                                <Text w='100%' className='text-center text-white '>Certificate Template</Text> 
+                            </Box> 
+                            <Box className='space-y-2' style={{ height: 'calc(100% - 50px)', overflowY: 'scroll' }}> 
+                            {filteredCourses.length === 0 ? 
+                                ( <Box className='text-center text-lg p-3 text-gray-500 font-semibold'>No Courses Available.</Box> ) 
+                                : 
+                                ( filteredCourses.map((course) => ( 
+                                    <Box key={course.id} fontWeight='normal' _hover={{bgColor: 'gray.300', shadow: 'md', cursor: 'default'}} className='flex items-center justify-center w-full bg-gray-rounded p-3 border border-gray-300 shadow-md'> 
+                                        <Text w='40%' fontSize='12px' className='text-center uppercase font-semibold w-2/5'>{course.course_code}</Text> 
+                                        <Text w='100%' fontSize='12px' className='text-wrap uppercase text-center w-full'>{course.course_name}</Text> 
+                                        <Text w='50%' fontSize='12px' className='text-center w-1/2 '>{course.trainingMode === 0 ? 'Non-Simulator' : 'Simulator'}</Text> 
+                                        <Text w='50%' fontSize='12px' className='text-center w-1/2 '>{course.courseType === 0 ? 'Marina' : 'In-House'}</Text> 
+                                        <Text w='50%' fontSize='12px' className='text-center w-1/2 '>{course.courseType === 0 ? 'Marina' : 'In-House'}</Text> 
+                                        <Box w='100%' display='flex' justifyContent='center'> 
+                                            <Menu closeOnBlur={true} closeOnSelect={closeBlur}> 
+                                                <MenuButton as={Button} onClick={() => {setCategory(''); setAct(''); setCourseID(''); setCloseBlur(false);}} size='sm' variant='ghost' colorScheme='blue' transition='all 0.2s'> 
+                                                    <Text fontSize='12px'>Manage Certificate <ChevronDownIcon /></Text> 
+                                                </MenuButton> 
+                                                <MenuList> 
+                                                    {category === '' ? (
+                                                    <> 
+                                                        <MenuItem onClick={() => {setCategory('generic'); setCourseID(course.id); setCourseName(course.course_name.toUpperCase()); setCourseCode(course.course_code.toUpperCase());}}>Generic</MenuItem> 
+                                                        <MenuItem onClick={() => {setCategory('client'); setCourseID(course.id); setCourseName(course.course_name.toUpperCase()); setCourseCode(course.course_code.toUpperCase());}}>Client Specific</MenuItem> 
+                                                    </>
+                                                    ) : (
+                                                    <>
+                                                        {action === 'preview' ? (
+                                                        <>
+                                                            <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); setAct('');}}>{'Back'}</MenuItem> 
+                                                            {certificateVersions.map((v) => (
+                                                                    <MenuItem key={v.version_number} onClick={() => {setCertTitleHtml(v.certTitleHtml); setCertContentHtml(v.certContentHtml); onOpenCert(); setCloseBlur(true);}}>{`Version ${v.version_number} - ${v.status.toUpperCase()}`}</MenuItem>
+                                                            ))}
+                                                        </>
+                                                        ) : (
+                                                            <> 
+                                                                <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); setAct('');}}>{'Back'}</MenuItem> 
+                                                                <MenuItem onClick={() => {setAct('create'); onOpenCert();}}>{'Create New'}</MenuItem> 
+                                                                <MenuItem onClick={() => {setAct('preview'); }}>{'Preview Cert.'}</MenuItem> 
+                                                            </> 
+                                                        )}
+                                                    </>
+                                                    )} 
+                                                </MenuList> 
+                                            </Menu> 
+                                        </Box> 
+                                    </Box> 
+                                )) )} 
+                            </Box> 
+                        </Box> 
+                    </Box> 
+                </Box> 
+            </Box>
+        </Box>
+      {/* ================= MODAL ================= */}
+    <Modal isOpen={isOpenCert} onClose={onCloseCert} size={action === 'create' ? '6xl' : '5xl'} scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader>{`Certificate - ${action === 'create' ? 'Editor' : 'Preview'}`}</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+                {action === 'create' ? (
+                    <Box display="flex" gap="6">
+                        {/* ========== EDITOR ========== */}
+                        <Box w='50%'>
+                            <FormControl mb="3" display="flex" alignItems="end" justifyContent="space-between">
+                                <FormLabel whiteSpace="nowrap">Certificate Version:</FormLabel>
+                                <Input onChange={(e) => setVersionNumber(e.target.value)} placeholder="v1.0.230207" fontWeight="thin" variant="flushed" />
+                            </FormControl>
+                            <FormControl mb="3">
+                                <FormLabel>Certificate Title:</FormLabel>
+                                <Box ref={titleRef} contentEditable minH="40px" border="1px solid #ccc" borderRadius="md" p="2" fontSize="22px" fontWeight="bold" onInput={() => setCertTitleHtml(titleRef.current?.innerHTML || '')} suppressContentEditableWarning />
+                            </FormControl>
+                            {/* Toolbar */}
+                            <Box display="flex" gap="2" mb="2">
+                                <Button size="sm" onClick={() => exec('bold', editorRef)}><FiBold /></Button>
+                                <Button size="sm" onClick={() => exec('italic', editorRef)}><FiItalic /></Button>
+                                <Button size="sm" onClick={() => exec('justifyLeft', editorRef)}><FiAlignLeft /></Button>
+                                <Button size="sm" onClick={() => exec('justifyCenter', editorRef)}><FiAlignCenter /></Button>
+                                <Button size="sm" onClick={() => exec('insertUnorderedList', editorRef)}><FiList /></Button>
+                                <Button size="sm" onClick={() => exec('insertOrderedList', editorRef)}><MdOutlineFormatListNumbered /></Button>
+                                {/* Font Size Selector */}
+                                <select onChange={(e) => exec('fontSize', titleRef, e.target.value)} defaultValue="3" style={{ height: '30px' }}>
+                                    <option value="1">8pt</option>
+                                    <option value="2">10pt</option>
+                                    <option value="3">12pt</option>
+                                    <option value="4">14pt</option>
+                                    <option value="5">18pt</option>
+                                    <option value="6">24pt</option>
+                                    <option value="7">36pt</option>
+                                </select>
+                            </Box>
+                            <Box ref={editorRef} contentEditable minH="280px" maxH="280px" w="500px" maxW="500px" overflowY="auto" overflowX="auto" whiteSpace="pre-wrap" wordBreak="break-word" border="1px solid #ccc" borderRadius="md" p="4" fontWeight="normal" onKeyDown={handleEnter} onInput={() => setCertContentHtml(editorRef.current?.innerHTML || '')} suppressContentEditableWarning
+                                sx={{
+                                    '& ul': { listStyleType: 'disc', listStylePosition: 'inside', paddingLeft: '1.5rem', margin: '0.5rem 0' },
+                                    '& ol': { listStyleType: 'decimal', listStylePosition: 'inside', paddingLeft: '1.5rem', margin: '0.5rem 0' },
+                                    '& li': { marginBottom: '0.25rem' },
+                                    '& p': { margin: '12px 0' },
+                                }}
+                            />
+                        </Box>
+                        {/* ========== PREVIEW ========== */}
+                        <Box w='50%'>
+                            <Text fontWeight="bold" mb="2">Preview</Text>
+                            <Box border="1px solid #ccc" borderRadius="md" bg="white" p="6" minH="280px" w="500px" maxW="500px" shadow="sm"
+                                sx={{
+                                    '& ul': {
+                                        listStyleType: 'disc',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& ol': {
+                                        listStyleType: 'decimal',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& li': {
+                                        marginBottom: '0.25rem',
+                                    },
+                                    '& p': {
+                                        margin: '12px 0',
+                                    },
+                                    '& div': {
+                                        margin: '12px 0',  // <-- important
+                                        whiteSpace: 'pre-wrap', // <-- preserves line breaks
+                                    },
+                                    '& br': {
+                                        display: 'block', // ensures <br> forces line break
+                                        content: '""',
+                                    },
+                                }}
+                            >
+                                <div dangerouslySetInnerHTML={{ __html: certTitleHtml }} />
+                                <div dangerouslySetInnerHTML={{ __html: certContentHtml }} />
+                            </Box>
+                        </Box>
+                    </Box>
+                ) : (
+                    <>
+                    <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
+                        <Box w='90%' border='1px solid gray' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
+                            <Image src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
+                            <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
+                                <Box fontWeight='bold' fontSize='12pt' textAlign='start'>
+                                    <Text>
+                                        Certificate No.: 
+                                        <Text as='span' fontWeight={'normal'}>
+                                            {`${courseCode}-B00-0001`}
+                                        </Text>
+                                    </Text>
+                                    <Text>
+                                        Registration No.: 
+                                        <Text as='span' fontWeight={'normal'}>
+                                            REG-2026-00-0000
+                                        </Text>
+                                    </Text>
+                                </Box>
+                            </Box>
+                            <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
+                                <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
+                                <Text >This Certificate is issued to</Text>
+                                <Text fontWeight='bold' fontSize='16pt'>NAME</Text>
+                                <Text>for having successfully completed the training course in</Text>
+                                <Text fontSize='14pt' fontWeight='bold'>{certTitleHtml.toUpperCase()}</Text>
+                                <Box w='75%' textAlign='center' sx={{
+                                    '& p, & div': {
+                                        display: 'inline',
+                                        margin: 0,
+                                    },
+                                    '& br': {
+                                        display: 'inline',
+                                    },
+                                }}>
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: `Conducted on _____________ ${certContentHtml}`
+                                        }}
+                                    />
+                                </Box>
+                                <Text>{`Issued this ____ day of __________, 2026 in Manila City, Philippines`}</Text>
+                                <Box pt='8' display='flex' gap='4' alignItems='end' justifyContent='space-between' w='100%'>
+                                    <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
+                                        {(() => {
+                                            const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
+                                            const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                                        
+                                            return(
+                                                <>
+                                                    <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
+                                                        <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                    </Box>
+                                                    <Box borderTop='1px solid black' w='80%' />
+                                                    <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
+                                                        {(() => {
+                                                            if (!ins) return 'No Instructor';
+                    
+                                                            return `${ins.rank} ${ins.name}`;
+                                                        })()}
+                                                    </Text>
+                                                    <Text fontSize='10pt'>Training Director</Text>
+                                                </>
+                                            )
+                                        })()}
+                                    </Box>
+                                    <Box w='50%' pb='9' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center'>
+                                        <Box w='1.5in' h='1.5in' border='1px solid black' />
+                                    </Box>
+                                    <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
+                                        {(() => {
+                                            const ins = allInstructors?.find((i) => i.name === 'MA. JOSEFA T. ALONSAGAY')
+                                            const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                                        
+                                            return(
+                                                <>
+                                                    <Box position='absolute' top='-45px' left='-8%' transform="translateX(5%)" zIndex={2} >
+                                                        <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                    </Box>
+                                                    <Box borderTop='1px solid black' w='90%' />
+                                                    <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
+                                                        {(() => {
+                                                            if (!ins) return 'No Instructor';
+                    
+                                                            return `${ins.rank} ${ins.name}`;
+                                                        })()}
+                                                    </Text>
+                                                    <Text fontSize='10pt'>President</Text>
+                                                </>
+                                            )
+                                        })()}
+                                    </Box>
+                                </Box>
+                                <Box pt='7' pb='10' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
+                                    <Image src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'   objectFit='cover'/>
+                                    <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
+                                        <Box w='0.8in' border='1px solid black' h='0.8in'>
+                                            <Text textAlign='center' >QR Code here</Text>
+                                        </Box>
+                                    </Box>
+                                    <Box fontWeight='bold' fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
+                                        <Text>Landline: (02) 8281-8155</Text>
+                                        <Text>Email: pentagonmaritimeservices@gmail.com</Text>
+                                        <Text>FB: pentagonmaritimeservicescorp</Text>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+                        <Box position='absolute' bottom='0' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
+                            <Image  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
+                        </Box>
+                    </Box>
+                    </>
+                )}
+            </ModalBody>
+            <ModalFooter>
+                {action === 'create' &&
+                    <Button isLoading={loading} loadingText='Saving Template...' bgColor='blue.700' colorScheme="blue" mr={3} onClick={handleSaveTemplate} >
+                        Save Content
+                    </Button>
+                }
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+    </>
+    )
+}

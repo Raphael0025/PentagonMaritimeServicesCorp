@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -278,6 +278,7 @@ export default function TrackerPage(){
                         <Tab _selected={{ color: 'white', bg: 'green.500' }}>Monitoring</Tab>
                         <Tab _selected={{ color: 'white', bg: 'blue.500' }}>Batch Certificates</Tab>
                         <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Transmittals</Tab>
+                        <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Certificate Template Management</Tab>
                     </TabList>
                     <TabPanels>
                         <TabPanel>
@@ -322,7 +323,7 @@ export default function TrackerPage(){
                                             <option value={"0"}>PENDING</option>
                                             <option value={"1"}>RELEASED</option>
                                         </Select>
-                                        {(filterCourse || filterCompany || filterCharge ) && (
+                                        {(filterCourse || filterCompany || filterCharge || filterStatus ) && (
                                             <Button w='50%' mr={4} onClick={() => { setChargeType(''); setCompanyFilter(''); setStatus(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                                         )}
                                         <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
@@ -330,7 +331,7 @@ export default function TrackerPage(){
                                     <Box display='flex' justifyContent='end' mt='2'>
                                         {t_ids.length !== 0 && (
                                             <>
-                                                <Button onClick={() => handleCertStatus(firstSelected ? 1 : 0)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Release' : 'Release'} Certificate for ${t_ids.length} Selected`}</Button>
+                                                <Button onClick={() => handleCertStatus(firstSelected ? 1 : 0)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Release' : 'Release'} Certificate`}</Button>
                                                 <Button onClick={() => {setIDS([]);}} colorScheme='red' variant='outline' size='sm' shadow='md' fontWeight='normal' >Clear</Button>
                                             </>
                                         )}
@@ -378,8 +379,13 @@ export default function TrackerPage(){
                                 <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} trainingIDs={t_ids} setTrainingIDs={setIDS} setFirstSelected={setFirstSelected} />
                             )}
                         </TabPanel>
+                        <TabPanel>
+                            {/* <BatchCertificates /> */}
+                        </TabPanel>
                         <TabPanel></TabPanel>
-                        <TabPanel></TabPanel>
+                        <TabPanel>
+                            <Certificate_Template_Mgmt />
+                        </TabPanel>
                     </TabPanels>
                 </Tabs>
             </>
