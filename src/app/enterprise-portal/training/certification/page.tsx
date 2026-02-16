@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, BatchCertificates, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -101,7 +101,7 @@ export default function TrackerPage(){
                     const start = t.start_date.toLowerCase();
                     const end = t.end_date.toLowerCase();
                 
-                    const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                    const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
                     const trimmedMonth = months[monthSelected]; // convert number → "jan"
                 
                     return (
@@ -276,7 +276,6 @@ export default function TrackerPage(){
                 <Tabs size='sm' variant='enclosed' isLazy>
                     <TabList fontWeight='normal'>
                         <Tab _selected={{ color: 'white', bg: 'green.500' }}>Monitoring</Tab>
-                        <Tab _selected={{ color: 'white', bg: 'blue.500' }}>Batch Certificates</Tab>
                         <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Transmittals</Tab>
                         <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Certificate Template Management</Tab>
                     </TabList>
@@ -378,9 +377,6 @@ export default function TrackerPage(){
                             ) : (
                                 <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} trainingIDs={t_ids} setTrainingIDs={setIDS} setFirstSelected={setFirstSelected} />
                             )}
-                        </TabPanel>
-                        <TabPanel>
-                            {/* <BatchCertificates /> */}
                         </TabPanel>
                         <TabPanel></TabPanel>
                         <TabPanel>

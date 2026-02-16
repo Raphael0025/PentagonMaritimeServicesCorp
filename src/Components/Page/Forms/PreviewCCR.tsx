@@ -112,7 +112,6 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                 // include other fields you want to update
             };
             // Assuming you have your update function like:
-            // await UPDATE_TRAINING(training.id, updatedData, actor)
             return UPDATE_TRAINING(training.id, updatedData, actor);
             });
             // Wait for all updates to complete

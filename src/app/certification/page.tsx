@@ -30,7 +30,6 @@ import { TRAINING_BY_ID, REGISTRATION_BY_ID, TRAINEE_BY_ID } from '@/types/train
 
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 import { firestore } from '@/lib/certification_controller'
-import Registration_Background from '../../Components/ui/Registration_Background';
 
 export default function Certification() {
     const toast = useToast()
@@ -325,9 +324,6 @@ export default function Certification() {
                                             </>
                                         )
                                     })()}
-                                </Box>
-                                <Box w='50%' pb='9' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center'>
-                                    <Box w='1.5in' h='1.5in' border='1px solid black' />
                                 </Box>
                                 <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                     {(() => {

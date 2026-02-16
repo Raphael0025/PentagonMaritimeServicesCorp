@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Box, Text, Textarea, Spinner, Center, Button, Checkbox, Select, FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -16,8 +16,13 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useInstructors } from '@/context/InstructorContext'
 import { useTrainees } from '@/context/TraineeContext'
 import { useRegistrations } from '@/context/RegistrationContext'
+import { useCertification } from '@/context/CertificationContext'
+import { useTraining } from '@/context/TrainingContext'
+
+import { CourseBatchByID } from '@/types/course-batches'
 
 import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller'
+import { Timestamp } from 'firebase/firestore';
 
 interface BatchedDatedProps {
     searchTerm: string;
@@ -26,18 +31,23 @@ interface BatchedDatedProps {
 
 export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedProps){
     const toast = useToast()
+    const { courseCodes } = useClients()
     const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
     const { data: allTrainee } = useTrainees()
     const { data: courseBatch } = useCourseBatch()
     const { data: allInstructors } = useInstructors()
-    const { courseCodes } = useClients()
+    const { data: allCertTemplates } = useCertification()
     const { allData: allRegData } = useRegistrations()
+    const { allData: allTrainingData } = useTraining()
 
     const [loading, setLoading] = useState<boolean>(false)
 
     const [remarks, setRemarks] = useState<string>('')
     const [t_id, setID] = useState<string>('')
+    const [courseID, setCourseID] = useState<string>('')
+    const [selectedTrainings, setSelectedTrainings] = useState<TRAINING_BY_ID[]>([])
+
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     
@@ -96,12 +106,147 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
         })
     }
 
+    const certificates = useMemo(() => {
+            return allCertTemplates ?? []
+        }, [allCertTemplates])
+    
+    const certificateVersions = useMemo(() => {
+        if (!courseID) return []
+
+        const cert = certificates.find(
+            cert => cert.courseID === courseID
+        )
+
+        return cert?.versions ?? []
+    }, [certificates, courseID])
+
+    const generateCertForSelected = () => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                setLoading(true)
+
+                if (!selectedTrainings.length) {
+                    console.warn("No trainings selected.")
+                    setLoading(false)
+                    return resolve(null)
+                }
+
+                const course = allCourses?.find(c => c.id === courseID)
+                if (!course) {
+                    console.warn("Course not found.")
+                    setLoading(false)
+                    return resolve(null)
+                }
+
+                const courseCode = course.course_code
+                const currentYear = new Date().getFullYear()
+                const regMap = new Map(allRegData?.map(reg => [reg.id, reg]) ?? [])
+
+                // Determine batch of selected trainings
+                const batchIds = Array.from(new Set(selectedTrainings.map(t => t.batch)))
+                if (batchIds.length > 1) {
+                    console.warn("Selected trainings are from different batches. Please select from a single batch.")
+                    setLoading(false)
+                    return resolve(null)
+                }
+
+                const currentBatchId = batchIds[0]
+                const currentBatch = courseBatch?.find(b => b.id === currentBatchId)
+                if (!currentBatch) {
+                    console.warn("Batch not found for selected trainings.")
+                    setLoading(false)
+                    return resolve(null)
+                }
+
+                // Previous batches
+                const previousBatches = (courseBatch ?? [])
+                    .filter(b => b.course === courseID && Number(b.batch_no) < Number(currentBatch.batch_no))
+                    .sort((a, b) => Number(a.batch_no) - Number(b.batch_no))
+
+                // Starting sequence
+                let startSequence = 1
+                const currentBatchTrainings = trainings?.filter(t => t.batch === currentBatch.id) ?? []
+                const existingCertsInCurrent = currentBatchTrainings.map(t => t.cert_no).filter(Boolean)
+                if (existingCertsInCurrent.length > 0) {
+                    startSequence = Math.max(...existingCertsInCurrent.map(c => Number(c.split('-').pop()))) + 1
+                } else if (previousBatches.length > 0) {
+                    const prevCerts = previousBatches.flatMap(batch =>
+                        trainings?.filter(t => t.batch === batch.id && t.cert_no)?.map(t => Number(t.cert_no.split('-').pop())) ?? []
+                    )
+                    if (prevCerts.length > 0) startSequence = Math.max(...prevCerts) + 1
+                }
+
+                const activeVersion = certificateVersions.find(v => v.status === 'active')
+                if (!activeVersion) {
+                    console.warn("No active certificate version found for this course.")
+                    setLoading(false)
+                    return resolve(null)
+                }
+
+                const sortedSelected = [...selectedTrainings].sort((a, b) => {
+                    const regA = regMap.get(a.reg_ref_id)?.reg_no ?? ''
+                    const regB = regMap.get(b.reg_ref_id)?.reg_no ?? ''
+                    return regA.localeCompare(regB, undefined, { numeric: true, sensitivity: 'base' })
+                })
+
+                let sequenceCounter = startSequence
+                const actor = localStorage.getItem('customToken')
+
+                // 🔹 Wrap in setTimeout to simulate completion
+                setTimeout(async () => {
+                    try {
+                        const generated = await Promise.all(sortedSelected.map(async training => {
+                            const regNo = regMap.get(training.reg_ref_id)?.reg_no ?? 'UNKNOWN'
+
+                            const sequence = String(sequenceCounter++).padStart(3, '0')
+                            const certNo = training.cert_no ?? `${courseCode}-${currentYear}-B${currentBatch.batch_no}-${sequence}`
+
+                            const updateData = {
+                                reg_status: 6,
+                                cert_no: certNo,
+                                certTitle: activeVersion.certTitleHtml,
+                                certContent: activeVersion.certContentHtml,
+                                cert_version: activeVersion.version_number
+                            }
+
+                            await UPDATE_TRAINING(training.id, updateData, actor)
+
+                            return {
+                                trainingId: training.id,
+                                reg_no: regNo,
+                                cert_no: certNo,
+                                existing: !!training.cert_no
+                            }
+                        }))
+
+                        console.table(generated)
+                        setSelectedTrainings([])
+                        setLoading(false)
+                        resolve({
+                            batch: currentBatch,
+                            generatedCerts: generated
+                        })
+                    } catch (err) {
+                        console.error("Error updating trainings:", err)
+                        setLoading(false)
+                        reject(err)
+                    }
+                }, 200) // Delay to simulate async processing
+            } catch (error) {
+                console.error("Error in generation:", error)
+                setLoading(false)
+                reject(error)
+            }
+        })
+    }
+
     const handleStatus = async (trainingID: string, newStatus: number) => {
         setLoading(true)
         new Promise<void>((res, rej) => {
             setTimeout(async () => {
                 try{
                     const actor = localStorage.getItem('customToken')
+
                     const updateStat = {
                         reg_status: newStatus,
                     }
@@ -148,6 +293,11 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
 
     return(
         <>
+        <Box mb='3' display='flex' justifyContent={'end'}>
+            {selectedTrainings.length > 0 && 
+                <Button onClick={generateCertForSelected} isLoading={loading} loadingText='Processing...' colorScheme='green' shadow='md' size='sm' >Graduate</Button>
+            }
+        </Box>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}
             <Box position='sticky' top='0' zIndex='10' w='2650px' bgColor='blue.700' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
@@ -243,7 +393,22 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                             <Text w="100px" p='1' borderRadius='5px' color={trainingModeFontColor(trainingMode)} bgColor={trainingModeColor(trainingMode)}>
                                 {`${trainingMode}`}
                             </Text>  
-                            <Select isDisabled={loading} onChange={(e) => handleStatus(training.id, Number(e.target.value))} borderRadius='5px' size='xs' w='100px' shadow='md' >
+                            <Checkbox onChange={() => {
+                                const course = allCourses?.find((course) => course.id === training.course) || allCourses?.find((course) => course.id === courseCodes?.find((c) => c.id === training.course)?.id_course_ref);
+                                setSelectedTrainings((prev) => prev.some(t => t.id === training.id) ? prev.filter(t => t.id !== training.id) : [...prev, training]);
+                                setCourseID(course?.id || '');
+                            }} 
+                                isChecked={selectedTrainings.some((t) => t.id === training.id)} />
+                            <Select isDisabled={loading} 
+                            onChange={(e) => 
+                                {
+                                    //handleStatus(training.id, Number(e.target.value))
+                                    const course = allCourses?.find((course) => course.id === training.course) || allCourses?.find((course) => course.id === courseCodes?.find((c) => c.id === training.course)?.id_course_ref);
+                                    generateCertForSelected();
+                                    //generateCertForTraining(training.id, course?.id || '');
+                                }
+                            } 
+                            borderRadius='5px' size='xs' w='100px' shadow='md' >
                                 <option value={3} hidden>{handleRegStatus(training.reg_status)}</option>
                                 <option value={6}>Graduated</option>
                                 <option value={5}>Pending</option>
