@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker, BatchCertificates, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
