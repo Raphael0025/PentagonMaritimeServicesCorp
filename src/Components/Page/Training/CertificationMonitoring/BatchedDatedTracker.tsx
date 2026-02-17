@@ -327,7 +327,6 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                     const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                     const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
                     //const reg_id = allRegData?.find((reg) => 
-                    const trainingMode = courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `${courseBatch.find((batch) => batch.id === training.batch)?.training_mode}` : ''
 
                     if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

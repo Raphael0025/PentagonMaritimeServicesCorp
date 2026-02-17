@@ -142,8 +142,10 @@ export interface TRAINING {
     course_fee: number;
     course: string;
     start_date: string;
+    act_start_date: string;
     numOfDays: number;
     end_date: string;
+    act_end_date: string;
     accountType: number; // 0 - crew | 1 - company
     act_ins: string;
 
@@ -187,6 +189,8 @@ export const initTraining = {
     start_date: '',
     numOfDays: 0,
     end_date: '',
+    act_end_date: '',
+    act_start_date: '',
     accountType: 0, // 0 - crew | 1 - company
     act_ins: '',
     

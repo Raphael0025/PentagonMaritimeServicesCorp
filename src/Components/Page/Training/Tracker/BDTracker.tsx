@@ -432,25 +432,28 @@ export default function BDTracker (){
                         return course.id === courseCode?.id_course_ref;
                     });
                     const class_code = courseFound?.class_code
-
-                    const route = trainingMode === 'olm' ? '/api/training-advise/bd-olm' : '/api/training-advise/bd-olt';
-                    await fetch(route, {
-                        method: 'POST',
-                        headers: {
-                        'Content-Type': 'application/json',
-                        }, 
-                        body: JSON.stringify({
-                            bcc: selectedEmails, 
-                            course_code: courseFound?.course_code, 
-                            course_name: courseFound?.course_name, 
-                            schedule: cert_date,
-                            actual_sched: actualSchedule,
-                            time, 
-                            class_code, 
-                            staff, 
-                            position 
-                        })
-                    })
+                    
+                    const actor = localStorage.getItem('customToken')
+                    const splitActualTD = actualSchedule.split(' to ')
+                    await UPDATE_TRAINING(training_ID, {act_start_date: splitActualTD[0] || '', act_end_date: splitActualTD[1] || ''}, actor)
+                    // const route = trainingMode === 'olm' ? '/api/training-advise/bd-olm' : '/api/training-advise/bd-olt';
+                    // await fetch(route, {
+                    //     method: 'POST',
+                    //     headers: {
+                    //     'Content-Type': 'application/json',
+                    //     }, 
+                    //     body: JSON.stringify({
+                    //         bcc: selectedEmails, 
+                    //         course_code: courseFound?.course_code, 
+                    //         course_name: courseFound?.course_name, 
+                    //         schedule: cert_date,
+                    //         actual_sched: actualSchedule,
+                    //         time, 
+                    //         class_code, 
+                    //         staff, 
+                    //         position 
+                    //     })
+                    // })
                     res()
                 }catch(error){
                     rej(error)
@@ -631,6 +634,13 @@ export default function BDTracker (){
                         <Text w='100px'>To</Text>
                     </Box>
                 </Box>
+                <Box display={'flex'} flexDirection='column'>
+                    <Text>Actual Date</Text>
+                    <Box display='flex' className='space-x-3' justifyContent='space-between'>
+                        <Text w='100px'>From</Text>
+                        <Text w='100px'>To</Text>
+                    </Box>
+                </Box>
                 <Text w='100px'>Payment Mode</Text>
                 <Text w='105px'>Mode of Training</Text>
                 <Text w='105px'>Status</Text>
@@ -706,6 +716,12 @@ export default function BDTracker (){
                                     <Text w="100px">{training.end_date === '' ? '--' : training.end_date}</Text>    
                                 </Box>
                             </Box>
+                            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
+                                <Box className='w-full flex uppercase space-x-3'>
+                                    <Text w="100px">{training.act_start_date}</Text>    
+                                    <Text w="100px">{training.act_end_date === '' ? '--' : training.act_end_date}</Text>    
+                                </Box>
+                            </Box>
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
                             <Text w="100px" p='1' borderRadius='5px' color={trainingModeFontColor(trainingMode)} bgColor={trainingModeColor(trainingMode)}>
                                 {`${training?.trainingMode ?? '--'}`}
@@ -715,6 +731,7 @@ export default function BDTracker (){
                                 <option value={6}>Graduated</option>
                                 <option value={5}>Pending</option>
                                 <option value={7}>Cancelled</option>
+                                <option value={9}>Non-Appearance</option>
                                 <option value={8}>Absent</option>
                             </Select>
                             <Text w="180px" >
@@ -748,7 +765,7 @@ export default function BDTracker (){
             }))}
             </Box>
         </Box>
-        <Modal isOpen={isOpenMod} scrollBehavior='inside' onClose={() => {setSelectedEmails([]); setInstructor(''); setTrainingID(''); setToggle('t_mode'); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
+        <Modal isOpen={isOpenMod} scrollBehavior='inside' size='xl' onClose={() => {setSelectedEmails([]); setInstructor(''); setTrainingID(''); setToggle('t_mode'); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
             <ModalOverlay />
             <ModalContent px='2'>
                 <ModalHeader>
@@ -821,7 +838,7 @@ export default function BDTracker (){
                                         </InputGroup>
                                         <InputGroup shadow='md' my='2' w='100%' size='sm'>
                                             <InputLeftAddon>Actual Training Schedule:</InputLeftAddon>
-                                            <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd`} onChange={(e) => setActSched(e.target.value)} />
+                                            <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd, YYYY to MMM dd, YYYY`} onChange={(e) => setActSched(e.target.value)} />
                                         </InputGroup>
                                         <InputGroup shadow='md' my='2' w='100%' size='sm'>
                                             <InputLeftAddon>Certificate Date:</InputLeftAddon>
