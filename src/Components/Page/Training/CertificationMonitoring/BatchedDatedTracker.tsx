@@ -628,7 +628,9 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         )}})
                     }
                     </Accordion>
-                    <Box ref={componentRef} w='100%' sx={{display: 'none', '@media print': {display: 'block'}}}>
+                    <Box ref={componentRef} w='100%' placeItems='center' p='0'
+                    //sx={{display: 'none', '@media print': {display: 'block'}}}
+                    >
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
@@ -653,8 +655,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         ))
                         {return(
                         <>
-                        <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
-                            <Box w='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center' px='4' pt='8'>
+                        <Box w='216mm' h='279mm' position='relative' display='flex' flexDir='column' p='0' justifyContent='center' alignItems='center' >
+                            <Box pt='6' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center'>
                                 <Image src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
                                 <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
                                     <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
@@ -672,7 +674,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Text>
                                     </Box>
                                 </Box>
-                                <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
+                                <Box w='100%' h='75%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='2'>
                                     <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
                                     <Text >This Certificate is issued to</Text>
                                     <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
@@ -720,14 +722,14 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
                                         }}
                                     />
-                                    <Box pt='8' display='flex' alignItems='end' w='85%'>
+                                    <Box pt='6' display='flex' alignItems='end' w='85%'>
                                         <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                             {(() => {
                                                 const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
                                                 const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                                 return(
                                                     <>
-                                                        <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
+                                                        <Box position='absolute' top='-40px' left='20%' transform="translateX(-10%)" zIndex={2} >
                                                             <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
                                                         </Box>
                                                         <Box borderTop='1px solid black' w='80%' />
@@ -753,7 +755,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                                 return(
                                                     <>
-                                                        <Box position='absolute' top='-45px' left='-8%' transform="translateX(5%)" zIndex={2} >
+                                                        <Box position='absolute' top='-40px' left='-8%' transform="translateX(5%)" zIndex={2} >
                                                             <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
                                                         </Box>
                                                         <Box borderTop='1px solid black' w='90%' />
@@ -769,14 +771,14 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             })()}
                                         </Box>
                                     </Box>
-                                    <Box pt='7' pb='10' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                        <Image src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'  objectFit='cover'/>
+                                    <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
+                                        <Image src={'/cert_ISO_Label.png'} alt='header image' w='1.29in'  objectFit='cover'/>
                                         <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
-                                            <Box w='0.85in' h='0.85in'>
+                                            <Box w='0.75in' h='0.75in'>
                                                 <Image src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
                                             </Box>
                                         </Box>
-                                        <Box fontWeight='bold' display='block' lineHeight={1.45} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
+                                        <Box fontWeight='bold' display='block' lineHeight={1.35} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
                                             <Text>Landline: (02) 8281-8155</Text>
                                             <Text>Email: pentagonmaritimeservices@gmail.com</Text>
                                             <Text>FB: pentagonmaritimeservicescorp</Text>
@@ -784,7 +786,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                     </Box>
                                 </Box>
                             </Box>
-                            <Box position='absolute' bottom='0' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
+                            <Box position='absolute' bottom='1px' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
                                 <Image  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
                             </Box>
                         </Box>
