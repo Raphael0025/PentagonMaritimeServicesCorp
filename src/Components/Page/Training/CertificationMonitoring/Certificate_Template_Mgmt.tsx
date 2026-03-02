@@ -555,6 +555,21 @@ export default function Certificate_Template_Mgmt() {
                                     />
                                 </Text>
                                 <Box w='75%' textAlign='center' sx={{
+                                    '& ul': {
+                                        listStyleType: 'disc',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& ol': {
+                                        listStyleType: 'decimal',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& li': {
+                                        marginBottom: '0.25rem',
+                                    },
                                     '& p, & div': {
                                         display: 'inline',
                                         margin: 0,
