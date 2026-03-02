@@ -512,7 +512,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 <Text >This Certificate is issued to</Text>
                                                 <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                                 <Text>for having successfully completed the training course in</Text>
-                                                <Text fontSize='14pt' mt='2' fontWeight='bold'>{training.certTitle.toUpperCase()}</Text>
+                                                <Text fontSize='14pt' w='60%' mt='2' textAlign='center' fontWeight='bold'>{training.certTitle.toUpperCase()}</Text>
                                                 <Box w='85%' mt='3' textAlign='center' sx={{
                                                     '& p, & div': {
                                                         display: 'inline',
@@ -656,7 +656,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                     <Text >This Certificate is issued to</Text>
                                     <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                     <Text>for having successfully completed the training course in</Text>
-                                    <Text fontSize='14pt' mt='2' fontWeight='bold'>{training.certTitle.toUpperCase()}</Text>
+                                    <Text fontSize='14pt' w='60%' mt='2' textAlign='center' fontWeight='bold'>{training.certTitle.toUpperCase()}</Text>
                                     <Box w='85%' mt='3' textAlign='center' sx={{
                                         '& p, & div': {
                                             display: 'inline',
