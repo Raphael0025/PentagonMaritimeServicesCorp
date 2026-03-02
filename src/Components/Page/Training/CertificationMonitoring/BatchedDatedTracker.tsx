@@ -524,16 +524,16 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                         listStyleType: 'disc',
                                                         listStylePosition: 'inside',
                                                         paddingLeft: '1.5rem',
-                                                        margin: '0.5rem 0',
+                                                        margin: '0.0055rem 0',
                                                     },
                                                     '& ol': {
                                                         listStyleType: 'decimal',
                                                         listStylePosition: 'inside',
                                                         paddingLeft: '1.5rem',
-                                                        margin: '0.5rem 0',
+                                                        margin: '0.0055rem 0',
                                                     },
                                                     '& li': {
-                                                        marginBottom: '0.25rem',
+                                                        marginBottom: '0.0055rem',
                                                     },
                                                     '& p, & div': {
                                                         display: 'inline',
