@@ -21,7 +21,7 @@ import { CoursesById } from '@/types/courses'
 import { ToastStatus } from '@/types/handling'
 
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
-import { SAVED_CERT_TEMPLATE } from '@/lib/certification_controller'
+import { SAVED_CERT_TEMPLATE, UPDATE_VERSION_FIELDS, DELETE_CERT_VERSION, ADD_CERT_VERSION, ADD_CHANGELOG_ENTRY } from '@/lib/certification_controller'
 import { Timestamp } from 'firebase/firestore';
 
 export default function Certificate_Template_Mgmt() {
@@ -40,6 +40,8 @@ export default function Certificate_Template_Mgmt() {
     const [courseCode, setCourseCode] = useState<string>('')
     const [versionNumber, setVersionNumber] = useState<string>('')
     const [companyID, setCompanyID] = useState<string>('')
+    const [add_desc, setAdditionalDescription] = useState<string>('')
+    const [sub_title, setSubTitle] = useState<string>('')
 
     // Editor & Title refs
     const editorRef = useRef<HTMLDivElement>(null)
@@ -50,6 +52,7 @@ export default function Certificate_Template_Mgmt() {
     const [certContentHtml, setCertContentHtml] = useState('')
 
     const { isOpen: isOpenCert, onOpen: onOpenCert, onClose: onCloseCert } = useDisclosure()
+    const { isOpen: isOpenDCert, onOpen: onOpenDCert, onClose: onCloseDCert } = useDisclosure()
 
     /* ----------------------------- */
     /* Load Courses */
@@ -66,14 +69,15 @@ export default function Certificate_Template_Mgmt() {
     }, [allCertTemplates])
 
     const certificateVersions = useMemo(() => {
-        if (!courseID) return []
-
-        const cert = certificates.find(
-            cert => cert.courseID === courseID
-        )
-
-        return cert?.versions ?? []
-    }, [certificates, courseID])
+        if (!courseID) return [];
+    
+        return certificates
+            .filter((c: CERTIFICATION_BY_ID) =>
+                c.courseID === courseID &&
+                (category ? c.category === category : true)
+            )
+            .flatMap((c) => c.versions ?? []);
+      }, [certificates, courseID, category]);
 
     const filteredCourses = sortedCourses.filter(course => {
         const term = search.toLowerCase()
@@ -99,11 +103,61 @@ export default function Certificate_Template_Mgmt() {
         }
     }
 
-    const handleEnter = (e: React.KeyboardEvent) => {
+    const handleEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault()
-            document.execCommand('insertLineBreak')
+    
+            const selection = window.getSelection()
+            if (!selection || !selection.rangeCount) return
+    
+            const range = selection.getRangeAt(0)
+    
+            // create <br> and insert
+            const br = document.createElement('br')
+            range.insertNode(br)
+    
+            // move caret after the <br>
+            range.setStartAfter(br)
+            range.setEndAfter(br)
+            selection.removeAllRanges()
+            selection.addRange(range)
+    
             setCertContentHtml(editorRef.current?.innerHTML || '')
+        }
+    }
+
+    const handleDeleteVersion = async () => {
+        setLoading(true)
+    
+        try {
+            // 🔥 Find correct certificate document
+            const foundCert = certificates.find((c: CERTIFICATION_BY_ID) =>c.courseID === courseID && c.category === category)
+        
+            if (!foundCert) {
+                console.warn('Certificate document not found.')
+                return
+            }
+        
+            // 🔥 Verify version exists
+            const versionExists = foundCert.versions.some((v: certVersion) => v.version_number === versionNumber)
+        
+            if (!versionExists) {
+                console.warn('Version not found in certificate.')
+                return
+            }
+        
+            await DELETE_CERT_VERSION(foundCert.id, versionNumber)
+        
+            toast({
+                title: 'Cert. version successfully deleted.',
+                status: 'success',
+                duration: 5000,
+            })
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
+            onCloseDCert()
         }
     }
 
@@ -116,6 +170,104 @@ export default function Certificate_Template_Mgmt() {
                 status: 'warning',
                 duration: 3000,
             })
+            return
+        }
+        if(action === 'insert'){
+            let foundActiveVersion = ''
+
+            const foundCert = certificates.find(
+                (c: CERTIFICATION_BY_ID) =>
+                c.courseID === courseID && c.category === category
+            )
+
+            if (!foundCert) {
+                console.warn('No certificate found for this category')
+                setLoading(false)
+                return
+            }
+
+            const activeVersion = foundCert.versions.find(
+                (v: certVersion) => v.status === 'active'
+            )
+
+            if (activeVersion) {
+                foundActiveVersion = activeVersion.version_number
+                await UPDATE_VERSION_FIELDS(foundCert.id, foundActiveVersion, {
+                status: 'archived',
+                })
+            }
+
+            const newVersion: certVersion = {
+                version_number: versionNumber,
+                certTitleHtml,
+                certContentHtml,
+                status: 'active',
+                additionalDescription: add_desc,
+                subTitle: sub_title,
+                primary_author: author || 'unknown',
+                createdAt: Timestamp.now(),
+                changelogArr: [],
+            }
+
+            await ADD_CERT_VERSION(foundCert.id, newVersion)
+
+            toast({
+                title: 'New Version saved successfully',
+                status: 'success',
+                duration: 3000,
+            })
+            // Clear editor after save
+            setCertTitleHtml('')
+            setCertContentHtml('')
+            setLoading(false)
+            if (editorRef.current) editorRef.current.innerHTML = ''
+            if (titleRef.current) titleRef.current.innerHTML = ''
+
+            onCloseCert()
+            return
+        } else if (action === 'edit'){
+            let foundActiveVersion = ''
+            const editedVersion = {
+                certTitleHtml: certTitleHtml,
+                certContentHtml: certContentHtml,
+                changelogArr: [],
+            }
+            const foundActiveCert = certificates.filter((f: CERTIFICATION_BY_ID) => f.courseID === courseID).map(
+                (cv: CERTIFICATION_BY_ID) => {
+                    const activeVersion = cv.versions.find((v: certVersion) => v.status === 'active');
+                    if (activeVersion) {
+                        foundActiveVersion = activeVersion.version_number;
+                        return cv;
+                    }
+                    return
+                }
+            )
+
+            if (!foundActiveCert) {
+                console.warn('No active certificate version found.')
+                return
+            }
+            if (foundActiveCert[0]?.id && foundActiveVersion) {
+                await UPDATE_VERSION_FIELDS(foundActiveCert[0].id, foundActiveVersion, editedVersion)
+                
+                const entry = {certID: foundActiveCert[0].id, v_Number: foundActiveVersion, newEntry: {message: 'Updated Certificate Content', updatedBy: author || 'unknown', updatedAt: Timestamp.now()}}
+                await ADD_CHANGELOG_ENTRY(entry)
+            } else {
+                console.warn('Certificate ID or active version is undefined.')
+            }
+            toast({
+                title: 'Edited Version saved successfully',
+                status: 'success',
+                duration: 3000,
+            })
+            // Clear editor after save
+            setCertTitleHtml('')
+            setCertContentHtml('')
+            setLoading(false)
+            if (editorRef.current) editorRef.current.innerHTML = ''
+            if (titleRef.current) titleRef.current.innerHTML = ''
+
+            onCloseCert()
             return
         }
 
@@ -133,13 +285,15 @@ export default function Certificate_Template_Mgmt() {
                     certTitleHtml: certTitleHtml,
                     certContentHtml: certContentHtml,
                     status: 'active',
+                    additionalDescription: add_desc,
+                    subTitle: sub_title,
                     primary_author: author || 'unknown',
                     createdAt: Timestamp.now(),
                     changelogArr: [],
                 },
             ],
         }
-        await SAVED_CERT_TEMPLATE(savedCert, author || 'unknown')
+        await SAVED_CERT_TEMPLATE({...savedCert}, author || 'unknown')
 
         toast({
             title: 'Certificate saved successfully',
@@ -156,6 +310,13 @@ export default function Certificate_Template_Mgmt() {
 
         onCloseCert()
     }
+
+    useEffect(() => {
+        if (action === 'edit' && (editorRef.current && titleRef.current)) {
+            editorRef.current.innerHTML = certContentHtml || ''
+            titleRef.current.innerHTML = certTitleHtml || ''
+        }
+    }, [action])
 
     return (
     <>
@@ -182,7 +343,6 @@ export default function Certificate_Template_Mgmt() {
                                 <Text w='100%' className='text-center text-white '>Course</Text> 
                                 <Text w='50%' className='text-center text-white '>Training Mode</Text> 
                                 <Text w='50%' className='text-center text-white '>Course Type</Text> 
-                                <Text w='50%' className='text-center text-white '>QR Code</Text> 
                                 <Text w='100%' className='text-center text-white '>Certificate Template</Text> 
                             </Box> 
                             <Box className='space-y-2' style={{ height: 'calc(100% - 50px)', overflowY: 'scroll' }}> 
@@ -195,13 +355,12 @@ export default function Certificate_Template_Mgmt() {
                                         <Text w='100%' fontSize='12px' className='text-wrap uppercase text-center w-full'>{course.course_name}</Text> 
                                         <Text w='50%' fontSize='12px' className='text-center w-1/2 '>{course.trainingMode === 0 ? 'Non-Simulator' : 'Simulator'}</Text> 
                                         <Text w='50%' fontSize='12px' className='text-center w-1/2 '>{course.courseType === 0 ? 'Marina' : 'In-House'}</Text> 
-                                        <Text w='50%' fontSize='12px' className='text-center w-1/2 '>{course.courseType === 0 ? 'Marina' : 'In-House'}</Text> 
                                         <Box w='100%' display='flex' justifyContent='center'> 
                                             <Menu closeOnBlur={true} closeOnSelect={closeBlur}> 
                                                 <MenuButton as={Button} onClick={() => {setCategory(''); setAct(''); setCourseID(''); setCloseBlur(false);}} size='sm' variant='ghost' colorScheme='blue' transition='all 0.2s'> 
                                                     <Text fontSize='12px'>Manage Certificate <ChevronDownIcon /></Text> 
                                                 </MenuButton> 
-                                                <MenuList> 
+                                                <MenuList w='250px' px='1'> 
                                                     {category === '' ? (
                                                     <> 
                                                         <MenuItem onClick={() => {setCategory('generic'); setCourseID(course.id); setCourseName(course.course_name.toUpperCase()); setCourseCode(course.course_code.toUpperCase());}}>Generic</MenuItem> 
@@ -211,15 +370,25 @@ export default function Certificate_Template_Mgmt() {
                                                     <>
                                                         {action === 'preview' ? (
                                                         <>
-                                                            <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); setAct('');}}>{'Back'}</MenuItem> 
-                                                            {certificateVersions.map((v) => (
-                                                                    <MenuItem key={v.version_number} onClick={() => {setCertTitleHtml(v.certTitleHtml); setCertContentHtml(v.certContentHtml); onOpenCert(); setCloseBlur(true);}}>{`Version ${v.version_number} - ${v.status.toUpperCase()}`}</MenuItem>
-                                                            ))}
+                                                            <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); setCategory(''); setAct('');}}>{'Back'}</MenuItem> 
+                                                            {certificateVersions.map((v: certVersion) => {
+                                                                return(
+                                                                    <MenuItem key={v.version_number} display='flex' justifyContent='space-between' borderBottom='1px solid gray' onClick={() => {setSubTitle(v?.subTitle); setAdditionalDescription(v?.additionalDescription); setVersionNumber(v.version_number); setCertTitleHtml(v.certTitleHtml); setCertContentHtml(v.certContentHtml); onOpenCert(); setCloseBlur(true);}}>
+                                                                        <Box>
+                                                                            <Text>{`${v.subTitle}`}</Text>
+                                                                            <Text>{`Version ${v.version_number}`}</Text>
+                                                                            <Text fontWeight='bold' color={`${(v.status==='active' ? 'green.500' : 'black' )}`}>{`${v.status.toUpperCase()}`}</Text>
+                                                                        </Box>
+                                                                        <Button onClick={(e) => {e.stopPropagation(); setVersionNumber(v.version_number); onOpenDCert();}} size='xs' colorScheme='red' variant='outline' shadow='md' borderRadius='5px'>Delete</Button>
+                                                                    </MenuItem>
+                                                                )
+                                                            })}
                                                         </>
                                                         ) : (
                                                             <> 
                                                                 <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); setAct('');}}>{'Back'}</MenuItem> 
-                                                                <MenuItem onClick={() => {setAct('create'); onOpenCert();}}>{'Create New'}</MenuItem> 
+                                                                {certificateVersions.length > 0 && <MenuItem onClick={() => {setAct('insert'); onOpenCert();}}>{'Add New Version'}</MenuItem> }
+                                                                {certificateVersions.length === 0 && <MenuItem onClick={() => {setAct('create'); onOpenCert();}}>{'Create New'}</MenuItem> }
                                                                 <MenuItem onClick={() => {setAct('preview'); }}>{'Preview Cert.'}</MenuItem> 
                                                             </> 
                                                         )}
@@ -237,24 +406,39 @@ export default function Certificate_Template_Mgmt() {
             </Box>
         </Box>
       {/* ================= MODAL ================= */}
-    <Modal isOpen={isOpenCert} onClose={onCloseCert} size={action === 'create' ? '6xl' : '5xl'} scrollBehavior="inside">
+    <Modal isOpen={isOpenCert} onClose={() => { if(editorRef.current){editorRef.current.innerHTML = ''}; if(titleRef.current){titleRef.current.innerHTML = ''}; setCertTitleHtml(''); setCertContentHtml(''); onCloseCert();}} size={action === 'create' || action === 'insert' || action === 'edit' ? '6xl' : '5xl'} scrollBehavior="inside">
         <ModalOverlay />
         <ModalContent>
-            <ModalHeader>{`Certificate - ${action === 'create' ? 'Editor' : 'Preview'}`}</ModalHeader>
+            <ModalHeader>{`Certificate - ${['create', 'insert', 'edit'].includes(action) ? 'Editor' : 'Preview'}`}</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-                {action === 'create' ? (
+                {action === 'create' || action === 'insert' || action === 'edit' ? (
                     <Box display="flex" gap="6">
                         {/* ========== EDITOR ========== */}
                         <Box w='50%'>
+                            <Box display='flex' justifyContent='end' mb='2'>
+                                {action === 'edit' && <Button onClick={() => setAct('preview')} colorScheme='blue' bgColor='blue.700' shadow='md' size='sm'>Preview Content</Button>}
+                            </Box>
                             <FormControl mb="3" display="flex" alignItems="end" justifyContent="space-between">
                                 <FormLabel whiteSpace="nowrap">Certificate Version:</FormLabel>
-                                <Input onChange={(e) => setVersionNumber(e.target.value)} placeholder="v1.0.230207" fontWeight="thin" variant="flushed" />
+                                <Input value={versionNumber} onChange={(e) => setVersionNumber(e.target.value)} placeholder="v1.0.230207" fontWeight="thin" variant="flushed" />
                             </FormControl>
                             <FormControl mb="3">
                                 <FormLabel>Certificate Title:</FormLabel>
-                                <Box ref={titleRef} contentEditable minH="40px" border="1px solid #ccc" borderRadius="md" p="2" fontSize="22px" fontWeight="bold" onInput={() => setCertTitleHtml(titleRef.current?.innerHTML || '')} suppressContentEditableWarning />
+                                <Box ref={titleRef} contentEditable minH="40px" border="1px solid #ccc" borderRadius="md" p="2" fontSize="22px" fontWeight="bold" onKeyDown={handleEnter} onInput={() => setCertTitleHtml(titleRef.current?.innerHTML || '')} suppressContentEditableWarning />
                             </FormControl>
+                            {category === 'client' && (
+                            <>
+                                <FormControl mb="3" display="flex" alignItems="end" justifyContent="space-between">
+                                    <FormLabel whiteSpace="nowrap">Sub Title:</FormLabel>
+                                    <Input value={sub_title} onChange={(e) => setSubTitle(e.target.value)} placeholder="Specific Cert. Version" fontWeight="thin" variant="flushed" />
+                                </FormControl>
+                                <FormControl mb="3" display="flex" alignItems="end" justifyContent="space-between">
+                                    <FormLabel whiteSpace="nowrap">Description:</FormLabel>
+                                    <Input value={add_desc} onChange={(e) => setAdditionalDescription(e.target.value)} placeholder="Specific pupose of this version" fontWeight="thin" variant="flushed" />
+                                </FormControl>
+                            </>
+                            )}
                             {/* Toolbar */}
                             <Box display="flex" gap="2" mb="2">
                                 <Button size="sm" onClick={() => exec('bold', editorRef)}><FiBold /></Button>
@@ -285,7 +469,7 @@ export default function Certificate_Template_Mgmt() {
                         </Box>
                         {/* ========== PREVIEW ========== */}
                         <Box w='50%'>
-                            <Text fontWeight="bold" mb="2">Preview</Text>
+                            <Text fontWeight="bold" mb="2" textAlign='center' fontSize='lg'>Certificate Content Preview</Text>
                             <Box border="1px solid #ccc" borderRadius="md" bg="white" p="6" minH="280px" w="500px" maxW="500px" shadow="sm"
                                 sx={{
                                     '& ul': {
@@ -323,6 +507,21 @@ export default function Certificate_Template_Mgmt() {
                     </Box>
                 ) : (
                     <>
+                    <Box display='flex' px='8' alignItems='end' justifyContent='space-between' mb='2'>
+                        <Box>
+                            {category==='client' && (
+                                <Box display='flex' mr='3' fontSize='lg'>
+                                    <Text mr='2'>Client Cert. Title.:</Text>
+                                    <Text fontWeight='normal'>{sub_title}</Text>
+                                </Box>
+                            )}
+                            <Box display='flex' fontSize='lg'>
+                                <Text mr='2'>Version No.:</Text>
+                                <Text fontWeight='normal'>{versionNumber}</Text>
+                            </Box>
+                        </Box>
+                        <Button onClick={() => {setAct('edit'); if (editorRef.current) { editorRef.current.innerHTML = certContentHtml; } if(titleRef.current) {titleRef.current.innerHTML = certTitleHtml}}} shadow='md' size='sm' bgColor='blue.700' colorScheme='blue'>Edit Content</Button>
+                    </Box>
                     <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
                         <Box w='90%' border='1px solid gray' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
                             <Image src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
@@ -347,7 +546,14 @@ export default function Certificate_Template_Mgmt() {
                                 <Text >This Certificate is issued to</Text>
                                 <Text fontWeight='bold' fontSize='16pt'>NAME</Text>
                                 <Text>for having successfully completed the training course in</Text>
-                                <Text fontSize='14pt' fontWeight='bold'>{certTitleHtml.toUpperCase()}</Text>
+                                <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
+                                    {/* {certTitleHtml.toUpperCase()} */}
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: `${certTitleHtml.toUpperCase()}`
+                                        }}
+                                    />
+                                </Text>
                                 <Box w='75%' textAlign='center' sx={{
                                     '& p, & div': {
                                         display: 'inline',
@@ -367,7 +573,7 @@ export default function Certificate_Template_Mgmt() {
                                 <Box pt='8' display='flex' gap='4' alignItems='end' justifyContent='space-between' w='100%'>
                                     <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                         {(() => {
-                                            const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
+                                            const ins = allInstructors?.find((i: { name: string }) => i.name === 'ROGELIO C. MAHINAY')
                                             const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                         
                                             return(
@@ -393,7 +599,7 @@ export default function Certificate_Template_Mgmt() {
                                     </Box>
                                     <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                         {(() => {
-                                            const ins = allInstructors?.find((i) => i.name === 'MA. JOSEFA T. ALONSAGAY')
+                                            const ins = allInstructors?.find((i: { name: string }) => i.name === 'MA. JOSEFA T. ALONSAGAY')
                                             const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                         
                                             return(
@@ -438,11 +644,27 @@ export default function Certificate_Template_Mgmt() {
                 )}
             </ModalBody>
             <ModalFooter>
-                {action === 'create' &&
+                {['create', 'insert', 'edit'].includes(action) &&
                     <Button isLoading={loading} loadingText='Saving Template...' bgColor='blue.700' colorScheme="blue" mr={3} onClick={handleSaveTemplate} >
                         Save Content
                     </Button>
                 }
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+    {/** Delete Cert Version Modal */}
+    <Modal isOpen={isOpenDCert} onClose={() => { setVersionNumber(''); onCloseDCert();}} size={'xl'} scrollBehavior="inside">
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader>Delete Certificate Version</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody display='flex' flexDir='column' alignItems='center' fontWeight='normal' fontSize='md' textAlign='center' >
+                <Text>Are you sure you want to delete this certificate version?</Text>
+                <Text>This action is permanent and will not be able to restore the data once deleted.</Text>
+            </ModalBody>
+            <ModalFooter display='flex' justifyContent='center'>
+                <Button mr='3' shadow='md'>Cancel</Button>
+                <Button isLoading={loading} loadingText='Deleting...' onClick={handleDeleteVersion} colorScheme='red' shadow='md'>Yes, I authorize to delete this version.</Button>
             </ModalFooter>
         </ModalContent>
     </Modal>

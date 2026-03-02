@@ -326,7 +326,6 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                     const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
                     const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                     const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
-                    //const reg_id = allRegData?.find((reg) => 
 
                     if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -443,7 +442,13 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         </Button>
                         <Button onClick={handlePrint} bgColor='#1C437E' size='sm' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Certificates</Button>
                     </Box>
-                    <Accordion allowMultiple index={openIndexes}>
+                    <Box display='flex' borderBottom='1px solid black' textAlign='center' p='2' textTransform='uppercase' >
+                        <Text w='30px'>#</Text>
+                        <Text w='200px'>Certificate No.</Text>
+                        <Text w='350px'>Trainee Name</Text>
+                        <Text w='100px'>Charge</Text>
+                    </Box>
+                    <Accordion allowMultiple index={openIndexes} allowToggle onChange={setOpenIndexes}>
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
@@ -469,7 +474,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         {
                         return(
                             <AccordionItem key={training.id} _hover={{bgColor: 'gray.50', color: 'black'}} borderRadius='5px' fontWeight='normal' >
-                                <AccordionButton fontSize='sm'>
+                                <AccordionButton fontSize='sm' textTransform='uppercase'>
                                     <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
                                     <Text w="200px" _hover={{color: 'blue.700'}} onClick={() => {
                                         // setRegNum(reg_id); 
@@ -478,7 +483,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         {`${training.cert_no}`}
                                     </Text>                                   
                                     <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
-                                    <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
+                                    {/* <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>   */}
                                     <Text w="100px" >{training.accountType === 0 ? 'TRAINEE' : 'COMPANY'}</Text>  
                                     <AccordionIcon />
                                 </AccordionButton>
@@ -505,7 +510,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
                                                 <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
                                                 <Text >This Certificate is issued to</Text>
-                                                <Text fontWeight='bold' fontSize='16pt'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
+                                                <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                                 <Text>for having successfully completed the training course in</Text>
                                                 <Text fontSize='14pt' mt='2' fontWeight='bold'>{training.certTitle.toUpperCase()}</Text>
                                                 <Box w='85%' mt='3' textAlign='center' sx={{
@@ -529,7 +534,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                         __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
                                                     }}
                                                 />
-                                                <Box pt='4' display='flex' gap='2' alignItems='end' justifyContent='space-between' w='100%'>
+                                                <Box pt='4' display='flex' alignItems='end' w='85%'>
                                                     <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                                         {(() => {
                                                             const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
@@ -649,7 +654,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
                                     <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
                                     <Text >This Certificate is issued to</Text>
-                                    <Text fontWeight='bold' fontSize='16pt'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
+                                    <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                     <Text>for having successfully completed the training course in</Text>
                                     <Text fontSize='14pt' mt='2' fontWeight='bold'>{training.certTitle.toUpperCase()}</Text>
                                     <Box w='85%' mt='3' textAlign='center' sx={{
@@ -673,7 +678,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
                                         }}
                                     />
-                                    <Box pt='8' display='flex' gap='4' alignItems='end' justifyContent='space-between' w='100%'>
+                                    <Box pt='8' display='flex' alignItems='end' w='85%'>
                                         <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                             {(() => {
                                                 const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')

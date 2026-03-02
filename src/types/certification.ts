@@ -14,7 +14,9 @@ export interface CERTIFICATION {
 export interface certVersion {
     version_number: string; // v1.0.yymmdd
     certTitleHtml: string; 
-    certContentHtml: string; 
+    certContentHtml: string;
+    subTitle: string;
+    additionalDescription: string;
     status: 'active' | 'archived';
     primary_author: string;
     createdAt: Timestamp;
