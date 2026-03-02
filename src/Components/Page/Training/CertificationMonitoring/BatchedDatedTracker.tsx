@@ -520,6 +520,21 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                     />
                                                 </Text>
                                                 <Box w='85%' mt='3' textAlign='center' sx={{
+                                                    '& ul': {
+                                                        listStyleType: 'disc',
+                                                        listStylePosition: 'inside',
+                                                        paddingLeft: '1.5rem',
+                                                        margin: '0.5rem 0',
+                                                    },
+                                                    '& ol': {
+                                                        listStyleType: 'decimal',
+                                                        listStylePosition: 'inside',
+                                                        paddingLeft: '1.5rem',
+                                                        margin: '0.5rem 0',
+                                                    },
+                                                    '& li': {
+                                                        marginBottom: '0.25rem',
+                                                    },
                                                     '& p, & div': {
                                                         display: 'inline',
                                                         lineHeight: '1.2',
@@ -670,6 +685,21 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         />
                                     </Text>
                                     <Box w='85%' mt='3' textAlign='center' sx={{
+                                        '& ul': {
+                                            listStyleType: 'disc',
+                                            listStylePosition: 'inside',
+                                            paddingLeft: '1.5rem',
+                                            margin: '0.5rem 0',
+                                        },
+                                        '& ol': {
+                                            listStyleType: 'decimal',
+                                            listStylePosition: 'inside',
+                                            paddingLeft: '1.5rem',
+                                            margin: '0.5rem 0',
+                                        },
+                                        '& li': {
+                                            marginBottom: '0.25rem',
+                                        },
                                         '& p, & div': {
                                             display: 'inline',
                                             lineHeight: '1.2',
