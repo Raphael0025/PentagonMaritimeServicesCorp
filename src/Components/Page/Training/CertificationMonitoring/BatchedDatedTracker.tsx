@@ -447,6 +447,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         <Text w='200px'>Certificate No.</Text>
                         <Text w='350px'>Trainee Name</Text>
                         <Text w='100px'>Charge</Text>
+                        <Text w='100px'>No. of Prints</Text>
+                        <Text w='100px'>Viewed</Text>
                     </Box>
                     <Accordion allowMultiple index={openIndexes} allowToggle onChange={setOpenIndexes}>
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
@@ -629,7 +631,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                     }
                     </Accordion>
                     <Box ref={componentRef} w='100%' placeItems='center' p='0'
-                    //sx={{display: 'none', '@media print': {display: 'block'}}}
+                    sx={{display: 'none', '@media print': {display: 'block'}}}
                     >
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
@@ -674,7 +676,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Text>
                                     </Box>
                                 </Box>
-                                <Box w='100%' h='75%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='2'>
+                                <Box w='100%' h='80%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='2'>
                                     <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
                                     <Text >This Certificate is issued to</Text>
                                     <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
@@ -722,7 +724,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
                                         }}
                                     />
-                                    <Box pt='6' display='flex' alignItems='end' w='85%'>
+                                    <Box pt='10' pb='10' display='flex' alignItems='end' w='85%'>
                                         <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                             {(() => {
                                                 const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
@@ -732,7 +734,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                         <Box position='absolute' top='-40px' left='20%' transform="translateX(-10%)" zIndex={2} >
                                                             <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
                                                         </Box>
-                                                        <Box borderTop='1px solid black' w='80%' />
+                                                        <Box borderTop='1px solid black' w='80%' /> 
                                                         <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
                                                             {(() => {
                                                                 if (!ins) return 'No Instructor';
