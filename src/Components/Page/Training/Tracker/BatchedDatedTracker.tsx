@@ -219,7 +219,6 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                             }
                         }))
 
-                        console.table(generated)
                         setSelectedTrainings([])
                         setLoading(false)
                         resolve({
