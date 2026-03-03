@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Input, Textarea, Spinner, Center, Button, ButtonGroup, Checkbox, InputLeftAddon, FormControl, Select, InputGroup, useDisclosure, useToast, Alert, AlertTitle, AlertDescription, AlertIcon, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Input, Textarea, Spinner, Center, Button, ButtonGroup, Checkbox, InputLeftAddon, HStack, FormControl, Select, InputGroup, useDisclosure, useToast, Alert, AlertTitle, AlertDescription, AlertIcon, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
 
@@ -67,6 +67,7 @@ export default function BDTracker (){
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     const { isOpen: isOpenMod, onOpen: onOpenMod, onClose: onModClose } = useDisclosure()
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
+    const { isOpen: isOpenATD, onOpen: onOpenATD, onClose: onCloseATD } = useDisclosure()
     
     const [allTData, setAllTData] = useState<TRAINING_BY_ID[] | null>(null)
     
@@ -419,6 +420,31 @@ export default function BDTracker (){
         })
     }
 
+    const handleActualtrainingDate = () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const splitActualTD = actualSchedule.split(' to ')
+                    const actor = localStorage.getItem('customToken')
+
+                    await UPDATE_TRAINING(training_ID, {act_start_date: splitActualTD[0] || '', act_end_date: splitActualTD[1] || ''}, actor)
+                }catch(error){
+                    rej(error)
+                }
+                res()
+            }, 500)
+        }).then(() =>{
+            handleToast( 'Actual training Date Updated!', ``, 5000, 'success' )
+        }).catch((error) => {
+            console.error('Error: ', error)
+        }).finally(() =>{
+            onCloseATD()
+            setActSched('')
+            setLoading(false)
+        })
+    }
+
     const handleNotifyTrainees = () => {
         setLoading(true)
         new Promise<void>((res, rej) => {
@@ -717,9 +743,22 @@ export default function BDTracker (){
                                 </Box>
                             </Box>
                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                <Box className='w-full flex uppercase space-x-3'>
-                                    <Text w="100px">{training.act_start_date}</Text>    
-                                    <Text w="100px">{training.act_end_date === '' ? '--' : training.act_end_date}</Text>    
+                                <Box w="210px">
+                                    {training?.act_start_date ? (
+                                        <HStack onClick={() => {setTrainingID(training.id); setActSched(`${training.act_start_date} ${training.act_end_date ? `to ${training.act_end_date}` : ''}`); onOpenATD();}} 
+                                            _hover={{ cursor: 'pointer', color: 'blue.700' }}
+                                            w="100%" justify="space-between">
+                                            <Text>{training.act_start_date}</Text>
+                                            <Text>{training.act_end_date || '--'}</Text>
+                                        </HStack>
+                                    ) : (
+                                        <Text color='gray.500'
+                                            onClick={() => {setTrainingID(training.id); onOpenATD();}}
+                                            _hover={{ cursor: 'pointer', color: 'blue.700' }}
+                                        >
+                                            Encode Training Date
+                                        </Text>
+                                    )}
                                 </Box>
                             </Box>
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
@@ -765,6 +804,21 @@ export default function BDTracker (){
             }))}
             </Box>
         </Box>
+        <Modal isOpen={isOpenATD} onClose={() => {setActSched(''); onCloseATD();}} >
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Actual Training Date</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Box display='flex' flexDir='column' gap='4'>
+                        <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd, YYYY to MMM dd, YYYY`} onChange={(e) => setActSched(e.target.value)} />
+                    </Box>
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={handleActualtrainingDate} w='full' isLoading={loading} loadingText='Saving...' colorScheme='blue' shadow='md' borderRadius='5px' bgColor='blue.700'>Save Training Date</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         <Modal isOpen={isOpenMod} scrollBehavior='inside' size='xl' onClose={() => {setSelectedEmails([]); setInstructor(''); setTrainingID(''); setToggle('t_mode'); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
             <ModalOverlay />
             <ModalContent px='2'>

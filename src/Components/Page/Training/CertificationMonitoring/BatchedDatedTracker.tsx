@@ -631,7 +631,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                     }
                     </Accordion>
                     <Box ref={componentRef} w='100%' placeItems='center' p='0'
-                    sx={{display: 'none', '@media print': {display: 'block'}}}
+                    //sx={{display: 'none', '@media print': {display: 'block'}}}
                     >
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
@@ -732,9 +732,9 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 return(
                                                     <>
                                                         <Box position='absolute' top='-40px' left='20%' transform="translateX(-10%)" zIndex={2} >
-                                                            <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                            <Image src={eSignSrc} w='50%' h='50%' alt='signature' />
                                                         </Box>
-                                                        <Box borderTop='1px solid black' w='80%' /> 
+                                                        <Box borderTop='1px solid black' w='90%' /> 
                                                         <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
                                                             {(() => {
                                                                 if (!ins) return 'No Instructor';
