@@ -116,7 +116,10 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                         return course.id === courseCode?.id_course_ref;
                     });
                     const class_code = courseFound?.class_code
-
+                    const firstName = staff?.split(' ')[0] || '';
+                    const lastName = staff?.split(' ').at(-1) || '';
+                    const staffName = `${firstName} ${lastName}`
+                    
                     const route = trainingMode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
                     await fetch(route, {
                         method: 'POST',
@@ -130,7 +133,7 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                             schedule, 
                             time, 
                             class_code, 
-                            staff, 
+                            staffName, 
                             position 
                         })
                     })

@@ -458,28 +458,31 @@ export default function BDTracker (){
                         return course.id === courseCode?.id_course_ref;
                     });
                     const class_code = courseFound?.class_code
-                    
+                    const firstName = staff?.split(' ')[0] || '';
+                    const lastName = staff?.split(' ').at(-1) || '';
+                    const staffName = `${firstName} ${lastName}`
+
                     const actor = localStorage.getItem('customToken')
                     const splitActualTD = actualSchedule.split(' to ')
                     await UPDATE_TRAINING(training_ID, {act_start_date: splitActualTD[0] || '', act_end_date: splitActualTD[1] || ''}, actor)
-                    // const route = trainingMode === 'olm' ? '/api/training-advise/bd-olm' : '/api/training-advise/bd-olt';
-                    // await fetch(route, {
-                    //     method: 'POST',
-                    //     headers: {
-                    //     'Content-Type': 'application/json',
-                    //     }, 
-                    //     body: JSON.stringify({
-                    //         bcc: selectedEmails, 
-                    //         course_code: courseFound?.course_code, 
-                    //         course_name: courseFound?.course_name, 
-                    //         schedule: cert_date,
-                    //         actual_sched: actualSchedule,
-                    //         time, 
-                    //         class_code, 
-                    //         staff, 
-                    //         position 
-                    //     })
-                    // })
+                    const route = trainingMode === 'olm' ? '/api/training-advise/bd-olm' : '/api/training-advise/bd-olt';
+                    await fetch(route, {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        }, 
+                        body: JSON.stringify({
+                            bcc: selectedEmails, 
+                            course_code: courseFound?.course_code, 
+                            course_name: courseFound?.course_name, 
+                            schedule: cert_date,
+                            actual_sched: actualSchedule,
+                            time, 
+                            class_code, 
+                            staffName, 
+                            position 
+                        })
+                    })
                     res()
                 }catch(error){
                     rej(error)

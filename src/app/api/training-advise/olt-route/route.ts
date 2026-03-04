@@ -165,7 +165,7 @@ export async function POST(request: NextRequest){
                                     <p>
                                     Address: 2/F 801 Building United Nations Ave. Ermita Manila<br>
                                     Landline: (02) 8 281-8155<br>
-                                    Phone: 0960 525 0028 (Training Dept.) | 0977 356 8035 (Registration Dept.)<br>
+                                    Phone: 0918 598 8553 (Training Dept.) | 0977 356 8035 (Registration Dept.)<br>
                                     Email: pentagonmaritimeservices@gmail.com | pentagonmaritimecorp@gmail.com<br>
                                     FB: /pentagonmaritimeservicescorp
                                     </p>

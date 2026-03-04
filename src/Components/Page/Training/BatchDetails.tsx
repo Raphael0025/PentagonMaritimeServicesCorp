@@ -221,6 +221,9 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                     const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} ${batch.end_date === '' ? '' : `to ${endDateArr[1].toUpperCase()}`}` : startDateArr[1].toUpperCase()
                     const class_code = courseFound?.class_code
                     const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
+                    const firstName = staff?.split(' ')[0] || '';
+                    const lastName = staff?.split(' ').at(-1) || '';
+                    const staffName = `${firstName} ${lastName}`
 
                     const route = batch.training_mode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
                     await fetch(route, {
@@ -235,7 +238,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             schedule, 
                             time: timeArr[0], 
                             class_code, 
-                            staff, 
+                            staffName, 
                             position 
                         })
                     })
@@ -265,6 +268,9 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                     const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
                     const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
                     const class_code = courseFound?.class_code
+                    const firstName = staff?.split(' ')[0] || '';
+                    const lastName = staff?.split(' ').at(-1) || '';
+                    const staffName = `${firstName} ${lastName}`
 
                     const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
                     const ins = allInstructors?.find((i) => i.id === trainingBatch?.act_ins);
@@ -282,7 +288,6 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
 
                         return `${rank?.toUpperCase()} ${trainee?.last_name.toUpperCase()}, ${trainee?.first_name.toUpperCase()} ${middleInitial}`;
                     })
-                    console.log(note1)
 
                     await fetch(route, {
                         method: 'POST',
@@ -302,7 +307,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             class_code,
                             presentation_link: c_presentation_link,
                             instructor: intructor_name,
-                            staff, 
+                            staffName, 
                             position 
                         })
                     })
