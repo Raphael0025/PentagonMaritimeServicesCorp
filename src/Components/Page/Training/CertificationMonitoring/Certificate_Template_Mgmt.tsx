@@ -305,6 +305,8 @@ export default function Certificate_Template_Mgmt() {
         setCertTitleHtml('')
         setCertContentHtml('')
         setLoading(false)
+        setAdditionalDescription('')
+        setSubTitle('')
         if (editorRef.current) editorRef.current.innerHTML = ''
         if (titleRef.current) titleRef.current.innerHTML = ''
 
@@ -554,7 +556,7 @@ export default function Certificate_Template_Mgmt() {
                                         }}
                                     />
                                 </Text>
-                                <Box w='75%' textAlign='center' sx={{
+                                <Box w='85%' textAlign='center' sx={{
                                     '& ul': {
                                         listStyleType: 'disc',
                                         listStylePosition: 'inside',

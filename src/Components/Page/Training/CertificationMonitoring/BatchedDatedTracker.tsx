@@ -1,7 +1,8 @@
 'use client'
 
+import NextImage from 'next/image'
 import React, { useState, useRef } from 'react'
-import { Box, Image, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
+import { Box, Image as ChakraImage, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel
 } from '@chakra-ui/react';
@@ -83,6 +84,18 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `${courseName}.pdf`,
+        pageStyle: `
+            @media print {
+                body {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                * {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                }
+            }
+        `,
         onBeforePrint: () => handleToast('Preparing to print certificates...', ``, 3000, 'info'),
         onAfterPrint: () => {handleToast('Printing Certificates!', ``, 3000, 'success'); onCloseRemarks()},
     })
@@ -492,7 +505,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 <AccordionPanel px='10' py='5'>
                                     <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
                                         <Box w='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
-                                            <Image src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
+                                            <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
                                             <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
                                                 <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
                                                     <Text>
@@ -565,7 +578,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                             return(
                                                                 <>
                                                                     <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
-                                                                        <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                                        <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
                                                                     </Box>
                                                                     <Box borderTop='1px solid black' w='80%' />
                                                                     <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
@@ -581,7 +594,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                     </Box>
                                                     <Box w='50%' pb='9' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center'>
                                                         <Box w='1.5in' h='1.5in' ref={attachment} onClick={() => {onOpenModal(); setTraineeDocID(trainee.id); setLN(trainee.last_name); setFN(trainee.first_name); setCat('idPic'); setAT('photos'); setAttachment(trainee.photo)}} _hover={{cursor: 'pointer'}}>
-                                                            <Image src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
+                                                            <ChakraImage src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
                                                         </Box>
                                                     </Box>
                                                     <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
@@ -591,7 +604,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                             return(
                                                                 <>
                                                                     <Box position='absolute' top='-45px' left='-8%' transform="translateX(5%)" zIndex={2} >
-                                                                        <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                                        <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
                                                                     </Box>
                                                                     <Box borderTop='1px solid black' w='90%' />
                                                                     <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
@@ -607,10 +620,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                     </Box>
                                                 </Box>
                                                 <Box pt='7' pb='10' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                                    <Image src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'  objectFit='cover'/>
+                                                    <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'  objectFit='cover'/>
                                                     <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
                                                         <Box w='0.85in' h='0.85in'>
-                                                            <Image src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
+                                                            <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
                                                         </Box>
                                                     </Box>
                                                     <Box fontWeight='bold' display='block' lineHeight={1.45} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
@@ -622,7 +635,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             </Box>
                                         </Box>
                                         <Box position='absolute' bottom='0' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
-                                            <Image  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
+                                            <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
                                         </Box>
                                     </Box>
                                 </AccordionPanel>
@@ -630,8 +643,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         )}})
                     }
                     </Accordion>
-                    <Box ref={componentRef} w='100%' placeItems='center' p='0'
-                    //sx={{display: 'none', '@media print': {display: 'block'}}}
+                    <Box ref={componentRef} w='100%' placeItems='center' p='0' fontFamily='Arial'
+                    //sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
                     >
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
@@ -659,29 +672,29 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         <>
                         <Box w='216mm' h='279mm' position='relative' display='flex' flexDir='column' p='0' justifyContent='center' alignItems='center' >
                             <Box pt='6' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center'>
-                                <Image src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
-                                <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
+                                <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.05in' h='1.15in'  objectFit='cover'/>
+                                <Box pt='12' pr='9' pb='5' display='flex' justifyContent='end' w='85%'>
                                     <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
                                         <Text>
-                                            Certificate No.: 
+                                            Certificate No. : 
                                             <Text as='span' fontWeight={'normal'}>
-                                                {`${training.cert_no}`}
+                                                {` ${training.cert_no}`}
                                             </Text>
                                         </Text>
                                         <Text>
-                                            Registration No.: 
+                                            Registration No. : 
                                             <Text as='span' fontWeight={'normal'}>
-                                                {`REG-${reg_num}`}
+                                                {` REG-${reg_num}`}
                                             </Text>
                                         </Text>
                                     </Box>
                                 </Box>
-                                <Box w='100%' h='80%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='2'>
+                                <Box w='100%' h='80%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
                                     <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
                                     <Text >This Certificate is issued to</Text>
                                     <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                     <Text>for having successfully completed the training course in</Text>
-                                    <Text fontSize='14pt' w='60%' mt='2' textAlign='center' fontWeight='bold'>
+                                    <Text fontSize='14pt' w='60%' mt='4' textAlign='center' fontWeight='bold'>
                                         <div
                                             dangerouslySetInnerHTML={{
                                                 __html: `${training.certTitle}`
@@ -731,11 +744,11 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                                 return(
                                                     <>
-                                                        <Box position='absolute' top='-40px' left='20%' transform="translateX(-10%)" zIndex={2} >
-                                                            <Image src={eSignSrc} w='50%' h='50%' alt='signature' />
+                                                        <Box position='absolute' top='-55px' left='5%' w='220px' h='110px' transform="translateX(-10%)" zIndex={2} >
+                                                            <NextImage src={eSignSrc} fill priority style={{ objectFit: 'contain'}} alt='signature' />
                                                         </Box>
                                                         <Box borderTop='1px solid black' w='90%' /> 
-                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
+                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bolder'>
                                                             {(() => {
                                                                 if (!ins) return 'No Instructor';
                                                                 return `${ins.rank} ${ins.name}`;
@@ -748,7 +761,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Box>
                                         <Box w='50%' pb='9' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center'>
                                             <Box w='1.5in' h='1.5in' _hover={{cursor: 'pointer'}}>
-                                                <Image src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
+                                                <ChakraImage src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
                                             </Box>
                                         </Box>
                                         <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
@@ -758,10 +771,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 return(
                                                     <>
                                                         <Box position='absolute' top='-40px' left='-8%' transform="translateX(5%)" zIndex={2} >
-                                                            <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                            <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
                                                         </Box>
                                                         <Box borderTop='1px solid black' w='90%' />
-                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
+                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bolder'>
                                                             {(() => {
                                                                 if (!ins) return 'No Instructor';
                                                                 return `${ins.rank} ${ins.name}`;
@@ -774,10 +787,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Box>
                                     </Box>
                                     <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                        <Image src={'/cert_ISO_Label.png'} alt='header image' w='1.29in'  objectFit='cover'/>
+                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.39in'  objectFit='cover'/>
                                         <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
                                             <Box w='0.75in' h='0.75in'>
-                                                <Image src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
+                                                <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
                                             </Box>
                                         </Box>
                                         <Box fontWeight='bold' display='block' lineHeight={1.35} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
@@ -789,7 +802,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 </Box>
                             </Box>
                             <Box position='absolute' bottom='1px' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
-                                <Image  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
+                                <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
                             </Box>
                         </Box>
                         </>
@@ -814,9 +827,9 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         {attachmentFile !== '' ? (
                             preview === null ? (
                                 // <Image src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
-                                <Image src={attachmentFile} w='80%' h='100%' alt={`Edit Trainee Image`}/>
+                                <ChakraImage src={attachmentFile} w='80%' h='100%' alt={`Edit Trainee Image`}/>
                             ) : (
-                                <Image src={preview} w='80%' h='100%' alt={filename}/>
+                                <ChakraImage src={preview} w='80%' h='100%' alt={filename}/>
                             )
                         ) : (
                             <Text className='text-gray-400 absolute text-lg'>{filename}</Text>
