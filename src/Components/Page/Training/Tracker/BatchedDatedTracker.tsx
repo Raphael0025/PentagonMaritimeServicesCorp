@@ -401,15 +401,15 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                             <Select isDisabled={loading} 
                             onChange={(e) => 
                                 {
-                                    //handleStatus(training.id, Number(e.target.value))
+                                    handleStatus(training.id, Number(e.target.value))
                                     const course = allCourses?.find((course) => course.id === training.course) || allCourses?.find((course) => course.id === courseCodes?.find((c) => c.id === training.course)?.id_course_ref);
-                                    generateCertForSelected();
+                                    // generateCertForSelected();
                                     //generateCertForTraining(training.id, course?.id || '');
                                 }
                             } 
                             borderRadius='5px' size='xs' w='100px' shadow='md' >
                                 <option value={3} hidden>{handleRegStatus(training.reg_status)}</option>
-                                <option value={6}>Graduated</option>
+                                {/* <option value={6}>Graduated</option> */}
                                 <option value={5}>Pending</option>
                                 <option value={7}>Cancelled</option>
                                 <option value={8}>Absent</option>
