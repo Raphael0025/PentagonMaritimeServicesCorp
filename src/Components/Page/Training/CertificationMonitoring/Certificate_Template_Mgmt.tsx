@@ -193,7 +193,7 @@ export default function Certificate_Template_Mgmt() {
             if (activeVersion) {
                 foundActiveVersion = activeVersion.version_number
                 await UPDATE_VERSION_FIELDS(foundCert.id, foundActiveVersion, {
-                status: 'archived',
+                    status: 'archived',
                 })
             }
 

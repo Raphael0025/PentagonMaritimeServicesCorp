@@ -156,7 +156,7 @@ export interface TRAINING {
     trainingMode: string;
     isCertified: boolean;
     cert_released: Timestamp;
-    cert_status: number; // 0 - pending | 1 - released
+    cert_status: number; // 0 - pending | 1 - unclaimed | 2 - released
     cert_no: string;
 
     certTitle: string;

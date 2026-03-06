@@ -23,6 +23,7 @@ import { CourseBatchByID } from '@/types/course-batches'
 
 import { UPDATE_TRAINING, UPDATE_TRAINING_FORMS } from '@/lib/trainee_controller'
 import { Timestamp } from 'firebase/firestore';
+import { CERTIFICATION_BY_ID } from '@/types/certification';
 
 interface BatchedDatedProps {
     searchTerm: string;
@@ -176,7 +177,8 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                     if (prevCerts.length > 0) startSequence = Math.max(...prevCerts) + 1
                 }
 
-                const activeVersion = certificateVersions.find(v => v.status === 'active')
+                const foundCert = certificates.find((c: CERTIFICATION_BY_ID) => c.courseID === courseID && c.category === 'generic')
+                const activeVersion = foundCert?.versions.find(v => v.status === 'active')
                 if (!activeVersion) {
                     console.warn("No active certificate version found for this course.")
                     setLoading(false)

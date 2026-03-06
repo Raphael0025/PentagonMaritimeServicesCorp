@@ -72,6 +72,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [first_name, setFN] = useState<string>('')
     const [cat, setCat] = useState<string>('')
     const [attachmentType, setAT] = useState<string>('')
+    const [isPrinting, setIsPrinting] = useState<boolean>(false)
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
@@ -96,8 +97,18 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 }
             }
         `,
-        onBeforePrint: () => handleToast('Preparing to print certificates...', ``, 3000, 'info'),
-        onAfterPrint: () => {handleToast('Printing Certificates!', ``, 3000, 'success'); onCloseRemarks()},
+        onBeforePrint: () => {
+            setIsPrinting(true);
+            handleToast('Preparing to print certificates...', ``, 3000, 'info');
+        },
+        onAfterPrint: () => {
+            if(isPrinting) {
+                console.log('printing...')
+                handleToast('Certificates Printed!', ``, 3000, 'success'); 
+            }
+            onCloseRemarks();
+            setIsPrinting(false);
+        },
     })
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
@@ -321,7 +332,6 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 <Text w='160px'>Status</Text>
                 <Text w='200px'>Company</Text>
                 <Text w='150px'>Crewing</Text>
-                <Text w='200px'>Certificate</Text>
                 <Text w='300px'>Notes</Text>
             </Box>
             {/** Current Month Data Table */}
@@ -382,8 +392,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                     onChange={(e) => handleStatus(training.id, Number(e.target.value))} 
                                     borderRadius='5px' size='xs' shadow='md' >
                                     <option value={0} hidden>{handleCertStatus(training.cert_status)}</option>
-                                    <option value={0}>PENDING</option>
-                                    <option value={1}>RELEASED</option>
+                                    <option value={1}>Un-Claimed</option>
+                                    <option value={2}>RELEASED</option>
                                 </Select>
                             </Box>
                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
@@ -393,10 +403,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             </Tooltip>
                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
                                 <Text w="150px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
-                            </Tooltip>  
-                            <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='200px'>
-                                View
-                            </Button>                                     
+                            </Tooltip>                                    
                             <Button onClick={() => { setID(training.id); setRemarks(training.train_remarks); onOpenRemarks(); }} size='sm' p={0} variant='link' w='300px'>
                                 <Text fontWeight='normal' color={training.reg_status === 7 ? 'white' : 'black'}>
                                     {training.train_remarks === '' ? 'None' : training.train_remarks}
@@ -443,7 +450,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 </ModalFooter>
             </ModalContent>
         </Modal>
-        <Modal size='5xl' closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenCert} onClose={() => {setTrainingBatch(initCourseBatch); onCloseCert();}}>
+        <Modal size='6xl' closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenCert} onClose={() => {setTrainingBatch(initCourseBatch); onCloseCert();}}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>{`Batch: ${trainingBatch.batch_no} ${courseName}`}</ModalHeader>
@@ -455,13 +462,14 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         </Button>
                         <Button onClick={handlePrint} bgColor='#1C437E' size='sm' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Certificates</Button>
                     </Box>
-                    <Box display='flex' borderBottom='1px solid black' textAlign='center' p='2' textTransform='uppercase' >
+                    <Box display='flex' borderBottom='1px solid black' justifyContent='space-between' textAlign='center' px='4' py='2' textTransform='uppercase' >
                         <Text w='30px'>#</Text>
                         <Text w='200px'>Certificate No.</Text>
                         <Text w='350px'>Trainee Name</Text>
                         <Text w='100px'>Charge</Text>
                         <Text w='100px'>No. of Prints</Text>
                         <Text w='100px'>Viewed</Text>
+                        <Text w='20px'></Text>
                     </Box>
                     <Accordion allowMultiple index={openIndexes} allowToggle onChange={setOpenIndexes}>
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
@@ -489,7 +497,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         {
                         return(
                             <AccordionItem key={training.id} _hover={{bgColor: 'gray.50', color: 'black'}} borderRadius='5px' fontWeight='normal' >
-                                <AccordionButton fontSize='sm' textTransform='uppercase'>
+                                <AccordionButton fontSize='sm' display='flex' justifyContent='space-between' textTransform='uppercase'>
                                     <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
                                     <Text w="200px" _hover={{color: 'blue.700'}} onClick={() => {
                                         // setRegNum(reg_id); 
@@ -500,6 +508,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                     <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
                                     {/* <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>   */}
                                     <Text w="100px" >{training.accountType === 0 ? 'TRAINEE' : 'COMPANY'}</Text>  
+                                    <Text w="100px" >{training?.printCount || 0}</Text>  
+                                    <Text w="100px" >{training?.hasViewed || 'Not yet'}</Text>  
                                     <AccordionIcon />
                                 </AccordionButton>
                                 <AccordionPanel px='10' py='5'>
@@ -644,7 +654,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                     }
                     </Accordion>
                     <Box ref={componentRef} w='100%' placeItems='center' p='0' fontFamily='Arial'
-                    //sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+                        sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
                     >
                     {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
@@ -673,7 +683,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         <Box w='216mm' h='279mm' position='relative' display='flex' flexDir='column' p='0' justifyContent='center' alignItems='center' >
                             <Box pt='6' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center'>
                                 <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.05in' h='1.15in'  objectFit='cover'/>
-                                <Box pt='12' pr='9' pb='5' display='flex' justifyContent='end' w='85%'>
+                                <Box pt='5' pr='9' pb='0' display='flex' justifyContent='end' w='85%'>
                                     <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
                                         <Text>
                                             Certificate No. : 
@@ -689,12 +699,12 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Text>
                                     </Box>
                                 </Box>
-                                <Box w='100%' h='80%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
+                                <Box w='100%' h='85%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
                                     <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
-                                    <Text >This Certificate is issued to</Text>
+                                    <Text pt='8'>This Certificate is issued to</Text>
                                     <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                     <Text>for having successfully completed the training course in</Text>
-                                    <Text fontSize='14pt' w='60%' mt='4' textAlign='center' fontWeight='bold'>
+                                    <Text fontSize='14pt' w='65%' mt='4' textAlign='center' fontWeight='bold'>
                                         <div
                                             dangerouslySetInnerHTML={{
                                                 __html: `${training.certTitle}`
@@ -732,12 +742,12 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             }}
                                         />
                                     </Box>
-                                    <div style={{marginTop: '10px'}}
+                                    <div style={{marginTop: '40px'}}
                                         dangerouslySetInnerHTML={{
                                             __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
                                         }}
                                     />
-                                    <Box pt='10' pb='10' display='flex' alignItems='end' w='85%'>
+                                    <Box pt='12' pb='5' display='flex' alignItems='end' w='85%'>
                                         <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                             {(() => {
                                                 const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
@@ -801,8 +811,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                     </Box>
                                 </Box>
                             </Box>
-                            <Box position='absolute' bottom='1px' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
-                                <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
+                            <Box position='absolute' bottom='0px' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
+                                <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.15in'  objectFit='cover'/>
                             </Box>
                         </Box>
                         </>

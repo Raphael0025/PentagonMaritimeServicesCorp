@@ -45,6 +45,8 @@ export const handleCertStatus = (status: number) => {
         case 0:
             return 'PENDING';
         case 1:
+            return 'UNCLAIMED';
+        case 2:
             return 'RELEASED';
         default:
             return 'null';
