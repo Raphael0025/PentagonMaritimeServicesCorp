@@ -26,3 +26,18 @@ export const reassignActiveVersion = (versions: certVersion[], deletedIndex: num
 
     return reset
 }
+
+export const relativeDateBackgroundColor = (value: string) => {
+    switch(value){
+        case '2 days ago':
+            return 'red.500';
+        case 'yesterday':
+            return 'yellow.400';
+        case 'today':
+            return 'green.400';
+        case 'tomorrow':
+            return 'blue.400';
+        default:
+            return '';
+    }
+}

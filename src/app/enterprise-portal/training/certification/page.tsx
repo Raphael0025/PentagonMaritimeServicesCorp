@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Box, Text, Input, Spinner, Center, Button, InputLeftAddon, Select, Tabs, TabList, TabPanels, Tab, TabPanel, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon } from '@chakra-ui/icons'
-import { writeBatch, doc, Timestamp } from 'firebase/firestore'
+import { writeBatch, doc, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/trainee_controller'
 
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -46,6 +46,7 @@ export default function TrackerPage(){
     const [filterCompany, setCompanyFilter] = useState<string>('')
     const [filterCharge, setChargeType] = useState<string>('')
     const [filterStatus, setStatus] = useState<string>('')
+    const [filterRecency, setRecencyFilter] = useState<string>('')
 
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
@@ -148,7 +149,7 @@ export default function TrackerPage(){
                     if (monthA !== monthB) return monthA - monthB
                     return numberA - numberB
                 })
-                .filter((t) => t.reg_status === 6) // Only Graduated
+                .filter((t) => t.reg_status === 6 || t.reg_status === 3) // Only Graduated
                 .filter((t) => {
                     if(!filterCharge) return true
                     return t.accountType.toString() === filterCharge
@@ -173,6 +174,11 @@ export default function TrackerPage(){
                     if(filterStatus === '') return true
                     return t.cert_status === Number(filterStatus) 
                 })
+                .filter((f) => {
+                    if(!filterRecency) return true
+                    const recency = getRelativeDate(f.end_date, f.start_date)
+                    return recency.toLowerCase() === filterRecency.toLowerCase()
+                })
 
             if(!allTrainData) return
 
@@ -193,7 +199,7 @@ export default function TrackerPage(){
             setLoading(false)
         }
         fetchData()
-    },[monthSelected, yearSelected, allTrainingData, filterCharge, filterCourse, filterStatus, filterCompany])
+    },[monthSelected, yearSelected, allTrainingData, filterCharge, filterCourse, filterStatus, filterRecency, filterCompany])
 
     const batchedData = useMemo(
         () => allTData?.filter(t => t.regType === 0).filter(t => t.batch !== '1'),
@@ -268,6 +274,37 @@ export default function TrackerPage(){
         }
     }
 
+    const getRelativeDate = (endDate?: string, startDate?: string) => {
+        const dateStr = endDate || startDate
+        if (!dateStr) return '-'
+        const year = new Date().getFullYear()
+        const target = new Date(`${dateStr} ${year}`)
+        if (isNaN(target.getTime())) return '-'
+        
+        console.log('Date Str ',dateStr)
+        console.log(target)
+        const today = new Date()
+
+        // normalize times to midnight
+        today.setHours(0,0,0,0)
+        target.setHours(0,0,0,0)
+
+        const diffDays = Math.round(
+            (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        )
+
+        if (diffDays === -2) return '2 days ago'
+        if (diffDays === -1) return 'yesterday'
+        if (diffDays === 0) return 'today'
+        if (diffDays === 1) return 'tomorrow'
+        if (diffDays === 2) return 'tomorrow 2'
+
+        return target.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+        })   
+    }
+
     return(
     <>
         <Box>
@@ -322,12 +359,19 @@ export default function TrackerPage(){
                                             <option value={"0"}>PENDING</option>
                                             <option value={"1"}>RELEASED</option>
                                         </Select>
-                                        {(filterCourse || filterCompany || filterCharge || filterStatus ) && (
-                                            <Button w='50%' mr={4} onClick={() => { setChargeType(''); setCompanyFilter(''); setStatus(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
+                                        <Select size='sm' mr='4' value={filterRecency} onChange={(e) => {setRecencyFilter(e.target.value);}} shadow='md'>
+                                            <option hidden>Filter Recency</option>
+                                            <option value='today'>Today</option>
+                                            <option value='yesterday'>Yesterday</option>
+                                            <option value='2 days ago'>2 days ago</option>
+                                            <option value='tomorrow'>Tomorrow</option>
+                                        </Select>
+                                        {(filterCourse || filterCompany || filterCharge || filterStatus || filterRecency) && (
+                                            <Button w='50%' mr={4} onClick={() => { setChargeType(''); setRecencyFilter(''); setCompanyFilter(''); setStatus(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                                         )}
                                         <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
                                     </Box>
-                                    <Box display='flex' justifyContent='end' mt='2'>
+                                    <Box display='flex' justifyContent='end' mt='4'>
                                         {t_ids.length !== 0 && (
                                             <>
                                                 <Button onClick={() => handleCertStatus(firstSelected ? 1 : 0)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Release' : 'Release'} Certificate`}</Button>

@@ -6,6 +6,8 @@ import { Box, Image as ChakraImage, Text, Textarea, Spinner, Center, Button, Too
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel
 } from '@chakra-ui/react';
+import JSZip from "jszip"
+import { saveAs } from "file-saver"
 
 import { Timestamp } from 'firebase/firestore'
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -16,6 +18,7 @@ import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleCertStatus } from '@/handlers/trainee_handler'
 import { certBackgroundColor } from '@/handlers/util_handler'
+import { relativeDateBackgroundColor } from '@/handlers/cert_helper'
 
 import { useRank } from '@/context/RankContext'
 import { useCourses } from '@/context/CourseContext'
@@ -31,6 +34,7 @@ import { useReactToPrint } from 'react-to-print'
 import { EditIcon } from '@/Components/Icons'
 
 import { getDownloadURL, ref, getStorage  } from "firebase/storage";
+import { registration } from '../../../../lib/trainee_controller';
 
 interface BatchedDatedProps {
     searchTerm: string;
@@ -73,6 +77,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [cat, setCat] = useState<string>('')
     const [attachmentType, setAT] = useState<string>('')
     const [isPrinting, setIsPrinting] = useState<boolean>(false)
+    const [trainingID, setSelectedTrainingID] = useState<string[]>([])
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
@@ -121,6 +126,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
             duration: timer,
             isClosable: true,
         })
+    }
+
+    const handlePrintCertificates = () => {
+
     }
 
     const handleStatus = async (trainingID: string, newStatus: number) => {
@@ -199,13 +208,40 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         })
     }
 
+    const getRelativeDate = (endDate?: string, startDate?: string) => {
+        const dateStr = endDate || startDate
+        if (!dateStr) return '-'
+        const year = new Date().getFullYear()
+        const target = new Date(`${dateStr} ${year}`)
+        if (isNaN(target.getTime())) return '-'
+        
+        const today = new Date()
+
+        // normalize times to midnight
+        today.setHours(0,0,0,0)
+        target.setHours(0,0,0,0)
+
+        const diffDays = Math.round(
+            (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        )
+
+        if (diffDays === -2) return '2 days ago'
+        if (diffDays === -1) return 'yesterday'
+        if (diffDays === 0) return 'today'
+        if (diffDays === 1) return 'tomorrow'
+
+        return target.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+        })   
+    }
+
     const formatTrainingDate = (endDate?: string, startDate?: string) => {
         const dateStr = endDate || startDate
         if (!dateStr) return '-'
         const date = new Date(dateStr)
-        if (isNaN(date.getTime())) return '-'
-        // Add 1 day
-        date.setDate(date.getDate() + 1)
+        if(isNaN(date.getTime())) return '-'
+
         return date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -316,13 +352,61 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         }
     }
 
+    const fetchBlob = (url: string): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest()
+            xhr.open("GET", url, true)
+            xhr.responseType = "blob"
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    resolve(xhr.response)
+                } else {
+                    reject(new Error(`Failed with status ${xhr.status}`))
+                }
+            }
+
+            xhr.onerror = () => reject(new Error("Network error"))
+            xhr.send()
+        })
+    }
+
+    const downloadAllImages = async (b_trainings: TRAINING_BY_ID[]) => {
+        const zip = new JSZip();
+        const folder = zip.folder(`Batch_${trainingBatch.batch_no}`);
+
+        for (const training of b_trainings) {
+            const registration = allRegData?.find(r => r.id === training.reg_ref_id);
+            const trainee = allTrainee?.find(t => t.id === registration?.trainee_ref_id);
+
+            if (!trainee?.photo) continue;
+
+            try {
+                // Make sure the URL is accessible
+                const response = await fetch(trainee.photo);
+                if (!response.ok) throw new Error(`Failed to fetch ${trainee.photo}`);
+
+                const blob = await response.blob();
+                const fileName = `${trainee.last_name}_${trainee.first_name}.jpg`;
+                folder?.file(fileName, blob);
+
+            } catch (err) {
+                console.error("Download failed:", err);
+            }
+        }
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        saveAs(zipBlob, `Batch_${trainingBatch.batch_no}_Photos.zip`);
+    }
+
     return(
         <>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}
             <Box w='1750px' bgColor='blue.700' position='sticky' top='0' zIndex='9' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
                 <Text w='30px'>#</Text>
-                <Text w='100px'>Date Created</Text>
+                <Text w='100px'>Completion Recency</Text>
+                <Text w='100px'>Completion Date</Text>
                 <Text w='50px'>Batch</Text>
                 <Text w='200px'>Certificate No.</Text>
                 <Text w='350px'>Trainee Name</Text>
@@ -349,6 +433,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                     const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
                     const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                     const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
+                    const relativeDate = getRelativeDate(training.end_date, training.start_date)
 
                     if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -361,7 +446,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                     return(
                         <Box key={training.id} _hover={{bgColor: 'blue.100', color: 'black'}} borderRadius='5px' color={training.cert_status === 7 ? 'white' : 'black'} w='1750px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-3 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                             <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
-                            <Text w="100px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
+                            <Text w="100px" bg={relativeDateBackgroundColor(relativeDate)} borderRadius='5px' >
+                                {relativeDate}
+                            </Text>                                                                             
+                            <Text w="110px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
                             <Text w="50px" onClick={() => {
                                 const foundBatch = courseBatch?.find((cb) => cb.id === training.batch)
                                 const foundCourse = allCourses?.find((course) => course.id === foundBatch?.course)?.course_name
@@ -385,16 +473,19 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             </Text> 
                             <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
-                            <Box w='160px' display='flex' gap='2'>
+                            <Box w='160px' display='flex' justifyContent='center' gap='2'>
                                 <Checkbox onChange={() => {setFirstSelected(training.cert_status === 0 ? true : false); setTrainingIDs(prev => [...prev, training.id])}} isChecked={training?.id === trainingIDs.find((id) => id === training.id)} />
-                                <Select 
+                                {/* <Select 
                                     bgColor={certBackgroundColor(training.cert_status)} 
                                     onChange={(e) => handleStatus(training.id, Number(e.target.value))} 
                                     borderRadius='5px' size='xs' shadow='md' >
                                     <option value={0} hidden>{handleCertStatus(training.cert_status)}</option>
                                     <option value={1}>Un-Claimed</option>
                                     <option value={2}>RELEASED</option>
-                                </Select>
+                                </Select> */}
+                                <Text px='2' bgColor={certBackgroundColor(training.cert_status)} borderRadius='5px' size='xs'>
+                                    {handleCertStatus(training.cert_status)}
+                                </Text>
                             </Box>
                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
                                 <Text w="200px" noOfLines={1} className='text-wrap'>
@@ -456,207 +547,235 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 <ModalHeader>{`Batch: ${trainingBatch.batch_no} ${courseName}`}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody pb='5'>
-                    <Box borderBottom='1px solid black' pb='4' w='100%' display='flex' justifyContent='end' alignItems='center'>
-                        <Button size='sm' variant='solid' onClick={toggleAll} mr='3'>
-                            {Array.isArray(openIndexes) && openIndexes.length === trainings.length ? "Collapse All" : "Expand All"}
-                        </Button>
-                        <Button onClick={handlePrint} bgColor='#1C437E' size='sm' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Certificates</Button>
-                    </Box>
-                    <Box display='flex' borderBottom='1px solid black' justifyContent='space-between' textAlign='center' px='4' py='2' textTransform='uppercase' >
-                        <Text w='30px'>#</Text>
-                        <Text w='200px'>Certificate No.</Text>
-                        <Text w='350px'>Trainee Name</Text>
-                        <Text w='100px'>Charge</Text>
-                        <Text w='100px'>No. of Prints</Text>
-                        <Text w='100px'>Viewed</Text>
-                        <Text w='20px'></Text>
-                    </Box>
-                    <Accordion allowMultiple index={openIndexes} allowToggle onChange={setOpenIndexes}>
-                    {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
-                        const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
-                        const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
-                        const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
-                        //const reg_id = allRegData?.find((reg) => 
-                        const batchYear = courseBatch?.find((batch) => batch.id === training.batch)?.createdAt
-                        const getYear = batchYear?.toDate().getFullYear()
-                        const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[0]
-                        const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[1].replace(/\D/g, '')
-                        const nthDay = getOrdinalHTML(Number(splitDay))
-    
-                        const trainingDate = training.numOfDays === 1 
-                            ? formatTrainingSchedule(training.start_date, getYear || 0) 
-                            : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
-    
-                        if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
-                        ))
-                        {
+                    {(() => {
+                        const batchTrainings = trainings.filter((td) => td.batch === trainingBatch.id)
                         return(
-                            <AccordionItem key={training.id} _hover={{bgColor: 'gray.50', color: 'black'}} borderRadius='5px' fontWeight='normal' >
-                                <AccordionButton fontSize='sm' display='flex' justifyContent='space-between' textTransform='uppercase'>
-                                    <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
-                                    <Text w="200px" _hover={{color: 'blue.700'}} onClick={() => {
-                                        // setRegNum(reg_id); 
-                                        // onOpenReg();
-                                        }} className='hover:cursor-pointer'>
-                                        {`${training.cert_no}`}
-                                    </Text>                                   
-                                    <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
-                                    {/* <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>   */}
-                                    <Text w="100px" >{training.accountType === 0 ? 'TRAINEE' : 'COMPANY'}</Text>  
-                                    <Text w="100px" >{training?.printCount || 0}</Text>  
-                                    <Text w="100px" >{training?.hasViewed || 'Not yet'}</Text>  
-                                    <AccordionIcon />
-                                </AccordionButton>
-                                <AccordionPanel px='10' py='5'>
-                                    <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
-                                        <Box w='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
-                                            <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
-                                            <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
-                                                <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
-                                                    <Text>
-                                                        Certificate No.: 
-                                                        <Text as='span' fontWeight={'normal'}>
-                                                            {`${training.cert_no}`}
-                                                        </Text>
-                                                    </Text>
-                                                    <Text>
-                                                        Registration No.: 
-                                                        <Text as='span' fontWeight={'normal'}>
-                                                            {`REG-${reg_num}`}
-                                                        </Text>
-                                                    </Text>
-                                                </Box>
-                                            </Box>
-                                            <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
-                                                <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
-                                                <Text >This Certificate is issued to</Text>
-                                                <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
-                                                <Text>for having successfully completed the training course in</Text>
-                                                <Text fontSize='14pt' w='60%' mt='2' textAlign='center' fontWeight='bold'>
-                                                    <div
-                                                        dangerouslySetInnerHTML={{
-                                                            __html: `${training.certTitle}`
-                                                        }}
-                                                    />
-                                                </Text>
-                                                <Box w='85%' mt='3' textAlign='center' sx={{
-                                                    '& ul': {
-                                                        listStyleType: 'disc',
-                                                        listStylePosition: 'inside',
-                                                        paddingLeft: '1.5rem',
-                                                        margin: '0.0055rem 0',
-                                                    },
-                                                    '& ol': {
-                                                        listStyleType: 'decimal',
-                                                        listStylePosition: 'inside',
-                                                        paddingLeft: '1.5rem',
-                                                        margin: '0.0055rem 0',
-                                                    },
-                                                    '& li': {
-                                                        marginBottom: '0.0055rem',
-                                                    },
-                                                    '& p, & div': {
-                                                        display: 'inline',
-                                                        lineHeight: '1.2',
-                                                        margin: 0,
-                                                    },
-                                                    '& br': {
-                                                        display: 'inline',
-                                                    },
-                                                }}>
-                                                    <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
-                                                        dangerouslySetInnerHTML={{
-                                                            __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
-                                                        }}
-                                                    />
-                                                </Box>
-                                                <div style={{marginTop: '10px'}}
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
-                                                    }}
-                                                />
-                                                <Box pt='4' display='flex' alignItems='end' w='85%'>
-                                                    <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
-                                                        {(() => {
-                                                            const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
-                                                            const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                                                            return(
-                                                                <>
-                                                                    <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
-                                                                        <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
-                                                                    </Box>
-                                                                    <Box borderTop='1px solid black' w='80%' />
-                                                                    <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
-                                                                        {(() => {
-                                                                            if (!ins) return 'No Instructor';
-                                                                            return `${ins.rank} ${ins.name}`;
-                                                                        })()}
-                                                                    </Text>
-                                                                    <Text fontSize='10pt'>Training Director</Text>
-                                                                </>
-                                                            )
-                                                        })()}
-                                                    </Box>
-                                                    <Box w='50%' pb='9' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center'>
-                                                        <Box w='1.5in' h='1.5in' ref={attachment} onClick={() => {onOpenModal(); setTraineeDocID(trainee.id); setLN(trainee.last_name); setFN(trainee.first_name); setCat('idPic'); setAT('photos'); setAttachment(trainee.photo)}} _hover={{cursor: 'pointer'}}>
-                                                            <ChakraImage src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
+                        <>
+                            <Box borderBottom='1px solid black' pb='4' w='100%' display='flex' justifyContent='space-between' alignItems='center'>
+                                <Box>
+                                    <Checkbox 
+                                        onChange={() => {
+                                                if (trainingID.length === batchTrainings.length) {
+                                                    setSelectedTrainingID([])
+                                                } else {
+                                                    setSelectedTrainingID(batchTrainings.map((t) => t.id))
+                                                }
+                                            }}
+                                    >
+                                        <Text fontSize='sm' fontWeight='normal'>
+                                            {trainingID.length === batchTrainings.length
+                                            ? "Deselect All"
+                                            : "Select All"}
+                                        </Text>
+                                    </Checkbox>
+                                    <Button onClick={() => downloadAllImages(batchTrainings)}  size='sm' >Download All Photos</Button>
+                                </Box>
+                                <Box>
+                                    <Button size='sm' variant='solid' onClick={toggleAll} mr='3'>
+                                        {Array.isArray(openIndexes) && openIndexes.length === trainings.length ? "Collapse All" : "Expand All"}
+                                    </Button>
+                                    <Button isDisabled={trainingID.length === 0} onClick={handlePrint} bgColor='#1C437E' size='sm' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Certificates</Button>
+                                </Box>
+                            </Box>
+                            <Box display='flex' borderBottom='1px solid black' justifyContent='space-between' textAlign='center' px='4' py='2' textTransform='uppercase' >
+                                <Text w='60px'>#</Text>
+                                <Text w='200px'>Certificate No.</Text>
+                                <Text w='350px'>Trainee Name</Text>
+                                <Text w='100px'>Charge</Text>
+                                <Text w='100px'>No. of Prints</Text>
+                                <Text w='100px'>Viewed</Text>
+                                <Text w='20px'></Text>
+                            </Box>
+                            <Accordion allowMultiple index={openIndexes} allowToggle onChange={setOpenIndexes}>
+                            {batchTrainings?.sort((a, b) => a.cert_no.localeCompare(b.cert_no)).map((training: TRAINING_BY_ID, index: number) => {
+                                const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
+                                const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
+                                const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
+                                //const reg_id = allRegData?.find((reg) => 
+                                const batchYear = courseBatch?.find((batch) => batch.id === training.batch)?.createdAt
+                                const getYear = batchYear?.toDate().getFullYear()
+                                const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[0]
+                                const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[1].replace(/\D/g, '')
+                                const nthDay = getOrdinalHTML(Number(splitDay))
+            
+                                const trainingDate = training.numOfDays === 1 
+                                    ? formatTrainingSchedule(training.start_date, getYear || 0) 
+                                    : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
+            
+                                if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
+                                ))
+                                {
+                                return(
+                                    <AccordionItem key={training.id} _hover={{bgColor: 'gray.50', color: 'black'}} borderRadius='5px' fontWeight='normal' >
+                                        <AccordionButton fontSize='sm' display='flex' justifyContent='space-between' textTransform='uppercase'>
+                                            <Checkbox onChange={() => {setSelectedTrainingID(prev => prev.includes(training.id) ? prev.filter(id => id !== training.id) : [...prev, training.id])}} isChecked={trainingID.includes(training.id)}/>
+                                            <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
+                                            <Text w="200px" _hover={{color: 'blue.700'}} onClick={() => {
+                                                // setRegNum(reg_id); 
+                                                // onOpenReg();
+                                                }} className='hover:cursor-pointer'>
+                                                {`${training.cert_no}`}
+                                            </Text>                                   
+                                            <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
+                                            {/* <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>   */}
+                                            <Text w="100px" >{training.accountType === 0 ? 'TRAINEE' : 'COMPANY'}</Text>  
+                                            <Text w="100px" >{training?.printCount || 0}</Text>  
+                                            <Text w="100px" >{training?.hasViewed || 'Not yet'}</Text>  
+                                            <AccordionIcon />
+                                        </AccordionButton>
+                                        <AccordionPanel px='10' py='5'>
+                                            <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
+                                                <Box w='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
+                                                    <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
+                                                    <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
+                                                        <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
+                                                            <Text>
+                                                                Certificate No.: 
+                                                                <Text as='span' fontWeight={'normal'}>
+                                                                    {`${training.cert_no}`}
+                                                                </Text>
+                                                            </Text>
+                                                            <Text>
+                                                                Registration No.: 
+                                                                <Text as='span' fontWeight={'normal'}>
+                                                                    {`REG-${reg_num}`}
+                                                                </Text>
+                                                            </Text>
                                                         </Box>
                                                     </Box>
-                                                    <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
-                                                        {(() => {
-                                                            const ins = allInstructors?.find((i) => i.name === 'MA. JOSEFA T. ALONSAGAY')
-                                                            const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                                                            return(
-                                                                <>
-                                                                    <Box position='absolute' top='-45px' left='-8%' transform="translateX(5%)" zIndex={2} >
-                                                                        <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
-                                                                    </Box>
-                                                                    <Box borderTop='1px solid black' w='90%' />
-                                                                    <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
-                                                                        {(() => {
-                                                                            if (!ins) return 'No Instructor';
-                                                                            return `${ins.rank} ${ins.name}`;
-                                                                        })()}
-                                                                    </Text>
-                                                                    <Text fontSize='10pt'>President</Text>
-                                                                </>
-                                                            )
-                                                        })()}
-                                                    </Box>
-                                                </Box>
-                                                <Box pt='7' pb='10' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                                    <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'  objectFit='cover'/>
-                                                    <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
-                                                        <Box w='0.85in' h='0.85in'>
-                                                            <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
+                                                    <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
+                                                        <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
+                                                        <Text >This Certificate is issued to</Text>
+                                                        <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
+                                                        <Text>for having successfully completed the training course in</Text>
+                                                        <Text fontSize='14pt' w='60%' mt='2' textAlign='center' fontWeight='bold'>
+                                                            <div
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: `${training.certTitle}`
+                                                                }}
+                                                            />
+                                                        </Text>
+                                                        <Box w='85%' mt='3' textAlign='center' sx={{
+                                                            '& ul': {
+                                                                listStyleType: 'disc',
+                                                                listStylePosition: 'inside',
+                                                                paddingLeft: '1.5rem',
+                                                                margin: '0.0055rem 0',
+                                                            },
+                                                            '& ol': {
+                                                                listStyleType: 'decimal',
+                                                                listStylePosition: 'inside',
+                                                                paddingLeft: '1.5rem',
+                                                                margin: '0.0055rem 0',
+                                                            },
+                                                            '& li': {
+                                                                marginBottom: '0.0055rem',
+                                                            },
+                                                            '& p, & div': {
+                                                                display: 'inline',
+                                                                lineHeight: '1.2',
+                                                                margin: 0,
+                                                            },
+                                                            '& br': {
+                                                                display: 'inline',
+                                                            },
+                                                        }}>
+                                                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                        <div style={{marginTop: '10px'}}
+                                                            dangerouslySetInnerHTML={{
+                                                                __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
+                                                            }}
+                                                        />
+                                                        <Box pt='4' display='flex' alignItems='end' w='85%'>
+                                                            <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
+                                                                {(() => {
+                                                                    const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
+                                                                    const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                                                                    return(
+                                                                        <>
+                                                                            <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
+                                                                                <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                                            </Box>
+                                                                            <Box borderTop='1px solid black' w='80%' />
+                                                                            <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
+                                                                                {(() => {
+                                                                                    if (!ins) return 'No Instructor';
+                                                                                    return `${ins.rank} ${ins.name}`;
+                                                                                })()}
+                                                                            </Text>
+                                                                            <Text fontSize='10pt'>Training Director</Text>
+                                                                        </>
+                                                                    )
+                                                                })()}
+                                                            </Box>
+                                                            <Box w='50%' pb='9' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center'>
+                                                                <Box w='1.5in' h='1.5in' ref={attachment} onClick={() => {onOpenModal(); setTraineeDocID(trainee.id); setLN(trainee.last_name); setFN(trainee.first_name); setCat('idPic'); setAT('photos'); setAttachment(trainee.photo)}} _hover={{cursor: 'pointer'}}>
+                                                                    <ChakraImage src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
+                                                                </Box>
+                                                            </Box>
+                                                            <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
+                                                                {(() => {
+                                                                    const ins = allInstructors?.find((i) => i.name === 'MA. JOSEFA T. ALONSAGAY')
+                                                                    const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                                                                    return(
+                                                                        <>
+                                                                            <Box position='absolute' top='-45px' left='-8%' transform="translateX(5%)" zIndex={2} >
+                                                                                <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                                            </Box>
+                                                                            <Box borderTop='1px solid black' w='90%' />
+                                                                            <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
+                                                                                {(() => {
+                                                                                    if (!ins) return 'No Instructor';
+                                                                                    return `${ins.rank} ${ins.name}`;
+                                                                                })()}
+                                                                            </Text>
+                                                                            <Text fontSize='10pt'>President</Text>
+                                                                        </>
+                                                                    )
+                                                                })()}
+                                                            </Box>
+                                                        </Box>
+                                                        <Box pt='7' pb='10' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
+                                                            <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'  objectFit='cover'/>
+                                                            <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
+                                                                <Box w='0.85in' h='0.85in'>
+                                                                    <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
+                                                                </Box>
+                                                            </Box>
+                                                            <Box fontWeight='bold' display='block' lineHeight={1.45} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
+                                                                <Text>Landline: (02) 8281-8155</Text>
+                                                                <Text>Email: pentagonmaritimeservices@gmail.com</Text>
+                                                                <Text>FB: pentagonmaritimeservicescorp</Text>
+                                                            </Box>
                                                         </Box>
                                                     </Box>
-                                                    <Box fontWeight='bold' display='block' lineHeight={1.45} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
-                                                        <Text>Landline: (02) 8281-8155</Text>
-                                                        <Text>Email: pentagonmaritimeservices@gmail.com</Text>
-                                                        <Text>FB: pentagonmaritimeservicescorp</Text>
-                                                    </Box>
+                                                </Box>
+                                                <Box position='absolute' bottom='0' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
+                                                    <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
                                                 </Box>
                                             </Box>
-                                        </Box>
-                                        <Box position='absolute' bottom='0' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
-                                            <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
-                                        </Box>
-                                    </Box>
-                                </AccordionPanel>
-                            </AccordionItem>
-                        )}})
-                    }
-                    </Accordion>
+                                        </AccordionPanel>
+                                    </AccordionItem>
+                                )}})
+                            }
+                            </Accordion>
+                        </>
+                        )
+                    })()}
                     <Box ref={componentRef} w='100%' placeItems='center' p='0' fontFamily='Arial'
                         sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
                     >
-                    {trainings?.filter((td) => td.batch === trainingBatch.id).map((training: TRAINING_BY_ID, index: number) => {
+                    {trainings?.filter((td) => td.batch === trainingBatch.id).filter((t) => {if(trainingID.length === 0) return true; return trainingID.includes(t.id)}).map((training: TRAINING_BY_ID, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                         const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
@@ -747,7 +866,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
                                         }}
                                     />
-                                    <Box pt='12' pb='5' display='flex' alignItems='end' w='85%'>
+                                    <Box pt='12' pb='16' display='flex' alignItems='end' w='85%'>
                                         <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                             {(() => {
                                                 const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
@@ -797,13 +916,13 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Box>
                                     </Box>
                                     <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.39in'  objectFit='cover'/>
-                                        <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
-                                            <Box w='0.75in' h='0.75in'>
+                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.39in' h='0.68in' objectFit='cover'/>
+                                        <Box w='0.8in' display='flex' justifyContent='center' alignItems='center' h='0.65in'>
+                                            <Box w='0.68in' h='0.7in'>
                                                 <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
                                             </Box>
                                         </Box>
-                                        <Box fontWeight='bold' display='block' lineHeight={1.35} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
+                                        <Box fontWeight='bold' display='block' lineHeight={1.35} fontSize='9pt' ps='7' pr='7' py='2' borderLeft='1px solid black'>
                                             <Text>Landline: (02) 8281-8155</Text>
                                             <Text>Email: pentagonmaritimeservices@gmail.com</Text>
                                             <Text>FB: pentagonmaritimeservicescorp</Text>
