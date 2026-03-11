@@ -6,8 +6,6 @@ import { Box, Image as ChakraImage, Text, Textarea, Spinner, Center, Button, Too
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel
 } from '@chakra-ui/react';
-import JSZip from "jszip"
-import { saveAs } from "file-saver"
 
 import { Timestamp } from 'firebase/firestore'
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -34,7 +32,6 @@ import { useReactToPrint } from 'react-to-print'
 import { EditIcon } from '@/Components/Icons'
 
 import { getDownloadURL, ref, getStorage  } from "firebase/storage";
-import { registration } from '../../../../lib/trainee_controller';
 
 interface BatchedDatedProps {
     searchTerm: string;
@@ -108,6 +105,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         },
         onAfterPrint: () => {
             if(isPrinting) {
+                handlePrintCertificates();
                 console.log('printing...')
                 handleToast('Certificates Printed!', ``, 3000, 'success'); 
             }
@@ -128,8 +126,15 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         })
     }
 
-    const handlePrintCertificates = () => {
-
+    const handlePrintCertificates = async () => {
+        trainingID.map(async (training_id) => {
+            await UPDATE_TRAINING(training_id, 
+                { 
+                    printCount: (trainings.find((tr) => tr.id === training_id)?.printCount || 0) + 1,
+                    cert_status: 1,
+                }, 
+                localStorage.getItem('customToken') || '')
+        })
     }
 
     const handleStatus = async (trainingID: string, newStatus: number) => {
@@ -352,53 +357,6 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         }
     }
 
-    const fetchBlob = (url: string): Promise<Blob> => {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest()
-            xhr.open("GET", url, true)
-            xhr.responseType = "blob"
-
-            xhr.onload = () => {
-                if (xhr.status === 200) {
-                    resolve(xhr.response)
-                } else {
-                    reject(new Error(`Failed with status ${xhr.status}`))
-                }
-            }
-
-            xhr.onerror = () => reject(new Error("Network error"))
-            xhr.send()
-        })
-    }
-
-    const downloadAllImages = async (b_trainings: TRAINING_BY_ID[]) => {
-        const zip = new JSZip();
-        const folder = zip.folder(`Batch_${trainingBatch.batch_no}`);
-
-        for (const training of b_trainings) {
-            const registration = allRegData?.find(r => r.id === training.reg_ref_id);
-            const trainee = allTrainee?.find(t => t.id === registration?.trainee_ref_id);
-
-            if (!trainee?.photo) continue;
-
-            try {
-                // Make sure the URL is accessible
-                const response = await fetch(trainee.photo);
-                if (!response.ok) throw new Error(`Failed to fetch ${trainee.photo}`);
-
-                const blob = await response.blob();
-                const fileName = `${trainee.last_name}_${trainee.first_name}.jpg`;
-                folder?.file(fileName, blob);
-
-            } catch (err) {
-                console.error("Download failed:", err);
-            }
-        }
-
-        const zipBlob = await zip.generateAsync({ type: "blob" });
-        saveAs(zipBlob, `Batch_${trainingBatch.batch_no}_Photos.zip`);
-    }
-
     return(
         <>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
@@ -552,24 +510,21 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         return(
                         <>
                             <Box borderBottom='1px solid black' pb='4' w='100%' display='flex' justifyContent='space-between' alignItems='center'>
-                                <Box>
-                                    <Checkbox 
-                                        onChange={() => {
-                                                if (trainingID.length === batchTrainings.length) {
-                                                    setSelectedTrainingID([])
-                                                } else {
-                                                    setSelectedTrainingID(batchTrainings.map((t) => t.id))
-                                                }
-                                            }}
-                                    >
-                                        <Text fontSize='sm' fontWeight='normal'>
-                                            {trainingID.length === batchTrainings.length
-                                            ? "Deselect All"
-                                            : "Select All"}
-                                        </Text>
-                                    </Checkbox>
-                                    <Button onClick={() => downloadAllImages(batchTrainings)}  size='sm' >Download All Photos</Button>
-                                </Box>
+                                <Checkbox 
+                                    onChange={() => {
+                                            if (trainingID.length === batchTrainings.length) {
+                                                setSelectedTrainingID([])
+                                            } else {
+                                                setSelectedTrainingID(batchTrainings.map((t) => t.id))
+                                            }
+                                        }}
+                                >
+                                    <Text fontSize='sm' fontWeight='normal'>
+                                        {trainingID.length === batchTrainings.length
+                                        ? "Deselect All"
+                                        : "Select All"}
+                                    </Text>
+                                </Checkbox>
                                 <Box>
                                     <Button size='sm' variant='solid' onClick={toggleAll} mr='3'>
                                         {Array.isArray(openIndexes) && openIndexes.length === trainings.length ? "Collapse All" : "Expand All"}
