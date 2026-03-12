@@ -272,7 +272,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                                 <Text as='span'>{`To:`}</Text>
                                 <Text as='span'>{`${endDate}`}</Text>
                             </Text>
-                            <Button onClick={() => {setStart(''); setEnd(''); setBatch(0); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
+                            <Button onClick={() => {setStart(''); setEnd(''); setBatch(''); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
                         </Box>
                         <Box py='4'>
                             <Box px='6' display='flex' color='gray.600' py='3' justifyContent={'space-between'} alignItems={'center'} borderRadius='5px' borderWidth='1px' borderColor='gray.400'>
