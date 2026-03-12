@@ -251,7 +251,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                             <Box display='flex' flexDir='column' alignItems='start'>
                                 <FormControl display='flex' flexDir='column' justifyContent='start' alignItems='start'>
                                     <Text fontSize='14px' mr='4'>Batch:</Text>
-                                    <Input className={`${selectedTraining.length === '' ? 'hover:cursor-not-allowed' : ''}`} value={batch === '' ? '' : batch} isDisabled={selectedTraining.length === 0} type='string' onChange={(e) => setBatch(e.target.value)} placeholder='Batch #' shadow='md' />
+                                    <Input className={`${selectedTraining.length === 0 ? 'hover:cursor-not-allowed' : ''}`} value={batch === '' ? '' : batch} isDisabled={selectedTraining.length === 0} type='string' onChange={(e) => setBatch(e.target.value)} placeholder='Batch #' shadow='md' />
                                 </FormControl>
                                 {/* <FormLabel mt='2' fontSize='12px' color='red.500'>
                                     <Text>
