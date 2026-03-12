@@ -76,9 +76,9 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
     //                         return batchNum > max ? batchNum : max
     //                     }, 0) ?? 0
 
-    const handleBatchDuplication = (batchVal: string) => {
-        return courseBatch?.some((batch) => batch.course === courseName?.id && batch.batch_no === batchVal)
-    }
+    // const handleBatchDuplication = (batchVal: string) => {
+    //     return courseBatch?.some((batch) => batch.course === courseName?.id && batch.batch_no === batchVal)
+    // }
 
     const handleCreateBatch = async () => {
         setLoading(true)
@@ -123,7 +123,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             setSelectedTrainings([])
             setStart('')
             setEnd('')
-            setBatch(0)
+            setBatch('')
             setNumDays(0)
             onClose()
         })

@@ -236,7 +236,7 @@ export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course
             setIndx(0)
             setStart('')
             setEnd('')
-            setBatch(0)
+            setBatch('')
             setNumDays(0)
             onClose()
         })
