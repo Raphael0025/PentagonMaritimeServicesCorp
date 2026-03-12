@@ -113,10 +113,10 @@ export default function TrackerPage(){
                     /* ======================
                     2️⃣ BATCH NUMBER SORT
                     ====================== */
-                    const batchA = courseBatch?.find((batch) => batch.id === a.batch)?.batch_no ?? 0;
-                    const batchB = courseBatch?.find((batch) => batch.id === b.batch)?.batch_no ?? 0;
+                    const batchA = courseBatch?.find((batch) => batch.id === a.batch)?.batch_no ?? '';
+                    const batchB = courseBatch?.find((batch) => batch.id === b.batch)?.batch_no ?? '';
                     if (batchA !== batchB) {
-                        return batchB - batchA;
+                        return Number(batchB) - Number(batchA);
                     }
                     /* ======================
                     3️⃣ REGISTRATION NO SORT
