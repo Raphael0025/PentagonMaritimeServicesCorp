@@ -204,6 +204,7 @@ export const initTraining = {
     cert_status: 0, // 0 - pending | 1 - released
     cert_no: '',
 
+    transmittalID: '',
     certTitle: '',
     certContent: '',
     cert_version: '',
