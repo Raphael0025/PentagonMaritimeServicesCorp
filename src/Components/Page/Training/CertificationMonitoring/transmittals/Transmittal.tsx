@@ -19,7 +19,7 @@ import { useTraining } from '@/context/TrainingContext'
 import { ADD_TRANSMITTAL, DELETE_TRANSMITTAL} from '@/lib/certification_controller'
 
 import { TRAINING_BY_ID } from '@/types/trainees'
-import { TransmittalEndorsement, TRANSMITTAL } from '@/types/certifications'
+import { TransmittalEndorsement, TRANSMITTAL } from '@/types/certification'
 
 export default function Transmittal() {
     const toast = useToast()
