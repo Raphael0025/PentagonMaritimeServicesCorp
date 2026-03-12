@@ -42,7 +42,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
 
     const [startDate, setStart] = useState<string>('')
     const [endDate, setEnd] = useState<string>('')
-    const [batch, setBatch] = useState<number>(0)
+    const [batch, setBatch] = useState<string>('')
     const [numDays, setNumDays] = useState<number>(0)
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -71,9 +71,12 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
     && training.regType === reg_Type // By using training.regType || reg_Type like reg_status to validate the status of training, is also considered if a training is enrolled or not.
     && (Number(training.batch) === 1 || Number(training.batch) === 0)) // this will validate if training is still has 1 as its value
     
-    const lastBatchNum = courseBatch && courseBatch?.filter((batch) => batch.course === courseName?.id).reduce((max, curr) => (curr.batch_no > max ? curr.batch_no : max), 0)
+    // const lastBatchNum = courseBatch?.filter(batch => batch.course === courseName?.id).reduce((max, curr) => {
+    //                     const batchNum = Number(String(curr.batch_no).replace(/\D/g, ""))
+    //                         return batchNum > max ? batchNum : max
+    //                     }, 0) ?? 0
 
-    const handleBatchDuplication = (batchVal: number) => {
+    const handleBatchDuplication = (batchVal: string) => {
         return courseBatch?.some((batch) => batch.course === courseName?.id && batch.batch_no === batchVal)
     }
 
@@ -248,18 +251,18 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                             <Box display='flex' flexDir='column' alignItems='start'>
                                 <FormControl display='flex' flexDir='column' justifyContent='start' alignItems='start'>
                                     <Text fontSize='14px' mr='4'>Batch:</Text>
-                                    <Input className={`${selectedTraining.length === 0 ? 'hover:cursor-not-allowed' : ''}`} value={batch === 0 ? '' : batch} isDisabled={selectedTraining.length === 0} type='number' onChange={(e) => setBatch(Number(e.target.value))} placeholder='Batch #' shadow='md' />
+                                    <Input className={`${selectedTraining.length === '' ? 'hover:cursor-not-allowed' : ''}`} value={batch === '' ? '' : batch} isDisabled={selectedTraining.length === 0} type='string' onChange={(e) => setBatch(e.target.value)} placeholder='Batch #' shadow='md' />
                                 </FormControl>
-                                <FormLabel mt='2' fontSize='12px' color='red.500'>
+                                {/* <FormLabel mt='2' fontSize='12px' color='red.500'>
                                     <Text>
-                                        {`Last Batch #: ${lastBatchNum === null || lastBatchNum === 0 ? '' : lastBatchNum}`}
+                                        {`Last Batch #: ${lastBatchNum === null || lastBatchNum === '' ? '' : lastBatchNum}`}
                                     </Text>
                                     {handleBatchDuplication(batch) && (
                                         <Text>
                                             {`You cannot duplicate a batch number. That batch number already exists.`}
                                         </Text>
                                     )}
-                                </FormLabel>
+                                </FormLabel> */}
                             </Box>
                             <Text fontSize='14px' display='flex' flexDir='column' whiteSpace={'8'} ml='4'>
                                 <Text as='span'>{`From:`}</Text>
@@ -292,7 +295,9 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             </ModalBody>
             <ModalFooter borderTopWidth='2px' display={'flex'} justifyContent='center'>
                 <Button onClick={onClose} variant={'outline'} colorScheme='red' mr={3} shadow='md'>Cancel</Button>
-                <Button onClick={handleCreateBatch} isDisabled={batch === 0 || handleBatchDuplication(batch)} isLoading={loading} loadingText='Creating Batch...' colorScheme='blue' bgColor='blue.700' shadow='md'>Create Batch</Button>
+                <Button onClick={handleCreateBatch} isDisabled={batch === '' 
+                    // || handleBatchDuplication(batch)
+                    } isLoading={loading} loadingText='Creating Batch...' colorScheme='blue' bgColor='blue.700' shadow='md'>Create Batch</Button>
             </ModalFooter>
         </ModalContent>
         {/*  Date Modal */}

@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, Transmittal, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -357,7 +357,8 @@ export default function TrackerPage(){
                                         <Select size='sm' mr='4' value={filterStatus} onChange={(e) => {setStatus(e.target.value);}} shadow='md'>
                                             <option hidden>Filter Status</option>
                                             <option value={"0"}>PENDING</option>
-                                            <option value={"1"}>RELEASED</option>
+                                            <option value={"1"}>UNCLAIMED</option>
+                                            <option value={"2"}>RELEASED</option>
                                         </Select>
                                         <Select size='sm' mr='4' value={filterRecency} onChange={(e) => {setRecencyFilter(e.target.value);}} shadow='md'>
                                             <option hidden>Filter Recency</option>
@@ -374,7 +375,7 @@ export default function TrackerPage(){
                                     <Box display='flex' justifyContent='end' mt='4'>
                                         {t_ids.length !== 0 && (
                                             <>
-                                                <Button onClick={() => handleCertStatus(firstSelected ? 1 : 0)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Release' : 'Release'} Certificate`}</Button>
+                                                <Button onClick={() => handleCertStatus(firstSelected ? 2 : 1)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Claimed' : 'Release'} Certificate`}</Button>
                                                 <Button onClick={() => {setIDS([]);}} colorScheme='red' variant='outline' size='sm' shadow='md' fontWeight='normal' >Clear</Button>
                                             </>
                                         )}
@@ -422,7 +423,16 @@ export default function TrackerPage(){
                                 <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} trainingIDs={t_ids} setTrainingIDs={setIDS} setFirstSelected={setFirstSelected} />
                             )}
                         </TabPanel>
-                        <TabPanel></TabPanel>
+                        <TabPanel>
+                            {loading ? (
+                                <Center py={8}>
+                                    <Spinner size="lg" color="blue.500" mr={3} />
+                                    <Text fontWeight="medium" color="gray.600">Loading Transmittal Records...</Text>
+                                </Center>
+                            ) : (
+                                <Transmittal />
+                            )}
+                        </TabPanel>
                         <TabPanel>
                             <Certificate_Template_Mgmt />
                         </TabPanel>

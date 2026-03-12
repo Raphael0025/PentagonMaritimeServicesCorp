@@ -1,9 +1,8 @@
-import { addDoc, getDoc, updateDoc, setDoc, writeBatch, doc, getDocs, query, arrayUnion, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage'
+import { addDoc, getDoc, updateDoc, setDoc, writeBatch, doc, getDocs, query, arrayUnion, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp, deleteDoc } from 'firebase/firestore'
 import { storage } from './firebase'
 import { app } from './firebase'
 
-import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion, changeLog } from '@/types/certification'
+import { CERTIFICATION_BY_ID, TRANSMITTAL, CERTIFICATION, certVersion, changeLog } from '@/types/certification'
 import { sortByCreatedAt, removeVersion, reassignActiveVersion } from '@/handlers/cert_helper'
 
 import { addLog } from '@/lib/history_log_controller'
@@ -11,6 +10,7 @@ import { addLog } from '@/lib/history_log_controller'
 export const firestore = getFirestore(app)
 
 export const certificateController = collection(firestore, 'CERTIFICATE_CONTROL')
+export const transmittalController = collection(firestore, 'TRANSMITTALS')
 
 export const SAVED_CERT_TEMPLATE = async (certData: CERTIFICATION, userID: string) => {
     try {
@@ -33,11 +33,7 @@ export const UPDATE_CERT_TEMPLATE = async (certData: Partial<CERTIFICATION>, cer
     }
 }
 
-export const UPDATE_VERSION_FIELDS = async (
-    certID: string,
-    versionNumber: string,
-    updates: Partial<certVersion>
-) => {
+export const UPDATE_VERSION_FIELDS = async ( certID: string, versionNumber: string, updates: Partial<certVersion>) => {
     const certRef = doc(firestore, 'CERTIFICATE_CONTROL', certID)
     const snap = await getDoc(certRef)
 
@@ -53,14 +49,8 @@ export const UPDATE_VERSION_FIELDS = async (
     await updateDoc(certRef, { versions: updatedVersions })
 }
 
-export const ADD_CHANGELOG_ENTRY = async (entry: {
-    certID: string
-    v_Number: string
-    newEntry: changeLog
-}) => {
+export const ADD_CHANGELOG_ENTRY = async (entry: { certID: string, v_Number: string, newEntry: changeLog}) => {
     try {
-        console.log('Incoming entry:', entry)
-
         const certRef = doc(firestore, 'CERTIFICATE_CONTROL', entry.certID)
         const snap = await getDoc(certRef)
 
@@ -96,7 +86,6 @@ export const ADD_CHANGELOG_ENTRY = async (entry: {
         console.log('After update changelog:', targetVersion.changelogArr)
 
         updatedVersions[versionIndex] = targetVersion
-
         await updateDoc(certRef, { versions: updatedVersions })
 
         console.log('✅ Changelog entry added successfully')
@@ -128,6 +117,37 @@ export const GET_CERT_TEMPLATE = async (): Promise<CERTIFICATION_BY_ID[]> => {
         throw error
     }
 }
+
+export const ADD_TRANSMITTAL = async (transmittal: TRANSMITTAL) => {
+    try{
+        const newCharge = {
+            ...transmittal,
+            createdAt: Timestamp.now()
+        }
+        const trans_ID: DocumentReference = await addDoc(transmittalController, {...newCharge})
+        return trans_ID
+    }catch(error){
+        throw error
+    }
+}
+
+export const DELETE_TRANSMITTAL = async (transmittalID: string) => {
+    const clientWithID: DocumentReference = doc(firestore, 'TRANSMITTALS', transmittalID)
+    await deleteDoc(clientWithID)
+}
+
+export const GET_TRANSMITTAL = async (): Promise<TRANSMITTAL[]> => {
+    try {
+        const tQuery = query(transmittalController)
+        const tSnapshot = await getDocs(tQuery)
+        const transmittals = tSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as TRANSMITTAL[]
+        return transmittals
+    } catch (error) {
+        console.error('Error fetching certificate templates:', error)
+        throw error
+    }
+}
+
 export const DELETE_CERT_VERSION = async (certID: string, versionNumber: string) => {
     try {
         const certRef = doc(firestore, 'CERTIFICATE_CONTROL', certID)

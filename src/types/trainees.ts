@@ -134,7 +134,6 @@ export interface REGISTRATION {
     otherMarketing: string;
     reg_accountType: number; // 0 - crew | 1 - company
 }
-
 export interface TRAINING {
     reg_ref_id: string;
 
@@ -159,6 +158,7 @@ export interface TRAINING {
     cert_status: number; // 0 - pending | 1 - unclaimed | 2 - released
     cert_no: string;
 
+    transmittalID: string;
     certTitle: string;
     certContent: string;
     cert_version: string;

@@ -108,6 +108,8 @@ export const certBackgroundColor = (value: number) => {
         case 0:
                 return 'red.400';
         case 1:
+            return 'blue.400';
+        case 2:
             return 'green.400';
         default:
             return '';

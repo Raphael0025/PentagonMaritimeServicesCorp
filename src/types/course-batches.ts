@@ -1,7 +1,7 @@
 import{ Timestamp } from 'firebase/firestore'
 
 export interface CourseBatch{
-    batch_no: number;
+    batch_no: string;
     start_date: string;
     end_date: string;
     numOfDays: number;
@@ -27,7 +27,7 @@ export interface CourseBatchByID extends CourseBatch{
 export const initCourseBatch = {
     id: '',
     course: '',
-    batch_no: 0,
+    batch_no: '',
     start_date: '',
     end_date: '',
     numOfDays: 0,

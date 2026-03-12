@@ -28,3 +28,17 @@ export interface changeLog {
     updatedBy?: string;
     updatedAt?: Timestamp;
 }
+
+export interface TRANSMITTAL {
+    id?: string;
+    createdAt?: Timestamp;
+    companyID: string;
+    isDated: boolean;
+    images?: string[];
+    endorsements: TransmittalEndorsement[];
+}
+
+export interface TransmittalEndorsement {
+    endorser: string;
+    certificate_id: string[];
+}

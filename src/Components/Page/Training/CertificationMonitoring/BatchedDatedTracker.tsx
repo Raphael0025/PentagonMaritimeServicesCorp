@@ -105,10 +105,11 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         },
         onAfterPrint: () => {
             if(isPrinting) {
-                handlePrintCertificates();
                 console.log('printing...')
-                handleToast('Certificates Printed!', ``, 3000, 'success'); 
+                handleToast('Certificates Printed!', ``, 3000, 'success');
             }
+            handlePrintCertificates();
+            setSelectedTrainingID([]) 
             onCloseRemarks();
             setIsPrinting(false);
         },
@@ -371,7 +372,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 <Text w='80px'>Course</Text>
                 <Text w='120px'>Date Released</Text>
                 <Text w='100px'>Charge</Text>
-                <Text w='160px'>Status</Text>
+                <Text w='150px'>Status</Text>
                 <Text w='200px'>Company</Text>
                 <Text w='150px'>Crewing</Text>
                 <Text w='300px'>Notes</Text>
@@ -429,19 +430,11 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             <Text w="80px">
                                 {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                             </Text> 
-                            <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
+                            <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {(training.cert_status !== 0 && training.cert_status !== 1) && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{((training.cert_status !== 0 && training.cert_status !== 1) ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
-                            <Box w='160px' display='flex' justifyContent='center' gap='2'>
-                                <Checkbox onChange={() => {setFirstSelected(training.cert_status === 0 ? true : false); setTrainingIDs(prev => [...prev, training.id])}} isChecked={training?.id === trainingIDs.find((id) => id === training.id)} />
-                                {/* <Select 
-                                    bgColor={certBackgroundColor(training.cert_status)} 
-                                    onChange={(e) => handleStatus(training.id, Number(e.target.value))} 
-                                    borderRadius='5px' size='xs' shadow='md' >
-                                    <option value={0} hidden>{handleCertStatus(training.cert_status)}</option>
-                                    <option value={1}>Un-Claimed</option>
-                                    <option value={2}>RELEASED</option>
-                                </Select> */}
-                                <Text px='2' bgColor={certBackgroundColor(training.cert_status)} borderRadius='5px' size='xs'>
+                            <Box w='150px' display='flex' justifyContent='center' gap='2'>
+                                <Checkbox shadow='md' onChange={() => {setFirstSelected(training.cert_status === 1 ? true : false); setTrainingIDs(prev => [...prev, training.id])}} isChecked={training?.id === trainingIDs.find((id) => id === training.id)} />
+                                <Text w='100%' px='2' bgColor={certBackgroundColor(training.cert_status)} borderRadius='5px' size='xs'>
                                     {handleCertStatus(training.cert_status)}
                                 </Text>
                             </Box>
