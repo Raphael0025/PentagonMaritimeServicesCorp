@@ -181,6 +181,7 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
                 const activeVersion = foundCert?.versions.find(v => v.status === 'active')
                 if (!activeVersion) {
                     console.warn("No active certificate version found for this course.")
+                    handleToast('Warning!', `No active certificate version found for this course.`, 5000, 'warning')
                     setLoading(false)
                     return resolve(null)
                 }
