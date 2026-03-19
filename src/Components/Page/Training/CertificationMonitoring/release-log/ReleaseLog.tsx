@@ -402,7 +402,7 @@ export default function ReleaseLog() {
                             <ChakraImage src={attachmentFile} w='80%' h='100%' alt={`Proof of Release`}/>
                         </Box>
                         <Box className='image-container w-full p-1 relative flex-col justify-center items-start rounded border outline-0 shadow-lg'>
-                            <Text w='100%' textAlign='start'>Trainee's E-Sign</Text>
+                            <Text w='100%' textAlign='start'>{`Trainee's E-Sign`}</Text>
                             <ChakraImage src={attachmentFile2} w='80%' h='100%' alt={`Recorded E-Sign of Trainee`}/>
                         </Box>
                     </Box>

@@ -287,7 +287,7 @@ export default function Page() {
                     )}
                 </Box>
                 <Box className='px-3' style={{maxHeight: '700px', overflowY: 'auto'}}>
-                    <Accordion allowToggle className="space-y-3">
+                    <Accordion allowToggle allowMultiple className="space-y-3">
                         {filteredRegistrations?.filter((registration) => allTraining?.some((training) => training.reg_ref_id === registration.id && training.reg_status < 3))
                         ?.sort((a, b) => {
                                 const dateA =

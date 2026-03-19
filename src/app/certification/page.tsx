@@ -438,9 +438,9 @@ export default function Certification() {
                         </Text>
                     </Box>
                     <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' pt='5'>
-                        <Box w='90%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
+                        <Box w='95%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
                             <Image src={'/CompanyLogo2-dark.png'} alt='header image' w='2in' h='1.5in'  />
-                            <Box pt='6' pb='5' display='flex' justifyContent='end' w='100%'>
+                            <Box pt='6' pr='12' pb='5' display='flex' justifyContent='end' w='100%'>
                                 <Box fontWeight='bold' fontSize='10pt' textAlign='start'>
                                     <Text>
                                         Certificate No.: 
