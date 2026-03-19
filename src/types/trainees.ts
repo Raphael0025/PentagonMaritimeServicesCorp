@@ -37,6 +37,7 @@ export const initTRAINEE_BY_ID = {
     valid_id: '',
     photo: '',
     e_sig: '',
+    mismoSC: '',
     marketing: '',
     otherMarketing: '',
     createdAt: Timestamp.now(),
