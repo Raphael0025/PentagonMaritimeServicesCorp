@@ -10,7 +10,7 @@ export default function NavBar() {
     const pathname = usePathname()
     const router = useRouter();
 
-    const shouldHideNavbar = pathname?.startsWith('/certification') || pathname?.startsWith('/Tester') || pathname?.startsWith('/forms') || pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
+    const shouldHideNavbar = pathname?.startsWith('/certification') || pathname?.startsWith('/certificate-releasing') || pathname?.startsWith('/Tester') || pathname?.startsWith('/forms') || pathname?.startsWith('/admissions') || pathname?.startsWith('/login') || pathname?.startsWith('/enterprise-portal') || pathname?.startsWith('/feedback') ;
 
     if (shouldHideNavbar) {
         return null; // Don't render anything if conditions are met

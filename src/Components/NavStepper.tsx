@@ -1,7 +1,6 @@
 'use client'
 
 import { Image, Box, Step, StepDescription, StepIcon, StepIndicator, StepNumber, StepSeparator, StepStatus, StepTitle, Stepper, useSteps, } from '@chakra-ui/react'
-import 'animate.css';
 import { useState, useEffect } from 'react';
 
 interface StepperProps {
@@ -9,10 +8,7 @@ interface StepperProps {
     onStepChange?: (step: number) => void;
 }
 
-export default function NavStepper ({
-    step, 
-    onStepChange = () => {}
-}: StepperProps){
+export default function NavStepper ({ step, onStepChange = () => {}}: StepperProps){
     const steps = [
         { title: `Trainee's Information`, description: ``},
         { title: `Training Details`, description: ``},
@@ -24,7 +20,7 @@ export default function NavStepper ({
     const { activeStep, setActiveStep } = useSteps({
         index: 0,
         count: steps.length,
-      })
+    })
 
     useEffect(() => {
         setPath(step)

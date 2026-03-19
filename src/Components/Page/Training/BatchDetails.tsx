@@ -412,7 +412,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                         </InputGroup>
                         <InputGroup shadow='md' w='50%' size='sm'>
                             <InputLeftAddon>Assessor:</InputLeftAddon>
-                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetailsSelect}>
+                            <Select id='act_ass' shadow='md' onChange={OnChangeBatchDetailsSelect}>
                                 <option hidden>{`${batch.act_ass ? (allInstructors?.find((i) => i.id === batch.act_ass)?.name || batch.act_ass) : 'Select Assessor'}`}</option>
                                 {allInstructors && allInstructors.map((i) => (
                                     <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>

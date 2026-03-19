@@ -71,6 +71,10 @@ export default function NewTrainee_v2(){
     const [validSignature, setSignature] = useState<File[]>([])
     const [preview, setPreview] = useState<string | null>(null)
     const [sig_file, setSigFile] = useState<string>('No file chosen yet...')
+    //Screenshot ng mismo
+    const [screenshotFile, setSCFile] = useState<File[]>([])
+    const [previewSC, setPreviewSC] = useState<string | null>(null)
+    const [sc_fileName, setScFileName] = useState<string>('No file chosen yet...')
     
     const [month, setMonth] = useState<number>(0)
     const [day, setDay] = useState<number>(0)
@@ -174,6 +178,22 @@ export default function NewTrainee_v2(){
             setValidPfp(objectUrl)
         } else {
             setPfpFile('No file chosen yet...')
+        }
+    }
+
+    const handleValidSC = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setScFileName(file);
+            setSCFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewSC(objectUrl)
+        } else {
+            setScFileName('No file chosen yet...')
         }
     }
     
@@ -382,7 +402,7 @@ export default function NewTrainee_v2(){
         try{
             setLoading(true)
             
-            const traineeID = await addNewTrainee(trainee, 0, validID, validPfp, validSignature, file, pfpFile)
+            const traineeID = await addNewTrainee(trainee, 0, validID, validPfp, validSignature, file, pfpFile, screenshotFile, sc_fileName)
             if(traineeID !== null){
                 const ccArr = []
                 const crewArr = []
@@ -768,7 +788,7 @@ export default function NewTrainee_v2(){
                                 <FormControl isRequired >
                                     <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
                                     <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
-                                    <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <Input id='photo' onChange={handleValidSC} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                                 </FormControl>
                             )}

@@ -1,4 +1,5 @@
 import { addDoc, getDoc, updateDoc, setDoc, writeBatch, doc, getDocs, query, arrayUnion, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp, deleteDoc } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage'
 import { storage } from './firebase'
 import { app } from './firebase'
 
@@ -144,6 +145,23 @@ export const GET_TRANSMITTAL = async (): Promise<TRANSMITTAL[]> => {
         return transmittals
     } catch (error) {
         console.error('Error fetching certificate templates:', error)
+        throw error
+    }
+}
+
+export const scannedAttachment = async (id: string, companyName: string, accountType: string, transFile: any, fileID: string) => {
+    try{
+        let transmittalScanned = '';
+
+        if (fileID !== 'No file chosen yet...') {
+            // Upload valid id to Storage
+            const idRef = ref(storage, `TRANSMITTALS/${companyName}/${accountType}/${fileID}`);
+            const id_data = await uploadBytes(idRef, transFile[0]);
+            transmittalScanned = await getDownloadURL(id_data.ref);
+        }
+        const getDoc = doc(firestore, `TRANSMITTALS/${id}`)
+        await updateDoc(getDoc, { images: arrayUnion(transmittalScanned)})
+    }catch(error){
         throw error
     }
 }

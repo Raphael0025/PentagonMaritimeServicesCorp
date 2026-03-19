@@ -1,104 +1,106 @@
 'use client'
 
 
-import React, { useState, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { MdOutlineVerifiedUser } from "react-icons/md"
 import { BsGlobe2 } from "react-icons/bs"
 import { FaFacebook } from "react-icons/fa"
 import { ArrowBackIcon } from '@chakra-ui/icons'
-import {
-    Box, Image, Text, Input, Button, FormControl, FormHelperText, FormLabel,
-    Menu, MenuButton, MenuList, MenuItem,
-    Modal, ModalOverlay, ModalContent, ModalHeader,
-    ModalBody, ModalFooter, ModalCloseButton,
-    InputGroup, InputLeftAddon,
-    useDisclosure, useToast, Link,
-} from '@chakra-ui/react'
+import { Box, Image, Text, Input, Button, Spinner, FormControl, FormHelperText, FormLabel, useToast, Progress, } from '@chakra-ui/react'
 
-import { getDocs, query, where, collection, Timestamp } from 'firebase/firestore'
+import { getDocs, query, where, collection, doc, getDoc, Timestamp } from 'firebase/firestore'
 
-import { useCourses } from '@/context/CourseContext'
-import { useCertification } from '@/context/CertificationContext'
-import { useTraining } from '@/context/TrainingContext'
-import { useTrainees } from '@/context/TraineeContext'
-import { useRegistrations } from '@/context/RegistrationContext'
-import { useInstructors } from '@/context/InstructorContext'
-
-import { CoursesById } from '@/types/courses'
 import { ToastStatus } from '@/types/handling'
 import { TRAINING_BY_ID, REGISTRATION_BY_ID, TRAINEE_BY_ID } from '@/types/trainees'
+import { CourseBatchByID } from '@/types/course-batches'
+import { UPDATE_VIEW_CERT_ACCESS } from '@/lib/trainee_controller'
 
-import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 import { firestore } from '@/lib/certification_controller'
 
 export default function Certification() {
     const toast = useToast()
-    const { data: allCourses } = useCourses()
-    const { data: allTrainee } = useTrainees()
-    const { allData: allTrainingData } = useTraining()
-    const { allData: allRegData } = useRegistrations()
-    const { data: allInstructors } = useInstructors()
-    const { data: allCertTemplates } = useCertification()
-    
-    // const [certs, setCerts] = useState<CERTIFICATION_BY_ID[]>([])
-    // const [trainees, setTrainees] = useState<TRAINEE_BY_ID[]>([])
-    const [cert, setCert] = useState<CERTIFICATION_BY_ID | null>(null)
-    const [train, setTrain] = useState<TRAINING_BY_ID | null>(null)
-    const [reg, setReg] = useState<REGISTRATION_BY_ID | null>(null)
-    
     const [certNum, setCertNum] = useState<string>('')
     const [regNum, setRegNum] = useState<string>('')
 
+    const [firstName, setFN] = useState<string>('')
+    const [middleName, setMN] = useState<string>('')
+    const [lastName, setLN] = useState<string>('')
+
     const [showVerification, setShowVerification] = useState<boolean>(false)
-    const [verifiedCertNum, setVerifiedCert] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
+    const [isPreparingCert, setIsPreparingCert] = useState<boolean>(false)
+    const [verifiedCertNum, setVerifiedCert] = useState<boolean>(false)
     
-    const [courseID, setCourseID] = useState<string>('')
     const [certTitleHtml, setCertTitleHtml] = useState('')
     const [certContentHtml, setCertContentHtml] = useState('')
+    const [trainingDate, setTrainingDate] = useState<string>('')
 
+    const [splitMonth, setSplitMonth] = useState<string>('')
+    const [nthDay, setNthDay] = useState<string>('')
 
-    const certificates = useMemo(() => {
-            return allCertTemplates ?? []
-        }, [allCertTemplates])
+    const [getYear, setYear] = useState<number>(0)
     
-    const certificateVersions = useMemo(() => {
-        if (!courseID) return []
-
-        const cert = certificates.find(
-            cert => cert.courseID === courseID
-        )
-
-        return cert?.versions ?? []
-    }, [certificates, courseID])
-    
-    const certificateController = collection(firestore, 'CERTIFICATE_CONTROL')
-    const trainees = collection(firestore, 'TRAINEES')
     const registration = collection(firestore, 'REGISTRATION')
     const training = collection(firestore, 'TRAINING')
-
-    const GET_CERT_TEMPLATE = async (): Promise<CERTIFICATION_BY_ID[]> => {
-        try {
-            const certQuery = query(certificateController, where('category', '==', 'generic'))
-            const certSnapshot = await getDocs(certQuery)
-            const certs = certSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as CERTIFICATION_BY_ID[]
-            setCert(certs[0] || null)
-            return certs
-        } catch (error) {
-            console.error('Error fetching certificate templates:', error)
-            throw error
-        }
-    }
     
-    const GET_TRAINING_RECORD = async (
-        certNo: string
-    ): Promise<TRAINING_BY_ID | null> => {
+    const TOTAL_TIME: number = 60
+    const [countdown, setCountdown] = useState<number>(TOTAL_TIME)
+    const [progress, setProgress] = useState<number>(100)
+
+    useEffect(() => {
+        if (!verifiedCertNum || isPreparingCert) return;
+
+        setCountdown(TOTAL_TIME);
+        setProgress(100);
+
+        // 1️⃣ Smooth progress animation using requestAnimationFrame
+        const startTime = performance.now();
+
+        const animateProgress = (now: number) => {
+            const elapsed = (now - startTime) / 1000; // seconds
+            const remaining = Math.max(TOTAL_TIME - elapsed, 0);
+            setProgress((remaining / TOTAL_TIME) * 100);
+
+            if (remaining > 0) {
+                requestAnimationFrame(animateProgress);
+            }
+        };
+
+        requestAnimationFrame(animateProgress);
+
+        // 2️⃣ Countdown every 1 second (whole seconds)
+        const interval = setInterval(() => {
+            setCountdown(prev => Math.max(prev - 1, 0));
+        }, 1000);
+
+        // 3️⃣ Timeout when countdown ends
+        const timeout = setTimeout(() => {
+            setVerifiedCert(false);
+            setCertNum('');
+            setRegNum('');
+            setFN('');
+            setMN('');
+            setLN('');
+            setTrainingDate('');
+            setSplitMonth('');
+            setNthDay('');
+            setCertContentHtml('');
+            setCertTitleHtml('');
+        }, TOTAL_TIME * 1000);
+
+        // 4️⃣ Cleanup
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+        };
+    }, [verifiedCertNum, isPreparingCert]);
+
+    const GET_TRAINING_RECORD = async (certNo: string): Promise<TRAINING_BY_ID | null> => {
         try {
             const q = query(training, where('cert_no', '==', certNo))
             const snapshot = await getDocs(q)
 
             if (snapshot.empty) {
-                setTrain(null)
                 return null
             }
 
@@ -109,7 +111,6 @@ export default function Certification() {
                 ...docSnap.data(),
             } as TRAINING_BY_ID
 
-            setTrain(result)
             return result
 
         } catch (error) {
@@ -118,15 +119,29 @@ export default function Certification() {
         }
     }
     
-    const GET_REGISTRATION_RECORD = async (
-        regVar: string
-    ): Promise<REGISTRATION_BY_ID | null> => {
+    const GET_TRAINEE_RECORD = async ( traineeID: string ): Promise<TRAINEE_BY_ID | null> => {
+        try {
+            const ref = doc(firestore, "TRAINEES", traineeID)
+            const snap = await getDoc(ref)
+            if (!snap.exists()) return null
+
+            return {
+                id: snap.id,
+                ...snap.data(),
+            } as TRAINEE_BY_ID
+
+        } catch (error) {
+            console.error('Error fetching trainee record:', error)
+            throw error
+        }
+    }
+    
+    const GET_REGISTRATION_RECORD = async ( regVar: string ): Promise<REGISTRATION_BY_ID | null> => {
         try {
             const q = query(registration, where('reg_no', '==', regVar))
             const snapshot = await getDocs(q)
 
             if (snapshot.empty) {
-                setReg(null)
                 return null
             }
 
@@ -137,7 +152,6 @@ export default function Certification() {
                 ...docSnap.data(),
             } as REGISTRATION_BY_ID
 
-            setReg(result)
             return result
 
         } catch (error) {
@@ -145,50 +159,176 @@ export default function Certification() {
             throw error
         }
     }
-
-    const handleVerification = async () => {
+    
+    const GET_BATCH_RECORD = async (batchID: string): Promise<CourseBatchByID | null> => {
         try {
-            setLoading(true)
-            // Normalize inputs
-            const normalizedRegNum = regNum.trim().replace(/^REG-/i, '')
-            const normalizedCertNum = certNum.trim().toUpperCase()
+            const ref = doc(firestore, "BATCH_RECORDS", batchID)
+            const snap = await getDoc(ref)
+            if (!snap.exists()) return null
 
-            const regExists = await GET_REGISTRATION_RECORD(normalizedRegNum);
-            const certExists = await GET_TRAINING_RECORD(normalizedCertNum)
-            // Validation logic
-            if (!regExists || !certExists) {
-                toast({
-                    title: 'Verification Failed',
-                    description: `The certificate number ${certNum} or registration number ${regNum} is invalid. Please check and try again.`,
-                    status: 'error' as ToastStatus,
-                    duration: 8000,
-                    isClosable: true,
-                })
-                return
-            }
-            console.log('Certificate and registration found:', certExists.course)
-            toast({
-                title: 'Certificate Verified',
-                description: `The certificate number ${certNum} is valid and matches the registration number ${regNum}.`,
-                status: 'success' as ToastStatus,
-                duration: 8000,
-                isClosable: true,
-            })
+            return {
+                id: snap.id,
+                ...snap.data(),
+            } as CourseBatchByID
+
         } catch (error) {
-            console.error('Error verifying certificate:', error)
-        } finally {
-            setLoading(false)
-            GET_CERT_TEMPLATE()
-            setVerifiedCert(true)
+            console.error("Error fetching batch record:", error)
+            throw error
         }
     }
 
+    const formatTrainingSchedule = (dateStr: string, year: number) => {
+        if (!dateStr) return ''
+        const dateConvert = new Date(dateStr).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
+        return `${dateConvert}, ${year}` // "February 11"
+    }
+
+    const getOrdinalHTML = (day: number) => {
+        const suffix =
+            day % 10 === 1 && day % 100 !== 11 ? 'st' :
+            day % 10 === 2 && day % 100 !== 12 ? 'nd' :
+            day % 10 === 3 && day % 100 !== 13 ? 'rd' : 'th'
+
+        return `${day}<sup>${suffix}</sup>`
+    }
+
+    const getColor = () => {
+        if(countdown <= 10) return 'red'
+        if(countdown <= 30) return 'yellow'
+        return 'green'
+    }
+
+    const handleVerification = async () => {
+        if (loading) return
+
+        try {
+            setLoading(true)
+
+            const normalizedRegNum = regNum.trim().replace(/^REG-/i, '')
+            const normalizedCertNum = certNum.trim().toUpperCase()
+
+            const regExists = await GET_REGISTRATION_RECORD(normalizedRegNum)
+            const trainingDoc = await GET_TRAINING_RECORD(normalizedCertNum)
+            
+            if (!regExists || !trainingDoc) {
+                toast({
+                    title: 'Verification Failed',
+                    description: `Invalid certificate or registration number.`,
+                    status: 'error',
+                    duration: 5000,
+                })
+                return
+            }
+            
+            if (trainingDoc?.hasViewed) {
+                toast({
+                    title: 'View Limit Reached',
+                    description: `You have already used your allocated view access for this certificate. Please contact the training center for further assistance.`,
+                    status: 'error',
+                    duration: 5000,
+                })
+                return
+            }
+
+            const trainee = await GET_TRAINEE_RECORD(regExists.trainee_ref_id)
+            if (!trainee) {
+                toast({
+                    title: 'Verification Failed',
+                    description: `No trainee Record.`,
+                    status: 'error',
+                    duration: 5000,
+                })
+                return
+            }
+
+            // ✅ SWITCH VIEW IMMEDIATELY
+            setVerifiedCert(true)
+            setIsPreparingCert(true)
+
+            // 🔄 prepare data AFTER UI switch
+            setTimeout(async () => {
+                try {
+                    const batchRec = await GET_BATCH_RECORD(trainingDoc.batch)
+
+                    let year = 0
+                    if (batchRec?.createdAt?.toDate) {
+                        year = batchRec.createdAt.toDate().getFullYear()
+                    }
+                    setYear(year)
+
+                    const training_date =
+                        trainingDoc.numOfDays === 1
+                            ? formatTrainingSchedule(trainingDoc.start_date, year)
+                            : `${formatTrainingSchedule(trainingDoc.start_date, year)} to ${formatTrainingSchedule(trainingDoc.end_date, year)}`
+
+                    const split_Month = formatTrainingSchedule(
+                        trainingDoc.end_date || trainingDoc.start_date,
+                        year
+                    ).split(' ')[0]
+
+                    const split_Day = formatTrainingSchedule(
+                        trainingDoc.end_date || trainingDoc.start_date,
+                        year
+                    ).split(' ')[1].replace(/\D/g, '')
+
+                    const nth_Day = getOrdinalHTML(Number(split_Day))
+                    const view_count: number = (Number(trainingDoc?.viewCount || 0) + 1)
+
+                    // ✅ set all UI data
+                    setFN(trainee.first_name)
+                    setMN(trainee.middle_name)
+                    setLN(trainee.last_name)
+                    setTrainingDate(training_date)
+                    setSplitMonth(split_Month)
+                    setNthDay(nth_Day)
+                    setCertContentHtml(trainingDoc.certContent)
+                    setCertTitleHtml(trainingDoc.certTitle)
+                    await UPDATE_VIEW_CERT_ACCESS(trainingDoc.id, view_count, '')
+                    toast({
+                        title: 'Certificate Verified',
+                        status: 'success',
+                        duration: 3000,
+                    })
+                } catch (err) {
+                    console.error(err)
+                } finally {
+                    setIsPreparingCert(false)
+                }
+            }, 0)
+
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    
+    const normalizeCertContent = (html: string) => {
+        const temp = document.createElement('div')
+        temp.innerHTML = html
+
+        // convert inner divs to spans
+        temp.querySelectorAll('div').forEach(div => {
+            const span = document.createElement('span')
+            span.innerHTML = div.innerHTML
+
+            // copy styles you need
+            span.style.display = 'inline'
+            span.style.textAlign = div.style.textAlign || 'center'
+            span.style.lineHeight = '1.2'
+
+            div.replaceWith(span)
+        })
+        return temp.innerHTML
+    }
+    
     return(
     <>
         {/** Certificate Verification Modal */}
-        <Box display='flex' flexDirection='column' alignItems='center' justifyContent='center' minHeight='100vh'>
-            <Image position='absolute' left={{base: '-80%', md: '-50%'}} transform={{base: "translateX(30%)", md: "translateX(50%)"}} zIndex={1} src={'pentagon_logo.png'} width={{base: '100%', md: '50%'}} h='100%' opacity={'50%'} />
-            {!verifiedCertNum && (
+        <Box display='flex' flexDirection='column' alignItems='center' justifyContent={verifiedCertNum ? 'start' : 'center'} minHeight='100vh'>
+            <Image position='absolute' left={{base: '-80%', md: '-50%'}} transform={{base: "translateX(30%)", md: "translateX(50%)"}} zIndex={1} src={'pentagon_logo.png'} width={{base: '100%', md: '50%'}} h='100%' opacity={'30%'} />
+            {!verifiedCertNum ? (
+                // 🔵 FORM VIEW
                 <Box w={{ base: '95%', md: '450px' }} h='450px' position='relative' zIndex={2} bgColor='#D4D4D4 ' shadow='md' display='flex' flexDirection='column' alignItems='center' border='1px solid gray'  borderRadius='md' textAlign='center'>
                     {/** Header */}
                     <Box bgColor='blue.900' placeItems='center' w='100%' borderBottom='3px solid #D2AC47' pt='3' pb='4' borderTopLeftRadius={'5'} borderTopRightRadius={'5'} >
@@ -197,19 +337,34 @@ export default function Certification() {
                     {showVerification ? (
                         <Box display='flex' position='relative' zIndex={2} flexDir='column' justifyContent='center' px='8' h='80%' w='100%'>
                             <Box w='auto' display='flex' flexDir='column'gap='4'>
+                                <Box pt='2'>
+                                    <Text>
+                                        <Text as='span'>Note:</Text>
+                                        <Text fontWeight='normal' as='span'>You only have this one time to view your certificate.</Text>
+                                    </Text>
+                                </Box>
                                 <FormControl isRequired>
                                     <FormLabel>Certificate Number:</FormLabel>
-                                    <Input onChange={(e) => setCertNum(e.target.value)} textAlign='center' placeholder='Type here' fontWeight='thin' variant='flushed'/>
+                                    <Input onChange={(e) => setCertNum(e.target.value.toUpperCase())} textTransform='uppercase' textAlign='center' placeholder='Type here' fontWeight='thin' variant='flushed'/>
                                 </FormControl>
                                 <FormControl isRequired>
                                     <FormLabel>Registration Number:</FormLabel>
-                                    <Input onChange={(e) => setRegNum(e.target.value)} textAlign='center' placeholder='Type here' fontWeight='thin' variant='flushed'/>
+                                    <Input onChange={(e) => setRegNum(e.target.value.toUpperCase())} textTransform='uppercase' textAlign='center' placeholder='Type here' fontWeight='thin' variant='flushed'/>
                                     <FormHelperText fontWeight='bold' fontSize='xs' color='gray.600'>
                                         Provide the certificate and registration numbers exactly as shown on the certificate.
                                     </FormHelperText>
                                 </FormControl>
-                                <Button onClick={handleVerification} isLoading={loading} rightIcon={<MdOutlineVerifiedUser size='30px' />} loadingText='Verifying...' colorScheme='blue' shadow='md' bgColor='blue.700'>
-                                    Verify Certificate 
+                                <Button
+                                    onClick={handleVerification}
+                                    isLoading={loading}
+                                    isDisabled={loading}
+                                    rightIcon={<MdOutlineVerifiedUser size='30px' />}
+                                    loadingText='Verifying...'
+                                    colorScheme='blue'
+                                    bgColor='blue.700'
+                                    boxShadow='0 0 10px 2px var(--chakra-colors-blue-300)'
+                                >
+                                    Verify Certificate
                                 </Button>
                                 <Button size='md' color='white' mb='4' variant='link' onClick={() => setShowVerification(false)} leftIcon={<ArrowBackIcon />} >Back</Button>
                             </Box>
@@ -257,118 +412,102 @@ export default function Certification() {
                         <Image src='/waves.png' width='100%' alt='company logo' />
                     </Box>
                 </Box>
-            )}
-            {verifiedCertNum && (
-            <>
-                <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
-                    <Box w='90%' border='1px solid gray' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
-                        <Image src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
-                        <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
-                            <Box fontWeight='bold' fontSize='12pt' textAlign='start'>
-                                <Text>
-                                    Certificate No.: 
-                                    <Text as='span' fontWeight={'normal'}>
-                                        {`${certNum}`}
+            ) : isPreparingCert ? (
+                // 🟡 LOADING CERT VIEW
+                <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
+                    <Spinner size='xl' color='blue.500' />
+                    <Box textAlign='center' p='10'>
+                        <Text fontSize='lg' fontWeight='bold'>Preparing Certificate...</Text>
+                        <Text fontSize='sm' color='gray.500'>Please wait...</Text>
+                    </Box>
+                </Box>
+            ) : (
+                // 🟢 FINAL CERTIFICATE VIEW
+                <>
+                    <Box w="100%" mt="4">
+                        <Progress
+                            value={progress}
+                            size="sm"
+                            colorScheme={getColor()}
+                            borderRadius="md"
+                            transition="all 1s linear"
+                        />
+                        
+                        <Text fontSize="xs" color="gray.500" textAlign="center" mt="1">
+                            Returning in {countdown}s...
+                        </Text>
+                    </Box>
+                    <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' pt='5'>
+                        <Box w='90%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
+                            <Image src={'/CompanyLogo2-dark.png'} alt='header image' w='2in' h='1.5in'  />
+                            <Box pt='6' pb='5' display='flex' justifyContent='end' w='100%'>
+                                <Box fontWeight='bold' fontSize='10pt' textAlign='start'>
+                                    <Text>
+                                        Certificate No.: 
+                                        <Text as='span' fontWeight={'normal'}>
+                                            {`${certNum}`}
+                                        </Text>
                                     </Text>
-                                </Text>
-                                <Text>
-                                    Registration No.: 
-                                    <Text as='span' fontWeight={'normal'}>
-                                        {regNum}
+                                    <Text>
+                                        Registration No.: 
+                                        <Text as='span' fontWeight={'normal'}>
+                                            {regNum}
+                                        </Text>
                                     </Text>
-                                </Text>
+                                </Box>
                             </Box>
-                        </Box>
-                        <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
-                            <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
-                            <Text >This Certificate is issued to</Text>
-                            <Text fontWeight='bold' fontSize='16pt'>NAME</Text>
-                            <Text>for having successfully completed the training course in</Text>
-                            <Text fontSize='14pt' fontWeight='bold'>{certTitleHtml.toUpperCase()}</Text>
-                            <Box w='75%' textAlign='center' sx={{
-                                '& p, & div': {
-                                    display: 'inline',
-                                    margin: 0,
-                                },
-                                '& br': {
-                                    display: 'inline',
-                                },
-                            }}>
-                                <div
+                            <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
+                                <Text fontWeight='bold' fontSize='16pt'>Certificate of Completion</Text>
+                                <Text fontSize='10pt'>This Certificate is issued to</Text>
+                                <Text fontWeight='bold' fontSize='14pt' textTransform='uppercase'>{`${firstName} ${middleName} ${lastName}`}</Text>
+                                <Text textAlign='center' fontSize='10pt'>for having successfully completed the training course in</Text>
+                                <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: `${certTitleHtml}`
+                                        }}
+                                    />
+                                </Text>
+                                <Box w='115%' mt='3' textAlign='center' sx={{
+                                    '& ul': {
+                                        listStyleType: 'disc',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& ol': {
+                                        listStyleType: 'decimal',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& li': {
+                                        marginBottom: '0.25rem',
+                                    },
+                                    '& p, & div': {
+                                        display: 'inline',
+                                        lineHeight: '1.2',
+                                        margin: 0,
+                                    },
+                                    '& br': {
+                                        display: 'inline',
+                                    },
+                                }}>
+                                    <div style={{fontSize: '8pt', display: 'block', lineHeight: '1.2'}}
+                                        dangerouslySetInnerHTML={{
+                                            __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
+                                        }}
+                                    />
+                                </Box>
+                                <div style={{marginTop: '15px', textAlign:'center', fontSize: '10pt'}}
                                     dangerouslySetInnerHTML={{
-                                        __html: `Conducted on _____________ ${certContentHtml}`
+                                        __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
                                     }}
                                 />
                             </Box>
-                            <Text>{`Issued this ____ day of __________, 2026 in Manila City, Philippines`}</Text>
-                            <Box pt='8' display='flex' gap='4' alignItems='end' justifyContent='space-between' w='100%'>
-                                <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
-                                    {(() => {
-                                        const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
-                                        const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                                    
-                                        return(
-                                            <>
-                                                <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
-                                                    <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
-                                                </Box>
-                                                <Box borderTop='1px solid black' w='80%' />
-                                                <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
-                                                    {(() => {
-                                                        if (!ins) return 'No Instructor';
-                
-                                                        return `${ins.rank} ${ins.name}`;
-                                                    })()}
-                                                </Text>
-                                                <Text fontSize='10pt'>Training Director</Text>
-                                            </>
-                                        )
-                                    })()}
-                                </Box>
-                                <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
-                                    {(() => {
-                                        const ins = allInstructors?.find((i) => i.name === 'MA. JOSEFA T. ALONSAGAY')
-                                        const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                                    
-                                        return(
-                                            <>
-                                                <Box position='absolute' top='-45px' left='-8%' transform="translateX(5%)" zIndex={2} >
-                                                    <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
-                                                </Box>
-                                                <Box borderTop='1px solid black' w='90%' />
-                                                <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
-                                                    {(() => {
-                                                        if (!ins) return 'No Instructor';
-                
-                                                        return `${ins.rank} ${ins.name}`;
-                                                    })()}
-                                                </Text>
-                                                <Text fontSize='10pt'>President</Text>
-                                            </>
-                                        )
-                                    })()}
-                                </Box>
-                            </Box>
-                            <Box pt='7' pb='10' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                <Image src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'   objectFit='cover'/>
-                                <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
-                                    <Box w='0.8in' border='1px solid black' h='0.8in'>
-                                        <Text textAlign='center' >QR Code here</Text>
-                                    </Box>
-                                </Box>
-                                <Box fontWeight='bold' fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
-                                    <Text>Landline: (02) 8281-8155</Text>
-                                    <Text>Email: pentagonmaritimeservices@gmail.com</Text>
-                                    <Text>FB: pentagonmaritimeservicescorp</Text>
-                                </Box>
-                            </Box>
                         </Box>
                     </Box>
-                    <Box position='absolute' bottom='0' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
-                        <Image  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
-                    </Box>
-                </Box>
-            </>
+                </>
             )}
         </Box>
     </>

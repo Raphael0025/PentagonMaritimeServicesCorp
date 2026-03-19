@@ -123,49 +123,48 @@ export const generateDateRanges = ( startDay: string, numberOfWeeks: number, num
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
-  
+
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const startDayIndex = daysOfWeek.indexOf(startDay);
-  
+
     const startDate = new Date(currentYear, currentMonth, 1);
     const currentDateIterator = startDate;
-  
+
     // Find the first occurrence of the start day in the month
     while (currentDateIterator.getDay() !== startDayIndex) {
-      currentDateIterator.setDate(currentDateIterator.getDate() + 1);
+        currentDateIterator.setDate(currentDateIterator.getDate() + 1);
     }
-  
+
     const dateRanges: string[] = [];
-  
+
     for (let i = 0; i < numberOfWeeks; i++) {
       // Skip starting on Sunday
-      if (currentDateIterator.getDay() === 0) {
-        currentDateIterator.setDate(currentDateIterator.getDate() + 1);
-        continue;
-      }
-  
+        if (currentDateIterator.getDay() === 0) {
+            currentDateIterator.setDate(currentDateIterator.getDate() + 1);
+            continue;
+        }
+
       // Calculate end date
-      const endOfWeek = getEndOfWeek(currentDateIterator, parseInt(numberOfDays));
-  
-      // ✅ If numberOfDays is 6 and end date falls on Sunday → move to Monday
-      if (parseInt(numberOfDays) === 6 && endOfWeek.getDay() === 0) {
-        endOfWeek.setDate(endOfWeek.getDate() + 1);
-      }
-  
+        const endOfWeek = getEndOfWeek(currentDateIterator, parseInt(numberOfDays));
+    
+        // ✅ If numberOfDays is 6 and end date falls on Sunday → move to Monday
+        if (parseInt(numberOfDays) === 6 && endOfWeek.getDay() === 0) {
+            endOfWeek.setDate(endOfWeek.getDate() + 1);
+        }
+
       // Format dates
-      const formattedStartDate = getFormattedDate(currentDateIterator);
-      const formattedEndDate = getFormattedDate(endOfWeek);
-      const range = numberOfDays === "1" ? '' : ` to ${formattedEndDate}`;
-  
+        const formattedStartDate = getFormattedDate(currentDateIterator);
+        const formattedEndDate = getFormattedDate(endOfWeek);
+        const range = numberOfDays === "1" ? '' : ` to ${formattedEndDate}`;
+
       // Only include if end date is not past
-      if (endOfWeek >= currentDate) {
-        dateRanges.push(`${formattedStartDate}${range}`);
-      }
-  
+        if (endOfWeek >= currentDate) {
+            dateRanges.push(`${formattedStartDate}${range}`);
+        }
+
       // Move to next week
-      currentDateIterator.setDate(currentDateIterator.getDate() + 7);
+        currentDateIterator.setDate(currentDateIterator.getDate() + 7);
     }
-  
+
     return dateRanges;
 };
-  

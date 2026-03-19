@@ -43,7 +43,7 @@ export const INSERT_TRAINEE = async (traineeDetails: TRAINEE, ) => {
     }
 }
 
-export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string,) => {
+export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string, mismoSC: any, mismoSCFile: string) => {
     try{
         const traineeQuery = query(trainees, where('last_name', '==', traineeDetails.last_name), where('first_name', '==', traineeDetails.first_name))
         const querySnapshot = await getDocs(traineeQuery)
@@ -62,18 +62,19 @@ export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: numbe
         }
         
         const docRef: DocumentReference = await addDoc(trainees, {...newDetails})
-        await addAttachments(docRef.id, traineeDetails.last_name, traineeDetails.first_name, trainee_type, validID, profileID, validSignature, file, pfpFile)
+        await addAttachments(docRef.id, traineeDetails.last_name, traineeDetails.first_name, trainee_type, validID, profileID, validSignature, file, pfpFile, mismoSC, mismoSCFile)
         return docRef.id
     } catch(error){
         throw error
     }
 }
 
-export const addAttachments = async (id: string, lastName: string, givenName: string, traineeType: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string) => {
+export const addAttachments = async (id: string, lastName: string, givenName: string, traineeType: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string, mismoSC: any, mismoSCFile: string) => {
     try{
         let sig_url = '';
         let validURL = '';
         let validProfileURL = '';
+        let mismo = '';
 
         if (file !== 'No file chosen yet...') {
             // Upload valid id to Storage
@@ -94,11 +95,19 @@ export const addAttachments = async (id: string, lastName: string, givenName: st
             const sig_data = await uploadBytes(sigRef, validSignature[0]);
             sig_url = await getDownloadURL(sig_data.ref);
         }
+        
+        if (mismoSCFile !== 'No file chosen yet...') {
+            // Upload valid signature to Storage
+            const mismoRef = ref(storage, `TRAINEES/MISMO/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_mismo.jpg`);
+            const mismo_data = await uploadBytes(mismoRef, mismoSC[0]);
+            mismo = await getDownloadURL(mismo_data.ref);
+        }
         const getDoc = doc(firestore, `TRAINEES/${id}`)
         const newAttachments = {
             e_sig: sig_url,
             photo: validProfileURL,
             valid_id: validURL,
+            mismoSC: mismo,
         }
         await setDoc(getDoc, newAttachments, {merge: true})
     }catch(error){
@@ -160,6 +169,9 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string, 
                 act_start_date: '',
                 ccr: false,
                 act_ins: '',
+                act_assessor: '',
+                releasedBy: '',
+                releasingProof: '',
                 assessment: false,
                 evaluation: false,
                 practical: 0,
@@ -207,6 +219,9 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string, ma
                 act_start_date: '',
                 transmittalID: '',
                 act_ins: '',
+                act_assessor: '',
+                releasedBy: '',
+                releasingProof: '',
                 attendance: false,
                 ccr: false,
                 assessment: false,
@@ -285,10 +300,40 @@ export const PROCESS_CANCELLATION = async (val_id: string, type: number, reason:
 //     }
 // };
 
+export const STORE_PROOF_RELEASING = async (training_id: string, isDated: boolean, certificate_no: string, proofFile: string) => {
+    try{
+        let proof = '';
+        const category = isDated ? 'dated' : 'bd';
+
+        if (proofFile) {
+            // Upload valid signature to Storage
+            const proofRef = ref(storage, `certifications/RELEASING/${category}/release-log/${certificate_no}-${training_id}.jpg`);
+            await uploadString(proofRef, proofFile, "data_url");
+            proof = await getDownloadURL(proofRef);
+        }
+        const getDoc = doc(firestore, `TRAINING/${training_id}`)
+        const newAttachments = {
+            releasingProof: proof,
+        }
+        await setDoc(getDoc, newAttachments, {merge: true})
+    }catch(error){
+        throw error
+    }
+}
+
 export const UPDATE_TRAINING = async (training_id: string, updateTrainingDoc: Partial<TRAINING>, actor: string | null) => {
     try{
         const trainingRef = doc(firestore, 'TRAINING', training_id)
         await updateDoc(trainingRef, updateTrainingDoc)
+    }catch(error){
+        throw error
+    }
+}
+
+export const UPDATE_VIEW_CERT_ACCESS = async (training_id: string, view_count: number, actor: string | null) => {
+    try{
+        const trainingRef = doc(firestore, 'TRAINING', training_id)
+        await updateDoc(trainingRef, {hasViewed: true, viewCount: view_count})
     }catch(error){
         throw error
     }

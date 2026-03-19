@@ -2,6 +2,7 @@ import { Timestamp } from "firebase/firestore";
 
 export interface ClientCompany{
     company: string;
+    alias: string;
     code: string;
     email: string;
     address: string;
@@ -39,6 +40,7 @@ export interface ClientContactsByID extends ClientContacts {
 
 export const initClientCompany = {
     company: '',
+    alias: '',
     code: '',
     email: '',
     address: '',
@@ -52,6 +54,7 @@ export const initClientCompanyByID = {
     id: '',
     createdAt: Timestamp.now(),
     company: '',
+    alias: '',
     code: '',
     email: '',
     address: '',

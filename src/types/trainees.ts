@@ -71,6 +71,7 @@ export interface TRAINEE {
     valid_id: string;
     photo: string;
     e_sig: string;
+    mismoSC: string;
     marketing: string;
     otherMarketing: string;
 }
@@ -104,6 +105,7 @@ export const initTRAINEE = {
     valid_id: '',
     photo: '',
     e_sig: '',
+    mismoSC: '',
     marketing: '',
     otherMarketing: '',
     createdAt: Timestamp.now(),
@@ -147,6 +149,7 @@ export interface TRAINING {
     act_end_date: string;
     accountType: number; // 0 - crew | 1 - company
     act_ins: string;
+    act_assessor: string;
 
     date_enrolled: Timestamp;
     batch: string;
@@ -155,6 +158,8 @@ export interface TRAINING {
     trainingMode: string;
     isCertified: boolean;
     cert_released: Timestamp;
+    releasedBy: string;
+    releasingProof: string;
     cert_status: number; // 0 - pending | 1 - unclaimed | 2 - released
     cert_no: string;
 
@@ -193,7 +198,8 @@ export const initTraining = {
     act_start_date: '',
     accountType: 0, // 0 - crew | 1 - company
     act_ins: '',
-    
+    act_assessor: '',
+
     date_enrolled: Timestamp.now(),
     batch: '',
     regType: 0, // 2 - def | 0 - dated | 1 - bd
@@ -203,6 +209,8 @@ export const initTraining = {
     cert_released: Timestamp.now(),
     cert_status: 0, // 0 - pending | 1 - released
     cert_no: '',
+    releasedBy: '',
+    releasingProof: '',
 
     transmittalID: '',
     certTitle: '',

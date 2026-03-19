@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker, Transmittal, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, Transmittal, ReleaseLog, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -149,7 +149,7 @@ export default function TrackerPage(){
                     if (monthA !== monthB) return monthA - monthB
                     return numberA - numberB
                 })
-                .filter((t) => t.reg_status === 6 || t.reg_status === 3) // Only Graduated
+                .filter((t) => t.reg_status === 6 || t.reg_status === 3)
                 .filter((t) => {
                     if(!filterCharge) return true
                     return t.accountType.toString() === filterCharge
@@ -314,6 +314,7 @@ export default function TrackerPage(){
                     <TabList fontWeight='normal'>
                         <Tab _selected={{ color: 'white', bg: 'green.500' }}>Monitoring</Tab>
                         <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Transmittals</Tab>
+                        <Tab _selected={{ color: 'white', bg: 'blue.500' }}>Release Log</Tab>
                         <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Certificate Template Management</Tab>
                     </TabList>
                     <TabPanels>
@@ -431,6 +432,16 @@ export default function TrackerPage(){
                                 </Center>
                             ) : (
                                 <Transmittal />
+                            )}
+                        </TabPanel>
+                        <TabPanel>
+                            {loading ? (
+                                <Center py={8}>
+                                    <Spinner size="lg" color="blue.500" mr={3} />
+                                    <Text fontWeight="medium" color="gray.600">Loading Release Log Records...</Text>
+                                </Center>
+                            ) : (
+                                <ReleaseLog />
                             )}
                         </TabPanel>
                         <TabPanel>

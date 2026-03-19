@@ -4,7 +4,7 @@ import NextImage from 'next/image'
 import React, { useState, useRef } from 'react'
 import { Box, Image as ChakraImage, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
-Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel
+Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, FormLabel
 } from '@chakra-ui/react';
 
 import { Timestamp } from 'firebase/firestore'
@@ -73,17 +73,22 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [first_name, setFN] = useState<string>('')
     const [cat, setCat] = useState<string>('')
     const [attachmentType, setAT] = useState<string>('')
-    const [isPrinting, setIsPrinting] = useState<boolean>(false)
+    const [isPrinting, setIsPrinting] = useState<boolean>(true)
     const [trainingID, setSelectedTrainingID] = useState<string[]>([])
+    const [training_id, setTraining_ID] = useState<string>('')
+    const [view_count, setViewCount] = useState<number>(0)
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
     const { isOpen: isOpenCert, onOpen: onOpenCert, onClose: onCloseCert } = useDisclosure()
     const { isOpen: isOpenModal, onOpen: onOpenModal, onClose: onCloseModal } = useDisclosure()
+    const { isOpen: isOpenViewCount, onOpen: onOpenViewCount, onClose: onCloseViewCount } = useDisclosure()
+    const { isOpen: isOpenView, onOpen: onOpenView, onClose: onCloseView } = useDisclosure()
     
     const componentRef = useRef<HTMLDivElement | null>(null)
     const attachment = useRef<HTMLDivElement>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
+
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `${courseName}.pdf`,
@@ -100,18 +105,12 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
             }
         `,
         onBeforePrint: () => {
-            setIsPrinting(true);
+            setIsPrinting(false);
             handleToast('Preparing to print certificates...', ``, 3000, 'info');
         },
         onAfterPrint: () => {
-            if(isPrinting) {
-                console.log('printing...')
-                handleToast('Certificates Printed!', ``, 3000, 'success');
-            }
-            handlePrintCertificates();
-            setSelectedTrainingID([]) 
-            onCloseRemarks();
-            setIsPrinting(false);
+            handleToast('Certificates Printed!', ``, 3000, 'success');
+            onCloseRemarks()
         },
     })
 
@@ -136,6 +135,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 }, 
                 localStorage.getItem('customToken') || '')
         })
+        setSelectedTrainingID([]) 
+        setIsPrinting(true)
     }
 
     const handleStatus = async (trainingID: string, newStatus: number) => {
@@ -308,6 +309,17 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         setPreview(null)
     }
 
+    const handleViewCert = async (field: string = '', vc: number = 0) => {
+        switch(field){
+            case 'hasView':
+                await UPDATE_TRAINING(training_id, {hasViewed: false}, '')
+                return
+            case 'viewCount':
+                await UPDATE_TRAINING(training_id, {viewCount: vc}, '')
+                return
+        }
+    }
+
     const handleDownload = async () => {
         if (attachmentFile) {
             try {
@@ -366,10 +378,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 <Text w='30px'>#</Text>
                 <Text w='100px'>Completion Recency</Text>
                 <Text w='100px'>Completion Date</Text>
-                <Text w='50px'>Batch</Text>
+                <Text w='100px'>Batch</Text>
                 <Text w='200px'>Certificate No.</Text>
                 <Text w='350px'>Trainee Name</Text>
-                <Text w='80px'>Course</Text>
+                <Text w='150px'>Course</Text>
                 <Text w='120px'>Date Released</Text>
                 <Text w='100px'>Charge</Text>
                 <Text w='150px'>Status</Text>
@@ -409,7 +421,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 {relativeDate}
                             </Text>                                                                             
                             <Text w="110px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
-                            <Text w="50px" onClick={() => {
+                            <Text w="100px" onClick={() => {
                                 const foundBatch = courseBatch?.find((cb) => cb.id === training.batch)
                                 const foundCourse = allCourses?.find((course) => course.id === foundBatch?.course)?.course_name
                                 if (foundBatch && foundCourse) {
@@ -427,7 +439,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 {`${training.cert_no}`}
                             </Text>                                   
                             <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
-                            <Text w="80px">
+                            <Text w="150px">
                                 {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                             </Text> 
                             <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {(training.cert_status !== 0 && training.cert_status !== 1) && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{((training.cert_status !== 0 && training.cert_status !== 1) ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
@@ -476,7 +488,6 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 </ModalFooter>
             </ModalContent>
         </Modal>
-
         <Modal isOpen={isOpenRemarks} scrollBehavior='inside' onClose={() => {setRemarks(''); setID(''); setTDate(Timestamp.now()); onCloseRemarks();}}>
             <ModalOverlay />
             <ModalContent px='2'>
@@ -522,7 +533,11 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                     <Button size='sm' variant='solid' onClick={toggleAll} mr='3'>
                                         {Array.isArray(openIndexes) && openIndexes.length === trainings.length ? "Collapse All" : "Expand All"}
                                     </Button>
-                                    <Button isDisabled={trainingID.length === 0} onClick={handlePrint} bgColor='#1C437E' size='sm' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Certificates</Button>
+                                    {!isPrinting ? (
+                                        <Button onClick={() => handlePrintCertificates()} mr='3' size='sm' colorScheme='green' shadow='md'>Printing Complete</Button>
+                                    ) : (
+                                        <Button isDisabled={trainingID.length === 0} onClick={handlePrint} bgColor='#1C437E' size='sm' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Certificates</Button>
+                                    )}
                                 </Box>
                             </Box>
                             <Box display='flex' borderBottom='1px solid black' justifyContent='space-between' textAlign='center' px='4' py='2' textTransform='uppercase' >
@@ -532,6 +547,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 <Text w='100px'>Charge</Text>
                                 <Text w='100px'>No. of Prints</Text>
                                 <Text w='100px'>Viewed</Text>
+                                <Text w='100px'>View Count</Text>
                                 <Text w='20px'></Text>
                             </Box>
                             <Accordion allowMultiple index={openIndexes} allowToggle onChange={setOpenIndexes}>
@@ -573,7 +589,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             {/* <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>   */}
                                             <Text w="100px" >{training.accountType === 0 ? 'TRAINEE' : 'COMPANY'}</Text>  
                                             <Text w="100px" >{training?.printCount || 0}</Text>  
-                                            <Text w="100px" >{training?.hasViewed || 'Not yet'}</Text>  
+                                            <Text w="100px" onClick={() => {setTraining_ID(training.id); onOpenView();}} _hover={{ cursor: 'pointer'}}>{training?.hasViewed ? 'Viewed' : 'Not yet'}</Text>  
+                                            <Text w="100px" onClick={() => {setTraining_ID(training.id); onOpenViewCount();}} _hover={{ cursor: 'pointer'}}>{training?.viewCount || 0}</Text>  
                                             <AccordionIcon />
                                         </AccordionButton>
                                         <AccordionPanel px='10' py='5'>
@@ -917,6 +934,33 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             <Button onClick={handleDownload} isDisabled={preview !== null} colorScheme='blue' w='100%'>Download Image</Button>
                         </Box>
                     </Box>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenViewCount} onClose={onCloseViewCount} scrollBehavior='inside' size='sm' motionPreset='slideInTop'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader pb={0} >{`Change View Count`}</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody pt={0} display='flex' flexDir='column' gap='3'>
+                    <FormControl >
+                        <FormLabel>Set View Count:</FormLabel>
+                        <Input onChange={(e) => setViewCount(Number(e.target.value))} placeholder='Input view count here...' type='number'/>
+                    </FormControl>
+                    <Button colorScheme='blue' bgColor='blue.700' w='100%' shadow='md' onClick={() => {handleViewCert('viewCount', view_count); onCloseViewCount();}}>Update</Button>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenView} onClose={onCloseView} scrollBehavior='inside' size='lg' motionPreset='slideInTop'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader pb={0} >{`Trainee can Re-View Certificate`}</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody pt={0} display='flex' flexDir='column' gap='3'>
+                    <FormControl>
+                        <FormLabel fontWeight='normal' py='2' textAlign='center'>Are you sure you want to give this trainee a change to view their certificate again?</FormLabel>
+                    </FormControl>
+                    <Button colorScheme='blue' bgColor='blue.700' w='100%' shadow='md' onClick={() => {handleViewCert('hasView', 0); onCloseView();}}>Approve</Button>
                 </ModalBody>
             </ModalContent>
         </Modal>
