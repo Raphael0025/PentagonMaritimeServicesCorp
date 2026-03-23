@@ -1,22 +1,22 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react';
-import { Box, Text, Input, Textarea, Button, InputLeftAddon, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Input, Textarea, Button, InputLeftAddon, Image, Grid, GridItem, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, EditIcon, DownloadIcon, UploadIcon } from '@chakra-ui/icons'
 
-import { useTrainees } from '@/context/TraineeContext'
-import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
-import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
-import { useRank } from '@/context/RankContext'
+import { useTraining } from '@/context/TrainingContext'
+import { useTrainees } from '@/context/TraineeContext'
 import { useRoles } from '@/context/UserRolesContext'
+import { useCourses } from '@/context/CourseContext'
+import { useRank } from '@/context/RankContext'
 
-import { handleRegStatus } from '@/handlers/trainee_handler'
 import { marketBGColor, marketFontColor } from '@/handlers/util_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
+import { handleRegStatus } from '@/handlers/trainee_handler'
 
 import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
 import AdmissionForm from '@/Components/Page/Forms/AdmissionForm' 
@@ -26,43 +26,44 @@ import { SAVE_REMARKS, UPDATE_TRAINEE, UPDATE_TRAINING, UPDATE_REGISTRATION } fr
 import { useReactToPrint } from 'react-to-print'
 
 //import './Registration.css'
-import { deployYDate } from '@/types/utils' 
 import { fullMonth } from '@/handlers/util_handler'
+import { deployYDate } from '@/types/utils' 
 
 import { initTRAINEE_BY_ID, TRAINEE_BY_ID } from '@/types/trainees'
 
 export default function Page(){
     const toast = useToast()
-    const { data: courseBatch } = useCourseBatch()
     const { data: allRanks } = useRank()
-    const { data: allClients, courseCodes } = useClients()
-    const { data: allTrainee } = useTrainees()
-    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
-    const { data: allCourses } = useCourses()
     const { data: allRoles } = useRoles()
+    const { data: allCourses } = useCourses()
+    const { data: allTrainee } = useTrainees()
+    const { data: courseBatch } = useCourseBatch()
+    const { data: allClients, courseCodes } = useClients()
+    const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { lastMonthReg: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
+    const [filterCompany, setCompanyFilter] = useState<string>('')
+    const [trainingRef, setTrainingRef] = useState<string>('')
+    const [filterCourse, setCFilter] = useState<string>('')
+    const [traineeName, setTrainee] = useState<string>('')
+    const [filterMarket, setFilter] = useState<string>('')
     const [searchTerm, setSearch] = useState<string>('')
-    const [loading, setLoading] = useState<boolean>(false)
-    const [idRef, setID] = useState<string>('')
     const [remarks, setRemarks] = useState<string>('')
     const [regNum, setRegNum] = useState<string>('')
-    const [traineeName, setTrainee] = useState<string>('')
+    const [regRef, setRegRef] = useState<string>('')
+    const [idRef, setID] = useState<string>('')
+    const [loading, setLoading] = useState<boolean>(false)
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
     const [traineeRef, setTraineeRef] = useState<TRAINEE_BY_ID>(initTRAINEE_BY_ID)
-    const [trainingRef, setTrainingRef] = useState<string>('')
-    const [regRef, setRegRef] = useState<string>('')
-    const [filterMarket, setFilter] = useState<string>('')
-    const [filterCourse, setCFilter] = useState<string>('')
-    const [filterCompany, setCompanyFilter] = useState<string>('')
 
-    const { isOpen: isOpenRm, onOpen: onOpenRm, onClose: onCloseRm } = useDisclosure()
-    const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
+    const { isOpen: isOpenMarketing, onOpen: onOpenMarketing, onClose: onCloseMarketing  } = useDisclosure()
+    const { isOpen: isOpenAttach, onOpen: onOpenAttach, onClose: onCloseAttach } = useDisclosure()
     const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
+    const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     const { isOpen: isOpenReg, onOpen: onOpenReg, onClose: onCloseReg } = useDisclosure()
-    const { isOpen: isOpenMarketing, onOpen: onOpenMarketing, onClose: onCloseMarketing  } = useDisclosure()
+    const { isOpen: isOpenRm, onOpen: onOpenRm, onClose: onCloseRm } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -266,6 +267,7 @@ export default function Page(){
                                         </Box>
                                         <Text w="80px" className="text-center">Rank</Text>
                                         <Text w="100px" className="text-center">SRN</Text>
+                                        <Text w="100px" className="text-center">Attachments</Text>
                                         <Text w="150px" className="text-center">Date of Birth</Text>
                                         <Text w="200px" className="text-center">Place of Birth</Text>
                                         <Text w="250px" className="text-center">Address</Text>
@@ -373,6 +375,7 @@ export default function Page(){
                                                         {allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank}
                                                     </Text>                                        
                                                     <Text w="100px">{trainee.srn}</Text>                                        
+                                                    <Text w="100px">{`View`}</Text>                                        
                                                     <Text w='150px' >{parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</Text>
                                                     <Tooltip w='200px' textTransform='uppercase' textAlign='center' label={trainee.birthPlace}>
                                                         <Text noOfLines={1} w="180px">{trainee.birthPlace}</Text>

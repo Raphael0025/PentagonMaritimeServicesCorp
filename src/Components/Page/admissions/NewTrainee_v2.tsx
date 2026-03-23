@@ -75,6 +75,18 @@ export default function NewTrainee_v2(){
     const [screenshotFile, setSCFile] = useState<File[]>([])
     const [previewSC, setPreviewSC] = useState<string | null>(null)
     const [sc_fileName, setScFileName] = useState<string>('No file chosen yet...')
+    //Med Cert
+    const [medCertFile, setMCFile] = useState<File[]>([])
+    const [previewMC, setPreviewMC] = useState<string | null>(null)
+    const [mc_fileName, setMcFileName] = useState<string>('No file chosen yet...')
+    //COP
+    const [copFile, setCOPFile] = useState<File[]>([])
+    const [previewCOP, setPreviewCOP] = useState<string | null>(null)
+    const [cop_fileName, setCOPFileName] = useState<string>('No file chosen yet...')
+    //Sea Service Record
+    const [ssrFile, setSSRFile] = useState<File[]>([])
+    const [previewSSR, setPreviewSSR] = useState<string | null>(null)
+    const [ssr_fileName, setSSRFileName] = useState<string>('No file chosen yet...')
     
     const [month, setMonth] = useState<number>(0)
     const [day, setDay] = useState<number>(0)
@@ -194,6 +206,57 @@ export default function NewTrainee_v2(){
             setPreviewSC(objectUrl)
         } else {
             setScFileName('No file chosen yet...')
+        }
+    }
+    
+
+    const handleValidMC = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setMcFileName(file);
+            setMCFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewMC(objectUrl)
+        } else {
+            setMcFileName('No file chosen yet...')
+        }
+    }
+    
+
+    const handleValidCOP = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setCOPFileName(file);
+            setCOPFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewCOP(objectUrl)
+        } else {
+            setCOPFileName('No file chosen yet...')
+        }
+    }
+    
+
+    const handleValidSSR = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setSSRFileName(file);
+            setSSRFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewSSR(objectUrl)
+        } else {
+            setSSRFileName('No file chosen yet...')
         }
     }
     
@@ -402,67 +465,48 @@ export default function NewTrainee_v2(){
         try{
             setLoading(true)
             
-            const traineeID = await addNewTrainee(trainee, 0, validID, validPfp, validSignature, file, pfpFile, screenshotFile, sc_fileName)
-            if(traineeID !== null){
-                const ccArr = []
-                const crewArr = []
-                for(const course of courses){
-                    if(course.accountType === 0){
-                        crewArr.push(course)
-                    } else {
-                        ccArr.push(course)
-                    }
-                }
-                let regCCID, regCrewID
-                if(ccArr.length !== 0){
-                    let fee: number = 0
-                    for(const course of ccArr){
-                        fee = course.course_fee + fee
-                    }
-                    regCCID = await addRegistrationDetails(traineeID, fee, 0, 0, 1, trainee.marketing)
-                    for(const course of ccArr){
-                        try{
-                            if(regCCID){
-                                await addTrainingDetails(course, regCCID, trainee.marketing)
-                            }
-                        }catch(error){
-                            console.error('Failed to process this company charge: ', error)
-                        }
-                    }
-                }
-                
-                if(crewArr.length !== 0){
-                    let fee: number = 0
-                    for(const course of crewArr){
-                        fee = course.course_fee + fee
-                    }
-                    regCrewID = await addRegistrationDetails(traineeID, fee, 0, 0, 0, trainee.marketing)
-                    for(const course of crewArr){
-                        try{
-                            if(regCrewID){
-                                await addTrainingDetails(course, regCrewID, trainee.marketing)
-                            }
-                        }catch(error){
-                            console.error('Failed to process this crew charge: ', error)
-                        }
-                    }
-                }
-                await fetch('/api/send-mail', {
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/json',
-                    }, 
-                    body: JSON.stringify({
-                        to: trainee.email,
-                        subject: 'ENROLLMENT TO PENTAGON MARITIME SERVICES CORP.',
-                        text: 'Thank you for submitting your online registration form, someone will assist you once your registration is verified. Thank you have a nice day!',
-                        last_name: trainee.last_name,
-                        first_name: trainee.first_name,
-                    })
-                })
-            } else {
+            const allFiles = {validID, profileID: validPfp, validSignature, file, pfpFile, mismoSC: screenshotFile, mismoSCFile: sc_fileName, medCert: medCertFile, mcFile: mc_fileName, cop: copFile, copFile: cop_fileName, ssr: ssrFile, ssrFile: ssr_fileName}
+            const traineeID = await addNewTrainee(trainee, 0, allFiles)
+            if(!traineeID){
                 router.push('/admissions/ol/forms')
+                return
             }
+
+            const accountTypes = [
+                { type: 1, list: courses.filter(c => c.accountType !== 0)},
+                { type: 0, list: courses.filter(c => c.accountType === 0)},
+            ]
+
+            for(const chargeType of accountTypes){
+                if(chargeType.list.length === 0) continue
+
+                const totalFee = chargeType.list.reduce((sum, c) => sum + (c.course_fee || 0), 0)
+
+                const registrationID = await addRegistrationDetails(traineeID, totalFee, 0,0,chargeType.type, trainee.marketing)
+                
+                if(registrationID){
+                    await Promise.all(
+                        chargeType.list.map(course =>
+                            addTrainingDetails(course, registrationID, trainee.marketing)
+                            .catch(err => console.error(`Failed course ${course.course}:`, err))
+                        )
+                    )
+                }
+            }
+            
+            await fetch('/api/send-mail', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                }, 
+                body: JSON.stringify({
+                    to: trainee.email,
+                    subject: 'ENROLLMENT TO PENTAGON MARITIME SERVICES CORP.',
+                    text: 'Thank you for submitting your online registration form, someone will assist you once your registration is verified. Thank you have a nice day!',
+                    last_name: trainee.last_name,
+                    first_name: trainee.first_name,
+                })
+            })
             onCloseReview()
             onOpenThankYou()
         } catch(error){
@@ -785,14 +829,38 @@ export default function NewTrainee_v2(){
                                 <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                             </FormControl>
                             {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (
+                                <>
                                 <FormControl isRequired >
-                                    <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
+                                    <FormLabel htmlFor='mismoSC' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
                                     <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
-                                    <Input id='photo' onChange={handleValidSC} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <Input id='mismoSC' onChange={handleValidSC} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                                 </FormControl>
+                                </>
                             )}
                         </Box>
+                        {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (
+                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='med_cert' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Medical Certificate</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your Medical Certificate)</FormHelperText>
+                                    <Input id='med_cert' onChange={handleValidID} p='4px' placeholder='e.g. Doe' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='cop' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>{`Certificate of Proficiency (COP)`}</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your COP)</FormHelperText>
+                                    <Input id='cop' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='ssr' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Sea Service Records</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your Sea Service Records)</FormHelperText>
+                                    <Input id='ssr' onChange={handleValidSC} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                            </Box>
+                        )}
                     </Box>
                 </Box>
                 {/** Company Policies & Guidelines*/}

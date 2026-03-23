@@ -38,6 +38,10 @@ export const initTRAINEE_BY_ID = {
     photo: '',
     e_sig: '',
     mismoSC: '',
+    medCert: '',
+    ssr: '',
+    cop: '',
+
     marketing: '',
     otherMarketing: '',
     createdAt: Timestamp.now(),
@@ -73,6 +77,10 @@ export interface TRAINEE {
     photo: string;
     e_sig: string;
     mismoSC: string;
+    medCert: string;
+    ssr: string;
+    cop: string;
+
     marketing: string;
     otherMarketing: string;
 }
@@ -107,6 +115,10 @@ export const initTRAINEE = {
     photo: '',
     e_sig: '',
     mismoSC: '',
+    medCert: '',
+    ssr: '',
+    cop: '',
+    
     marketing: '',
     otherMarketing: '',
     createdAt: Timestamp.now(),

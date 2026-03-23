@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
-import { Box, Text, Input, Button, InputLeftAddon, Menu, MenuList, MenuButton, IconButton, MenuItem, MenuGroup, MenuDivider, MenuOptionGroup, MenuItemOption, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionIcon, AccordionItem, Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent, ModalFooter, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
+import { Image, Box, Text, Input, Button, InputLeftAddon, Menu, MenuList, MenuButton, IconButton, MenuItem, MenuGroup, Grid, GridItem, MenuDivider, MenuOptionGroup, MenuItemOption, InputGroup, useToast, Accordion, AccordionButton, AccordionPanel, AccordionIcon, AccordionItem, Modal, ModalOverlay, ModalHeader, ModalBody, ModalContent, ModalFooter, ModalCloseButton, useDisclosure } from '@chakra-ui/react';
 import { DotsIcon, ViewDocIcon, SearchIcon, StopIcon, } from '@/Components/Icons';
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, EditIcon, DownloadIcon, CheckCircleIcon } from '@chakra-ui/icons'
 import { PlusIcon } from '@/Components/SideIcons'
 import { Timestamp } from 'firebase/firestore'
 
@@ -23,9 +23,9 @@ import { handleRegStatus } from '@/handlers/trainee_handler'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { generateDateBefore } from '@/handlers/course_handler'
 
-import { ACKNOWLEDGE_REGISTRATION, ENROLL_COURSE } from '@/lib/trainee_controller'
+import { ACKNOWLEDGE_REGISTRATION, ENROLL_COURSE, changeImg } from '@/lib/trainee_controller'
 import { GENERATE_BATCH } from '@/lib/course_batches_controller'
-import { TRAINING_BY_ID } from '@/types/trainees'
+import { TRAINING_BY_ID, initTRAINEE_BY_ID, TRAINEE_BY_ID } from '@/types/trainees'
 
 import { useReactToPrint } from 'react-to-print'
 import { deployYDate } from '@/types/utils' 
@@ -41,20 +41,22 @@ export default function Page() {
     const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
     const { data: allRoles } = useRoles()
 
+    const [traineeName, setTrainee] = useState<string>('')
     const [activeBtn, setActiveBtn] = useState<string>('')
-    const [loadBtn, setLoadBtn] = useState<boolean>(true)
+    const [training, setTraining] = useState<string>('')
     const [search, setSearch] = useState<string>('')
     const [regID, setRegID] = useState<string>('')
     const [t_id, setTID] = useState<string>('')
-    const [training, setTraining] = useState<string>('')
     const [cID, setCID] = useState<string>('')
-    const [account_type, setAccType] = useState<number>(0)
     const [ts, setTS] = useState<string>('')
     const [td, setTD] = useState<string>('')
+    const [account_type, setAccType] = useState<number>(0)
+    const [loadBtn, setLoadBtn] = useState<boolean>(true)
+    const [loading, setLoading] = useState<boolean>(false)
+    const [traineeInfo, setTraineeInfo] = useState<TRAINEE_BY_ID>(initTRAINEE_BY_ID)
+
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
-
-    const [traineeName, setTrainee] = useState<string>('')
 
     const { isOpen: isOpenReg, onOpen: onOpenReg, onClose: onCloseReg } = useDisclosure()
     const { isOpen: isOpenTS, onOpen: onOpenTS, onClose: onCloseTS } = useDisclosure()
@@ -65,6 +67,7 @@ export default function Page() {
     const { isOpen: isOpenAT, onOpen: onOpenAT, onClose: onCloseAT } = useDisclosure()
     const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
     const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
+    const { isOpen: isOpenAttach, onOpen: onOpenAttach, onClose: onCloseAttach } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -250,6 +253,16 @@ export default function Page() {
         onCloseDate()
     }
 
+    const attachmentsConfig = [
+        { label: 'Valid ID', key: 'valid_id', type: 'valid_id', cat: 'validID' },
+        { label: 'Profile Picture', key: 'photo', type: 'photos', cat: 'idPic' },
+        { label: 'Signature', key: 'e_sig', type: 'e-signs', cat: 'esign' },
+        { label: 'MISMO Profile Screenshot', key: 'mismoSC', type: 'MISMO', cat: 'mismo' },
+        { label: 'Medical Certificate', key: 'medCert', type: 'MEDICAL_CERTS', cat: 'medCert' },
+        { label: 'Certificate Of Proficiency', key: 'cop', type: 'CERTIFICATE_OF_PROFICIENCY', cat: 'cop' },
+        { label: 'Sea Service Record', key: 'ssr', type: 'SEA_SERVICE_RECORDS', cat: 'ssr' },
+    ];
+
     return (
         <>
         <main className="w-full space-y-3">
@@ -279,7 +292,8 @@ export default function Page() {
                     <Text w="25%" className="text-center">rank</Text>
                     <Text w="25%" className="text-center">srn</Text>
                     <Text w="40%" className="text-center">Company</Text>
-                    <Text w="40%" className="text-center">email</Text>
+                    <Text w="50%" className="text-center">email</Text>
+                    <Text w="40%" className="text-center">Attachments</Text>
                     {/* <Text w="50%" className="text-center">Payment Balance</Text> */}
                     <Text w="40%" className="text-center">contact no</Text>
                     {canDo('create') && (
@@ -316,7 +330,8 @@ export default function Page() {
                                             <Text w="40%" className="text-xs text-center">
                                                 {allClients?.find((client) => client.id === traineeFound.company)?.company || traineeFound.company}
                                             </Text>
-                                            <Text w="40%" className="text-xs text-center lowercase">{traineeFound.email}</Text>
+                                            <Text w="50%" className="text-xs text-center lowercase">{traineeFound.email}</Text>
+                                            <Text w="40%" onClick={() => {setTraineeInfo(traineeFound); onOpenAttach();}} className="text-xs text-center">{`View`}</Text>
                                             <Text w="40%" className="text-xs text-center">{traineeFound.contact_no}</Text>
                                             {canDo('update') && (
                                                 <Box p={0} w='30%'>
@@ -406,6 +421,23 @@ export default function Page() {
                 </Box>
             </Box>
         </main>
+        <Modal isOpen={isOpenAttach} onClose={onCloseAttach} size='6xl' >
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader color='blue.700'>TRAINEE ATTACHMENTS</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6} p={4}>
+                    {attachmentsConfig.map((item) => (
+                        <AttachmentCard key={item.key} label={item.label} currentUrl={traineeInfo[item.key]} isLoading={loading} 
+                            onUpload={async (file) => { await changeImg( traineeInfo.id,  traineeInfo.last_name,  traineeInfo.first_name,  item.cat,  item.type,  [file],  'New File',  'Staff Update' );}}
+                            onDownload={() => { const link = document.createElement('a'); link.href = traineeInfo[item.key]; link.download = `${traineeInfo.last_name}_${item.label}.jpg`; link.target = "_blank"; link.click();}}
+                        />
+                    ))}
+                </Grid>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
         <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
             <ModalOverlay />
             <ModalContent px={4}>
@@ -506,4 +538,63 @@ export default function Page() {
         </Modal>
         </>
     );
+}
+
+interface AttachmentCardProps{
+    label: string;
+    currentUrl: string;
+    onUpload: (file: File) => Promise<void>;
+    onDownload: () => void;
+    isLoading: boolean;
+}
+
+const AttachmentCard = ({label, currentUrl, onUpload, onDownload, isLoading}: AttachmentCardProps) => {
+    const [preview, setPreview] = useState<string | null>(null)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            setPreview(URL.createObjectURL(file));
+        }
+    };
+    
+    const handleUploadClick = async () => {
+        if (selectedFile) {
+            await onUpload(selectedFile);
+            setPreview(null); // Clear preview after successful upload
+            setSelectedFile(null);
+        }
+    };
+
+    return(
+        <GridItem border='1px solid' borderColor='gray.200' h='350px' borderRadius='lg' p='3' bg='white' shadow='md'>
+            <Box display="flex" flexDirection="column" h="100%" justifyContent="space-between">
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Text fontWeight="bold" fontSize="xs" color="gray.600" textTransform='uppercase'>{label}</Text>
+                    <Button size="xs" variant="ghost" onClick={() => fileInputRef.current?.click()} leftIcon={<EditIcon />}>
+                        Edit
+                    </Button>
+                    <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileChange} />
+                </Box>
+                <Box h='250px' bg='gray.50' borderRadius='md' display='flex' alignItems='center' justifyContent='center' position='relative' overflow='hidden' border='1px dashed' borderColor={preview ? 'blue.300' : 'gray.200'}>
+                {preview || currentUrl ? (
+                    <Image  src={preview || currentUrl}  alt={label}  objectFit="cover"  boxSize="100%" />
+                ) : (
+                    <Text color="gray.400" fontSize="xs">No file uploaded</Text>
+                )}
+                </Box>
+                <Box display="flex" mt={3} gap={2}>
+                    <Button  size="sm"  colorScheme="green"  flex={1}  isDisabled={!preview}  isLoading={isLoading} onClick={handleUploadClick} >
+                        Upload
+                    </Button>
+                    <Button  size="sm"  colorScheme="blue"  variant="outline" flex={1}  isDisabled={!!preview || !currentUrl}  onClick={onDownload} leftIcon={<DownloadIcon />}>
+                        View/Save
+                    </Button>
+                </Box>
+            </Box>
+        </GridItem>
+    )
 }

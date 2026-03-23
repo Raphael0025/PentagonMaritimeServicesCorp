@@ -43,7 +43,7 @@ export const INSERT_TRAINEE = async (traineeDetails: TRAINEE, ) => {
     }
 }
 
-export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string, mismoSC: any, mismoSCFile: string) => {
+export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, allFiles: any) => {
     try{
         const traineeQuery = query(trainees, where('last_name', '==', traineeDetails.last_name), where('first_name', '==', traineeDetails.first_name))
         const querySnapshot = await getDocs(traineeQuery)
@@ -56,61 +56,52 @@ export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: numbe
             })
             return null
         }
-
-        const newDetails = {
-            ...traineeDetails,
-        }
         
-        const docRef: DocumentReference = await addDoc(trainees, {...newDetails})
-        await addAttachments(docRef.id, traineeDetails.last_name, traineeDetails.first_name, trainee_type, validID, profileID, validSignature, file, pfpFile, mismoSC, mismoSCFile)
+        const docRef: DocumentReference = await addDoc(trainees, {...traineeDetails, trainee_type})
+        await addAttachments(docRef.id, {...traineeDetails, trainee_type}, allFiles)
+
         return docRef.id
     } catch(error){
         throw error
     }
 }
 
-export const addAttachments = async (id: string, lastName: string, givenName: string, traineeType: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string, mismoSC: any, mismoSCFile: string) => {
-    try{
-        let sig_url = '';
-        let validURL = '';
-        let validProfileURL = '';
-        let mismo = '';
+export const uploadTraineeFile = async (folder: string, fileNameSuffix: string, fileData: any, checkString: string, context: {lastName: string, givenName: string, isReEnroll: boolean}) => {
+    if(!fileData || !fileData[0] || checkString === 'No file chosen yet...') return '';
+    const prefix = context.isReEnroll ? 're-enroll_' : '';
+    const path = `TRAINEES/${folder}/${prefix}${context.lastName}_${context.givenName}_${fileNameSuffix}.jpg`
+    const storageRef = ref(storage, path)
 
-        if (file !== 'No file chosen yet...') {
-            // Upload valid id to Storage
-            const idRef = ref(storage, `TRAINEES/valid_id/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_validID.jpg`);
-            const id_data = await uploadBytes(idRef, validID[0]);
-            validURL = await getDownloadURL(id_data.ref);
-        }
-        if (pfpFile !== 'No file chosen yet...') {
-            // Upload valid pfp to Storage
-            const pfpRef = ref(storage, `TRAINEES/photos/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_idPic.jpg`);
-            const pfp_data = await uploadBytes(pfpRef, profileID[0]);
-            validProfileURL = await getDownloadURL(pfp_data.ref);
-        }
-        
-        if (validSignature && validSignature.length > 0) {
-            // Upload valid signature to Storage
-            const sigRef = ref(storage, `TRAINEES/e-signs/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_esign.jpg`);
-            const sig_data = await uploadBytes(sigRef, validSignature[0]);
-            sig_url = await getDownloadURL(sig_data.ref);
-        }
-        
-        if (mismoSCFile !== 'No file chosen yet...') {
-            // Upload valid signature to Storage
-            const mismoRef = ref(storage, `TRAINEES/MISMO/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_mismo.jpg`);
-            const mismo_data = await uploadBytes(mismoRef, mismoSC[0]);
-            mismo = await getDownloadURL(mismo_data.ref);
-        }
-        const getDoc = doc(firestore, `TRAINEES/${id}`)
-        const newAttachments = {
-            e_sig: sig_url,
-            photo: validProfileURL,
-            valid_id: validURL,
-            mismoSC: mismo,
-        }
-        await setDoc(getDoc, newAttachments, {merge: true})
+    const uploadRes = await uploadBytes(storageRef, fileData[0])
+    return await getDownloadURL(uploadRes.ref)
+}
+
+export const addAttachments = async (id: string, traineeDetails: any, files: any) => {
+    try{
+        const {last_name, first_name, trainee_type} = traineeDetails
+        const context = {lastName: last_name, givenName: first_name, isReEnroll: trainee_type !== 0}
+
+        const fileMap = [
+            { key: 'valid_id', folder: 'valid_id', suffix: 'validID', data: files.validID, check: files.file},
+            { key: 'photo', folder: 'photos', suffix: 'idPic', data: files.profileID, check: files.pfpfile},
+            { key: 'e_sig', folder: 'e-signs', suffix: 'esign', data: files.validSignature, check: files.validSignaturefile},
+            { key: 'mismoSC', folder: 'MISMO', suffix: 'mismo', data: files.mismoSC, check: files.mismoSCfile},
+            { key: 'medCert', folder: 'MEDICAL_CERTS', suffix: 'medCert', data: files.medCert, check: files.mcfile},
+            { key: 'cop', folder: 'CERTIFICATE_OF_PROFICIENCY', suffix: 'cop', data: files.cop, check: files.copfile},
+            { key: 'ssr', folder: 'SEA_SERVICE_RECORDS', suffix: 'ssr', data: files.ssr, check: files.ssrfile},
+        ]
+        const uploadPromises = fileMap.map(item => 
+            uploadTraineeFile(item.folder, item.suffix, item.data, item.check, context)
+            .then(url => ({ [item.key]: url}))
+        )
+
+        const res = await Promise.all(uploadPromises)
+        const newAttachments = Object.assign({}, ...res)
+
+        const docRef = doc(firestore, `TRAINEES/${id}`)
+        await setDoc(docRef, newAttachments, { merge: true})
     }catch(error){
+        console.error("Attachment upload failed: ", error)
         throw error
     }
 }
@@ -260,46 +251,6 @@ export const PROCESS_CANCELLATION = async (val_id: string, type: number, reason:
     }
 }
 
-// export const addRegTypeField = async () => {
-//     const trainingRef = collection(firestore, 'TRAINING'); // Adjust the collection name as needed
-//     const registrationRef = collection(firestore, 'REGISTRATION');
-    
-//     try {
-//         // Get all documents from the training collection
-//         const trainingSnapshot = await getDocs(trainingRef);
-
-//         for (const trainingDoc of trainingSnapshot.docs) {
-//             const trainingData = trainingDoc.data();
-//             const regType = trainingData.regType;
-//             const regRefId = trainingData.reg_ref_id;
-            
-//             // Find the corresponding registration document by reg_ref_id
-//             const regDocRef = doc(firestore, 'REGISTRATION', regRefId);
-//             const regDocSnapshot = await getDoc(regDocRef);  // Use getDoc instead of getDocs for single document retrieval
-
-//             if (regDocSnapshot.exists()) {
-//                 const regData = regDocSnapshot.data();
-                
-//                 // Check if regType already exists in the registration document
-//                 if (!regData.hasOwnProperty('regType')) {
-//                     // If regType does not exist, add it
-//                     await updateDoc(regDocRef, {
-//                         regType: regType
-//                     });
-//                     console.log(`Added regType to document ${regRefId}`);
-//                 } else {
-//                     console.log(`regType already exists in document ${regRefId}, skipping.`);
-//                 }
-//             } else {
-//                 console.log(`No matching document found for reg_ref_id: ${regRefId}`);
-//             }
-//         }
-
-//     } catch (error) {
-//         console.error('Error updating registration documents:', error);
-//     }
-// };
-
 export const STORE_PROOF_RELEASING = async (training_id: string, isDated: boolean, certificate_no: string, proofFile: string) => {
     try{
         let proof = '';
@@ -376,26 +327,6 @@ export const UPDATE_REGISTRATION = async (reg_id: string, updateRegDoc: Partial<
         throw error
     }
 }
-
-// export const UPDATE_TS = async (training_id: string, startDate: string, endDate: string, actor: string | null) => {
-//     try{
-//         const trainingRef = doc(firestore, 'TRAINING', training_id)
-//         await updateDoc(trainingRef, {start_date: startDate, end_date: endDate})
-//         await addLog(actor, 'Training Scheduled Updated', 'TRAINING', training_id)
-//     }catch(error){
-//         throw error
-//     }
-// }
-
-// export const UPDATE_COURSE_FEE = async (training_id: string, course_fee: number, actor: string | null) => {
-//     try{
-//         const trainingRef = doc(firestore, 'TRAINING', training_id)
-//         await updateDoc(trainingRef, {course_fee})
-//         await addLog(actor, 'Training Fee Updated', 'TRAINING', training_id)
-//     }catch(error){
-//         throw error
-//     }
-// }
 
 export const UPDATE_TRAINEE = async (traineeInfo: TRAINEE_BY_ID, actor: string | null) => {
     try{
@@ -656,6 +587,51 @@ export const RE_ENROLLED_TRAINEE = async (trainee_id: string, newTrainee: TRAINE
     }
 }
 
+            // screenshotFile
+            // sc_fileName
+            // medCertFile
+            // mc_fileName
+            // copFile
+            // cop_fileName
+            // ssrFile
+            // ssr_fileName
+export const updateTraineeAttachments = async(id: string, trainee: any, files: any, staff: string) => {
+    try{
+        const { last_name, first_name } = trainee
+        const updates: Record<string, string> = {}
+
+        const fileConfig = [
+            {key: 'valid_id', data: files.validID, check: files.file, suffix: 'validID', folder: 'valid_id'},
+            {key: 'photo', data: files.validPfp, check: files.pfpFile, suffix: 'idPic', folder: 'photos'},
+            {key: 'e_sig', data: files.validSignature, check: files.sig_file, suffix: 'esign', folder: 'e-signs'},
+            {key: 'mismoSC', data: files.screenshotFile, check: files.sc_fileName, suffix: 'mismo', folder: 'MISMO'},
+            {key: 'medCert', data: files.medCertFile, check: files.mc_fileName, suffix: 'medCert', folder: 'MEDICAL_CERTS'},
+            {key: 'cop', data: files.copFile, check: files.cop_fileName, suffix: 'cop', folder: 'CERTIFICATE_OF_PROFICIENCY'},
+            {key: 'ssr', data: files.ssrFile, check: files.ssr_fileName, suffix: 'ssr', folder: 'SEA_SERVICE_RECORDS'},
+        ]
+
+        await Promise.all(fileConfig.map(async (item) => {
+            if(item.check && item.check !== 'No file chosen yet...'){
+                const storagePath = `TRAINEES/${item.folder}/${last_name}_${first_name}_${item.suffix}.jpg`
+                const storageRef = ref(storage, storagePath)
+                const snapshot = await uploadBytes(storageRef, item.data[0])
+                updates[item.key] = await getDownloadURL(snapshot.ref)
+            }
+        }))
+
+        if(Object.keys(updates).length > 0){
+            const traineeRef = doc(firestore, 'TRAINEES', id)
+            await updateDoc(traineeRef, updates)
+            //await addLog(staff, `Attachments for ${first_name} ${last_name} updated.`, 'TRAINEES', id) 
+        }
+        return updates
+    }catch(err){
+        console.error(err)
+        throw err
+    }
+}
+
+// Obsolete, find this function on other files then replace it with the new function above
 export const changeImg = async (trainee_id: string, last_name: string, first_name: string, cat: string, attachment_type: string, validID: any, file: string, staff: string | null) => {
     try {
         // Check if a trainee with the same first and last name already exists
