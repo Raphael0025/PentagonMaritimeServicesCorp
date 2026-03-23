@@ -253,12 +253,7 @@ export default function Page() {
         onCloseDate()
     }
 
-    const attachmentsConfig:{
-        label: string;
-        key: keyof TRAINEE_BY_ID;
-        type: string;
-        cat: string;
-    } = [
+    const attachmentsConfig = [
         { label: 'Valid ID', key: 'valid_id', type: 'valid_id', cat: 'validID' },
         { label: 'Profile Picture', key: 'photo', type: 'photos', cat: 'idPic' },
         { label: 'Signature', key: 'e_sig', type: 'e-signs', cat: 'esign' },
