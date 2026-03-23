@@ -434,10 +434,19 @@ export default function Page() {
                 <ModalBody>
                 <Grid templateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={6} p={4}>
                     {attachmentsConfig.map((item) => (
-                        <AttachmentCard key={item.key} label={item.label} currentUrl={traineeInfo[item.key]} isLoading={loading} 
+                        <AttachmentCard key={item.key} label={item.label} currentUrl={traineeInfo[item.key] as string} isLoading={loading} 
                             onUpload={async (file) => { await changeImg( traineeInfo.id,  traineeInfo.last_name,  traineeInfo.first_name,  item.cat,  item.type,  [file],  'New File',  'Staff Update' );}}
-                            onDownload={() => { const link = document.createElement('a'); link.href = traineeInfo[item.key]; link.download = `${traineeInfo.last_name}_${item.label}.jpg`; link.target = "_blank"; link.click();}}
-                        />
+                            onDownload={() => { 
+                                const fileUrl = traineeInfo[item.key];
+                                // Ensure it's a string before using it in the link
+                                if (typeof fileUrl === 'string') {
+                                    const link = document.createElement('a'); 
+                                    link.href = fileUrl; 
+                                    link.download = `${traineeInfo.last_name}_${item.label}.jpg`; 
+                                    link.target = "_blank"; 
+                                    link.click();
+                                }
+                        }}/>
                     ))}
                 </Grid>
                 </ModalBody>
