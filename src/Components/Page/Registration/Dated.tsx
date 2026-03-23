@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Text, Input, Textarea, Button, InputLeftAddon, Image, Grid, GridItem, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
-import { ChevronDownIcon, EditIcon, DownloadIcon, UploadIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, EditIcon, DownloadIcon, CheckCircleIcon } from '@chakra-ui/icons'
 
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useClients } from '@/context/ClientCompanyContext'
