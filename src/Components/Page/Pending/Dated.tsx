@@ -253,14 +253,19 @@ export default function Page() {
         onCloseDate()
     }
 
-    const attachmentsConfig = [
+    const attachmentsConfig: { 
+        label: string; 
+        key: keyof TRAINEE_BY_ID; // This is the most important line
+        type: string; 
+        cat: string 
+    }[] = [
         { label: 'Valid ID', key: 'valid_id', type: 'valid_id', cat: 'validID' },
         { label: 'Profile Picture', key: 'photo', type: 'photos', cat: 'idPic' },
         { label: 'Signature', key: 'e_sig', type: 'e-signs', cat: 'esign' },
-        { label: 'MISMO Profile Screenshot', key: 'mismoSC', type: 'MISMO', cat: 'mismo' },
-        { label: 'Medical Certificate', key: 'medCert', type: 'MEDICAL_CERTS', cat: 'medCert' },
-        { label: 'Certificate Of Proficiency', key: 'cop', type: 'CERTIFICATE_OF_PROFICIENCY', cat: 'cop' },
-        { label: 'Sea Service Record', key: 'ssr', type: 'SEA_SERVICE_RECORDS', cat: 'ssr' },
+        { label: 'MISMO', key: 'mismoSC', type: 'MISMO', cat: 'mismo' },
+        { label: 'Medical Cert', key: 'medCert', type: 'MEDICAL_CERTS', cat: 'medCert' },
+        { label: 'COP', key: 'cop', type: 'CERTIFICATE_OF_PROFICIENCY', cat: 'cop' },
+        { label: 'SSR', key: 'ssr', type: 'SEA_SERVICE_RECORDS', cat: 'ssr' },
     ];
 
     return (
@@ -429,10 +434,19 @@ export default function Page() {
                 <ModalBody>
                 <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6} p={4}>
                     {attachmentsConfig.map((item) => (
-                        <AttachmentCard key={item.key} label={item.label} currentUrl={traineeInfo[item.key]} isLoading={loading} 
+                        <AttachmentCard key={item.key} label={item.label} currentUrl={traineeInfo[item.key] as string} isLoading={loading} 
                             onUpload={async (file) => { await changeImg( traineeInfo.id,  traineeInfo.last_name,  traineeInfo.first_name,  item.cat,  item.type,  [file],  'New File',  'Staff Update' );}}
-                            onDownload={() => { const link = document.createElement('a'); link.href = traineeInfo[item.key]; link.download = `${traineeInfo.last_name}_${item.label}.jpg`; link.target = "_blank"; link.click();}}
-                        />
+                            onDownload={() => { 
+                                const fileUrl = traineeInfo[item.key];
+                                // Ensure it's a string before using it in the link
+                                if (typeof fileUrl === 'string') {
+                                    const link = document.createElement('a'); 
+                                    link.href = fileUrl; 
+                                    link.download = `${traineeInfo.last_name}_${item.label}.jpg`; 
+                                    link.target = "_blank"; 
+                                    link.click();
+                                }
+                        }}/>
                     ))}
                 </Grid>
                 </ModalBody>

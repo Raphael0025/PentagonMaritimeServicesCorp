@@ -258,7 +258,7 @@ export default function Page() {
         key: keyof TRAINEE_BY_ID; // This is the most important line
         type: string; 
         cat: string 
-      }[] = [
+    }[] = [
         { label: 'Valid ID', key: 'valid_id', type: 'valid_id', cat: 'validID' },
         { label: 'Profile Picture', key: 'photo', type: 'photos', cat: 'idPic' },
         { label: 'Signature', key: 'e_sig', type: 'e-signs', cat: 'esign' },
@@ -266,7 +266,7 @@ export default function Page() {
         { label: 'Medical Cert', key: 'medCert', type: 'MEDICAL_CERTS', cat: 'medCert' },
         { label: 'COP', key: 'cop', type: 'CERTIFICATE_OF_PROFICIENCY', cat: 'cop' },
         { label: 'SSR', key: 'ssr', type: 'SEA_SERVICE_RECORDS', cat: 'ssr' },
-      ];
+    ];
 
     return (
     <>
