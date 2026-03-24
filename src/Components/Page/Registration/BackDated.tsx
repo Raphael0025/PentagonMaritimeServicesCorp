@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
-import { Box, Text, Input, Textarea, Button, InputLeftAddon, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Image, Input, Textarea, Button, InputLeftAddon, Grid, GridItem, FormControl, Select, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, EditIcon, DownloadIcon, } from '@chakra-ui/icons'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -22,7 +22,7 @@ import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
 import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
 import { EditRegistration } from '@/Components/Modal/Registration'
 
-import { SAVE_REMARKS, UPDATE_TRAINEE, UPDATE_TRAINING, UPDATE_REGISTRATION } from '@/lib/trainee_controller'
+import { SAVE_REMARKS, UPDATE_TRAINEE, UPDATE_TRAINING, UPDATE_REGISTRATION, changeImg } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
 //import './Registration.css'
@@ -56,6 +56,7 @@ export default function Page(){
     const [filterMarket, setFilter] = useState<string>('')
     const [filterCourse, setCFilter] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
+    const [traineeInfo, setTraineeInfo] = useState<TRAINEE_BY_ID>(initTRAINEE_BY_ID)
 
     const { isOpen: isOpenRm, onOpen: onOpenRm, onClose: onCloseRm } = useDisclosure()
     const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
@@ -63,6 +64,7 @@ export default function Page(){
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     const { isOpen: isOpenReg, onOpen: onOpenReg, onClose: onCloseReg } = useDisclosure()
     const { isOpen: isOpenMarketing, onOpen: onOpenMarketing, onClose: onCloseMarketing  } = useDisclosure()
+    const { isOpen: isOpenAttach, onOpen: onOpenAttach, onClose: onCloseAttach } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -192,6 +194,21 @@ export default function Page(){
         })
     }
 
+    const attachmentsConfig: { 
+        label: string; 
+        key: keyof TRAINEE_BY_ID; // This is the most important line
+        type: string; 
+        cat: string 
+    }[] = [
+        { label: 'Valid ID', key: 'valid_id', type: 'valid_id', cat: 'validID' },
+        { label: 'Profile Picture', key: 'photo', type: 'photos', cat: 'idPic' },
+        { label: 'Signature', key: 'e_sig', type: 'e-signs', cat: 'esign' },
+        { label: 'MISMO Profile Account', key: 'mismoSC', type: 'MISMO', cat: 'mismo' },
+        { label: 'Medical Certificate', key: 'medCert', type: 'MEDICAL_CERTS', cat: 'medCert' },
+        { label: 'Certificate of Proficiency', key: 'cop', type: 'CERTIFICATE_OF_PROFICIENCY', cat: 'cop' },
+        { label: 'Sea Service Record', key: 'ssr', type: 'SEA_SERVICE_RECORDS', cat: 'ssr' },
+    ];
+
     return(
         <>
             <main className="w-full space-y-3">
@@ -266,6 +283,7 @@ export default function Page(){
                                         </Box>
                                         <Text w="80px" className="text-center">Rank</Text>
                                         <Text w="100px" className="text-center">SRN</Text>
+                                        <Text w="40%" className="text-center">Attachments</Text>
                                         <Text w="150px" className="text-center">Date of Birth</Text>
                                         <Text w="200px" className="text-center">Place of Birth</Text>
                                         <Text w="250px" className="text-center">Address</Text>
@@ -371,7 +389,8 @@ export default function Page(){
                                                     <Text w="100px">
                                                         {allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank}
                                                     </Text>                                        
-                                                    <Text w="100px">{trainee.srn}</Text>                                        
+                                                    <Text w="100px">{trainee.srn}</Text>                
+                                                    <Text w="100px" onClick={() => {setTraineeInfo(trainee); onOpenAttach();}} _hover={{cursor:'pointer', textDecoration: 'underline', color: 'blue.600'}}>{`View`}</Text>                            
                                                     <Text w='150px' >{parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</Text>
                                                     <Tooltip w='200px' textTransform='uppercase' textAlign='center' label={trainee.birthPlace}>
                                                         <Text noOfLines={1} w="180px">{trainee.birthPlace}</Text>
@@ -444,6 +463,32 @@ export default function Page(){
                     </Box>
                 </Box>
             </main>
+            <Modal isOpen={isOpenAttach} onClose={onCloseAttach} scrollBehavior='inside' size='6xl' >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader color='blue.700'>TRAINEE ATTACHMENTS</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                    <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6} p={4}>
+                        {attachmentsConfig.map((item) => (
+                            <AttachmentCard key={item.key} label={item.label} currentUrl={traineeInfo[item.key] as string} isLoading={loading} 
+                                onUpload={async (file) => { await changeImg( traineeInfo.id,  traineeInfo.last_name,  traineeInfo.first_name,  item.cat,  item.type,  [file],  'New File',  'Staff Update' );}}
+                                onDownload={() => { 
+                                    const fileUrl = traineeInfo[item.key];
+                                    // Ensure it's a string before using it in the link
+                                    if (typeof fileUrl === 'string') {
+                                        const link = document.createElement('a'); 
+                                        link.href = fileUrl; 
+                                        link.download = `${traineeInfo.last_name}_${item.label}.jpg`; 
+                                        link.target = "_blank"; 
+                                        link.click();
+                                    }
+                            }}/>
+                        ))}
+                    </Grid>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
             {/** MARKETING */}
             <Modal isOpen={isOpenMarketing} size='xl' onClose={onCloseMarketing}>
                 <ModalOverlay />
@@ -614,5 +659,64 @@ export default function Page(){
                 </ModalContent>
             </Modal>
         </>
+    )
+}
+
+interface AttachmentCardProps{
+    label: string;
+    currentUrl: string;
+    onUpload: (file: File) => Promise<void>;
+    onDownload: () => void;
+    isLoading: boolean;
+}
+
+const AttachmentCard = ({label, currentUrl, onUpload, onDownload, isLoading}: AttachmentCardProps) => {
+    const [preview, setPreview] = useState<string | null>(null)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            setPreview(URL.createObjectURL(file));
+        }
+    };
+    
+    const handleUploadClick = async () => {
+        if (selectedFile) {
+            await onUpload(selectedFile);
+            setPreview(null); // Clear preview after successful upload
+            setSelectedFile(null);
+        }
+    };
+
+    return(
+        <GridItem border='1px solid' borderColor='gray.200' h='350px' borderRadius='lg' p='3' bg='white' shadow='md'>
+            <Box display="flex" flexDirection="column" h="100%" justifyContent="space-between">
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Text fontWeight="bold" fontSize="xs" color="gray.600" textTransform='uppercase'>{label}</Text>
+                    <Button size="xs" variant="ghost" onClick={() => fileInputRef.current?.click()} leftIcon={<EditIcon />}>
+                        Edit
+                    </Button>
+                    <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileChange} />
+                </Box>
+                <Box h='250px' bg='gray.50' borderRadius='md' display='flex' alignItems='center' justifyContent='center' position='relative' overflow='hidden' border='1px dashed' borderColor={preview ? 'blue.300' : 'gray.200'}>
+                {preview || currentUrl ? (
+                    <Image  src={preview || currentUrl}  alt={label}  objectFit="cover"  boxSize="100%" />
+                ) : (
+                    <Text color="gray.400" fontSize="xs">No file uploaded</Text>
+                )}
+                </Box>
+                <Box display="flex" mt={3} gap={2}>
+                    <Button  size="sm"  colorScheme="green"  flex={1}  isDisabled={!preview}  isLoading={isLoading} onClick={handleUploadClick} >
+                        Upload
+                    </Button>
+                    <Button  size="sm"  colorScheme="blue"  variant="outline" flex={1}  isDisabled={!!preview || !currentUrl}  onClick={onDownload} leftIcon={<DownloadIcon />}>
+                        View/Save
+                    </Button>
+                </Box>
+            </Box>
+        </GridItem>
     )
 }

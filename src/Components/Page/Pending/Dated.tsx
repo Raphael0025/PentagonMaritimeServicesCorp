@@ -262,10 +262,10 @@ export default function Page() {
         { label: 'Valid ID', key: 'valid_id', type: 'valid_id', cat: 'validID' },
         { label: 'Profile Picture', key: 'photo', type: 'photos', cat: 'idPic' },
         { label: 'Signature', key: 'e_sig', type: 'e-signs', cat: 'esign' },
-        { label: 'MISMO', key: 'mismoSC', type: 'MISMO', cat: 'mismo' },
-        { label: 'Medical Cert', key: 'medCert', type: 'MEDICAL_CERTS', cat: 'medCert' },
-        { label: 'COP', key: 'cop', type: 'CERTIFICATE_OF_PROFICIENCY', cat: 'cop' },
-        { label: 'SSR', key: 'ssr', type: 'SEA_SERVICE_RECORDS', cat: 'ssr' },
+        { label: 'MISMO Profile Account', key: 'mismoSC', type: 'MISMO', cat: 'mismo' },
+        { label: 'Medical Certificate', key: 'medCert', type: 'MEDICAL_CERTS', cat: 'medCert' },
+        { label: 'Certificate of Proficiency', key: 'cop', type: 'CERTIFICATE_OF_PROFICIENCY', cat: 'cop' },
+        { label: 'Sea Service Record', key: 'ssr', type: 'SEA_SERVICE_RECORDS', cat: 'ssr' },
     ];
 
     return (
@@ -426,7 +426,7 @@ export default function Page() {
                 </Box>
             </Box>
         </main>
-        <Modal isOpen={isOpenAttach} onClose={onCloseAttach} size='6xl' >
+        <Modal isOpen={isOpenAttach} onClose={onCloseAttach} scrollBehavior='inside' size='6xl' >
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader color='blue.700'>TRAINEE ATTACHMENTS</ModalHeader>
