@@ -55,6 +55,11 @@ export default function Page() {
     const [loading, setLoading] = useState<boolean>(false)
     const [traineeInfo, setTraineeInfo] = useState<TRAINEE_BY_ID>(initTRAINEE_BY_ID)
 
+    const [training_id, setTrainingID] = useState<string>('')
+    const [registration_id, setRegistrationID] = useState<string>('')
+    const [trainee_id, setTraineeID] = useState<string>('')
+    const [t_accountType, setTAccountType] = useState<number>(0)
+
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
 
@@ -68,6 +73,7 @@ export default function Page() {
     const { isOpen: isOpenSForm, onOpen: onOpenSForm, onClose: onCloseSForm } = useDisclosure()
     const { isOpen: isOpenForm, onOpen: onOpenForm, onClose: onCloseForm } = useDisclosure()
     const { isOpen: isOpenAttach, onOpen: onOpenAttach, onClose: onCloseAttach } = useDisclosure()
+    const { isOpen: isOpenScope, onOpen: onOpenScope, onClose: onCloseScope } = useDisclosure()
     
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -96,6 +102,10 @@ export default function Page() {
 
     const canDo = (feature: string) => {
         return permissions.some(p => p.allowed.includes(feature));
+    }
+
+    const isBoth = (user_scope: string) => {
+        return permissions.some(p => p.scope === user_scope)
     }
 
     // Function to filter registrations based on search
@@ -163,7 +173,7 @@ export default function Page() {
         })
     }
 
-    const handleEnrollmentBD = async (training_id: string, reg_id: string, trainee_id: string, reg_account_type: number) => {
+    const handleEnrollment = async (training_id: string, reg_id: string, trainee_id: string, reg_type: number, reg_account_type: number) => {
         setActiveBtn(training_id)
         setLoadBtn(false)
         const actor: string | null = localStorage.getItem('customToken')
@@ -174,54 +184,7 @@ export default function Page() {
                 try{
                     let batch: string = '1'
                     const actorType: number = 1
-                    await ENROLL_COURSE(Number(actor_user_code), batch, training_id, reg_id, trainee_id, 1, reg_account_type, actor)
-                    
-                    // const training = allTraining?.find((t) => t.id === training_id) // Get training doc using training_id === t.id
-                    // if(!training){
-                    //     return
-                    // }
-                    // const courseTraining = allCourses?.find((c) => c.id === training.course)
-                    // if(!courseTraining){
-                    //     return
-                    // }
-                    
-                    //const start_date = training.start_date
-                    // const tArr = allTraining?.filter((t) => t.regType === 1 && t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)
-                    //const realBN = tArr?.some((t) => t.batch !== 1)
-                    
-                    // if((tArr?.length ?? 0) > 0 && realBN){ // if there are more and if batch num is not equal to one (1)
-                    //     const batch_num = allTraining?.find((t) => t.regType === 1 && t.start_date === start_date && t.batch !== 1 && training.id !== t.id && t.course === training.course)?.batch
-                    //     if(batch_num){
-                    //         batch = batch_num.toString()
-                    //     }
-                    // } else {
-                    //     // generate new batch number in this block, get the latest batch number and increment it
-                    //     // generate first the training schedules from courses and get the date before the training start_date
-                    //     const lastMonth = generateDateBefore(courseTraining.day, 15, courseTraining.numOfDays.toString())
-                        
-                    //     let tempArr: string[] = []
-                    //     let trainingDates: string[] = []
-                        
-                    //     if(training.numOfDays !== 1){
-                    //         tempArr = lastMonth
-                    //     }else{
-                    //         trainingDates = lastMonth
-                    //     }
-                    //     for(const date of tempArr){
-                    //         const [startDate, endDate] = date.split(" to ").map((date) => date.trim())
-                    //         trainingDates.push(startDate); // Add to the end of the array
-                    //     }
-                    //     const dateIndx = trainingDates.indexOf(training.start_date)
-                    //     const dayBefore = trainingDates[dateIndx - 1]
-                    //     const lastCurrentCourseBatch = courseBatch?.find((b) => b.start_date === dayBefore && b.course === training.course)
-                        
-                    //     if(lastCurrentCourseBatch){
-                    //         const nextBatch = Number(lastCurrentCourseBatch?.batch_no) + 1
-                    //         batch = await GENERATE_BATCH(nextBatch.toString(), training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
-                    //     } else {
-                    //         batch = await GENERATE_BATCH('1', training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
-                    //     }
-                    // }
+                    await ENROLL_COURSE(Number(actor_user_code), batch, training_id, reg_id, trainee_id, reg_type, reg_account_type, actor)
                     
                     res()
                 }catch(error){
@@ -290,6 +253,7 @@ export default function Page() {
                     )}
                 </Box>
             </Box>
+            <Text>Backdated Portal</Text>
             <Box className="w-full px-5 space-y-3">
                 <Box className="flex justify-between items-center bg-sky-700 rounded uppercase shadow-md p-3 px-8 text-white">
                     <Text w="40%" className="text-center">Registration Date</Text>
@@ -389,7 +353,13 @@ export default function Page() {
                                                     {training.reg_status === 0 && canDo('update') ? (
                                                         <Button w='100%' onClick={() => {handleAcknowledge(training.id, training, traineeFound?.email, traineeFound?.last_name, traineeFound?.first_name)}} colorScheme='blue' className="text-xs uppercase text-center" size='xs' py={4} variant='link' isLoading={activeBtn === training.id} loadingText='Acknowledging...'>Acknowledge</Button>
                                                     ) : training.reg_status === 2 && canDo('update') ? (
-                                                        <Button w='90%' onClick={() => {handleEnrollmentBD(training.id, registration.id, traineeFound.id, training.accountType)}} colorScheme='green' className="text-xs uppercase text-center" size='xs' py={4} variant='link' isLoading={activeBtn === training.id} isDisabled={!loadBtn} loadingText='Enrolling...'>Enroll Course</Button>
+                                                        isBoth('both') ? (
+                                                            // If scope is set to both
+                                                            <Button w='90%' onClick={() => {setTrainingID(training.id); setRegistrationID(registration.id); setTraineeID(traineeFound.id); setTAccountType(training.accountType); onOpenScope();}} colorScheme='green' className="text-xs uppercase text-center" size='xs' py={4} variant='link'>Enroll As</Button>
+                                                        ) : (
+                                                            // If scope is set to bd only
+                                                            <Button w='90%' onClick={() => {handleEnrollment(training.id, registration.id, traineeFound.id, 1, training.accountType)}} colorScheme='green' className="text-xs uppercase text-center" size='xs' py={4} variant='link' isLoading={activeBtn === training.id} isDisabled={!loadBtn} loadingText='Enrolling...'>Enroll Course</Button>
+                                                        )
                                                     ) :(
                                                         <Text w='100%' className={`${training.reg_status === 1 ? 'text-yellow-500' : training.reg_status === 2 ? 'text-green-500 font-bolder' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
                                                     )}
@@ -427,6 +397,20 @@ export default function Page() {
                 </Box>
             </Box>
         </main>
+        <Modal isOpen={isOpenScope} onClose={onCloseScope}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Enroll this Training As</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Text fontWeight='normal' textAlign='center' >{`Please make sure that all details are correct before enrolling the crew to this course. Also make sure that you are enrolling the crew on the correct category.`}</Text>
+                </ModalBody>
+                <ModalFooter gap='2'>
+                    <Button onClick={() => {handleEnrollment(training_id, registration_id, trainee_id, 0, t_accountType)}} colorScheme='blue' isLoading={activeBtn === training_id} loadingText='Loading...' bgColor='blue.700' shadow='md' w='100%'>Dated</Button>
+                    <Button onClick={() => {handleEnrollment(training_id, registration_id, trainee_id, 1, t_accountType)}} colorScheme='blue' isLoading={activeBtn === training_id} loadingText='Loading...' bgColor='blue.900' shadow='md' w='100%'>BackDated</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         <Modal isOpen={isOpenAttach} onClose={onCloseAttach} size='6xl' >
             <ModalOverlay />
             <ModalContent>

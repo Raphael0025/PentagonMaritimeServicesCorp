@@ -263,10 +263,11 @@ export default function Page(){
                 <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto',}}>
                     <Box w='100%' h='700px' >
                         <Box w="100%" h='100%' className=" rounded space-y-3" style={{  overflowX: 'auto', boxSizing: 'border-box', scrollbarWidth: 'thin', msOverflowStyle: 'none'}}>
-                            <Box position='sticky' top='0' zIndex='10' w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap',  }} >
+                            <Box position='sticky' top='0' zIndex='1' w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap',  }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Box className="space-x-3 flex w-full" justifyContent='center' alignItems='center'>
                                         <Text w="150px" className="text-center">Enrolled Date</Text>
+                                        <Text w="100px" className="text-center">Enrolled By</Text>
                                         {/* <Text w="150px" className="text-center">Trainee Type</Text> */}
                                         <Text w="150px" className="text-center">Registration No.</Text>
                                         {/* <Text w="130px" className="text-center">Batch</Text> */}
@@ -283,7 +284,7 @@ export default function Page(){
                                         </Box>
                                         <Text w="80px" className="text-center">Rank</Text>
                                         <Text w="100px" className="text-center">SRN</Text>
-                                        <Text w="40%" className="text-center">Attachments</Text>
+                                        <Text w="100px" className="text-center">Attachments</Text>
                                         <Text w="150px" className="text-center">Date of Birth</Text>
                                         <Text w="200px" className="text-center">Place of Birth</Text>
                                         <Text w="250px" className="text-center">Address</Text>
@@ -369,6 +370,7 @@ export default function Page(){
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
                                                     <Text w="150px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
+                                                    <Text w="100px">{training.enrolledBy}</Text>                                                                             
                                                     {/* <Text w="150px">
                                                         {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
                                                     </Text>                                         */}
@@ -389,7 +391,7 @@ export default function Page(){
                                                     <Text w="100px">
                                                         {allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank}
                                                     </Text>                                        
-                                                    <Text w="100px">{trainee.srn}</Text>                
+                                                    <Text w="100px">{trainee.srn}</Text>                              
                                                     <Text w="100px" onClick={() => {setTraineeInfo(trainee); onOpenAttach();}} _hover={{cursor:'pointer', textDecoration: 'underline', color: 'blue.600'}}>{`View`}</Text>                            
                                                     <Text w='150px' >{parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</Text>
                                                     <Tooltip w='200px' textTransform='uppercase' textAlign='center' label={trainee.birthPlace}>
