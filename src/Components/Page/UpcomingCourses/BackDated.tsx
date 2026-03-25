@@ -149,7 +149,7 @@ export default function Page() {
                             // batch = await GENERATE_BATCH('1', training.course, training.start_date, training.end_date, training.numOfDays.toString(), actor)
                         }
                     }
-                    await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 1, reg_account_type, actor)
+                    //await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 1, reg_account_type, actor)
                     res()
                 }catch(error){
                     rej(error)
