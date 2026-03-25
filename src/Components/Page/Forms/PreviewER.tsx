@@ -44,7 +44,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const { allData: allRegistrations } = useRegistrations()
     const { data: allRanks } = useRank()
     const { data: allTrainee } = useTrainees()
-    const { courseCodes } = useClients()
+    const { data: allClients, courseCodes } = useClients()
     const { data: courseBatch } = useCourseBatch()
     const { data: allRoles } = useRoles()
     
@@ -56,6 +56,8 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
     const [batch, setBatch] = useState<CourseBatchByID>(initCourseBatch)
+    const [fldrValues, setFldrValues] = useState<Record<string, string>>({});
+    const [remarksValues, setRemarksValues] = useState<Record<string, string>>({});
 
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -101,7 +103,20 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         content: () => componentRef.current,
         documentTitle: `ENROLLMENT_REPORT B${batch_no}.pdf`,
         onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
-        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); onClose()},
+        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); 
+            //onClose()
+            handlePrintAttachment();
+        },
+    })
+    
+    const componentRef2 = useRef<HTMLDivElement | null>(null);
+    const handlePrintAttachment = useReactToPrint({
+        content: () => componentRef2.current,
+        documentTitle: `ER_Attachment B${batch_no}.pdf`,
+        onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
+        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); 
+            //onClose()
+        },
     })
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
@@ -242,6 +257,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                             <Text>
                                 <Text fontWeight='bold'>Note:</Text>
                                 <Text color='red' fontWeight='normal'>{`Kindly save details above before printing the Enrollment Report (ER).`}</Text>
+                                <Text color='red' fontWeight='normal'>{`Columns ('Fldr and Remarks') will not be included in the actual print copy, it's purpose is only for the attachment.`}</Text>
                             </Text>
                             {canDo('update') && (
                                 <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
@@ -254,14 +270,16 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             <Box display='flex' justifyContent='center' alignItems='center'>
                 <Box>
                     {/** Table header */}
-                    <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" gap={0} fontSize='9pt' h='0.63in' fontWeight='normal' textAlign='center' fontFamily='Calibri' >
+                    <Grid templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" gap={0} fontSize='9pt' h='0.63in' fontWeight='normal' textAlign='center' fontFamily='Calibri' >
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>NO.</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Name of Trainee</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Date of Birth</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Place of Birth</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Rank/ Position</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Date of Enrollment</GridItem>
-                        <GridItem display='flex' border="0.5pt solid black" justifyContent='center' alignItems='center'>Registration No.</GridItem>
+                        <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Registration No.</GridItem>
+                        <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Fldr</GridItem>
+                        <GridItem display='flex' border="0.5pt solid black" justifyContent='center' alignItems='center'>Remarks</GridItem>
                     </Grid>
                     {/** Table Body */}
                     {trainingsArr// Create a shallow copy to avoid mutating the original array
@@ -292,7 +310,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
-                            <Grid key={training.id} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform='uppercase' fontSize='8pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
+                            <Grid key={training.id} templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" h='0.25in' textTransform='uppercase' fontSize='8pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {(index + 1)}
                                 </GridItem>
@@ -303,28 +321,44 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {trainee?.birthDate ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: '2-digit', }).replace(/[\s,\/]+/g, '-') : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' fontSize='7pt' borderRight="none" justifyContent='center' textAlign='center' alignItems='center'>
-                                    {trainee?.birthPlace}
+                                    <Text noOfLines={1}>
+                                        {trainee?.birthPlace}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    <Text noOfLines={1}>
+                                        {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: 'short',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
                                 </GridItem>
-                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
+                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {`Reg-${registrations?.reg_no}`}
+                                </GridItem>
+                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
+                                    <Input size='xs' placeholder='Type here...' textAlign='center' onChange={(e) => setFldrValues({...fldrValues, [training.id]: e.target.value})} variant='flushed' />
+                                </GridItem>
+                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
+                                    <Input size='xs' placeholder='Type here...' textAlign='center' onChange={(e) => setRemarksValues({...remarksValues, [training.id]: e.target.value})} variant='flushed' />
                                 </GridItem>
                             </Grid>
                         )
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
                     {(trainingsArr ?? []).length > 0 && (
-                        <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                        <Grid templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingsArr?.length || 0) + 1}
                             </GridItem>
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 <Text>*NOTHING FOLLOWS*</Text>
+                            </GridItem>
+                            <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                {/* Empty cell */}
+                            </GridItem>
+                            <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                {/* Empty cell */}
                             </GridItem>
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {/* Empty cell */}
@@ -348,9 +382,15 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                         [...Array(24 - (trainingsArr ?? []).length - 1)].map((_, index) => {
                         const startingIndex = (trainingsArr?.length || 0) + 1 // Start numbering after the last data row
                         return (
-                            <Grid key={index} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                            <Grid key={index} templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {startingIndex + index + 1}
+                                </GridItem>
+                                <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                    {/* Empty cell */}
+                                </GridItem>
+                                <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                    {/* Empty cell */}
                                 </GridItem>
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {/* Empty cell */}
@@ -377,8 +417,8 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             </Box>
         </Box>
         <Box w='100%' 
-        ref={componentRef} 
-        className="printable-content"
+            ref={componentRef} 
+            className='printable-content'
         >
             {e_report === 'STANDARD' ? (
                 <StandardER courseCode={courseCode} batchNo={batch_no} assessor={batch.assessor} instructor={batch.instructor} practicumDate={batch.practicumDate} site={batch.practicumSite} course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={batch.room}/>
@@ -388,10 +428,113 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                 <MDS_ER e_report={e_report} course={courseCode} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room} assessor={assessor} instructor={instructor} practicumDate={practicumDate} practicumSite={practicumSite} class_no={classNo}/>
             )}
         </Box>
+        <Box ref={componentRef2} className='printable-content'>
+            <Box w='3000px' display='flex' alignItems='center' justifyContent='center'>
+                <Box w='1500px' p='2' />
+                <Box w='100%' display='flex' alignItems='center' justifyContent='center'>
+                    <Box mt='5' transform='rotate(90deg)' transformOrigin='0 0' whiteSpace='nowrap'>
+                        <Box display='flex' gap='3' fontSize='13pt' fontWeight='normal' >
+                            <Text>
+                                <Text as='span' fontWeight='bold' mr='3'>Course:</Text>
+                                <Text as='span'>{courseCode}</Text>
+                            </Text>
+                            <Text>
+                                <Text as='span' fontWeight='bold' mr='3'>Training Date:</Text>
+                                <Text as='span'>{formattedDate}</Text>
+                            </Text>
+                        </Box>
+                        <Box mt='3' textTransform='uppercase' w='100%' fontSize='15pt' fontWeight='bold' border='1px solid' borderColor='gray.400' display='flex'>
+                            <Text w='100px' textAlign='center'>DOE</Text>
+                            <Text w='80px' textAlign='center'>Rank</Text>
+                            <Text w='350px'>TRAINEE NAME</Text>
+                            <Text w='150px' textAlign='center' >Reg. No.</Text>
+                            <Text w='220px' textAlign='center'>Company</Text>
+                            <Text w='200px' textAlign='center'>Crewing</Text>
+                            <Text w='100px' textAlign='center'>Vessel</Text>
+                            <Text w='80px' textAlign='center'>FEE</Text>
+                            <Text w='100px' textAlign='center'>MOP</Text>
+                            <Text w='50px' textAlign='center'>Fldr</Text>
+                            <Text w='120px' textAlign='center'>Remarks</Text>
+                        </Box>
+                        <Box>
+                            {trainingsArr // Create a shallow copy to avoid mutating the original array
+                            ?.slice() // Create a shallow copy to avoid mutating the original array
+                            .sort((a, b) => {
+                                const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
+                                const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
+                        
+                                // Extract numeric parts of the registration number
+                                const [yearA, monthA, numA] = regNoA.split('-').map(Number);
+                                const [yearB, monthB, numB] = regNoB.split('-').map(Number);
+                        
+                                // Handle invalid or missing values gracefully
+                                if (isNaN(yearA) || isNaN(monthA) || isNaN(numA)) return 1; // Place invalid `a` after valid `b`
+                                if (isNaN(yearB) || isNaN(monthB) || isNaN(numB)) return -1; // Place invalid `b` after valid `a`
+        
+                                // Compare by year first
+                                if (yearA !== yearB) return yearB - yearA;
+        
+                                // Compare by month next
+                                if (monthA !== monthB) return monthB - monthA;
+        
+                                // Finally, compare by the number part
+                                return numA - numB;
+                            })
+                            .sort((a, b) => parsingTimestamp(a.date_enrolled).getTime() - parsingTimestamp(b.date_enrolled).getTime())
+                            .map((training, index) => {
+                                const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
+                                const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
+                                return(
+                                    <Box key={training.id} w='100%' display='flex' borderBottom='1px solid' borderColor='gray.400' textTransform='uppercase' fontSize='13pt' fontWeight={'normal'} fontFamily='Calibri'>
+                                        <Text w='100px' display='flex' justifyContent='center' alignItems='center'>
+                                            {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: '2-digit',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
+                                        </Text>
+                                        <Text w='80px' display='flex' justifyContent='center' alignItems='center'>
+                                            <Text noOfLines={1} textAlign='center'>
+                                                {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                            </Text>
+                                        </Text>
+                                        <Text w='350px' display='flex' justifyContent='start' px='2' alignItems='center'>
+                                            {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
+                                        </Text>
+                                        <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
+                                            {`Reg-${registrations?.reg_no}`}
+                                        </Text>
+                                        <Text w='220px' display='flex' noOfLines={1} borderRight="none" textAlign='center' justifyContent='center' alignItems='center'>
+                                            {allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company}
+                                        </Text>
+                                        <Text w='200px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {trainee?.endorser}
+                                        </Text>
+                                        <Text w='100px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {trainee?.vessel}
+                                        </Text>
+                                        <Text w='80px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {training?.course_fee}
+                                        </Text>
+                                        <Text w='100px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {training?.accountType === 0 ? 'CREW' : 'COMPANY'}
+                                        </Text>
+                                        <Text w='50px' display='flex' textAlign='center' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {fldrValues[training.id] || ''}
+                                        </Text>
+                                        <Text w='120px' display='flex' textAlign='center' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {remarksValues[training.id] || ''}
+                                        </Text>
+                                    </Box>
+                                )
+                            })}
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
+        </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
             {canDo('print') && (
-                <Button isDisabled={ batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
+                <>
+                    <Button isDisabled={ batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md' mr='3' >Print Report</Button>
+                </>
             )}
         </Box>
         </>

@@ -38,7 +38,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
     // * const [firstLine, secondLine] = splitTextAtWordBoundary(course, 50);
 
     return (
-        <Box w='100%'>
+        <Box w='100%' h='307mm'>
             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
             {/** Header */}
                 <Box display='flex' justifyContent='space-between' alignItems='center' w='90%'>
@@ -207,10 +207,14 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                                     {trainee?.birthDate ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: '2-digit', }).replace(/[\s,\/]+/g, '-') : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" fontSize='7pt' borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {trainee?.birthPlace}
+                                    <Text noOfLines={1}>
+                                        {trainee?.birthPlace}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    <Text noOfLines={1}>
+                                        {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: 'short',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
@@ -279,7 +283,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     })}
                 </Box>
                 {/** Footer */}
-                <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' mt='8'>
+                <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' pt='4' mt='16' mb='10'>
                     <Box w='25%'>
                         <Text>Prepared by:</Text>
                         <Text mt='8' w='100%' borderBottomWidth='1px' borderColor='black'/>
