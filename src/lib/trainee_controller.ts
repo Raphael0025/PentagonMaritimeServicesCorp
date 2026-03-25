@@ -143,6 +143,7 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string, 
             const newTraining: TRAINING = {
                 ...tempCourses,
                 reg_ref_id: id,
+                enrolledBy: 0,
                 reg_status: 2,
                 isCertified: false,
                 cert_released: Timestamp.now(),
@@ -195,6 +196,7 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string, ma
             const newTraining: TRAINING = {
                 ...tempCourses,
                 reg_ref_id: id,
+                enrolledBy: 0,
                 reg_status: 3,
                 isCertified: false,
                 cert_released: Timestamp.now(),
@@ -386,7 +388,7 @@ export const CHANGE_AT = async (training_id: string, reg_doc: REGISTRATION_BY_ID
     }
 } 
 
-export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
+export const ENROLL_COURSE = async (user_code: number, batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
     try{
         // this part fetches the latest registration number then increments it, 
         // but if no data is found it initializes a registration number
@@ -470,6 +472,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 if(regData.regType === reg_type){
                     const newStatus = {
                         batch,
+                        enrolledBy: user_code,
                         regType: reg_type,
                         reg_status: 3, // Set reg_status to 3 (enrolled)
                         date_enrolled: Timestamp.now()  // Set current date as enrollment date
@@ -496,6 +499,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                     const trainingRef = doc(firestore, 'TRAINING', training_id)
                     const newStatus= {
                         batch,
+                        enrolledBy: user_code,
                         reg_ref_id: idRef.id,
                         regType: reg_type,
                         reg_status: 3,
@@ -511,6 +515,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 
                 const newStatus = {
                     batch,
+                    enrolledBy: user_code,
                     regType: reg_type,
                     reg_status: 3, // Set reg_status to 3 (enrolled)
                     date_enrolled: Timestamp.now()  // Set current date as enrollment date
@@ -545,6 +550,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 const trainingRef = doc(firestore, 'TRAINING', training_id)
                 const newStatus= {
                     batch,
+                    enrolledBy: user_code,
                     reg_ref_id: idRef.id,
                     regType: reg_type,
                     reg_status: 3,

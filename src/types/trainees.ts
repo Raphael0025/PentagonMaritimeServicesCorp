@@ -151,7 +151,8 @@ export interface REGISTRATION {
 }
 export interface TRAINING {
     reg_ref_id: string;
-
+    enrolledBy: number;
+    
     reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel | 8 - absent | 9 - Non-Appearance
     course_fee: number;
     course: string;
@@ -200,6 +201,7 @@ export interface TRAINING {
 export const initTraining = {
     id: '',
     reg_ref_id: '',
+    enrolledBy: 0,
 
     reg_status: 0, // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel
     course_fee: 0,

@@ -137,14 +137,15 @@ export const loginUser = async (userCode: string, password: string) => {
         const jobPositionToken = jobPositionTokens.length > 0 ? jobPositionTokens.join('/') : 'NoJobPositions';
 
         // Store the user's data in localStorage for sessions
-        localStorage.setItem('customToken', user.full_name);
-        localStorage.setItem('tokenID', user.id);
-        localStorage.setItem('pfpToken', user.pfp);
-        localStorage.setItem('rankToken', rankToken);
-        localStorage.setItem('jobPositionToken', jobPositionToken);
-        localStorage.setItem('phone', user.phone)
-        localStorage.setItem('roleToken', user.user_role)
+        localStorage.setItem('customToken', user.full_name)
         localStorage.setItem('departmentToken', JSON.stringify(uniqueDepartments))
+        localStorage.setItem('jobPositionToken', jobPositionToken)
+        localStorage.setItem('pfpToken', user.pfp)
+        localStorage.setItem('phone', user.phone)
+        localStorage.setItem('rankToken', rankToken)
+        localStorage.setItem('roleToken', user.user_role)
+        localStorage.setItem('tokenID', user.id)
+        localStorage.setItem('userCode', user.user_code)
 
         return user;
     } catch (error) {

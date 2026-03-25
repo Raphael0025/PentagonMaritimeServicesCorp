@@ -167,13 +167,14 @@ export default function Page() {
         setActiveBtn(training_id)
         setLoadBtn(false)
         const actor: string | null = localStorage.getItem('customToken')
+        const actor_user_code: string | null = localStorage.getItem('userCode')
         
         new Promise<void>((res,rej) => {
             setTimeout(async () => {
                 try{
                     let batch: string = '1'
                     const actorType: number = 1
-                    await ENROLL_COURSE(batch, training_id, reg_id, trainee_id, 1, reg_account_type, actor)
+                    await ENROLL_COURSE(Number(actor_user_code), batch, training_id, reg_id, trainee_id, 1, reg_account_type, actor)
                     
                     // const training = allTraining?.find((t) => t.id === training_id) // Get training doc using training_id === t.id
                     // if(!training){
@@ -581,7 +582,7 @@ const AttachmentCard = ({label, currentUrl, onUpload, onDownload, isLoading}: At
             setPreview(null); // Clear preview after successful upload
             setSelectedFile(null);
         }
-    };
+    }
 
     return(
         <GridItem border='1px solid' borderColor='gray.200' h='350px' borderRadius='lg' p='3' bg='white' shadow='md'>
