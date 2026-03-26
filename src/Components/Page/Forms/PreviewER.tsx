@@ -503,7 +503,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                             {`Reg-${registrations?.reg_no}`}
                                         </Text>
                                         <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
-                                            {`${parsingTimestamp(trainee?.birthDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: 'numeric'})}`}
+                                            {trainee?.birthDate ? `${parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: 'numeric'})}` : ''}
                                         </Text>
                                         <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
                                             {`${trainee?.birthPlace}`}
