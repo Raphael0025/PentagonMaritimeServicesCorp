@@ -443,16 +443,18 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Text as='span'>{formattedDate}</Text>
                             </Text>
                         </Box>
-                        <Box mt='3' textTransform='uppercase' w='100%' fontSize='15pt' fontWeight='bold' border='1px solid' borderColor='gray.400' display='flex'>
+                        <Box mt='3' textTransform='uppercase' w='100%' fontSize='12pt' fontWeight='bold' border='1px solid' borderColor='gray.400' display='flex'>
                             <Text w='100px' textAlign='center'>DOE</Text>
                             <Text w='80px' textAlign='center'>Rank</Text>
-                            <Text w='350px'>TRAINEE NAME</Text>
+                            <Text w='300px'>TRAINEE NAME</Text>
                             <Text w='150px' textAlign='center' >Reg. No.</Text>
+                            <Text w='150px' textAlign='center' >Birth Date</Text>
+                            <Text w='150px' textAlign='center' >Birth Place</Text>
                             <Text w='220px' textAlign='center'>Company</Text>
-                            <Text w='200px' textAlign='center'>Crewing</Text>
+                            <Text w='150px' textAlign='center'>Crewing</Text>
                             <Text w='100px' textAlign='center'>Vessel</Text>
-                            <Text w='80px' textAlign='center'>FEE</Text>
-                            <Text w='100px' textAlign='center'>MOP</Text>
+                            <Text w='50px' textAlign='center'>FEE</Text>
+                            <Text w='80px' textAlign='center'>MOP</Text>
                             <Text w='50px' textAlign='center'>Fldr</Text>
                             <Text w='120px' textAlign='center'>Remarks</Text>
                         </Box>
@@ -485,7 +487,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                                 const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                                 return(
-                                    <Box key={training.id} w='100%' display='flex' borderBottom='1px solid' borderColor='gray.400' textTransform='uppercase' fontSize='13pt' fontWeight={'normal'} fontFamily='Calibri'>
+                                    <Box key={training.id} w='100%' display='flex' borderBottom='1px solid' borderColor='gray.400' textTransform='uppercase' fontSize='10pt' fontWeight={'normal'} fontFamily='Calibri'>
                                         <Text w='100px' display='flex' justifyContent='center' alignItems='center'>
                                             {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: '2-digit',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
                                         </Text>
@@ -494,25 +496,31 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                                 {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
                                             </Text>
                                         </Text>
-                                        <Text w='350px' display='flex' justifyContent='start' px='2' alignItems='center'>
+                                        <Text w='300px' display='flex' justifyContent='start' px='2' alignItems='center'>
                                             {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
                                         </Text>
                                         <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
                                             {`Reg-${registrations?.reg_no}`}
                                         </Text>
+                                        <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
+                                            {`${parsingTimestamp(trainee?.birthDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: 'numeric'})}`}
+                                        </Text>
+                                        <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
+                                            {`${trainee?.birthPlace}`}
+                                        </Text>
                                         <Text w='220px' display='flex' noOfLines={1} borderRight="none" textAlign='center' justifyContent='center' alignItems='center'>
                                             {allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company}
                                         </Text>
-                                        <Text w='200px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                        <Text w='150px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
                                             {trainee?.endorser}
                                         </Text>
                                         <Text w='100px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
                                             {trainee?.vessel}
                                         </Text>
-                                        <Text w='80px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                        <Text w='50px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
                                             {training?.course_fee}
                                         </Text>
-                                        <Text w='100px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                        <Text w='80px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
                                             {training?.accountType === 0 ? 'CREW' : 'COMPANY'}
                                         </Text>
                                         <Text w='50px' display='flex' textAlign='center' borderRight="none" justifyContent='center' alignItems='center'>
