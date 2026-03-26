@@ -210,6 +210,7 @@ export default function NewCourseForm({ onClose } : IProps){
                 <Box className='input-grp w-full '>
                     <select id='numOfDays' onChange={handleSelect} className='drop form-input w-full' defaultValue='' required>
                         <option value='' hidden disabled>Select Number of Days</option>
+                        <option value={10}>10 days</option>
                         <option value={6}>6 days</option>
                         <option value={5}>5 days</option>
                         <option value={4}>4 days</option>
