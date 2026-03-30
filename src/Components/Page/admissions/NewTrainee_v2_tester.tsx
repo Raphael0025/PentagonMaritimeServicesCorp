@@ -744,7 +744,7 @@ export default function NewTrainee_v2(){
                 <Box display='flex' pt='4' justifyContent={'end'} className='animate__animated animate__fadeInLeft'>
                     <Button 
                         //isDisabled={!userAgree || sig_file==='No file chosen yet...'} 
-                        onClick={() => {handleSubmit();}} 
+                        onClick={() => {handlePreSubmitForm();}} 
                         w={{base: '100%', md: '20%'}} 
                         colorScheme="blue" 
                         fontWeight='400' 

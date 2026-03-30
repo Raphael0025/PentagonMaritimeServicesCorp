@@ -6,7 +6,6 @@ import { useState, useEffect, useRef} from 'react'
 import { Timestamp } from 'firebase/firestore'
 import DatePicker from 'react-datepicker'
 import { Box, Text, Heading, Tooltip, Input, useToast, FormControl, Radio, Select, RadioGroup, Switch, VStack, HStack, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, } from '@chakra-ui/react'
-import 'animate.css'
 
 import {DotsIcon, EditIcon, TrashIcon} from '@/Components/Icons'
 

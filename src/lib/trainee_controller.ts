@@ -593,14 +593,6 @@ export const RE_ENROLLED_TRAINEE = async (trainee_id: string, newTrainee: TRAINE
     }
 }
 
-            // screenshotFile
-            // sc_fileName
-            // medCertFile
-            // mc_fileName
-            // copFile
-            // cop_fileName
-            // ssrFile
-            // ssr_fileName
 export const updateTraineeAttachments = async(id: string, trainee: any, files: any, staff: string) => {
     try{
         const { last_name, first_name } = trainee
