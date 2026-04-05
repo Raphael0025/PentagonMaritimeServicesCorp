@@ -604,7 +604,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             : "Select All"}
                                         </Text>
                                     </Checkbox>
-                                    <Menu closeOnBlur={true} closeOnSelect={closeBlur} mr='3'>
+                                    <Menu closeOnBlur={true} closeOnSelect={closeBlur}>
                                         <MenuButton as={Button} isDisabled={trainingID.length === 0} onClick={() => {setCloseBlur(false);}} size='sm' variant='ghost' colorScheme='blue' transition='all 0.2s'> 
                                             <Text fontSize='12px'>Select Content <ChevronDownIcon /></Text> 
                                         </MenuButton> 
