@@ -39,7 +39,7 @@ export default function Page() {
     const { data: allClients, courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
     const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
-    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { data: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
     const { data: allCourses } = useCourses()
     const { data: allRoles } = useRoles()
     const { data: allCategories } = useCategory()
@@ -129,7 +129,7 @@ export default function Page() {
     }
 
     // Function to filter registrations based on search
-    const filteredRegistrations = allRegistrations?.filter((reg) => reg.regType !== 3).filter((registration) => {
+    const filteredRegistrations = allRegData?.filter((reg) => reg.regType !== 3).filter((registration) => {
         const traineeFound = allTrainee?.find((trainee) => trainee.id === registration.trainee_ref_id);
 
         // Check if any field matches the search query
@@ -410,7 +410,7 @@ export default function Page() {
                                                         <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
                                                         <MenuList className='space-y-1 text-start'>
                                                             <MenuGroup title='Actions'>
-                                                                <MenuItem onClick={(e) => {e.stopPropagation(); setTraineeInfo(traineeFound); onOpenEditTrainee(); setRegID(registration.id);}}>
+                                                                <MenuItem onClick={(e) => {e.stopPropagation(); setBirth_Date(traineeFound.birthDate.toDate()); setTraineeInfo(traineeFound); onOpenEditTrainee(); setRegID(registration.id);}}>
                                                                     <span className='ps-2'><EditIcon color={'#0D70AB'} /></span>
                                                                     <span className='ps-2' style={{fontSize: '14px'}}>Edit Trainee Details</span>
                                                                 </MenuItem>

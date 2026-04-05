@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
     Box, Image, Text, Input, Button, FormControl, FormLabel,
-    Menu, MenuButton, MenuList, MenuItem,
+    Menu, MenuButton, MenuList, MenuItem, Select,
     Modal, ModalOverlay, ModalContent, ModalHeader,
     ModalBody, ModalFooter, ModalCloseButton,
     InputGroup, InputLeftAddon,
@@ -42,6 +42,7 @@ export default function Certificate_Template_Mgmt() {
     const [companyID, setCompanyID] = useState<string>('')
     const [add_desc, setAdditionalDescription] = useState<string>('')
     const [sub_title, setSubTitle] = useState<string>('')
+    const [courseType, setCourseType] = useState<string>('')
 
     // Editor & Title refs
     const editorRef = useRef<HTMLDivElement>(null)
@@ -57,12 +58,6 @@ export default function Certificate_Template_Mgmt() {
     /* ----------------------------- */
     /* Load Courses */
     /* ----------------------------- */
-    const sortedCourses = useMemo(() => {
-        if (!allCourses) return []
-        return [...allCourses].sort((a, b) =>
-            a.course_code.localeCompare(b.course_code)
-        )
-    }, [allCourses])
 
     const certificates = useMemo(() => {
         return allCertTemplates ?? []
@@ -77,16 +72,40 @@ export default function Certificate_Template_Mgmt() {
                 (category ? c.category === category : true)
             )
             .flatMap((c) => c.versions ?? []);
-      }, [certificates, courseID, category]);
+    }, [certificates, courseID, category]);
 
-    const filteredCourses = sortedCourses.filter(course => {
-        const term = search.toLowerCase()
-        return (
-            course.course_code.toLowerCase().includes(term) ||
-            course.course_name.toLowerCase().includes(term) ||
-            course.code.toLowerCase().includes(term)
-        )
-    })
+    const [displayCourses, setDisplayCourses] = useState<CoursesById[]>([]);
+
+    useEffect(() => {
+        if (!allCourses || allCourses.length === 0) {
+            setDisplayCourses([]);
+            return;
+        }
+
+        const term = search.toLowerCase();
+
+        const result = allCourses
+            .filter((course) => {
+                // 1. Search Logic
+                const searchMatch = 
+                    course.course_code?.toLowerCase().includes(term) ||
+                    course.course_name?.toLowerCase().includes(term) ||
+                    course.code?.toLowerCase().includes(term);
+                return searchMatch;
+            })
+            .filter((course) => {
+                // 2. Updated Type Logic:
+                // If courseType is empty string, return true (show all).
+                // Otherwise, compare the strings.
+                const isFilterEmpty = courseType === "" || !courseType;
+                const typeMatch = isFilterEmpty || course.courseType?.toString() === courseType.toString();
+                
+                return typeMatch;
+            })
+            .sort((a, b) => (a.course_code || "").localeCompare(b.course_code || ""));
+
+        setDisplayCourses(result);
+    }, [allCourses, courseType, search]); // Runs whenever data, type, or search changes
 
     /* ----------------------------- */
     /* Editor helpers */
@@ -329,16 +348,24 @@ export default function Certificate_Template_Mgmt() {
             <Box className='flex space-x-4' > 
                 <Box className='w-full space-y-3' > 
                     <Box className='flex items-center justify-between'> 
-                        <Box className='w-1/2' _hover={{boxShadow:'4px 4px 6px 0px #e6e6e6, 0 0px 0px rgba(0, 0, 0, .15)'}}> 
-                            <InputGroup > 
+                        <Box display='flex' gap='2' justifyContent='start' alignItems='center'> 
+                            <InputGroup w='600px' size='sm'> 
                                 <InputLeftAddon >
                                     <SearchIcon size={'20'} color={'#a1a1a1'} /> 
                                 </InputLeftAddon> 
                                 <Input onChange={(e) => setSearch(e.target.value)} value={search} placeholder='Search by Code, Course Code or Name...' type='text' fontSize='sm' borderRadius='5px' autoComplete='off' _focus={{ boxShadow:'0px 0px 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}}/> 
                             </InputGroup> 
+                            <Select size='sm' w='30%' onChange={(e) => setCourseType(e.target.value)} value={courseType} borderRadius='5px' _focus={{ boxShadow:'0px 0px 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}}>
+                                <option value="" hidden>Filter by Course Type</option>
+                                <option value={"0"}>Marina</option>
+                                <option value={"1"}>In-House</option>
+                            </Select>
+                            {(courseType || search) && (
+                                <Button w='20%' mr={4} onClick={() => { setCourseType(''); setSearch(''); }} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
+                            )}
                         </Box> 
                     </Box> 
-                    <Box className='space-y-3 ' style={{height: '750px'}}> 
+                    <Box className='space-y-3 ' style={{height: '650px'}}> 
                         <Box className='h-full space-y-2'> 
                             <Box className='border-b py-2 px-2 bg-sky-700 rounded border-gray-400 flex justify-between'> 
                                 <Text w='40%' className='text-center text-white '>Course Code</Text> 
@@ -348,10 +375,10 @@ export default function Certificate_Template_Mgmt() {
                                 <Text w='100%' className='text-center text-white '>Certificate Template</Text> 
                             </Box> 
                             <Box className='space-y-2' style={{ height: 'calc(100% - 50px)', overflowY: 'scroll' }}> 
-                            {filteredCourses.length === 0 ? 
+                            {displayCourses.length === 0 ? 
                                 ( <Box className='text-center text-lg p-3 text-gray-500 font-semibold'>No Courses Available.</Box> ) 
                                 : 
-                                ( filteredCourses.map((course) => ( 
+                                ( displayCourses.map((course) => ( 
                                     <Box key={course.id} fontWeight='normal' _hover={{bgColor: 'gray.300', shadow: 'md', cursor: 'default'}} className='flex items-center justify-center w-full bg-gray-rounded p-3 border border-gray-300 shadow-md'> 
                                         <Text w='40%' fontSize='12px' className='text-center uppercase font-semibold w-2/5'>{course.course_code}</Text> 
                                         <Text w='100%' fontSize='12px' className='text-wrap uppercase text-center w-full'>{course.course_name}</Text> 
@@ -372,12 +399,14 @@ export default function Certificate_Template_Mgmt() {
                                                     <>
                                                         {action === 'preview' ? (
                                                         <>
-                                                            <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); setCategory(''); setAct('');}}>{'Back'}</MenuItem> 
+                                                            <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); setAct('');}}>{'Back'}</MenuItem> 
                                                             {certificateVersions.map((v: certVersion) => {
                                                                 return(
                                                                     <MenuItem key={v.version_number} display='flex' justifyContent='space-between' borderBottom='1px solid gray' onClick={() => {setSubTitle(v?.subTitle); setAdditionalDescription(v?.additionalDescription); setVersionNumber(v.version_number); setCertTitleHtml(v.certTitleHtml); setCertContentHtml(v.certContentHtml); onOpenCert(); setCloseBlur(true);}}>
                                                                         <Box>
-                                                                            <Text>{`${v.subTitle}`}</Text>
+                                                                            {category === 'client' && (
+                                                                                <Text>{`${v.subTitle}`}</Text>
+                                                                            )}
                                                                             <Text>{`Version ${v.version_number}`}</Text>
                                                                             <Text fontWeight='bold' color={`${(v.status==='active' ? 'green.500' : 'black' )}`}>{`${v.status.toUpperCase()}`}</Text>
                                                                         </Box>

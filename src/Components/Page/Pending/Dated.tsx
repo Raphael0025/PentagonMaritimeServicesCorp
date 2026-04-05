@@ -43,7 +43,7 @@ export default function Page() {
     const { data: allTrainee } = useTrainees()
     const { data: allTraining, setMonth: setTMonth, setYear: setTYear } = useTraining()
     const { data: allCourses } = useCourses()
-    const { data: allRegistrations, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
+    const { data: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
     const { data: allRoles } = useRoles()
     const { data: allCategories } = useCategory()
     const { area: allAreas, subArea: allSubArea } = useTypes()
@@ -72,7 +72,7 @@ export default function Page() {
 
     const { isOpen: isOpenAddress, onOpen: onOpenAddress, onClose: onCloseAddress } = useDisclosure()
     const { isOpen: isOpenCompany, onOpen: onOpenCompany, onClose: onCloseCompany } = useDisclosure()
-    const {isOpen: isOpenRank, onOpen: onOpenRank, onClose: onCloseRank} = useDisclosure()
+    const { isOpen: isOpenRank, onOpen: onOpenRank, onClose: onCloseRank} = useDisclosure()
 
     const [rankRef, setRankRef] = useState<string>('')
     const [selectedRank, setSelectedRank] = useState<string>('')
@@ -131,7 +131,7 @@ export default function Page() {
     }
 
     // Function to filter registrations based on search
-    const filteredRegistrations = allRegistrations?.filter((reg) => reg.regType !== 3).filter((registration) => {
+    const filteredRegistrations = allRegData?.filter((reg) => reg.regType !== 3).filter((registration) => {
         const traineeFound = allTrainee?.find((trainee) => trainee.id === registration.trainee_ref_id);
 
         // Check if any field matches the search query
@@ -392,7 +392,7 @@ export default function Page() {
                                 return(
                                     <AccordionItem  key={registration.id}>
                                         <AccordionButton _expanded={{bg: '#a8d1e8'}} py={4} borderRadius='md' borderLeftWidth='6px' borderColor={`${registration.reg_accountType === 0 ? 'blue.600' : 'green.600'}`} className={`${registration.reg_accountType === 0 ? '' : ''} flex items-center justify-between rounded shadow-md px-8 uppercase`}>
-                                            <Text w="40%" className="text-xs text-center">{parsingTimestamp(registration.date_registered).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>
+                                            <Text w="40%" className="text-xs text-center">{parsingTimestamp(registration.date_registered).toLocaleDateString('en-US', {  year: 'numeric', month: 'short',  day: 'numeric',})}</Text>
                                             <Text w="25%" className="text-xs text-center">{registration.traineeType === 0 ? 'new' : 'OLD'}</Text>
                                             <Text w="50%" className="text-xs text-center">
                                                 {`${traineeFound.last_name}, ${traineeFound.first_name} ${traineeFound.middle_name === '' || traineeFound.middle_name.toLowerCase() === 'n/a' ? '' : `${traineeFound.middle_name.charAt(0)}.`} ${traineeFound.suffix === '' || traineeFound.suffix.toLowerCase() === 'n/a'  ? '' : traineeFound.suffix}`}
@@ -411,7 +411,7 @@ export default function Page() {
                                                         <MenuButton onClick={(e) => e.stopPropagation()} bg='#FFFFFF00' size='sm' _hover={{bg: '#FFFFFF00'}} as={IconButton} aria-label='Profile' icon={<DotsIcon size={'24'} color={'#a1a1a1'} />} />
                                                         <MenuList className='space-y-1 text-start'>
                                                             <MenuGroup title='Actions'>
-                                                                <MenuItem onClick={(e) => {e.stopPropagation(); setTraineeInfo(traineeFound); onOpenEditTrainee(); setRegID(registration.id);}}>
+                                                                <MenuItem onClick={(e) => {e.stopPropagation(); setBirth_Date(traineeFound.birthDate.toDate()); setTraineeInfo(traineeFound); onOpenEditTrainee(); setRegID(registration.id);}}>
                                                                     <span className='ps-2'><EditIcon color={'#0D70AB'} /></span>
                                                                     <span className='ps-2' style={{fontSize: '14px'}}>Edit Trainee Details</span>
                                                                 </MenuItem>

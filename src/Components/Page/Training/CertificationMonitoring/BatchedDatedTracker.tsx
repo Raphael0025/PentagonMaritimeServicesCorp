@@ -1,11 +1,12 @@
 'use client'
 
 import NextImage from 'next/image'
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { Box, Image as ChakraImage, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
-FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
+FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, Menu, MenuList, MenuItem, MenuButton, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, FormLabel
 } from '@chakra-ui/react';
+import { ArrowBackIcon, ChevronDownIcon } from '@chakra-ui/icons'
 
 import { Timestamp } from 'firebase/firestore'
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -61,7 +62,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [t_date, setTDate] = useState<Timestamp | undefined>(Timestamp.now())
 
     const [courseName, setCourseName] = useState<string>('')
-    const [ trainingBatch, setTrainingBatch ] = useState<CourseBatchByID>(initCourseBatch)
+    const [trainingBatch, setTrainingBatch ] = useState<CourseBatchByID>(initCourseBatch)
     const [openIndexes, setOpenIndexes] = useState<number[] | number>([])
     const [filename, setFileName] = useState<string>('No file chosen yet...')
     const [preview, setPreview] = useState<string | null>(null)
@@ -77,6 +78,14 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [trainingID, setSelectedTrainingID] = useState<string[]>([])
     const [training_id, setTraining_ID] = useState<string>('')
     const [view_count, setViewCount] = useState<number>(0)
+    const [courseID, setCourseID] = useState<string>('')
+    const [category, setCategory] = useState('')
+    const [closeBlur, setCloseBlur] = useState<boolean>(false)
+
+    // Controlled states for preview & saving
+    const [certTitleHtml, setCertTitleHtml] = useState('')
+    const [certContentHtml, setCertContentHtml] = useState('')
+    const [versionNumber, setVersionNumber] = useState<string>('')
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
@@ -114,6 +123,21 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         },
     })
 
+    const certificates = useMemo(() => {
+        return allCertTemplates ?? []
+    }, [allCertTemplates])
+
+    const certificateVersions = useMemo(() => {
+        if (!courseID) return [];
+    
+        return certificates
+            .filter((c: CERTIFICATION_BY_ID) =>
+                c.courseID === courseID &&
+                (category ? c.category === category : true)
+            )
+            .flatMap((c) => c.versions ?? []);
+    }, [certificates, courseID, category]);
+
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
         toast({
             title: title,
@@ -123,6 +147,55 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
             status: status,
             duration: timer,
             isClosable: true,
+        })
+    }
+
+    const handleChangeContents = async () => {
+        // trainingID.map(async (training_id) => {
+        //     await UPDATE_TRAINING(training_id,
+        //         {
+        //             certTitle: certTitleHtml,
+        //             certContent: certContentHtml,
+        //             cert_version: versionNumber,
+        //         },
+        //         localStorage.getItem('customeToken') || ''
+        //     )
+        // })
+        // setCertTitleHtml('')
+        // setCertContentHtml('')
+        // setVersionNumber('')
+        // setCategory('')
+        // setSelectedTrainingID([])
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    trainingID.map(async (training_id) => {
+                        await UPDATE_TRAINING(training_id,
+                            {
+                                certTitle: certTitleHtml,
+                                certContent: certContentHtml,
+                                cert_version: versionNumber,
+                            },
+                            localStorage.getItem('customeToken') || ''
+                        )
+                    })
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 50)
+        }).then(() => {
+            handleToast('Content Updated Successfully!', `Crew's certificate status has been updated successfully.`, 5000, 'success')
+        }).catch((error) => {
+            console.error("ERROR DETECTED: ", error)
+        }).finally(() => {
+            setCertTitleHtml('')
+            setCertContentHtml('')
+            setVersionNumber('')
+            setCategory('')
+            setSelectedTrainingID([])
+            setLoading(false)
         })
     }
 
@@ -423,9 +496,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             <Text w="110px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
                             <Text w="100px" onClick={() => {
                                 const foundBatch = courseBatch?.find((cb) => cb.id === training.batch)
-                                const foundCourse = allCourses?.find((course) => course.id === foundBatch?.course)?.course_name
+                                const foundCourse = allCourses?.find((course) => course.id === foundBatch?.course)
                                 if (foundBatch && foundCourse) {
-                                    setCourseName(foundCourse.toUpperCase());
+                                    setCourseName(foundCourse.course_name.toUpperCase());
+                                    setCourseID(foundCourse.id)
                                     setTrainingBatch(foundBatch);
                                     onOpenCert();
                                 }
@@ -503,10 +577,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 </ModalFooter>
             </ModalContent>
         </Modal>
-        <Modal size='6xl' closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenCert} onClose={() => {setTrainingBatch(initCourseBatch); onCloseCert();}}>
+        <Modal size='6xl' closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenCert} onClose={() => {setTrainingBatch(initCourseBatch); setSelectedTrainingID([]); setCategory(''); setCourseID(''); onCloseCert();}}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{`Batch: ${trainingBatch.batch_no} ${courseName}`}</ModalHeader>
+                <ModalHeader w='90%'>{`Batch: ${trainingBatch.batch_no} ${courseName}`}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody pb='5'>
                     {(() => {
@@ -514,21 +588,63 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         return(
                         <>
                             <Box borderBottom='1px solid black' pb='4' w='100%' display='flex' justifyContent='space-between' alignItems='center'>
-                                <Checkbox 
-                                    onChange={() => {
-                                            if (trainingID.length === batchTrainings.length) {
-                                                setSelectedTrainingID([])
-                                            } else {
-                                                setSelectedTrainingID(batchTrainings.map((t) => t.id))
-                                            }
-                                        }}
-                                >
-                                    <Text fontSize='sm' fontWeight='normal'>
-                                        {trainingID.length === batchTrainings.length
-                                        ? "Deselect All"
-                                        : "Select All"}
-                                    </Text>
-                                </Checkbox>
+                                <Box mr='3' display='flex' gap='2' w='450px'>
+                                    <Checkbox w='150px'
+                                        onChange={() => {
+                                                if (trainingID.length === batchTrainings.length) {
+                                                    setSelectedTrainingID([])
+                                                } else {
+                                                    setSelectedTrainingID(batchTrainings.map((t) => t.id))
+                                                }
+                                            }}
+                                    >
+                                        <Text fontSize='sm' fontWeight='normal'>
+                                            {trainingID.length === batchTrainings.length
+                                            ? "Deselect All"
+                                            : "Select All"}
+                                        </Text>
+                                    </Checkbox>
+                                    <Menu closeOnBlur={true} closeOnSelect={closeBlur} mr='3'>
+                                        <MenuButton as={Button} isDisabled={trainingID.length === 0} onClick={() => {setCloseBlur(false);}} size='sm' variant='ghost' colorScheme='blue' transition='all 0.2s'> 
+                                            <Text fontSize='12px'>Select Content <ChevronDownIcon /></Text> 
+                                        </MenuButton> 
+                                        <MenuList w='350px' px='1'>
+                                        {category === '' ? (
+                                            <>
+                                                <MenuItem closeOnSelect={false} onClick={() => {setCategory('generic');}}>Generic</MenuItem>
+                                                <MenuItem closeOnSelect={false} onClick={() => {setCategory('client');}}>Client Specific</MenuItem>
+                                            </>
+                                        ) : (
+                                            <>
+                                            <MenuItem icon={<ArrowBackIcon />} onClick={() => {setCategory(''); }}>{'Back'}</MenuItem>
+                                            {certificateVersions.map((v: certVersion) => {
+                                                return(
+                                                    <MenuItem key={v.version_number} display='flex' justifyContent='space-between' borderBottom='1px solid gray' 
+                                                        onClick={() => {
+                                                            setVersionNumber(v.version_number); 
+                                                            setCertTitleHtml(v.certTitleHtml); 
+                                                            setCertContentHtml(v.certContentHtml); 
+                                                            //setSubTitle(v?.subTitle); 
+                                                            //setAdditionalDescription(v?.additionalDescription); 
+                                                            setCloseBlur(true);
+                                                        }}
+                                                    >
+                                                        <Box >
+                                                            {category === 'client' && (
+                                                                <Text>{`${v.subTitle}`}</Text>
+                                                            )}
+                                                            <Text>{`Version ${v.version_number}`}</Text>
+                                                            <Text fontWeight='bold' color={`${(v.status==='active' ? 'green.500' : 'black' )}`}>{`${v.status.toUpperCase()}`}</Text>
+                                                        </Box>
+                                                    </MenuItem>
+                                                )
+                                            })}
+                                            </>
+                                        )}
+                                        </MenuList>
+                                    </Menu>
+                                    <Button onClick={handleChangeContents} loadingText='Saving...' isLoading={loading} size='sm' colorScheme='blue' w='150px' bgColor='blue.700' shadow='md' isDisabled={certTitleHtml === ''}>Save Content</Button>
+                                </Box>
                                 <Box>
                                     <Button size='sm' variant='solid' onClick={toggleAll} mr='3'>
                                         {Array.isArray(openIndexes) && openIndexes.length === trainings.length ? "Collapse All" : "Expand All"}
@@ -543,7 +659,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             <Box display='flex' borderBottom='1px solid black' justifyContent='space-between' textAlign='center' px='4' py='2' textTransform='uppercase' >
                                 <Text w='60px'>#</Text>
                                 <Text w='200px'>Certificate No.</Text>
-                                <Text w='350px'>Trainee Name</Text>
+                                <Text w='300px'>Trainee Name</Text>
+                                <Text w='150px'>Company</Text>
                                 <Text w='100px'>Charge</Text>
                                 <Text w='100px'>No. of Prints</Text>
                                 <Text w='100px'>Viewed</Text>
@@ -585,8 +702,9 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 }} className='hover:cursor-pointer'>
                                                 {`${training.cert_no}`}
                                             </Text>                                   
-                                            <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
+                                            <Text w="300px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
                                             {/* <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>   */}
+                                            <Text w="150px" >{allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}</Text>  
                                             <Text w="100px" >{training.accountType === 0 ? 'TRAINEE' : 'COMPANY'}</Text>  
                                             <Text w="100px" >{training?.printCount || 0}</Text>  
                                             <Text w="100px" onClick={() => {setTraining_ID(training.id); onOpenView();}} _hover={{ cursor: 'pointer'}}>{training?.hasViewed ? 'Viewed' : 'Not yet'}</Text>  
