@@ -49,7 +49,7 @@ export default function BDTrackerCertification (){
     const { data: courseBatch } = useCourseBatch()
     const { data: allInstructors } = useInstructors()
     const { data: allClients, courseCodes } = useClients()
-    const { allData: allRegData } = useRegistrations()
+    const { allData: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
     const { data: allTrainingData, setMonth: setTMonth, setYear: setTYear } = useTraining()
 
     const [loading, setLoading] = useState<boolean>(false)
