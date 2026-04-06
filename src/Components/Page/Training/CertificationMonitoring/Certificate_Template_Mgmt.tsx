@@ -51,7 +51,10 @@ export default function Certificate_Template_Mgmt() {
     // Controlled states for preview & saving
     const [certTitleHtml, setCertTitleHtml] = useState('')
     const [certContentHtml, setCertContentHtml] = useState('')
-
+    // Web Controlled states for preview & saving
+    const [webCertTitleHtml, setWebCertTitleHtml] = useState('')
+    const [webCertContentHtml, setWebCertContentHtml] = useState('')
+    
     const { isOpen: isOpenCert, onOpen: onOpenCert, onClose: onCloseCert } = useDisclosure()
     const { isOpen: isOpenDCert, onOpen: onOpenDCert, onClose: onCloseDCert } = useDisclosure()
 
@@ -117,8 +120,10 @@ export default function Certificate_Template_Mgmt() {
         // Update the correct state
         if (ref === editorRef) {
             setCertContentHtml(editorRef.current?.innerHTML || '')
+            setWebCertContentHtml(editorRef.current?.innerText || '')
         } else if (ref === titleRef) {
             setCertTitleHtml(titleRef.current?.innerHTML || '')
+            setWebCertTitleHtml(titleRef.current?.innerText || '')
         }
     }
 
@@ -142,6 +147,7 @@ export default function Certificate_Template_Mgmt() {
             selection.addRange(range)
     
             setCertContentHtml(editorRef.current?.innerHTML || '')
+            setWebCertContentHtml(editorRef.current?.innerText || '')
         }
     }
 
@@ -220,6 +226,8 @@ export default function Certificate_Template_Mgmt() {
                 version_number: versionNumber,
                 certTitleHtml,
                 certContentHtml,
+                webCertTitle: webCertTitleHtml,
+                webCertContent: webCertContentHtml,
                 status: 'active',
                 additionalDescription: add_desc,
                 subTitle: sub_title,
@@ -238,6 +246,8 @@ export default function Certificate_Template_Mgmt() {
             // Clear editor after save
             setCertTitleHtml('')
             setCertContentHtml('')
+            setWebCertTitleHtml('')
+            setWebCertContentHtml('')
             setLoading(false)
             if (editorRef.current) editorRef.current.innerHTML = ''
             if (titleRef.current) titleRef.current.innerHTML = ''
@@ -249,6 +259,8 @@ export default function Certificate_Template_Mgmt() {
             const editedVersion = {
                 certTitleHtml: certTitleHtml,
                 certContentHtml: certContentHtml,
+                webCertTitle: webCertTitleHtml,
+                webCertContent: webCertContentHtml,
                 changelogArr: [],
             }
             const foundActiveCert = certificates.filter((f: CERTIFICATION_BY_ID) => f.courseID === courseID).map(
@@ -282,6 +294,8 @@ export default function Certificate_Template_Mgmt() {
             // Clear editor after save
             setCertTitleHtml('')
             setCertContentHtml('')
+            setWebCertTitleHtml('')
+            setWebCertContentHtml('')
             setLoading(false)
             if (editorRef.current) editorRef.current.innerHTML = ''
             if (titleRef.current) titleRef.current.innerHTML = ''
@@ -303,6 +317,8 @@ export default function Certificate_Template_Mgmt() {
                     version_number: versionNumber,
                     certTitleHtml: certTitleHtml,
                     certContentHtml: certContentHtml,
+                    webCertTitle: webCertTitleHtml,
+                    webCertContent: webCertContentHtml,
                     status: 'active',
                     additionalDescription: add_desc,
                     subTitle: sub_title,
@@ -323,6 +339,8 @@ export default function Certificate_Template_Mgmt() {
         // Clear editor after save
         setCertTitleHtml('')
         setCertContentHtml('')
+        setWebCertTitleHtml('')
+        setWebCertContentHtml('')
         setLoading(false)
         setAdditionalDescription('')
         setSubTitle('')
@@ -456,7 +474,7 @@ export default function Certificate_Template_Mgmt() {
                             </FormControl>
                             <FormControl mb="3">
                                 <FormLabel>Certificate Title:</FormLabel>
-                                <Box ref={titleRef} contentEditable minH="40px" border="1px solid #ccc" borderRadius="md" p="2" fontSize="22px" fontWeight="bold" onKeyDown={handleEnter} onInput={() => setCertTitleHtml(titleRef.current?.innerHTML || '')} suppressContentEditableWarning />
+                                <Box ref={titleRef} contentEditable minH="40px" border="1px solid #ccc" borderRadius="md" p="2" fontSize="22px" fontWeight="bold" onKeyDown={handleEnter} onInput={() => {setCertTitleHtml(titleRef.current?.innerHTML || ''); setWebCertTitleHtml(titleRef.current?.innerText || '');}} suppressContentEditableWarning />
                             </FormControl>
                             {category === 'client' && (
                             <>
@@ -489,7 +507,7 @@ export default function Certificate_Template_Mgmt() {
                                     <option value="7">36pt</option>
                                 </select>
                             </Box>
-                            <Box ref={editorRef} contentEditable minH="280px" maxH="280px" w="500px" maxW="500px" overflowY="auto" overflowX="auto" whiteSpace="pre-wrap" wordBreak="break-word" border="1px solid #ccc" borderRadius="md" p="4" fontWeight="normal" onKeyDown={handleEnter} onInput={() => setCertContentHtml(editorRef.current?.innerHTML || '')} suppressContentEditableWarning
+                            <Box ref={editorRef} contentEditable minH="280px" maxH="280px" w="500px" maxW="500px" overflowY="auto" overflowX="auto" whiteSpace="pre-wrap" wordBreak="break-word" border="1px solid #ccc" borderRadius="md" p="4" fontWeight="normal" onKeyDown={handleEnter} onInput={() => {setCertContentHtml(editorRef.current?.innerHTML || ''); setWebCertContentHtml(editorRef.current?.innerText || '');}} suppressContentEditableWarning
                                 sx={{
                                     '& ul': { listStyleType: 'disc', listStylePosition: 'inside', paddingLeft: '1.5rem', margin: '0.5rem 0' },
                                     '& ol': { listStyleType: 'decimal', listStylePosition: 'inside', paddingLeft: '1.5rem', margin: '0.5rem 0' },

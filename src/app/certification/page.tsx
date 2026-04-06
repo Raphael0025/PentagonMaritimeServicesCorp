@@ -43,7 +43,7 @@ export default function Certification() {
     const registration = collection(firestore, 'REGISTRATION')
     const training = collection(firestore, 'TRAINING')
     
-    const TOTAL_TIME: number = 60
+    const TOTAL_TIME: number = 30
     const [countdown, setCountdown] = useState<number>(TOTAL_TIME)
     const [progress, setProgress] = useState<number>(100)
 

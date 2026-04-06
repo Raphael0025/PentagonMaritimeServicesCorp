@@ -151,21 +151,6 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     }
 
     const handleChangeContents = async () => {
-        // trainingID.map(async (training_id) => {
-        //     await UPDATE_TRAINING(training_id,
-        //         {
-        //             certTitle: certTitleHtml,
-        //             certContent: certContentHtml,
-        //             cert_version: versionNumber,
-        //         },
-        //         localStorage.getItem('customeToken') || ''
-        //     )
-        // })
-        // setCertTitleHtml('')
-        // setCertContentHtml('')
-        // setVersionNumber('')
-        // setCategory('')
-        // setSelectedTrainingID([])
         setLoading(true)
         new Promise<void>((res, rej) => {
             setTimeout(async () => {
@@ -450,11 +435,11 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
             <Box w='1750px' bgColor='blue.700' position='sticky' top='0' zIndex='9' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
                 <Text w='30px'>#</Text>
                 <Text w='100px'>Completion Recency</Text>
-                <Text w='100px'>Completion Date</Text>
                 <Text w='100px'>Batch</Text>
                 <Text w='200px'>Certificate No.</Text>
                 <Text w='350px'>Trainee Name</Text>
                 <Text w='150px'>Course</Text>
+                <Text w='100px'>Completion Date</Text>
                 <Text w='120px'>Date Released</Text>
                 <Text w='100px'>Charge</Text>
                 <Text w='150px'>Status</Text>
@@ -493,7 +478,6 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             <Text w="100px" bg={relativeDateBackgroundColor(relativeDate)} borderRadius='5px' >
                                 {relativeDate}
                             </Text>                                                                             
-                            <Text w="110px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
                             <Text w="100px" onClick={() => {
                                 const foundBatch = courseBatch?.find((cb) => cb.id === training.batch)
                                 const foundCourse = allCourses?.find((course) => course.id === foundBatch?.course)
@@ -516,6 +500,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             <Text w="150px">
                                 {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                             </Text> 
+                            <Text w="110px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
                             <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {(training.cert_status !== 0 && training.cert_status !== 1) && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{((training.cert_status !== 0 && training.cert_status !== 1) ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
                             <Box w='150px' display='flex' justifyContent='center' gap='2'>
@@ -526,7 +511,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             </Box>
                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
                                 <Text w="200px" noOfLines={1} className='text-wrap'>
-                                    {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
+                                    {allClients?.find((client) => client.id === trainee.company)?.alias || trainee.company}
                                 </Text>    
                             </Tooltip>
                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
@@ -704,7 +689,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             </Text>                                   
                                             <Text w="300px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
                                             {/* <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {training.cert_status !== 0 && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{(training.cert_status !== 0 ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>   */}
-                                            <Text w="150px" >{allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}</Text>  
+                                            <Text w="150px" >{allClients?.find((client) => client.id === trainee.company)?.alias || trainee.company}</Text>  
                                             <Text w="100px" >{training.accountType === 0 ? 'TRAINEE' : 'COMPANY'}</Text>  
                                             <Text w="100px" >{training?.printCount || 0}</Text>  
                                             <Text w="100px" onClick={() => {setTraining_ID(training.id); onOpenView();}} _hover={{ cursor: 'pointer'}}>{training?.hasViewed ? 'Viewed' : 'Not yet'}</Text>  

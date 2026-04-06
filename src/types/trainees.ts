@@ -184,6 +184,9 @@ export interface TRAINING {
     printCount: number;
     viewCount: number;
     hasViewed: boolean;
+    isUrgent: boolean;
+    webCertTitle: string;
+    webCertContent: string;
 
     attendance: boolean;
     ccr: boolean;
@@ -234,6 +237,9 @@ export const initTraining = {
     printCount: 0,
     viewCount: 0,
     hasViewed: false,
+    isUrgent: false,
+    webCertTitle: '',
+    webCertContent: '',
 
     attendance: false,
     ccr: false,

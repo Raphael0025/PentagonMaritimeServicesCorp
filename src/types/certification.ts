@@ -15,6 +15,8 @@ export interface certVersion {
     version_number: string; // v1.0.yymmdd
     certTitleHtml: string; 
     certContentHtml: string;
+    webCertTitle: string;
+    webCertContent: string;
     subTitle: string;
     additionalDescription: string;
     status: 'active' | 'archived';
