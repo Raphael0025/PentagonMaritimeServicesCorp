@@ -319,10 +319,26 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     }
 
     const formatTrainingSchedule = (dateStr: string, year: number) => {
-        if (!dateStr) return ''
-        const dateConvert = new Date(dateStr).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
-        return `${dateConvert}, ${year}` // "February 11"
-    }
+        if (!dateStr) return '';
+
+        // Create a map for the month abbreviations
+        const monthMap: { [key: string]: string } = {
+            Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April',
+            May: 'May', Jun: 'June', Jul: 'July', Aug: 'August',
+            Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December'
+        };
+
+        // 1. Remove commas and split by space
+        // "Tue, Apr 07" becomes ["Tue", "Apr", "07"]
+        const parts = dateStr.replace(',', '').split(' ');
+
+        const monthAbbr = parts[1]; // "Apr"
+        const day = parseInt(parts[2], 10); // "07" -> 7 (removes leading zero)
+
+        const fullMonth = monthMap[monthAbbr] || monthAbbr;
+
+        return `${fullMonth} ${day}, ${year}`; 
+    };
 
     const getOrdinalHTML = (day: number) => {
         const suffix =

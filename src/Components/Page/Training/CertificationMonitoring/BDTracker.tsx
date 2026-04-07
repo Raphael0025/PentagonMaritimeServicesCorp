@@ -66,19 +66,19 @@ export default function BDTrackerCertification (){
     const [preview, setPreview] = useState<string | null>(null)
     const [imgFile, setImgFile] = useState<File[]>([])
 
-    const [traineeDocID, setTraineeDocID] = useState<string>('')
-    const [attachmentFile, setAttachment] = useState<string>('')
+    const [cat, setCat] = useState<string>('')
+    const [category, setCategory] = useState('')
     const [last_name, setLN] = useState<string>('')
     const [first_name, setFN] = useState<string>('')
-    const [cat, setCat] = useState<string>('')
-    const [attachmentType, setAT] = useState<string>('')
-    const [isPrinting, setIsPrinting] = useState<boolean>(true)
-    const [trainingID, setSelectedTrainingID] = useState<string[]>([])
-    const [training_id, setTraining_ID] = useState<string>('')
-    const [view_count, setViewCount] = useState<number>(0)
     const [courseID, setCourseID] = useState<string>('')
-    const [category, setCategory] = useState('')
+    const [attachmentType, setAT] = useState<string>('')
+    const [training_id, setTraining_ID] = useState<string>('')
+    const [traineeDocID, setTraineeDocID] = useState<string>('')
+    const [attachmentFile, setAttachment] = useState<string>('')
     const [closeBlur, setCloseBlur] = useState<boolean>(false)
+    const [isPrinting, setIsPrinting] = useState<boolean>(true)
+    const [view_count, setViewCount] = useState<number>(0)
+    const [trainingID, setSelectedTrainingID] = useState<string[]>([])
 
     const [filterCourse, setCFilter] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
@@ -111,7 +111,8 @@ export default function BDTrackerCertification (){
     const { isOpen: isOpenViewCount, onOpen: onOpenViewCount, onClose: onCloseViewCount } = useDisclosure()
     const { isOpen: isOpenView, onOpen: onOpenView, onClose: onCloseView } = useDisclosure()
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
-    
+    const { isOpen: isOpenBDCert, onOpen: onOpenBDCert, onClose: onCloseBDCert } = useDisclosure()
+
     const componentRef = useRef<HTMLDivElement | null>(null)
     const attachment = useRef<HTMLDivElement>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -314,6 +315,7 @@ export default function BDTrackerCertification (){
                 { 
                     printCount: (allTData.find((tr) => tr.id === training_id)?.printCount || 0) + 1,
                     cert_status: 1,
+                    isUrgent: false,
                 }, 
                 localStorage.getItem('customToken') || '')
         })
@@ -560,6 +562,12 @@ export default function BDTrackerCertification (){
         onCloseDate()
     }
 
+    const lockedCourseID = useMemo(() => {
+        if (!trainingID || trainingID.length === 0) return null
+        const firstCourseID = allTData.find((t) => t.id === trainingID[0])
+        return firstCourseID?.course || null
+    }, [trainingID, allTData])
+
     return(
         <>
         <Text>BackDated Monitoring</Text>
@@ -659,6 +667,9 @@ export default function BDTrackerCertification (){
                 </Box>
             </Box>
         </Box>
+        <Box>
+            <Button onClick={onOpenBDCert} mb='2' size='sm' bgColor='blue.700' colorScheme='blue' shadow='md' >Create Certificate/s</Button>
+        </Box>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}
             <Box w='2050px' bgColor='blue.700' position='sticky' top='0' zIndex='9' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
@@ -695,6 +706,13 @@ export default function BDTrackerCertification (){
                     const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                     const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
                     const relativeDate = getRelativeDate(training.end_date, training.start_date)
+                    
+                    const currentCourse = training.course
+
+                    const isDifferentCourse = 
+                    trainingID.length > 0 && 
+                    !trainingID.includes(training.id) && 
+                    currentCourse !== lockedCourseID
 
                     if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -703,17 +721,24 @@ export default function BDTrackerCertification (){
                         `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
                     )
+
                 ){
                     return(
                         <Box key={training.id} _hover={{bgColor: 'blue.100', color: 'black'}} borderRadius='5px' color={training.cert_status === 7 ? 'white' : 'black'} w='2050px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-3 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                             <Box w='50px'>
-                                <Checkbox shadow='md'/>                                                                             
+                                <Checkbox onChange={() => {setSelectedTrainingID(prev => prev.includes(training.id) ? prev.filter(id => id !== training.id) : [...prev, training.id])}} 
+                                isDisabled={isDifferentCourse}
+                                shadow='md' isChecked={trainingID.includes(training.id)} />                                                                             
                             </Box>
                             <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
                             <Text w="110px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
-                            <Text w="150px" bg={relativeDateBackgroundColor(relativeDate)} borderRadius='5px' >
-                                {relativeDate} 
-                            </Text>                                                                             
+                            {training?.isUrgent ? (
+                                <Text w='150px' borderRadius='5px' bgColor='red.400'>URGENT</Text>
+                            ) : (
+                                <Text w="150px" bg={relativeDateBackgroundColor(relativeDate)} borderRadius='5px' >
+                                    {relativeDate} 
+                                </Text>                                                                             
+                            )}
                             <Text w="280px">{`Reg-${reg_num}`}</Text>                                                                             
                             <Text w="100px" onClick={() => {
                                 const foundBatch = courseBatch?.find((cb) => cb.id === training.batch)
@@ -742,8 +767,8 @@ export default function BDTrackerCertification (){
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
                             <Box w='150px' display='flex' justifyContent='center' gap='2'>
                                 <Checkbox shadow='md' onChange={() => {setFirstSelected(training.cert_status === 1 ? true : false); 
-                                        //setTrainingIDs(prev => [...prev, training.id])}} isChecked={training?.id === trainingIDs.find((id) => id === training.id)
-                                    }}/>
+                                        setSelectedTrainingID(prev => [...prev, training.id])}} isChecked={training?.id === trainingID.find((id) => id === training.id)
+                                    }/>
                                 <Text w='100%' px='2' bgColor={certBackgroundColor(training.cert_status)} borderRadius='5px' size='xs'>
                                     {handleCertStatus(training.cert_status)}
                                 </Text>
@@ -1339,6 +1364,19 @@ export default function BDTrackerCertification (){
                         <Button onClick={handleData} colorScheme='blue'>Select</Button>
                     </Box>
                 </ModalFooter>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenBDCert} onClose={onCloseBDCert} scrollBehavior='inside' size='xl' motionPreset='slideInTop'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader pb={0} >{`Create Certificate/s`}</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody pt={0} display='flex' flexDir='column' gap='3'>
+                    <Text fontSize='lg' color='blue.700'>Are you sure you want to create certificate/s for the selected training?</Text>
+                    <Button colorScheme='blue' bgColor='blue.700' w='100%' shadow='md' 
+                    //onClick={() => {handleCreateCert(); onCloseBDCert();}}
+                    >Yes, Create Certificate/s</Button>
+                </ModalBody>
             </ModalContent>
         </Modal>
         </>
