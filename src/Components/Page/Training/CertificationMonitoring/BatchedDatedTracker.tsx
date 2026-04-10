@@ -1000,7 +1000,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Box>
                                     </Box>
                                     <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.39in' h='0.68in' objectFit='cover'/>
+                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.30in' h='0.70in' />
                                         <Box w='0.8in' display='flex' justifyContent='center' alignItems='center' h='0.65in'>
                                             <Box w='0.68in' h='0.7in'>
                                                 <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>

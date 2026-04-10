@@ -127,16 +127,13 @@ export default function BDTrackerCertification (){
                 return enrolledDate.getFullYear() === yearSelected && enrolledDate.getMonth() === monthSelected;
             })
             .sort((a, b) => {
-                // ---------- 1️⃣ DATE SORT (PRIMARY) ----------
-                const getTime = (d?: string) => d ? new Date(d).getTime() : 0
-
-                const dateA = getTime(a.end_date) || getTime(a.start_date)
-                const dateB = getTime(b.end_date) || getTime(b.start_date)
+                // ---------- 1️⃣ SORT DATE ENDORSED ----------
+                const dateA = a.date_enrolled.toMillis()
+                const dateB = b.date_enrolled.toMillis()
 
                 if (dateA !== dateB) {
                     return dateB - dateA // newest → oldest
                 }
-
                 // ---------- 2️⃣ COURSE SORT (SECONDARY) ----------
                 const courseA =
                     allCourses?.find((c) => c.id === a.course)?.course_code?.toLowerCase() ||
@@ -445,10 +442,26 @@ export default function BDTrackerCertification (){
     }
 
     const formatTrainingSchedule = (dateStr: string, year: number) => {
-        if (!dateStr) return ''
-        const dateConvert = new Date(dateStr).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
-        return `${dateConvert}, ${year}` // "February 11"
-    }
+        if (!dateStr) return '';
+
+        // Create a map for the month abbreviations
+        const monthMap: { [key: string]: string } = {
+            Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April',
+            May: 'May', Jun: 'June', Jul: 'July', Aug: 'August',
+            Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December'
+        };
+
+        // 1. Remove commas and split by space
+        // "Tue, Apr 07" becomes ["Tue", "Apr", "07"]
+        const parts = dateStr.replace(',', '').split(' ');
+
+        const monthAbbr = parts[1]; // "Apr"
+        const day = parseInt(parts[2], 10); // "07" -> 7 (removes leading zero)
+
+        const fullMonth = monthMap[monthAbbr] || monthAbbr;
+
+        return `${fullMonth} ${day}, ${year}`; 
+    };
 
     const getOrdinalHTML = (day: number) => {
         const suffix =
@@ -565,6 +578,7 @@ export default function BDTrackerCertification (){
     const lockedCourseID = useMemo(() => {
         if (!trainingID || trainingID.length === 0) return null
         const firstCourseID = allTData.find((t) => t.id === trainingID[0])
+        console.log('FC ID', firstCourseID)
         return firstCourseID?.course || null
     }, [trainingID, allTData])
 
@@ -675,7 +689,7 @@ export default function BDTrackerCertification (){
             <Box w='2050px' bgColor='blue.700' position='sticky' top='0' zIndex='9' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>
                 <Text w='50px'>{'\u200B'}</Text>
                 <Text w='30px'>#</Text>
-                <Text w='100px'>Date Endorsed</Text>
+                <Text w='150px'>Date Endorsed</Text>
                 <Text w='150px'>Completion Recency</Text>
                 <Text w='280px'>Registration No.</Text>
                 <Text w='100px'>Batch</Text>
@@ -726,12 +740,35 @@ export default function BDTrackerCertification (){
                     return(
                         <Box key={training.id} _hover={{bgColor: 'blue.100', color: 'black'}} borderRadius='5px' color={training.cert_status === 7 ? 'white' : 'black'} w='2050px' fontWeight='normal' mb='1' className="flex text-center border-b space-x-3 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                             <Box w='50px'>
-                                <Checkbox onChange={() => {setSelectedTrainingID(prev => prev.includes(training.id) ? prev.filter(id => id !== training.id) : [...prev, training.id])}} 
+                                <Checkbox borderColor='gray.500' borderWidth='1px' onChange={() => {setSelectedTrainingID(prev => prev.includes(training.id) ? prev.filter(id => id !== training.id) : [...prev, training.id]); console.log(training.course)}} 
                                 isDisabled={isDifferentCourse}
                                 shadow='md' isChecked={trainingID.includes(training.id)} />                                                                             
                             </Box>
                             <Text w="30px" textAlign='center'>{`${(index + 1)}.`}</Text>                                                                             
-                            <Text w="110px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
+                            {
+                                (() => {
+                                    const now = new Date()
+                                    const enrolledDate = parsingTimestamp(training.date_enrolled)
+
+                                    // Check if Day, Month, and Year all match
+                                    const isToday = 
+                                        enrolledDate.getDate() === now.getDate() &&
+                                        enrolledDate.getMonth() === now.getMonth() &&
+                                        enrolledDate.getFullYear() === now.getFullYear();
+
+                                    if (isToday) {
+                                        return (
+                                            <Text w='150px' bgColor={'blue.200'} borderRadius='5px'>Today</Text>
+                                        )
+                                    }
+                                    
+                                    return (
+                                        <Text w='150px' >
+                                            {enrolledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                        </Text>
+                                    )
+                                })()
+                            }
                             {training?.isUrgent ? (
                                 <Text w='150px' borderRadius='5px' bgColor='red.400'>URGENT</Text>
                             ) : (
