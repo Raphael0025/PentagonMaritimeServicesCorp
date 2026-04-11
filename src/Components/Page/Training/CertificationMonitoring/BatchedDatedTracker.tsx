@@ -453,7 +453,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 <Text w='100px'>Completion Recency</Text>
                 <Text w='100px'>Batch</Text>
                 <Text w='200px'>Certificate No.</Text>
-                <Text w='350px'>Trainee Name</Text>
+                <Text w='400px'>Trainee Name</Text>
                 <Text w='150px'>Course</Text>
                 <Text w='100px'>Completion Date</Text>
                 <Text w='120px'>Date Released</Text>
@@ -512,7 +512,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 }} className='hover:cursor-pointer'>
                                 {`${training.cert_no}`}
                             </Text>                                   
-                            <Text w="350px">{`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.suffix || ''}`}</Text>                                        
+                            <Text w="400px">{`${trainee.first_name} ${trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''} ${trainee.last_name} ${trainee.suffix || ''}`}</Text>                                        
                             <Text w="150px">
                                 {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                             </Text> 
@@ -907,7 +907,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                     <Text pt='8'>This Certificate is issued to</Text>
                                     <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                     <Text>for having successfully completed the training course in</Text>
-                                    <Text fontSize='14pt' w='65%' mt='4' textAlign='center' fontWeight='bold'>
+                                    <Text fontSize='14pt' w='75%' mt='4' textAlign='center' fontWeight='bold'>
                                         <div
                                             dangerouslySetInnerHTML={{
                                                 __html: `${training.certTitle}`
