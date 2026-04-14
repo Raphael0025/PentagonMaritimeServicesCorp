@@ -70,7 +70,6 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
         const getPosition = localStorage.getItem('jobPositionToken')
 
         const posArr = getPosition ? getPosition.split('/') : []
-    
         if (getDept) {
             const deptArr = getDept.split('/');
             const targetDept = 'Training';
@@ -212,6 +211,9 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
 
     const handleNotifyTrainees = () => {
         setLoadTrainees(true)
+        
+        const company_staff: string | null = localStorage.getItem('customToken')
+        const jobPosition: string | null = localStorage.getItem('jobPositionToken')
         new Promise<void>((res, rej) => {
             setTimeout( async () => {
                 try{
@@ -221,10 +223,10 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                     const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} ${batch.end_date === '' ? '' : `to ${endDateArr[1].toUpperCase()}`}` : startDateArr[1].toUpperCase()
                     const class_code = courseFound?.class_code
                     const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
-                    const firstName = staff?.split(' ')[0] || '';
-                    const lastName = staff?.split(' ').at(-1) || '';
+                    const firstName = company_staff?.split(' ')[0] || '';
+                    const lastName = company_staff?.split(' ').at(-1) || '';
                     const staffName = `${firstName} ${lastName}`
-
+                    
                     const route = batch.training_mode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
                     await fetch(route, {
                         method: 'POST',
@@ -238,8 +240,8 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             schedule, 
                             time: timeArr[0], 
                             class_code, 
-                            staffName, 
-                            position 
+                            staff: staffName, 
+                            position: jobPosition 
                         })
                     })
                     res()
@@ -260,6 +262,10 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     
     const handleNotifyInstructor = () => {
         setLoadInstructor(true)
+        
+        const company_staff: string | null = localStorage.getItem('customToken')
+        const jobPosition: string | null = localStorage.getItem('jobPositionToken')
+
         new Promise<void>((res, rej) => {
             setTimeout( async () => {
                 try{
@@ -268,8 +274,8 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                     const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
                     const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
                     const class_code = courseFound?.class_code
-                    const firstName = staff?.split(' ')[0] || '';
-                    const lastName = staff?.split(' ').at(-1) || '';
+                    const firstName = company_staff?.split(' ')[0] || '';
+                    const lastName = company_staff?.split(' ').at(-1) || '';
                     const staffName = `${firstName} ${lastName}`
 
                     const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
@@ -307,8 +313,8 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             class_code,
                             presentation_link: c_presentation_link,
                             instructor: intructor_name,
-                            staffName, 
-                            position 
+                            staff: staffName, 
+                            position: jobPosition 
                         })
                     })
                     res()

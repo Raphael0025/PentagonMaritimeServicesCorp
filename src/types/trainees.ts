@@ -187,6 +187,7 @@ export interface TRAINING {
     isUrgent: boolean;
     webCertTitle: string;
     webCertContent: string;
+    conductedOnline: boolean;
 
     attendance: boolean;
     ccr: boolean;
@@ -240,6 +241,7 @@ export const initTraining = {
     isUrgent: false,
     webCertTitle: '',
     webCertContent: '',
+    conductedOnline: false,
 
     attendance: false,
     ccr: false,

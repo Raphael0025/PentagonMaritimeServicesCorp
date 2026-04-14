@@ -321,24 +321,24 @@ export default function ReleaseLog() {
             )}
             {/* <Button onClick={onOpenTransmittalModal} size='sm' colorScheme='blue' bgColor='blue.700' shadow='md' fontWeight='normal' borderRadius='5px'>Create Transmittal</Button> */}
         </Box>
-        <Box h='700px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}}>
+        <Box h='700px' w='1700px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}}>
             <Box display='flex' position='sticky' top='0' zIndex='9' alignItems='center' bgColor='blue.700' px='4' mt='2' textTransform='uppercase' py='2' justifyContent='space-between' color='white' borderRadius='5px'>
-                <Text w='15%'>#</Text>
-                <Text w='100%' mr='2'>
-                    <Text w='100%' textAlign='center' borderBottom='1px solid white'>TRAINEE NAME</Text>
+                <Text w='25px'>#</Text>
+                <Text w='550px' mr='2'>
+                    <Text w='550px' textAlign='center' borderBottom='1px solid white'>TRAINEE NAME</Text>
                     <Text display='flex' gap='2' >
                         <Text w='250px' as='span'>LAST NAME</Text>
                         <Text w='250px' as='span'>FIRST NAME</Text>
                         <Text w='50px' as='span'>MI</Text>
                     </Text>
                 </Text>
-                <Text w='100%' textAlign='center'>COURSE</Text>
-                <Text w='100%'>CERTIFICATE NO.</Text>
-                <Text w='100%'>COMPANY</Text>
-                <Text w='100%'>TRAINING DATE/S</Text>
-                <Text w='100%'>RELEASED DATE</Text>
-                <Text w='100%'>RECEIVED BY</Text>
-                <Text w='100%'>RELEASED BY</Text>
+                <Text w='150px' textAlign='center'>COURSE</Text>
+                <Text w='190px'>CERTIFICATE NO.</Text>
+                <Text w='300px'>COMPANY</Text>
+                <Text w='100px'>TRAINING DATE/S</Text>
+                <Text w='100px'>RELEASED DATE</Text>
+                <Text w='100px'>RECEIVED BY</Text>
+                <Text w='150px'>RELEASED BY</Text>
             </Box>
             {!releaseRecords || releaseRecords.length === 0 ? (
                 <Center mt='10'>
@@ -355,25 +355,25 @@ export default function ReleaseLog() {
                     const course = courseMap.get(training.course)?.course_code?.toUpperCase() || ''
                     const middleInitial = trainee.middle_name ? (trainee.middle_name.charAt(0) === '' ? '\u200B' : `${trainee.middle_name.charAt(0)}.`) : ''
                     const releaseDate = (training.cert_status === 2 ? training.cert_released?.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '')
-                    const companyName = allClients?.find(c => c.id === trainee.company)?.alias || ''
+                    const companyName = allClients?.find(c => c.id === trainee.company)?.alias || trainee.company
                     const received = training.cert_status === 2 ? 'View Proof' : ''
                     const releasedBy = training.cert_status !== 2
                 
                     return(
-                        <Box key={index} _hover={{bgColor: 'blue.100', color: 'black'}} fontWeight='normal' display='flex' alignItems='center' justifyContent='space-between' px='4' py='2' borderBottom='1px solid' borderColor='gray.200'>
-                            <Text w='15%'>{`${(index + 1)}.`}</Text>
-                            <Text w='100%' display='flex' gap='2' mr='2'>
-                                <Text w='250px' as='span'>{trainee?.last_name || ''}</Text>
-                                <Text w='250px' as='span'>{trainee?.first_name || ''}</Text>
-                                <Text w='50px' as='span'>{middleInitial}</Text>
+                        <Box key={index} w='1900px' _hover={{bgColor: 'blue.100', color: 'black'}} fontWeight='normal' display='flex' alignItems='center' px='4' py='2' borderBottom='1px solid' borderColor='gray.200'>
+                            <Text w='25px'>{`${(index + 1)}.`}</Text>
+                            <Text w='550px' display='flex' gap='2' mr='2'>
+                                <Text w='250px' as='span'>{trainee?.last_name.toUpperCase() || ''}</Text>
+                                <Text w='250px' as='span'>{trainee?.first_name.toUpperCase() || ''}</Text>
+                                <Text w='50px' as='span'>{middleInitial.toUpperCase()}</Text>
                             </Text>
-                            <Text w='100%' textAlign='center'>{course}</Text>
-                            <Text w='100%'>{training?.cert_no || ''}</Text>
-                            <Text w='100%'>{companyName}</Text>
-                            <Text w='100%'>{formatTrainingDate(training.end_date, training.start_date)}</Text>
-                            <Text w='100%'>{releaseDate}</Text>
-                            <Text  onClick={() => {setAttachment(training?.releasingProof); setAttachment2(trainee.e_sig); onOpenModal();}} _hover={{cursor: 'pointer', fontWeight: 'bold'}} w='100%'>{received}</Text>
-                            <Select onChange={(e) => {
+                            <Text w='150px' textAlign='center'>{course}</Text>
+                            <Text w='190px'>{training?.cert_no || ''}</Text>
+                            <Text w='300px'>{companyName.toUpperCase()}</Text>
+                            <Text w='100px'>{formatTrainingDate(training.end_date, training.start_date)}</Text>
+                            <Text w='100px'>{releaseDate}</Text>
+                            <Text  onClick={() => {setAttachment(training?.releasingProof); setAttachment2(trainee.e_sig); onOpenModal();}} _hover={{cursor: 'pointer', fontWeight: 'bold'}} w='100px'>{received}</Text>
+                            <Select w='150px' onChange={(e) => {
                                 if(e.target.value === 'others') {
                                     setTrainingID_onModal(training.id)
                                     onOpenRelease()

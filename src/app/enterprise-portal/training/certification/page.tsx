@@ -186,7 +186,7 @@ export default function TrackerPage(){
 
             const traineeChargeCount = filteredTrainingData?.filter(t => t.accountType === 0).length
             const companyChargeCount = filteredTrainingData?.filter(t => t.accountType === 1).length
-            const ttlReleased = filteredTrainingData?.filter(t => t.cert_status === 1).length
+            const ttlReleased = filteredTrainingData?.filter(t => t.cert_status === 2).length
             const ttlPending = filteredTrainingData?.filter(t => t.cert_status === 0).length
 
             // 3️⃣ Set the states
@@ -407,7 +407,7 @@ export default function TrackerPage(){
                                                 <Text>Pending Certificates</Text>
                                                 <Text fontWeight='bold' textAlign='center' >{pendingCerts}</Text>
                                             </Box>
-                                            <Box p='1' px='3' borderBottomRightRadius={'5px'} border='1px solid black' w='100%'>
+                                           <Box p='1' px='3' borderBottomRightRadius={'5px'} border='1px solid black' w='100%'>
                                                 <Text>Total</Text>
                                                 <Text fontWeight='bold' textAlign='center' >{releasedCerts + pendingCerts}</Text>
                                             </Box>

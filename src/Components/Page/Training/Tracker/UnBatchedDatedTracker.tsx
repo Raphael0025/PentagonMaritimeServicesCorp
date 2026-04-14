@@ -105,6 +105,10 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
 
     const handleNotifyTrainees = () => {
         setLoading(true)
+
+        const company_staff: string | null = localStorage.getItem('customToken')
+        const jobPosition: string | null = localStorage.getItem('jobPositionToken')
+
         new Promise<void>((res, rej) => {
             setTimeout( async () => {
                 try{
@@ -116,8 +120,8 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                         return course.id === courseCode?.id_course_ref;
                     });
                     const class_code = courseFound?.class_code
-                    const firstName = staff?.split(' ')[0] || '';
-                    const lastName = staff?.split(' ').at(-1) || '';
+                    const firstName = company_staff?.split(' ')[0] || '';
+                    const lastName = company_staff?.split(' ').at(-1) || '';
                     const staffName = `${firstName} ${lastName}`
                     
                     const route = trainingMode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
@@ -133,8 +137,8 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                             schedule, 
                             time, 
                             class_code, 
-                            staffName, 
-                            position 
+                            staff: staffName, 
+                            position: jobPosition 
                         })
                     })
                     res()

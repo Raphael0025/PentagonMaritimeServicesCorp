@@ -22,7 +22,7 @@ export async function POST(request: NextRequest){
             },
         })
         const currentYear = new Date().getFullYear()
-
+        console.log('Inside: ', staff)
         await transporter.sendMail({
             from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
             to: `undisclosed-recipients:;`,

@@ -2,7 +2,7 @@
 
 import NextImage from 'next/image'
 import React, { useState, useRef, useMemo } from 'react'
-import { Box, Image as ChakraImage, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
+import { Box, Image as ChakraImage, Text, Textarea, InputGroup, Switch, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, Menu, MenuList, MenuItem, MenuButton, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, FormLabel
 } from '@chakra-ui/react';
@@ -93,7 +93,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const { isOpen: isOpenModal, onOpen: onOpenModal, onClose: onCloseModal } = useDisclosure()
     const { isOpen: isOpenViewCount, onOpen: onOpenViewCount, onClose: onCloseViewCount } = useDisclosure()
     const { isOpen: isOpenView, onOpen: onOpenView, onClose: onCloseView } = useDisclosure()
-    
+
     const componentRef = useRef<HTMLDivElement | null>(null)
     const attachment = useRef<HTMLDivElement>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -323,10 +323,16 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
 
         // Create a map for the month abbreviations
         const monthMap: { [key: string]: string } = {
+            // Standard Keys
             Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April',
             May: 'May', Jun: 'June', Jul: 'July', Aug: 'August',
-            Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December'
-        };
+            Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December',
+            
+            // All-Caps Keys
+            JAN: 'January', FEB: 'February', MAR: 'March', APR: 'April',
+            MAY: 'May', JUN: 'June', JUL: 'July', AUG: 'August',
+            SEP: 'September', OCT: 'October', NOV: 'November', DEC: 'December'
+        }
 
         // 1. Remove commas and split by space
         // "Tue, Apr 07" becomes ["Tue", "Apr", "07"]
@@ -444,6 +450,31 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         }
     }
 
+    const handleConductedOnline = async () => {
+    // 1. Use Promise.all for async maps to ensure all updates finish
+    await Promise.all(
+        trainingID.map(async (training_id) => {
+            // 2. Find the current training object in your existing state to get its current 'conductedOnline' value
+            const currentTraining = trainings?.find(t => t.id === training_id);
+            
+            // 3. Toggle the value (if it's true, make it false; if false, make it true)
+            const newValue = !currentTraining?.conductedOnline;
+
+            // 4. Update the Database
+            await UPDATE_TRAINING(training_id, { conductedOnline: newValue }, '');
+
+            // 5. Update local state so the UI reflects the change immediately
+            // setSelectedTrainings(prev => 
+            //     prev.map(item => 
+            //         item.id === training_id 
+            //             ? { ...item, conductedOnline: newValue } 
+            //             : item
+            //     )
+            // )
+        })
+    )
+};
+
     return(
         <>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
@@ -452,7 +483,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 <Text w='30px'>#</Text>
                 <Text w='100px'>Completion Recency</Text>
                 <Text w='100px'>Batch</Text>
-                <Text w='200px'>Certificate No.</Text>
+                <Text w='250px'>Certificate No.</Text>
                 <Text w='400px'>Trainee Name</Text>
                 <Text w='150px'>Course</Text>
                 <Text w='100px'>Completion Date</Text>
@@ -506,7 +537,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             }} _hover={{cursor: 'pointer', textStyle: 'underline', color: 'blue.600'}}>
                                 {`${courseBatch?.find((batch) => batch.id === training.batch)?.batch_no ? `B${courseBatch.find((batch) => batch.id === training.batch)?.batch_no}` : ''}`}
                             </Text>                                        
-                            <Text w="200px" _hover={{color: 'blue.700'}} onClick={() => {
+                            <Text w="250px" _hover={{color: 'blue.700'}} onClick={() => {
                                 // setRegNum(reg_id); 
                                 // onOpenReg();
                                 }} className='hover:cursor-pointer'>
@@ -578,7 +609,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 </ModalFooter>
             </ModalContent>
         </Modal>
-        <Modal size='6xl' closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenCert} onClose={() => {setTrainingBatch(initCourseBatch); setSelectedTrainingID([]); setCategory(''); setCourseID(''); onCloseCert();}}>
+        <Modal size='7xl' closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenCert} onClose={() => {setTrainingBatch(initCourseBatch); setSelectedTrainingID([]); setCategory(''); setCourseID(''); onCloseCert();}}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader w='90%'>{`Batch: ${trainingBatch.batch_no} ${courseName}`}</ModalHeader>
@@ -588,8 +619,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         const batchTrainings = trainings.filter((td) => td.batch === trainingBatch.id)
                         return(
                         <>
-                            <Box borderBottom='1px solid black' pb='4' w='100%' display='flex' justifyContent='space-between' alignItems='center'>
-                                <Box mr='3' display='flex' gap='2' w='450px'>
+                            <Box borderBottom='1px solid black' pb='4' w='100%' display='flex' justifyContent='space-around' px='5' alignItems='center'>
+                                <Box mr='3' display='flex' gap='2' w='650px'>
                                     <Checkbox w='150px'
                                         onChange={() => {
                                                 if (trainingID.length === batchTrainings.length) {
@@ -606,7 +637,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         </Text>
                                     </Checkbox>
                                     <Menu closeOnBlur={true} closeOnSelect={closeBlur}>
-                                        <MenuButton as={Button} isDisabled={trainingID.length === 0} onClick={() => {setCloseBlur(false);}} size='sm' variant='ghost' colorScheme='blue' transition='all 0.2s'> 
+                                        <MenuButton as={Button} isDisabled={trainingID.length === 0} onClick={() => {setCloseBlur(false);}} size='sm' w='200px' variant='ghost' colorScheme='blue' transition='all 0.2s'> 
                                             <Text fontSize='12px'>Select Content <ChevronDownIcon /></Text> 
                                         </MenuButton> 
                                         <MenuList w='350px' px='1'>
@@ -644,7 +675,15 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                         )}
                                         </MenuList>
                                     </Menu>
-                                    <Button onClick={handleChangeContents} loadingText='Saving...' isLoading={loading} size='sm' colorScheme='blue' w='150px' bgColor='blue.700' shadow='md' isDisabled={certTitleHtml === ''}>Save Content</Button>
+                                    <InputGroup w='300px' display='flex' justifyContent='space-between' alignItems='center'>
+                                        <FormControl display='flex' isDisabled={trainingID.length === 0}>
+                                            <FormLabel htmlFor='switch' m='0'>All Conducted Online:</FormLabel>
+                                            <Switch id='switch' onChange={handleConductedOnline} />
+                                        </FormControl>
+                                    </InputGroup>
+                                    {certTitleHtml && (
+                                        <Button onClick={handleChangeContents} loadingText='Saving...' isLoading={loading} size='sm' colorScheme='blue' w='150px' bgColor='blue.700' shadow='md' isDisabled={certTitleHtml === ''}>Save Content</Button>
+                                    )}
                                 </Box>
                                 <Box>
                                     <Button size='sm' variant='solid' onClick={toggleAll} mr='3'>
@@ -712,8 +751,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             <Text w="100px" onClick={() => {setTraining_ID(training.id); onOpenViewCount();}} _hover={{ cursor: 'pointer'}}>{training?.viewCount || 0}</Text>  
                                             <AccordionIcon />
                                         </AccordionButton>
-                                        <AccordionPanel px='10' py='5'>
-                                            <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
+                                        <AccordionPanel display='flex' px='10' py='5'>
+                                            <Box w='1000px' position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
                                                 <Box w='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
                                                     <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
                                                     <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
@@ -769,11 +808,19 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                                 display: 'inline',
                                                             },
                                                         }}>
-                                                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
-                                                                }}
-                                                            />
+                                                            {training?.conductedOnline ? (
+                                                                <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: `<span>Conducted online on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                                                    }}
+                                                                />
+                                                            )}
                                                         </Box>
                                                         <div style={{marginTop: '10px'}}
                                                             dangerouslySetInnerHTML={{
@@ -846,6 +893,12 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 </Box>
                                                 <Box position='absolute' bottom='0' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
                                                     <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
+                                                </Box>
+                                            </Box>
+                                            <Box >
+                                                <Box w='500px'>
+                                                    <Text fontWeight='bold' fontSize='lg'>Valid ID:</Text>
+                                                    <ChakraImage src={trainee.valid_id} alt={`Trainee Valid ID`}/>
                                                 </Box>
                                             </Box>
                                         </AccordionPanel>
@@ -939,11 +992,19 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                             display: 'inline',
                                         },
                                     }}>
-                                        <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
-                                            dangerouslySetInnerHTML={{
-                                                __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
-                                            }}
-                                        />
+                                        {training?.conductedOnline ? (
+                                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: `<span>Conducted online on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                                }}
+                                            />
+                                        ) : (
+                                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                                }}
+                                            />
+                                        )}
                                     </Box>
                                     <div style={{marginTop: '40px'}}
                                         dangerouslySetInnerHTML={{
