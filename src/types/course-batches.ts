@@ -24,6 +24,16 @@ export interface CourseBatchByID extends CourseBatch{
     updateAt: Timestamp;
 }
 
+export interface BDCourseBatchByID extends BDCourseBatch{
+    id: string;
+    createdAt: Timestamp;
+}
+
+export interface BDCourseBatch {
+    batch_no: number;
+    course: string;
+}
+
 export const initCourseBatch = {
     id: '',
     course: '',

@@ -252,15 +252,19 @@ export default function Transmittal() {
         )
     )
 
-    const formatTrainingDate = (dateStr?: string, year?: number) => {
-        if (!dateStr) return ''
+    const formatTrainingDates = (start: string | undefined, end: string | undefined, year: number) => {
+        const parts1 = start?.split(' ') // ["Mon","Jan","12"]
+        const month1 = parts1 ? parts1[1] : ''
+        const day1 = parts1 ? parts1[2] : ''
+        
+        const parts2 = end?.split(' ') // ["Mon","Jan","12"]
+        const month2 = parts2 ? parts2[1] : ''
+        const day2 = parts2 ? parts2[2] : ''
 
-        const parts = dateStr.split(' ') // ["Mon","Jan","12"]
-        const month = parts[1]
-        const day = parts[2]
-
-        if (!month || !day) return ''
-        return `${month} ${day}, ${year}`
+        if(end === ''){
+            return `${month1} ${day1}, ${year}`
+        }
+        return `${month1} ${day1}-${month2} ${day2}, ${year}`
     }
 
     const companyName = allClients?.find((client) => client.id === filterCompany)?.alias || filterCompany
@@ -660,7 +664,7 @@ export default function Transmittal() {
                                                 {(index + 1)}
                                             </Text>
                                             {/* LAST NAME */}
-                                            <Text w='20cm' display='flex' alignItems='center' justifyContent='start' textTransform='uppercase' borderRight='1px solid black'>
+                                            <Text w='20cm' display='flex' fontSize='11pt' alignItems='center' justifyContent='start' textTransform='uppercase' borderRight='1px solid black'>
                                                 {row?.type === "trainee" ? ('\u200B' + ` ${trainee?.last_name}`) : ''}
                                             </Text>
                                             {/* FIRST NAME */}
@@ -679,10 +683,9 @@ export default function Transmittal() {
                                                 {row?.type === "trainee" ? training?.cert_no ?? '' : ''}
                                             </Text>
                                             {/* TRAINING DATE */}
-                                            <Text w='13.6cm' display='flex' alignItems='center' textTransform='uppercase' justifyContent='center'>
+                                            <Text w='13.6cm' display='flex' fontSize='10pt'  alignItems='center' textTransform='uppercase' justifyContent='center'>
                                                 {row?.type === "trainee"
-                                                    ? `${formatTrainingDate(training?.start_date, yearSelected)}${
-                                                        training?.end_date ? `-${formatTrainingDate(training.end_date, yearSelected)}` : ''}`
+                                                    ? `${formatTrainingDates(training?.start_date, training?.end_date, yearSelected)}`
                                                     : ''
                                                 }
                                             </Text>

@@ -451,29 +451,18 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     }
 
     const handleConductedOnline = async () => {
-    // 1. Use Promise.all for async maps to ensure all updates finish
-    await Promise.all(
-        trainingID.map(async (training_id) => {
-            // 2. Find the current training object in your existing state to get its current 'conductedOnline' value
-            const currentTraining = trainings?.find(t => t.id === training_id);
-            
-            // 3. Toggle the value (if it's true, make it false; if false, make it true)
-            const newValue = !currentTraining?.conductedOnline;
-
-            // 4. Update the Database
-            await UPDATE_TRAINING(training_id, { conductedOnline: newValue }, '');
-
-            // 5. Update local state so the UI reflects the change immediately
-            // setSelectedTrainings(prev => 
-            //     prev.map(item => 
-            //         item.id === training_id 
-            //             ? { ...item, conductedOnline: newValue } 
-            //             : item
-            //     )
-            // )
-        })
-    )
-};
+        // 1. Use Promise.all for async maps to ensure all updates finish
+        await Promise.all(
+            trainingID.map(async (training_id) => {
+                // 2. Find the current training object in your existing state to get its current 'conductedOnline' value
+                const currentTraining = trainings?.find(t => t.id === training_id);
+                // 3. Toggle the value (if it's true, make it false; if false, make it true)
+                const newValue = !currentTraining?.conductedOnline;
+                // 4. Update the Database
+                await UPDATE_TRAINING(training_id, { conductedOnline: newValue }, '');
+            })
+        )
+    }
 
     return(
         <>
