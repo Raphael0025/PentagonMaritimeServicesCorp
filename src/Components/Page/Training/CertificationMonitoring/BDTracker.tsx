@@ -742,7 +742,19 @@ export default function BDTrackerCertification (){
             }
         })
     }
-    
+    const handlePreviewCert = () => {
+        setSelectedTrainings(prev => 
+            prev.map(t => {
+                return { 
+                    ...t, 
+                    year: currentYear.toString() // Add the year property here
+                };
+                
+            })
+        )
+        onOpenCert()
+    }
+
     const handleSaveCertNo = () => {
         setLoading(true)
         new Promise<void>((res, rej) => {
@@ -869,7 +881,7 @@ export default function BDTrackerCertification (){
         {trainingID.length !== 0 && (
         <>
             <Button onClick={
-                    !!allTData?.find(t => t.id === trainingID[0])?.cert_no ? () => onOpenCert() : () => generateCertForSelected()
+                    !!allTData?.find(t => t.id === trainingID[0])?.cert_no ? () => handlePreviewCert() : () => generateCertForSelected()
                 } 
                 isDisabled={trainingID.length === 0} 
                 mb='2' 
