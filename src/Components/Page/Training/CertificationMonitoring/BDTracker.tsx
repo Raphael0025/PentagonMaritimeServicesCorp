@@ -626,17 +626,32 @@ export default function BDTrackerCertification (){
     }
 
     const handleConductedOnline = async () => {
-        // 1. Use Promise.all for async maps to ensure all updates finish
+        // 1. Ensure all database updates finish
         await Promise.all(
             trainingID.map(async (training_id) => {
-                // 2. Find the current training object in your existing state to get its current 'conductedOnline' value
                 const currentTraining = allTData?.find(t => t.id === training_id);
-                // 3. Toggle the value (if it's true, make it false; if false, make it true)
                 const newValue = !currentTraining?.conductedOnline;
-                // 4. Update the Database
-                await UPDATE_TRAINING(training_id, { conductedOnline: newValue }, '');
+                
+                return UPDATE_TRAINING(training_id, { conductedOnline: newValue }, '');
             })
-        )
+        );
+
+        // 2. Update the local state for all selected items
+        setSelectedTrainings((prev) =>
+            prev.map((t) => {
+                if (trainingID.includes(t.id)) {
+                    return {
+                        ...t,
+                        // Toggle the value locally
+                        conductedOnline: !t.conductedOnline 
+                    };
+                }
+                return t;
+            })
+        );
+        
+        // Optional: Clear selection after toggling if that's your workflow
+        // setSelectedTrainingID([]);
     }
 
     const lockedCourseID = useMemo(() => {
