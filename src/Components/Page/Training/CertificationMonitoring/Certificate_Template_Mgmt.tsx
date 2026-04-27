@@ -10,7 +10,7 @@ import {
     useDisclosure, useToast,
 } from '@chakra-ui/react'
 import { ArrowBackIcon, ChevronDownIcon } from '@chakra-ui/icons'
-import { FiBold, FiItalic, FiList, FiAlignLeft, FiAlignCenter } from 'react-icons/fi'
+import { FiBold, FiItalic, FiList, FiAlignLeft, FiAlignJustify, FiArrowRight, FiArrowLeft, FiAlignCenter } from 'react-icons/fi'
 import { MdOutlineFormatListNumbered } from 'react-icons/md'
 import { SearchIcon } from '@/Components/Icons'
 
@@ -464,7 +464,7 @@ export default function Certificate_Template_Mgmt() {
                 {action === 'create' || action === 'insert' || action === 'edit' ? (
                     <Box display="flex" gap="6">
                         {/* ========== EDITOR ========== */}
-                        <Box w='50%'>
+                        <Box w='100%'>
                             <Box display='flex' justifyContent='end' mb='2'>
                                 {action === 'edit' && <Button onClick={() => setAct('preview')} colorScheme='blue' bgColor='blue.700' shadow='md' size='sm'>Preview Content</Button>}
                             </Box>
@@ -472,6 +472,28 @@ export default function Certificate_Template_Mgmt() {
                                 <FormLabel whiteSpace="nowrap">Certificate Version:</FormLabel>
                                 <Input value={versionNumber} onChange={(e) => setVersionNumber(e.target.value)} placeholder="v1.0.230207" fontWeight="thin" variant="flushed" />
                             </FormControl>
+                            {/* Toolbar */}
+                            <Box display="flex" gap="2" mb="2">
+                                <Button size="sm" onClick={() => exec('bold', titleRef)}><FiBold /></Button>
+                                <Button size="sm" onClick={() => exec('italic', titleRef)}><FiItalic /></Button>
+                                <Button size="sm" onClick={() => exec('justifyLeft', titleRef)}><FiAlignLeft /></Button>
+                                <Button size="sm" onClick={() => exec('justifyCenter', titleRef)}><FiAlignCenter /></Button>
+                                <Button size="sm" onClick={() => exec('justifyFull', titleRef)}><FiAlignJustify /></Button>
+                                <Button size="sm" onClick={() => exec('indent', titleRef)}><FiArrowRight /></Button>
+                                <Button size="sm" onClick={() => exec('outdent', titleRef)}><FiArrowLeft /></Button>
+                                <Button size="sm" onClick={() => exec('insertUnorderedList', titleRef)}><FiList /></Button>
+                                <Button size="sm" onClick={() => exec('insertOrderedList', titleRef)}><MdOutlineFormatListNumbered /></Button>
+                                {/* Font Size Selector */}
+                                <select onChange={(e) => exec('fontSize', titleRef, e.target.value)} defaultValue="3" style={{ height: '30px' }}>
+                                    <option value="1">8pt</option>
+                                    <option value="2">10pt</option>
+                                    <option value="3">12pt</option>
+                                    <option value="4">14pt</option>
+                                    <option value="5">18pt</option>
+                                    <option value="6">24pt</option>
+                                    <option value="7">36pt</option>
+                                </select>
+                            </Box>
                             <FormControl mb="3">
                                 <FormLabel>Certificate Title:</FormLabel>
                                 <Box ref={titleRef} contentEditable minH="40px" border="1px solid #ccc" borderRadius="md" p="2" fontSize="22px" fontWeight="bold" onKeyDown={handleEnter} onInput={() => {setCertTitleHtml(titleRef.current?.innerHTML || ''); setWebCertTitleHtml(titleRef.current?.innerText || '');}} suppressContentEditableWarning />
@@ -494,6 +516,9 @@ export default function Certificate_Template_Mgmt() {
                                 <Button size="sm" onClick={() => exec('italic', editorRef)}><FiItalic /></Button>
                                 <Button size="sm" onClick={() => exec('justifyLeft', editorRef)}><FiAlignLeft /></Button>
                                 <Button size="sm" onClick={() => exec('justifyCenter', editorRef)}><FiAlignCenter /></Button>
+                                <Button size="sm" onClick={() => exec('justifyFull', editorRef)}><FiAlignJustify /></Button>
+                                <Button size="sm" onClick={() => exec('indent', editorRef)}><FiArrowRight /></Button>
+                                <Button size="sm" onClick={() => exec('outdent', editorRef)}><FiArrowLeft /></Button>
                                 <Button size="sm" onClick={() => exec('insertUnorderedList', editorRef)}><FiList /></Button>
                                 <Button size="sm" onClick={() => exec('insertOrderedList', editorRef)}><MdOutlineFormatListNumbered /></Button>
                                 {/* Font Size Selector */}
@@ -507,7 +532,7 @@ export default function Certificate_Template_Mgmt() {
                                     <option value="7">36pt</option>
                                 </select>
                             </Box>
-                            <Box ref={editorRef} contentEditable minH="280px" maxH="280px" w="500px" maxW="500px" overflowY="auto" overflowX="auto" whiteSpace="pre-wrap" wordBreak="break-word" border="1px solid #ccc" borderRadius="md" p="4" fontWeight="normal" onKeyDown={handleEnter} onInput={() => {setCertContentHtml(editorRef.current?.innerHTML || ''); setWebCertContentHtml(editorRef.current?.innerText || '');}} suppressContentEditableWarning
+                            <Box ref={editorRef} contentEditable minH="280px" maxH="280px" w="900px" maxW="900px" overflowY="auto" overflowX="auto" whiteSpace="pre-wrap" wordBreak="break-word" border="1px solid #ccc" borderRadius="md" p="4" fontWeight="normal" onKeyDown={handleEnter} onInput={() => {setCertContentHtml(editorRef.current?.innerHTML || ''); setWebCertContentHtml(editorRef.current?.innerText || '');}} suppressContentEditableWarning
                                 sx={{
                                     '& ul': { listStyleType: 'disc', listStylePosition: 'inside', paddingLeft: '1.5rem', margin: '0.5rem 0' },
                                     '& ol': { listStyleType: 'decimal', listStylePosition: 'inside', paddingLeft: '1.5rem', margin: '0.5rem 0' },
@@ -515,43 +540,6 @@ export default function Certificate_Template_Mgmt() {
                                     '& p': { margin: '12px 0' },
                                 }}
                             />
-                        </Box>
-                        {/* ========== PREVIEW ========== */}
-                        <Box w='50%'>
-                            <Text fontWeight="bold" mb="2" textAlign='center' fontSize='lg'>Certificate Content Preview</Text>
-                            <Box border="1px solid #ccc" borderRadius="md" bg="white" p="6" minH="280px" w="500px" maxW="500px" shadow="sm"
-                                sx={{
-                                    '& ul': {
-                                        listStyleType: 'disc',
-                                        listStylePosition: 'inside',
-                                        paddingLeft: '1.5rem',
-                                        margin: '0.5rem 0',
-                                    },
-                                    '& ol': {
-                                        listStyleType: 'decimal',
-                                        listStylePosition: 'inside',
-                                        paddingLeft: '1.5rem',
-                                        margin: '0.5rem 0',
-                                    },
-                                    '& li': {
-                                        marginBottom: '0.25rem',
-                                    },
-                                    '& p': {
-                                        margin: '12px 0',
-                                    },
-                                    '& div': {
-                                        margin: '12px 0',  // <-- important
-                                        whiteSpace: 'pre-wrap', // <-- preserves line breaks
-                                    },
-                                    '& br': {
-                                        display: 'block', // ensures <br> forces line break
-                                        content: '""',
-                                    },
-                                }}
-                            >
-                                <div dangerouslySetInnerHTML={{ __html: certTitleHtml }} />
-                                <div dangerouslySetInnerHTML={{ __html: certContentHtml }} />
-                            </Box>
                         </Box>
                     </Box>
                 ) : (
@@ -599,7 +587,7 @@ export default function Certificate_Template_Mgmt() {
                                     {/* {certTitleHtml.toUpperCase()} */}
                                     <div
                                         dangerouslySetInnerHTML={{
-                                            __html: `${certTitleHtml.toUpperCase()}`
+                                            __html: `${certTitleHtml}`
                                         }}
                                     />
                                 </Text>

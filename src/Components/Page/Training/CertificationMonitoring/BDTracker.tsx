@@ -1310,7 +1310,7 @@ export default function BDTrackerCertification (){
                                                         <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                                         <Text>for having successfully completed the training course in</Text>
                                                         <Text fontSize='14pt' w='60%' mt='2' textAlign='center' fontWeight='bold'>
-                                                            <div
+                                                            <div style={{ display: 'block', lineHeight: '1.1'}}
                                                                 dangerouslySetInnerHTML={{
                                                                     __html: `${training.certTitle}`
                                                                 }}
@@ -1357,7 +1357,7 @@ export default function BDTrackerCertification (){
                                                         </Box>
                                                         <div style={{marginTop: '10px'}}
                                                             dangerouslySetInnerHTML={{
-                                                                __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
+                                                                __html: `Issued this ${nthDay} day of ${splitMonth}, ${training.year} in Manila City, Philippines`
                                                             }}
                                                         />
                                                         <Box pt='4' display='flex' alignItems='end' w='85%'>
@@ -1431,7 +1431,14 @@ export default function BDTrackerCertification (){
                                             <Box borderRadius='10px' h='100%' shadow='md' p='2' w='280px'>
                                                 <FormControl mt='2'>
                                                     <FormLabel fontSize='sm'>Year:</FormLabel>
-                                                    <Input value={year} size='sm' shadow='md' />
+                                                    <Input value={training.year} onChange={(e) => 
+                                                        {
+                                                            const newVal= e.target.value
+                                                            setSelectedTrainings(prev => prev.map(t => t.id === training.id ? {...t, year: newVal} : t))
+                                                        }} 
+                                                        size='sm' 
+                                                        shadow='md' 
+                                                    />
                                                 </FormControl>
                                                 <Box w='500px'>
                                                     <Text fontWeight='bold' fontSize='lg'>Valid ID:</Text>
@@ -1451,20 +1458,20 @@ export default function BDTrackerCertification (){
                     >
                     {selectedTrainings?.filter((t) => {
                         if(trainingID.length === 0) return true; 
-                    return trainingID.includes(t.id)}).map((training: TRAINING_BY_ID, index: number) => {
+                    return trainingID.includes(t.id)}).map((training: any, index: number) => {
                         const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
                         const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
                         //const reg_id = allRegData?.find((reg) => 
                         const batchYear = courseBatch?.find((batch) => batch.id === training.batch)?.createdAt
                         const getYear = new Date().getFullYear()
-                        const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[0]
-                        const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[1].replace(/\D/g, '')
+                        const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || 0).split(' ')[0]
+                        const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || 0).split(' ')[1].replace(/\D/g, '')
                         const nthDay = getOrdinalHTML(Number(splitDay))
     
                         const trainingDate = training.numOfDays === 1 
-                            ? formatTrainingSchedule(training.start_date, getYear || 0) 
-                            : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
+                            ? formatTrainingSchedule(training.start_date, training.year || 0) 
+                            : `${formatTrainingSchedule(training.start_date, training.year || 0)} to ${formatTrainingSchedule(training.end_date, training.year || 0)}`
     
                         if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1500,7 +1507,7 @@ export default function BDTrackerCertification (){
                                     <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                                     <Text>for having successfully completed the training course in</Text>
                                     <Text fontSize='14pt' w='65%' mt='4' textAlign='center' fontWeight='bold'>
-                                        <div
+                                        <div style={{display: 'block', lineHeight: '1.1'}}
                                             dangerouslySetInnerHTML={{
                                                 __html: `${training.certTitle}`
                                             }}
@@ -1547,7 +1554,7 @@ export default function BDTrackerCertification (){
                                     </Box>
                                     <div style={{marginTop: '40px'}}
                                         dangerouslySetInnerHTML={{
-                                            __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
+                                            __html: `Issued this ${nthDay} day of ${splitMonth}, ${training.year} in Manila City, Philippines`
                                         }}
                                     />
                                     <Box pt='12' pb='16' display='flex' alignItems='end' w='85%'>
@@ -1600,7 +1607,7 @@ export default function BDTrackerCertification (){
                                         </Box>
                                     </Box>
                                     <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.39in' h='0.68in' objectFit='cover'/>
+                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.30in' h='0.70in' objectFit='cover'/>
                                         <Box w='0.8in' display='flex' justifyContent='center' alignItems='center' h='0.65in'>
                                             <Box w='0.68in' h='0.7in'>
                                                 <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>

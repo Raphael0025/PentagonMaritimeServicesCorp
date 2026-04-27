@@ -175,6 +175,7 @@ export default function EditCourseForm({ onClose, id } : IProps){
                             <option value='Thursday'>Thursday</option>
                             <option value='Friday'>Friday</option>
                             <option value='Saturday'>Saturday</option>
+                            <option value='Sunday'>Sunday</option>
                         </select>
                     </Box>
                     <Box className='input-grp w-full '>

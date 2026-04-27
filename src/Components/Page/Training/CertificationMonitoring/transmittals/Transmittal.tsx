@@ -263,6 +263,7 @@ export default function Transmittal() {
 
         if(end === ''){
             return `${month1} ${day1}, ${year}`
+            //return `${month1} ${day1}-${month1} ${day1}, ${year}`
         }
         return `${month1} ${day1}-${month2} ${day2}, ${year}`
     }
@@ -439,39 +440,135 @@ export default function Transmittal() {
                 </ModalBody>
             </ModalContent>
         </Modal>
-        <Modal closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenTransmittalView} onClose={() => {setInnerEndorsements([]); onCloseTransmittalView();}}>
+        <Modal closeOnOverlayClick={false} size='6xl' scrollBehavior='inside' isOpen={isOpenTransmittalView} onClose={() => {setInnerEndorsements([]); onCloseTransmittalView();}}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>Transmittal Details</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <Box display={'flex'} pos='sticky' top='-5' zIndex='10' bgColor='white' p='2' borderRadius='5px' alignItems='center' justifyContent='space-between' borderBottom='1px solid black'>
-                        <Text w='100%'>Certificate No.</Text>
-                        <Text w='100%'>Trainee Name</Text>
-                    </Box>
-                    {innerEndorsements.length === 0 ? (
-                        <Text textAlign='center' p='2' w='100%'>No Certificates found.</Text>
-                    ) : (
-                        innerEndorsements.map((endorsement, index) => (
-                            <Box key={index} mt='1'>
-                                <Text textAlign='start' mb='2'>{`CREWING: ${endorsement.endorser || "No Endorser"}`}</Text>
-                                {endorsement.certificate_id.map((id, index) => {
-                                    const training = allTData.find(t => t.id === id)
-                                    const registration = allRegData?.find((r) => r.id === training?.reg_ref_id);
-                                    const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
-                                    if (!trainee) return false;
-
-                                    return(
-                                        <FormLabel htmlFor={`training-${id}`} key={id} display='flex' shadow='md' borderRadius='5px' fontWeight='normal' textAlign='start' mb='2' px='4' py='2' alignItems='center' justifyContent='space-between' _hover={{cursor: 'pointer'}}>
-                                            <Text w='10%' fontSize='xs' >{`${(index + 1)}.`}</Text>
-                                            <Text w='100%' fontSize='xs' >{training?.cert_no}</Text>
-                                            <Text w='100%' fontSize='xs' textTransform='uppercase'>{`${trainee.last_name}, ${trainee.first_name}`}</Text>
-                                        </FormLabel>
-                                    )
+                    {/** PREVIEW OF TRANSMITTAL */}
+                    <Box>
+                        <Box ref={componentRef} w='203mm' h='276mm' border='1px solid black' mt='4' mx='auto' display='flex' flexDir='column'
+                            //sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+                        >
+                            {/**  Header */}
+                            <Box display='flex' px='5' alignItems='end' borderBottom='1px solid black'>
+                                <Box>
+                                    <ChakraImage src={'/CompanyLogo2-dark.png'} w='1.1in' alt='company-logo' objectFit='cover' />
+                                </Box>
+                                <Box w='100%' display='flex' flexDir='column' textAlign='center' alignItems='end' justifyContent='center'>
+                                    <Box w='100%' h='90%'>
+                                        <Text fontSize='16pt' fontWeight='bold'>TRANSMITTAL FOR RELEASE OF CERTIFICATES</Text>
+                                    </Box>
+                                    <Box w='100%' h='10%' textAlign='end'>
+                                        <Text textAlign='end' fontWeight='normal' fontSize='5pt' as='i'>{`FM-Pentagon-02-10-02`}</Text>
+                                    </Box>
+                                </Box>
+                            </Box>
+                            {/** course details */}
+                            <Box display='flex' justifyContent='center' borderBottom='1px solid black' >
+                                <Box w='13cm' textAlign='center' >
+                                    <Text h='50pt' display='flex' ps='2' alignItems='center' justifyContent='start' borderBottom='1px solid black' borderRight='1px solid black'>COURSE</Text>
+                                    <Text h='25pt' display='flex' ps='2' alignItems='center' justifyContent='start' borderRight='1px solid black'>INSTRUCTOR</Text>
+                                </Box>
+                                <Box w='40cm' textAlign='center' >
+                                    <Text h='50pt' display='flex' alignItems='center' justifyContent='center' borderBottom='1px solid black' borderRight='1px solid black'>{courseNames.join('/')}</Text>
+                                    <Text h='25pt' display='flex' alignItems='center' justifyContent='center' borderRight='1px solid black'>{'\u200B'}</Text>
+                                </Box>
+                                <Box w='11.43cm' textAlign='center'>
+                                    <Text h='25pt' ps='2' display='flex' alignItems='center' justifyContent='start' borderBottom='1px solid black' borderRight='1px solid black'>DATE</Text>
+                                    <Text h='25pt' ps='2' display='flex' alignItems='center' justifyContent='start' borderBottom='1px solid black' borderRight='1px solid black'>ROOM:</Text>
+                                    <Text h='25pt' ps='2' display='flex' alignItems='center' justifyContent='start' borderRight='1px solid black'>ASSESSOR:</Text>
+                                </Box>
+                                <Box w='28cm' textAlign='center'>
+                                    <Text h='25pt' display='flex' alignItems='center' justifyContent='center' borderBottom='1px solid black' >{currDate}</Text>
+                                    <Text h='25pt' display='flex' alignItems='center' justifyContent='center' borderBottom='1px solid black' >{'\u200B'}</Text>
+                                    <Text h='25pt' display='flex' alignItems='center' justifyContent='center'>{'\u200B'}</Text>
+                                </Box>
+                            </Box>
+                            {/** List */}
+                            <Box>
+                                {/** header */}
+                                <Box display='flex' h='23pt' borderBottom='1px solid black'>
+                                    <Text w='2.8cm' display='flex' alignItems='center' justifyContent='center' borderRight='1px solid black'>NO.</Text>
+                                    <Text w='20cm' display='flex' alignItems='center' justifyContent='center' borderRight='1px solid black'>LAST NAME</Text>
+                                    <Text w='22cm' display='flex' alignItems='center' justifyContent='center' borderRight='1px solid black'>FIRST NAME</Text>
+                                    <Text w='3.45cm' display='flex' alignItems='center' justifyContent='center' borderRight='1px solid black'>MI</Text>
+                                    <Text w='22.43cm' display='flex' alignItems='center' justifyContent='center' borderRight='1px solid black'>CERTIFICATE NO.</Text>
+                                    <Text w='13.6cm' display='flex' alignItems='center' justifyContent='center' >TRAINING DATE/S</Text>
+                                </Box>
+                                {/** body */}
+                                {Array.from({ length: 30 }).map((_, index) => {
+                                    const row = tableRows[index];
+                                    let trainee;
+                                    let training: TRAINING_BY_ID | undefined;
+                                    if (row?.type === "trainee") {
+                                        training = allTData.find(t => t.id === row.certID);
+                                        if (!training) return null;
+                                        const registration = allRegData?.find(r => r.id === training?.reg_ref_id);
+                                        trainee = registration ? allTrainee?.find(tr => tr.id === registration.trainee_ref_id) : undefined;
+                                    }
+                                    return (
+                                        <Box key={index} display='flex' h='18pt' borderBottom='1px solid black' fontWeight='normal'>
+                                            {/* NUMBER */}
+                                            <Text w='2.8cm' display='flex' alignItems='center' justifyContent='center' borderRight='1px solid black'>
+                                                {(index + 1)}
+                                            </Text>
+                                            {/* LAST NAME */}
+                                            <Text w='20cm' display='flex' fontSize='9pt' alignItems='center' justifyContent='start' textTransform='uppercase' borderRight='1px solid black'>
+                                                {row?.type === "trainee" ? ('\u200B' + ` ${trainee?.last_name}`) : ''}
+                                            </Text>
+                                            {/* FIRST NAME */}
+                                            <Text w='22cm' display='flex' fontSize='9pt' color={row?.type === 'endorser' ? 'red.500' : 'black'} alignItems='center' justifyContent={row?.type === 'endorser' ? 'center' : 'start'} textTransform='uppercase' borderRight='1px solid black'>
+                                                {row?.type === "endorser" && !isSingleEndorser
+                                                    ? `(${row.endorser})`
+                                                    : ('\u200B' + ` ${trainee?.first_name || ''}`)
+                                                }
+                                            </Text>
+                                            {/* MI */}
+                                            <Text w='3.45cm' display='flex' fontSize='9pt' alignItems='center' justifyContent='center' textTransform='uppercase' borderRight='1px solid black'>
+                                                {row?.type === "trainee" ? `${trainee?.middle_name?.charAt(0) ?? ''}.` : ''}
+                                            </Text>
+                                            {/* CERTIFICATE */}
+                                            <Text w='22.43cm' display='flex' fontSize='9pt' alignItems='center' justifyContent='center' textTransform='uppercase' borderRight='1px solid black'>
+                                                {row?.type === "trainee" ? training?.cert_no ?? '' : ''}
+                                            </Text>
+                                            {/* TRAINING DATE */}
+                                            <Text w='13.6cm' display='flex' fontSize='8pt' alignItems='center' textTransform='uppercase' justifyContent='center'>
+                                                {row?.type === "trainee"
+                                                    ? `${formatTrainingDates(training?.start_date, training?.end_date, yearSelected)}`
+                                                    : ''
+                                                }
+                                            </Text>
+                                        </Box>
+                                    );
                                 })}
                             </Box>
-                        )))
-                    }
+                            {/** Footer */}
+                            <Box display='flex' alignItems='end' fontWeight='normal' justifyContent='center'>
+                                <Box h='90pt' w='25.1cm' borderRight='1px solid black' display='flex' flexDir='column' alignItems='center' justifyContent='end'>
+                                    <Text w='100%' ps='1' h='60pt' textAlign='start' fontFamily='Calibri' fontSize='9pt'>Prepared by:</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontWeight='bold' fontSize='10pt' borderTop='1px solid black'>RAFFY P. LOPEZ</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontSize='10pt' borderTop='1px solid black'>Certification</Text>
+                                </Box>
+                                <Box h='90pt' w='24cm' borderRight='1px solid black' display='flex' flexDir='column' alignItems='center' justifyContent='end'>
+                                    <Text w='100%' ps='1' h='60pt' textAlign='start' fontFamily='Calibri' fontSize='9pt'>Noted and Checked by:</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontWeight='bold' fontSize='10pt' borderTop='1px solid black'>MARIAN M. MEDALLON</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontSize='10pt' borderTop='1px solid black'>Operations</Text>
+                                </Box>
+                                <Box h='90pt' w='28.5cm' textAlign='center' borderRight='1px solid black' display='flex' flexDir='column' alignItems='center' justifyContent='end'>
+                                    <Text w='100%' ps='1' h='60pt' textAlign='start' fontFamily='Calibri' fontSize='9pt'>Received by:</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontWeight='bold' fontSize='12pt' >{isSingleEndorser ? endorsers[0] : '\u200B'}</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontWeight='bold' fontSize='10pt' borderTop='1px solid black'>{companyName}</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontSize='10pt' borderTop='1px solid black'>Company</Text>
+                                </Box>
+                                <Box h='90pt' w='14.8cm' display='flex' flexDir='column' alignItems='center' justifyContent='end'>
+                                    <Text fontFamily='Calibri' fontWeight='bold' fontSize='10pt'>{currDate}</Text>
+                                    <Text w='100%' textAlign='center' fontFamily='Calibri' fontSize='10pt' borderTop='1px solid black'>Date</Text>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </Box>
                 </ModalBody>
             </ModalContent>
         </Modal>
@@ -480,7 +577,7 @@ export default function Transmittal() {
             <ModalContent>
                 <ModalHeader>Create/Print Transmittal</ModalHeader>
                 <ModalCloseButton />
-                <ModalBody>
+                <ModalBody sx={{'&::-webkit-scrollbar': {width: '15px'}, '&::-webkit-scrollbar-thumb': {backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '4px'}}}>
                     <Box display='flex' justifyContent='space-between'>
                         <Box w='60%'>
                             <FormLabel color='gray.500'>Select a Company</FormLabel>
@@ -598,7 +695,7 @@ export default function Transmittal() {
                     {/** PREVIEW OF TRANSMITTAL */}
                     <Box>
                         <Box ref={componentRef} w='203mm' h='276mm' border='1px solid black' mt='4' mx='auto' display='flex' flexDir='column'
-                            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+                            //sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
                         >
                             {/**  Header */}
                             <Box display='flex' px='5' alignItems='end' borderBottom='1px solid black'>
@@ -664,26 +761,26 @@ export default function Transmittal() {
                                                 {(index + 1)}
                                             </Text>
                                             {/* LAST NAME */}
-                                            <Text w='20cm' display='flex' fontSize='11pt' alignItems='center' justifyContent='start' textTransform='uppercase' borderRight='1px solid black'>
+                                            <Text w='20cm' display='flex' fontSize='9pt' alignItems='center' justifyContent='start' textTransform='uppercase' borderRight='1px solid black'>
                                                 {row?.type === "trainee" ? ('\u200B' + ` ${trainee?.last_name}`) : ''}
                                             </Text>
                                             {/* FIRST NAME */}
-                                            <Text w='22cm' display='flex' color={row?.type === 'endorser' ? 'red.500' : 'black'} alignItems='center' justifyContent={row?.type === 'endorser' ? 'center' : 'start'} textTransform='uppercase' borderRight='1px solid black'>
+                                            <Text w='22cm' display='flex' fontSize='9pt' color={row?.type === 'endorser' ? 'red.500' : 'black'} alignItems='center' justifyContent={row?.type === 'endorser' ? 'center' : 'start'} textTransform='uppercase' borderRight='1px solid black'>
                                                 {row?.type === "endorser" && !isSingleEndorser
                                                     ? `(${row.endorser})`
                                                     : ('\u200B' + ` ${trainee?.first_name || ''}`)
                                                 }
                                             </Text>
                                             {/* MI */}
-                                            <Text w='3.45cm' display='flex' alignItems='center' justifyContent='center' textTransform='uppercase' borderRight='1px solid black'>
+                                            <Text w='3.45cm' display='flex' fontSize='9pt' alignItems='center' justifyContent='center' textTransform='uppercase' borderRight='1px solid black'>
                                                 {row?.type === "trainee" ? `${trainee?.middle_name?.charAt(0) ?? ''}.` : ''}
                                             </Text>
                                             {/* CERTIFICATE */}
-                                            <Text w='22.43cm' display='flex' alignItems='center' justifyContent='center' textTransform='uppercase' borderRight='1px solid black'>
+                                            <Text w='22.43cm' display='flex' fontSize='9pt' alignItems='center' justifyContent='center' textTransform='uppercase' borderRight='1px solid black'>
                                                 {row?.type === "trainee" ? training?.cert_no ?? '' : ''}
                                             </Text>
                                             {/* TRAINING DATE */}
-                                            <Text w='13.6cm' display='flex' fontSize='10pt'  alignItems='center' textTransform='uppercase' justifyContent='center'>
+                                            <Text w='13.6cm' display='flex' fontSize='8pt' alignItems='center' textTransform='uppercase' justifyContent='center'>
                                                 {row?.type === "trainee"
                                                     ? `${formatTrainingDates(training?.start_date, training?.end_date, yearSelected)}`
                                                     : ''
