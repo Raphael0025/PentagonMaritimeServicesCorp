@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from 'next/image'
 import React from 'react';
 import { useState, useRef } from 'react'
 import { Box, Text, Grid, Image, GridItem } from '@chakra-ui/react'
@@ -9,8 +10,10 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useTrainees } from '@/context/TraineeContext'
 import { useRank } from '@/context/RankContext'
+import { useInstructors } from '@/context/InstructorContext'
 
 import { splitTextAtWordBoundary } from '@/handlers/util_handler';
+import { parsingTimestamp } from '@/types/handling'
 
 interface ERProps {
     e_report: string;
@@ -30,6 +33,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
     const { allData: allRegistrations } = useRegistrations()
     const { data: allTrainee } = useTrainees()
     const { data: allRanks } = useRank()
+    const { data: allInstructors } = useInstructors()
 
     return (
         <Box w='100%'>
@@ -66,7 +70,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                             </Text>
                         </Box>
                     </Box>
-                    <Box w='100%' display='flex' justifyContent='space-between' fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt'>
+                    <Box w='100%' display='flex' justifyContent='space-between' fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='9pt'>
                         <Box w='50%' display='flex' flexDir='column' justifyContent='start' mr='5'>
                             <Box display='flex' w='100%' alignItems='end' mt='1'>
                                 <Text whiteSpace='9' mr='2'>Course:</Text>
@@ -74,7 +78,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                             </Box>
                             <Box w='100%' display='flex' alignItems='end' mt='1'>
                                 <Text w='60%'>{`Class Schedule:`}</Text>
-                                <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>{`${schedule}, ${year}`}</Text>
+                                <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>{`${schedule}`}</Text>
                             </Box>
                             <Box w='100%' display='flex' alignItems='end' mt='1'>
                                 <Text w='95%'>{`Practicum Site/Vessel:`}</Text>
@@ -82,7 +86,16 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                             </Box>
                             <Box w='100%' display='flex' alignItems='end' mt='1'>
                                 <Text w='25%'>{`Instructor:`}</Text>
-                                <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>{`${instructor}`}</Text>
+                                <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
+                                    {(() => {
+                                        const ins = allInstructors?.find((i) => i.id === instructor);
+                                        if (!ins) return instructor || 'No Instructor';
+
+                                        // Add 'MM' if rank is 'CAPT'
+                                        const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                        return `${ins.rank} ${ins.name}${suffix}`;
+                                    })()}
+                                </Text>
                             </Box>
                         </Box>
                         <Box w='50%' display='flex' flexDir='column' justifyContent='start' >
@@ -100,7 +113,16 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                             </Box>
                             <Box w='100%' display='flex'  alignItems='end' mt='1'>
                                 <Text w='35%'>{`Assessor: `}</Text>
-                                <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>{`${assessor}`}</Text>
+                                <Text w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>
+                                    {(() => {
+                                        const assessor_name = allInstructors?.find((i) => i.id === assessor);
+                                        if (!assessor_name) return assessor || 'No Assessor';
+
+                                        // Add 'MM' if rank is 'CAPT'
+                                        const suffix = assessor_name.rank === 'CAPT' ? ', MM' : '';
+                                        return `${assessor_name.rank} ${assessor_name.name}${suffix}`;
+                                    })()}
+                                </Text>
                             </Box>
                         </Box>
                     </Box>
@@ -122,19 +144,28 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                 
                         // Extract numeric parts of the registration number
-                        const [yearA, numberA] = regNoA.split('-').map(Number);
-                        const [yearB, numberB] = regNoB.split('-').map(Number);
+                        const [yearA, monthA, numA] = regNoA.split('-').map(Number);
+                        const [yearB, monthB, numB] = regNoB.split('-').map(Number);
                 
-                        // Compare by year first, then by number
-                        if (yearA !== yearB) {
-                            return yearA - yearB;
-                        }
-                        return numberA - numberB;
-                    }).map((training, index) => {
+                        // Handle invalid or missing values gracefully
+                        if (isNaN(yearA) || isNaN(monthA) || isNaN(numA)) return 1; // Place invalid `a` after valid `b`
+                        if (isNaN(yearB) || isNaN(monthB) || isNaN(numB)) return -1; // Place invalid `b` after valid `a`
+
+                        // Compare by year first
+                        if (yearA !== yearB) return yearB - yearA;
+
+                        // Compare by month next
+                        if (monthA !== monthB) return monthB - monthA;
+
+                        // Finally, compare by the number part
+                        return numA - numB;
+                    })
+                    .sort((a, b) => parsingTimestamp(a.date_enrolled).getTime() - parsingTimestamp(b.date_enrolled).getTime())
+                    .map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
-                            <Grid key={training.id} templateColumns="0.38in 2.64in 1.12in 2.44in" h='0.19in' textTransform='uppercase' fontSize='10pt' gap={0} fontWeight={'normal'} fontFamily='Arial, sans-serif'>
+                            <Grid key={training.id} templateColumns="0.38in 2.64in 1.12in 2.44in" h='0.19in' textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Arial, sans-serif'>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {(index + 1)}
                                 </GridItem>
@@ -193,11 +224,52 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                 <Box w='100%' display='flex' justifyContent='space-around' alignItems={'start'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' mt='4'>
                     <Box w='50%' display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                         <Text w='50%' textAlign='start'>Certified Correct:</Text>
+                        <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
+                            {(() => {
+                                const targetIns = 'ROGELIO C. MAHINAY'
+                                const ins = allInstructors?.find((i) => i.name === targetIns)
+                                const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                                return(
+                                    <>
+                                        <Box position='absolute' top='-5px' left='5%' w='180px' h='80px' transform="translateX(-10%)" zIndex={2} >
+                                            <NextImage src={eSignSrc} fill priority style={{ objectFit: 'contain'}} alt='signature' />
+                                        </Box>
+                                        {/* <Box borderTop='1px solid black' w='90%' /> 
+                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
+                                            {(() => {
+                                                if (!ins) return 'No Instructor';
+                                                return `${ins.name}`;
+                                            })()}
+                                        </Text> */}
+                                    </>
+                                )
+                            })()}
+                        </Box>
                         <Text mt='8' w='50%' borderBottomWidth='1px' borderColor='black'/>
                         <Text textAlign='center' w='100%'>Training Director</Text>
                     </Box>
                     <Box w='50%' display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                         <Text w='50%' textAlign='start'>Approved by:</Text>
+                        <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
+                            {(() => {
+                                const ins = allInstructors?.find((i) => i.name === 'MA. JOSEFA T. ALONSAGAY')
+                                const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                                return(
+                                    <>
+                                        <Box position='absolute' top='-10px' left='-8%' transform="translateX(5%)" zIndex={2} >
+                                            <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                        </Box>
+                                        {/* <Box borderTop='1px solid black' w='90%' />
+                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bolder'>
+                                            {(() => {
+                                                if (!ins) return 'No Instructor';
+                                                return `${ins.rank} ${ins.name}`;
+                                            })()}
+                                        </Text> */}
+                                    </>
+                                )
+                            })()}
+                        </Box>
                         <Text mt='8' w='50%' borderBottomWidth='1px' borderColor='black'/>
                         <Text textAlign='center' w='40%'>Training Center Authorized Signatory</Text>
                     </Box>

@@ -70,8 +70,8 @@ export const uploadTraineeFile = async (folder: string, fileNameSuffix: string, 
     if(!fileData || !fileData[0] || checkString === 'No file chosen yet...') return '';
     const prefix = context.isReEnroll ? 're-enroll_' : '';
     const path = `TRAINEES/${folder}/${prefix}${context.lastName}_${context.givenName}_${fileNameSuffix}.jpg`
+    
     const storageRef = ref(storage, path)
-
     const uploadRes = await uploadBytes(storageRef, fileData[0])
     return await getDownloadURL(uploadRes.ref)
 }
@@ -90,16 +90,29 @@ export const addAttachments = async (id: string, traineeDetails: any, files: any
             { key: 'cop', folder: 'CERTIFICATE_OF_PROFICIENCY', suffix: 'cop', data: files.cop, check: files.copfile},
             { key: 'ssr', folder: 'SEA_SERVICE_RECORDS', suffix: 'ssr', data: files.ssr, check: files.ssrfile},
         ]
-        const uploadPromises = fileMap.map(item => 
-            uploadTraineeFile(item.folder, item.suffix, item.data, item.check, context)
-            .then(url => ({ [item.key]: url}))
-        )
+        // 1. Create a results object
+        const newAttachments: Record<string, string> = {};
 
-        const res = await Promise.all(uploadPromises)
-        const newAttachments = Object.assign({}, ...res)
+        // 2. Execute uploads
+        const results = await Promise.all(
+            fileMap.map(async (item) => {
+                const url = await uploadTraineeFile(item.folder, item.suffix, item.data, item.check, context);
+                return { key: item.key, url };
+            })
+        );
 
-        const docRef = doc(firestore, `TRAINEES/${id}`)
-        await setDoc(docRef, newAttachments, { merge: true})
+        // 3. Only add to the object if a URL was actually generated
+        results.forEach(result => {
+            if (result.url) {
+                newAttachments[result.key] = result.url;
+            }
+        });
+
+        // 4. If no new files were uploaded, don't hit Firestore
+        if (Object.keys(newAttachments).length === 0) return;
+
+        const docRef = doc(firestore, `TRAINEES/${id}`);
+        await setDoc(docRef, newAttachments, { merge: true });
     }catch(error){
         console.error("Attachment upload failed: ", error)
         throw error

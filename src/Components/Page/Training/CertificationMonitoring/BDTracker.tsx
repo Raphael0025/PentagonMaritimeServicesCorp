@@ -1363,8 +1363,12 @@ export default function BDTrackerCertification (){
                                                         <Box pt='4' display='flex' alignItems='end' w='85%'>
                                                             <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                                                 {(() => {
-                                                                    const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
+                                                                    const isMentalHelth = training.certTitle?.toUpperCase().trim() === 'MENTAL HEALTH AWARENESS'
+                                                                    const targetIns = isMentalHelth ? 'NEPTHALI A. SAGUIL' : 'ROGELIO C. MAHINAY'
+                                                                    const ins = allInstructors?.find((i) => i.name === targetIns)
                                                                     const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
+                                                                    if(!ins) return null
+
                                                                     return(
                                                                         <>
                                                                             <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
@@ -1374,10 +1378,10 @@ export default function BDTrackerCertification (){
                                                                             <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
                                                                                 {(() => {
                                                                                     if (!ins) return 'No Instructor';
-                                                                                    return `${ins.rank} ${ins.name}`;
+                                                                                    return `${ins.rank !== 'DR.' ? ins.rank : ''} ${ins.name}${ins.rank === 'DR.' ? ', MD' : ''}`;
                                                                                 })()}
                                                                             </Text>
-                                                                            <Text fontSize='10pt'>Training Director</Text>
+                                                                            <Text fontSize='10pt'>{`${ins?.rank === 'DR.' ? 'Facilitator' : 'Training Director'}`}</Text>
                                                                         </>
                                                                     )
                                                                 })()}
@@ -1560,7 +1564,10 @@ export default function BDTrackerCertification (){
                                     <Box pt='12' pb='16' display='flex' alignItems='end' w='85%'>
                                         <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                             {(() => {
-                                                const ins = allInstructors?.find((i) => i.name === 'ROGELIO C. MAHINAY')
+                                                const isMentalHelth = training.certTitle?.toUpperCase().trim() === 'MENTAL HEALTH AWARENESS'
+                                                const targetIns = isMentalHelth ? 'NEPTHALI A. SAGUIL' : 'ROGELIO C. MAHINAY'
+                                                const ins = allInstructors?.find((i) => i.name === targetIns)
+
                                                 const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                                 return(
                                                     <>
@@ -1568,13 +1575,13 @@ export default function BDTrackerCertification (){
                                                             <NextImage src={eSignSrc} fill priority style={{ objectFit: 'contain'}} alt='signature' />
                                                         </Box>
                                                         <Box borderTop='1px solid black' w='90%' /> 
-                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bolder'>
+                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
                                                             {(() => {
                                                                 if (!ins) return 'No Instructor';
-                                                                return `${ins.rank} ${ins.name}`;
+                                                                return `${ins.rank !== 'DR.' ? ins.rank : ''} ${ins.name}${ins.rank === 'DR.' ? ', MD' : ''}`;
                                                             })()}
                                                         </Text>
-                                                        <Text fontSize='10pt'>Training Director</Text>
+                                                        <Text fontSize='10pt'>{`${ins?.rank === 'DR.' ? 'Facilitator' : 'Training Director'}`}</Text>
                                                     </>
                                                 )
                                             })()}

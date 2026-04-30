@@ -96,7 +96,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
 
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
-    const formattedDate = end_date === '' ? formatDateToShort(start_date) :getFormatDate(`${start_date} - ${end_date}`)
+    const formattedDate = end_date === '' ? formatDateToShort(start_date) : getFormatDate(`${start_date} - ${end_date}`)
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -186,20 +186,66 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                 </Text>
                 <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
                     {e_report === 'MDS' ? (
-                    <>
-                        <Text w='50%' fontSize='15px' display='flex' justifyContent='start'>
-                            <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
-                            <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
-                        </Text>
-                        <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
-                            <Text w='25%' as='span' color='gray.600'>Training Year:</Text>
-                            <Input w='25%' shadow='md' onChange={(e) => setYear(e.target.value)} />
+                    <Box>
+                        <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+                            <Text w='50%' fontSize='15px' display='flex' justifyContent='start'>
+                                <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
+                                <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
+                            </Text>
+                            {/* <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Training Year:</Text>
+                                <Input w='30%' shadow='md' onChange={(e) => setYear(e.target.value)} />
+                            </Box> */}
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Class No:</Text>
+                                <Text w='30%'>{batch_no}</Text>
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Room No:</Text>
+                                <Input w='30%' isDisabled={!canDo('update')} value={batch?.room} shadow='md' id='room' onChange={handleBatchOnChange} />
+                            </Box>
                         </Box>
-                        <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
-                            <Text w='20%' as='span' color='gray.600'>Room No:</Text>
-                            <Input w='25%' shadow='md' onChange={(e) => setRoom(e.target.value)} />
+                        <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
+                                <Input w='100%' isDisabled={!canDo('update')} value={batch?.practicumSite} shadow='md' id='practicumSite' onChange={handleBatchOnChange} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
+                                <Input w='100%' shadow='md' isDisabled={!canDo('update')} value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                    <option value={'N/A'}>N/A</option>
+                                </Select>
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
+                                {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
+                                <Select id='instructor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.instructor ? (allInstructors?.find((i) => i.id === batch.instructor)?.name || batch.instructor) : 'Select Instructor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                </Select>
+                            </Box>
                         </Box>
-                    </>
+                        <Box display='flex' justifyContent='space-between' alignItems='center' >
+                            <Text>
+                                <Text fontWeight='bold'>Note:</Text>
+                                <Text color='red' fontWeight='normal'>{`Kindly save details above before printing the Enrollment Report (ER).`}</Text>
+                                <Text color='red' fontWeight='normal'>{`Columns ('Fldr and Remarks') will not be included in the actual print copy, it's purpose is only for the attachment.`}</Text>
+                            </Text>
+                            {canDo('update') && (
+                                <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                            )}
+                        </Box>
+                    </Box>
                     ) : e_report === 'STCW' ? (
                     <>
                     </>
@@ -425,7 +471,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             ) : e_report === 'STCW' ? (
                 <STCW_ER e_report={e_report} course={courseCode} schedule={formattedDate} year={year} room={room}/>
             ) : e_report === 'MDS' && (
-                <MDS_ER e_report={e_report} course={courseCode} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room} assessor={assessor} instructor={instructor} practicumDate={practicumDate} practicumSite={practicumSite} class_no={classNo}/>
+                <MDS_ER e_report={e_report} course={courseCode} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={batch.room} assessor={batch.assessor} instructor={batch.instructor} practicumDate={batch.practicumDate} practicumSite={batch.practicumSite} class_no={batch_no}/>
             )}
         </Box>
         <Box ref={componentRef2} className='printable-content'>
@@ -541,7 +587,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
             {canDo('print') && (
                 <>
-                    <Button isDisabled={ batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md' mr='3' >Print Report</Button>
+                    <Button isDisabled={batch.room === '' && room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md' mr='3' >Print Report</Button>
                 </>
             )}
         </Box>
