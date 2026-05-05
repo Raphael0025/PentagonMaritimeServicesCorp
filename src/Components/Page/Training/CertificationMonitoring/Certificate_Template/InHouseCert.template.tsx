@@ -94,13 +94,13 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
             //const reg_id = allRegData?.find((reg) => 
             const batchYear = courseBatch?.find((batch) => batch.id === training.batch)?.createdAt
             const getYear = new Date().getFullYear()
-            const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || 0).split(' ')[0]
-            const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || 0).split(' ')[1].replace(/\D/g, '')
+            const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || getYear).split(' ')[0]
+            const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || getYear).split(' ')[1].replace(/\D/g, '')
             const nthDay = getOrdinalHTML(Number(splitDay))
 
             const trainingDate = training.numOfDays === 1 
-                ? formatTrainingSchedule(training.start_date, training.year || 0) 
-                : `${formatTrainingSchedule(training.start_date, training.year || 0)} to ${formatTrainingSchedule(training.end_date, training.year || 0)}`
+                ? formatTrainingSchedule(training.start_date, training.year || getYear) 
+                : `${formatTrainingSchedule(training.start_date, training.year || getYear)} to ${formatTrainingSchedule(training.end_date, training.year || getYear)}`
 
             if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -183,7 +183,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                         </Box>
                         <div style={{marginTop: '40px'}}
                             dangerouslySetInnerHTML={{
-                                __html: `Issued this ${nthDay} day of ${splitMonth}, ${training.year} in Manila City, Philippines`
+                                __html: `Issued this ${nthDay} day of ${splitMonth}, ${training.year || getYear} in Manila City, Philippines`
                             }}
                         />
                         <Box pt='12' pb='16' display='flex' alignItems='end' w='85%'>
