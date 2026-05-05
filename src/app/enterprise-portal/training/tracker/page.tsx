@@ -90,12 +90,9 @@ export default function TrackerPage(){
                     const end = t.end_date.toLowerCase();
                     
                     const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-                    const trimmedMonth = months[monthSelected]; // convert number → "jan"
-                    
-                    return (
-                        (start.includes(trimmedMonth) && end.includes(trimmedMonth)) ||
-                        (end === '' && start.includes(trimmedMonth))
-                    );
+                    const trimmedMonth = months[monthSelected];
+
+                    return (start.includes(trimmedMonth) || end.includes(trimmedMonth) )
                 })
                 .sort((a, b) => {
                     /* ======================

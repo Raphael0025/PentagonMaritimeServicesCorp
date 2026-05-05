@@ -101,16 +101,11 @@ export default function TrackerPage(){
                 .filter(t => {
                     const start = t.start_date.toLowerCase();
                     const end = t.end_date.toLowerCase();
-                
-                    const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
-                    const trimmedMonth = months[monthSelected]; // convert number → "jan"
-                
-                    return (
-                        (start.includes(trimmedMonth) 
-                        && end.includes(trimmedMonth)
-                    ) ||
-                        (end === '' && start.includes(trimmedMonth))
-                    );
+                    
+                    const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                    const trimmedMonth = months[monthSelected];
+
+                    return (start.includes(trimmedMonth) || end.includes(trimmedMonth) )
                 })
                 .sort((a, b) => {
                     // ---------- 1️⃣ DATE SORT (PRIMARY) ----------
