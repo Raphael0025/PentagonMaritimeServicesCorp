@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { Box, Image as ChakraImage, Text, Center, Button, Tooltip, Checkbox, Select, InputLeftAddon, InputGroup, Input, 
+import { Box, Image as ChakraImage, Text, Center, Button, Select, InputLeftAddon, InputGroup, Input, 
 FormControl, useDisclosure, useToast, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 } from '@chakra-ui/react';
 import { useReactToPrint } from 'react-to-print' 
@@ -21,8 +21,6 @@ import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 import { TRAINING_BY_ID } from '@/types/trainees'
 import { TransmittalEndorsement } from '@/types/certification'
-
-import { getStorage  } from "firebase/storage";
 
 export default function ReleaseLog() {
     const toast = useToast()

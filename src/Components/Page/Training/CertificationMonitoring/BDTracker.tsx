@@ -1434,7 +1434,25 @@ export default function BDTrackerCertification (){
                                                     <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.25in'  objectFit='cover'/>
                                                 </Box>
                                             </Box>
-                                            <Box borderRadius='10px' h='100%' shadow='md' p='2' w='280px'>
+                                            <Box borderRadius='10px' h='100%' shadow='md' p='2' w='780px'>
+                                                <Box display='flex' justifyContent='space-between'>
+                                                    <FormLabel>Trainee Name</FormLabel>
+                                                    <Button size='sm' shadow='md' bgColor='blue.700' colorScheme='blue'>Save Details</Button>
+                                                </Box>
+                                                <Box display='flex' gap='3' px='4'>
+                                                    <FormControl>
+                                                        <FormLabel color='gray.500' fontSize='sm'>Last Name</FormLabel>
+                                                        <Input shadow='md' />
+                                                    </FormControl>
+                                                    <FormControl>
+                                                        <FormLabel color='gray.500' fontSize='sm'>Given Name</FormLabel>
+                                                        <Input shadow='md' />
+                                                    </FormControl>
+                                                    <FormControl>
+                                                        <FormLabel color='gray.500' fontSize='sm'>Middle Name</FormLabel>
+                                                        <Input shadow='md' />
+                                                    </FormControl>
+                                                </Box>
                                                 <FormControl mt='2'>
                                                     <FormLabel fontSize='sm'>Year:</FormLabel>
                                                     <Input value={training.year} onChange={(e) => 

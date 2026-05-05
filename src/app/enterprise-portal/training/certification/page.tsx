@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker, Transmittal, ReleaseLog, Certificate_Content_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, Transmittal, BDTransmittal, ReleaseLog, Certificate_Content_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -306,149 +306,164 @@ export default function TrackerPage(){
     <>
         <Box>
             {isDated ? (
-            <>
-                <Tabs size='sm' variant='enclosed' isLazy>
-                    <TabList fontWeight='normal'>
-                        <Tab _selected={{ color: 'white', bg: 'green.500' }}>Monitoring</Tab>
-                        <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Transmittals</Tab>
-                        <Tab _selected={{ color: 'white', bg: 'blue.500' }}>Release Log</Tab>
-                        <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Certificate Template Management</Tab>
-                    </TabList>
-                    <TabPanels>
-                        <TabPanel>
-                            <Box display='flex' >
-                                <Box w='70%' mb='2' display='flex' justifyContent='end' flexDir='column' >
-                                    <Box className="flex" w='100%' mb='2'>
-                                        <InputGroup w="100%" className="shadow-md rounded-lg">
-                                            <InputLeftAddon>
-                                                <SearchIcon color="#a1a1a1" size="18" />
-                                            </InputLeftAddon>
-                                            <Input
-                                                placeholder="Name, Enrolled Date, Registration No..."
-                                                value={searchTerm}
-                                                onChange={(e) => setSearch(e.target.value)}
-                                            />
-                                        </InputGroup>
-                                    </Box>
-                                    <Box w='100%' display='flex' >
-                                        <Select size='sm' mr='4' value={filterCourse} onChange={(e) => {setCFilter(e.target.value);}} shadow='md'>
-                                            <option hidden>Filter Course</option>
-                                            {allCourses && [...allCourses]
-                                            .sort((a, b) => a.course_code.localeCompare(b.course_code))
-                                            .map((c) => (
-                                                <option key={c.id} value={c.course_code}>{c.course_code.toUpperCase()}</option>
-                                            ))}
-                                        </Select>
-                                        <Select size='sm' mr='4' value={filterCharge} onChange={(e) => {setChargeType(e.target.value);}} shadow='md'>
-                                            <option hidden>Filter Charge</option>
-                                            <option value={"0"}>Crew</option>
-                                            <option value={"1"}>Company</option>
-                                        </Select>
-                                        <Select size='sm' mr='4' value={filterCompany} onChange={(e) => {setCompanyFilter(e.target.value);}} shadow='md'>
-                                            <option hidden>Filter Company</option>
-                                            {allClients && [...allClients]
-                                            .sort((a, b) => a.company.localeCompare(b.company))
-                                            .map((c) => (
-                                                <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
-                                            ))}
-                                        </Select>
-                                        <Select size='sm' mr='4' value={filterStatus} onChange={(e) => {setStatus(e.target.value);}} shadow='md'>
-                                            <option hidden>Filter Status</option>
-                                            <option value={"0"}>PENDING</option>
-                                            <option value={"1"}>UNCLAIMED</option>
-                                            <option value={"2"}>RELEASED</option>
-                                        </Select>
-                                        <Select size='sm' mr='4' value={filterRecency} onChange={(e) => {setRecencyFilter(e.target.value);}} shadow='md'>
-                                            <option hidden>Filter Recency</option>
-                                            <option value='today'>Today</option>
-                                            <option value='yesterday'>Yesterday</option>
-                                            <option value='2 days ago'>2 days ago</option>
-                                            <option value='tomorrow'>Tomorrow</option>
-                                        </Select>
-                                        {(filterCourse || filterCompany || filterCharge || filterStatus || filterRecency) && (
-                                            <Button w='50%' mr={4} onClick={() => { setChargeType(''); setRecencyFilter(''); setCompanyFilter(''); setStatus(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
-                                        )}
-                                        <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
-                                    </Box>
-                                    <Box display='flex' justifyContent='end' mt='4'>
-                                        {t_ids.length !== 0 && (
-                                            <>
-                                                <Button onClick={() => handleCertStatus(firstSelected ? 2 : 1)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Claimed' : 'Release'} Certificate`}</Button>
-                                                <Button onClick={() => {setIDS([]);}} colorScheme='red' variant='outline' size='sm' shadow='md' fontWeight='normal' >Clear</Button>
-                                            </>
-                                        )}
-                                    </Box>
+            <Tabs size='sm' variant='enclosed' isLazy>
+                <TabList fontWeight='normal'>
+                    <Tab _selected={{ color: 'white', bg: 'green.500' }}>Monitoring</Tab>
+                    <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Transmittals</Tab>
+                    <Tab _selected={{ color: 'white', bg: 'blue.500' }}>Release Log</Tab>
+                    <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Certificate Template Management</Tab>
+                </TabList>
+                <TabPanels>
+                    <TabPanel>
+                        <Box display='flex' >
+                            <Box w='70%' mb='2' display='flex' justifyContent='end' flexDir='column' >
+                                <Box className="flex" w='100%' mb='2'>
+                                    <InputGroup w="100%" className="shadow-md rounded-lg">
+                                        <InputLeftAddon>
+                                            <SearchIcon color="#a1a1a1" size="18" />
+                                        </InputLeftAddon>
+                                        <Input
+                                            placeholder="Name, Enrolled Date, Registration No..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                        />
+                                    </InputGroup>
                                 </Box>
-                                <Box w='30%' display='flex' fontWeight='normal' justifyContent='space-between' gap='8' ml='2' mb='2'>
-                                    <Box w='100%'>
-                                        <Box w='100%' display='flex'>
-                                            <Box p='1' px='3' border='1px solid black' borderTopLeftRadius={'5px'} borderBottom='none' borderRight='none' w='100%'>
-                                                <Text>Company</Text>
-                                                <Text fontWeight='bold' textAlign='center' >{totalCompanyC}</Text>
-                                            </Box>
-                                            <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
-                                                <Text>Trainee</Text>
-                                                <Text fontWeight='bold' textAlign='center' >{totalTraineeC}</Text>
-                                            </Box>
-                                            <Box p='1' px='3' border='1px solid black' borderTopRightRadius={'5px'} borderBottom='none' w='100%'>
-                                                <Text>Total of Enrollees</Text>
-                                                <Text fontWeight='bold' textAlign='center' >{(totalTraineeC + totalCompanyC)}</Text>
-                                            </Box>
+                                <Box w='100%' display='flex' >
+                                    <Select size='sm' mr='4' value={filterCourse} onChange={(e) => {setCFilter(e.target.value);}} shadow='md'>
+                                        <option hidden>Filter Course</option>
+                                        {allCourses && [...allCourses]
+                                        .sort((a, b) => a.course_code.localeCompare(b.course_code))
+                                        .map((c) => (
+                                            <option key={c.id} value={c.course_code}>{c.course_code.toUpperCase()}</option>
+                                        ))}
+                                    </Select>
+                                    <Select size='sm' mr='4' value={filterCharge} onChange={(e) => {setChargeType(e.target.value);}} shadow='md'>
+                                        <option hidden>Filter Charge</option>
+                                        <option value={"0"}>Crew</option>
+                                        <option value={"1"}>Company</option>
+                                    </Select>
+                                    <Select size='sm' mr='4' value={filterCompany} onChange={(e) => {setCompanyFilter(e.target.value);}} shadow='md'>
+                                        <option hidden>Filter Company</option>
+                                        {allClients && [...allClients]
+                                        .sort((a, b) => a.company.localeCompare(b.company))
+                                        .map((c) => (
+                                            <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
+                                        ))}
+                                    </Select>
+                                    <Select size='sm' mr='4' value={filterStatus} onChange={(e) => {setStatus(e.target.value);}} shadow='md'>
+                                        <option hidden>Filter Status</option>
+                                        <option value={"0"}>PENDING</option>
+                                        <option value={"1"}>UNCLAIMED</option>
+                                        <option value={"2"}>RELEASED</option>
+                                    </Select>
+                                    <Select size='sm' mr='4' value={filterRecency} onChange={(e) => {setRecencyFilter(e.target.value);}} shadow='md'>
+                                        <option hidden>Filter Recency</option>
+                                        <option value='today'>Today</option>
+                                        <option value='yesterday'>Yesterday</option>
+                                        <option value='2 days ago'>2 days ago</option>
+                                        <option value='tomorrow'>Tomorrow</option>
+                                    </Select>
+                                    {(filterCourse || filterCompany || filterCharge || filterStatus || filterRecency) && (
+                                        <Button w='50%' mr={4} onClick={() => { setChargeType(''); setRecencyFilter(''); setCompanyFilter(''); setStatus(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
+                                    )}
+                                    <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
+                                </Box>
+                                <Box display='flex' justifyContent='end' mt='4'>
+                                    {t_ids.length !== 0 && (
+                                        <>
+                                            <Button onClick={() => handleCertStatus(firstSelected ? 2 : 1)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Claimed' : 'Release'} Certificate`}</Button>
+                                            <Button onClick={() => {setIDS([]);}} colorScheme='red' variant='outline' size='sm' shadow='md' fontWeight='normal' >Clear</Button>
+                                        </>
+                                    )}
+                                </Box>
+                            </Box>
+                            <Box w='30%' display='flex' fontWeight='normal' justifyContent='space-between' gap='8' ml='2' mb='2'>
+                                <Box w='100%'>
+                                    <Box w='100%' display='flex'>
+                                        <Box p='1' px='3' border='1px solid black' borderTopLeftRadius={'5px'} borderBottom='none' borderRight='none' w='100%'>
+                                            <Text>Company</Text>
+                                            <Text fontWeight='bold' textAlign='center' >{totalCompanyC}</Text>
                                         </Box>
-                                        <Box w='100%' display='flex'>
-                                            <Box p='1' px='3' border='1px solid black' borderBottomLeftRadius={'5px'} borderRight='none' w='100%'>
-                                                <Text>Certificate Released</Text>
-                                                <Text fontWeight='bold' textAlign='center' >{releasedCerts}</Text>
-                                            </Box>
-                                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
-                                                <Text>Pending Certificates</Text>
-                                                <Text fontWeight='bold' textAlign='center' >{pendingCerts}</Text>
-                                            </Box>
-                                           <Box p='1' px='3' borderBottomRightRadius={'5px'} border='1px solid black' w='100%'>
-                                                <Text>Total</Text>
-                                                <Text fontWeight='bold' textAlign='center' >{releasedCerts + pendingCerts}</Text>
-                                            </Box>
+                                        <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
+                                            <Text>Trainee</Text>
+                                            <Text fontWeight='bold' textAlign='center' >{totalTraineeC}</Text>
+                                        </Box>
+                                        <Box p='1' px='3' border='1px solid black' borderTopRightRadius={'5px'} borderBottom='none' w='100%'>
+                                            <Text>Total of Enrollees</Text>
+                                            <Text fontWeight='bold' textAlign='center' >{(totalTraineeC + totalCompanyC)}</Text>
+                                        </Box>
+                                    </Box>
+                                    <Box w='100%' display='flex'>
+                                        <Box p='1' px='3' border='1px solid black' borderBottomLeftRadius={'5px'} borderRight='none' w='100%'>
+                                            <Text>Certificate Released</Text>
+                                            <Text fontWeight='bold' textAlign='center' >{releasedCerts}</Text>
+                                        </Box>
+                                        <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                                            <Text>Pending Certificates</Text>
+                                            <Text fontWeight='bold' textAlign='center' >{pendingCerts}</Text>
+                                        </Box>
+                                        <Box p='1' px='3' borderBottomRightRadius={'5px'} border='1px solid black' w='100%'>
+                                            <Text>Total</Text>
+                                            <Text fontWeight='bold' textAlign='center' >{releasedCerts + pendingCerts}</Text>
                                         </Box>
                                     </Box>
                                 </Box>
                             </Box>
-                            {loading ? (
-                                <Center py={8}>
-                                    <Spinner size="lg" color="blue.500" mr={3} />
-                                    <Text fontWeight="medium" color="gray.600">Loading Certification Records...</Text>
-                                </Center>
-                            ) : (
-                                <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} trainingIDs={t_ids} setTrainingIDs={setIDS} setFirstSelected={setFirstSelected} />
-                            )}
-                        </TabPanel>
-                        <TabPanel>
-                            {loading ? (
-                                <Center py={8}>
-                                    <Spinner size="lg" color="blue.500" mr={3} />
-                                    <Text fontWeight="medium" color="gray.600">Loading Transmittal Records...</Text>
-                                </Center>
-                            ) : (
-                                <Transmittal />
-                            )}
-                        </TabPanel>
-                        <TabPanel>
-                            {loading ? (
-                                <Center py={8}>
-                                    <Spinner size="lg" color="blue.500" mr={3} />
-                                    <Text fontWeight="medium" color="gray.600">Loading Release Log Records...</Text>
-                                </Center>
-                            ) : (
-                                <ReleaseLog />
-                            )}
-                        </TabPanel>
-                        <TabPanel>
-                            <Certificate_Content_Mgmt />
-                        </TabPanel>
-                    </TabPanels>
-                </Tabs>
-            </>
+                        </Box>
+                        {loading ? (
+                            <Center py={8}>
+                                <Spinner size="lg" color="blue.500" mr={3} />
+                                <Text fontWeight="medium" color="gray.600">Loading Certification Records...</Text>
+                            </Center>
+                        ) : (
+                            <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} trainingIDs={t_ids} setTrainingIDs={setIDS} setFirstSelected={setFirstSelected} />
+                        )}
+                    </TabPanel>
+                    <TabPanel>
+                        {loading ? (
+                            <Center py={8}>
+                                <Spinner size="lg" color="blue.500" mr={3} />
+                                <Text fontWeight="medium" color="gray.600">Loading Transmittal Records...</Text>
+                            </Center>
+                        ) : (
+                            <Transmittal />
+                        )}
+                    </TabPanel>
+                    <TabPanel>
+                        {loading ? (
+                            <Center py={8}>
+                                <Spinner size="lg" color="blue.500" mr={3} />
+                                <Text fontWeight="medium" color="gray.600">Loading Release Log Records...</Text>
+                            </Center>
+                        ) : (
+                            <ReleaseLog />
+                        )}
+                    </TabPanel>
+                    <TabPanel>
+                        <Certificate_Content_Mgmt />
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
             ) : (
-                <BDTracker />
+            <Tabs size='sm' variant='enclosed' isLazy>
+                <TabList fontWeight='normal'>
+                    <Tab _selected={{ color: 'white', bg: 'green.500' }}>Monitoring</Tab>
+                    <Tab _selected={{ color: 'white', bg: 'teal.500' }}>Transmittals</Tab>
+                    <Tab _selected={{ color: 'white', bg: 'blue.500' }}>Release Log</Tab>
+                </TabList>
+                <TabPanels>
+                    <TabPanel>
+                        <BDTracker />
+                    </TabPanel>
+                    <TabPanel>
+                        <BDTransmittal />
+                    </TabPanel>
+                    <TabPanel>
+                        
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
             )}
         </Box>
         <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
