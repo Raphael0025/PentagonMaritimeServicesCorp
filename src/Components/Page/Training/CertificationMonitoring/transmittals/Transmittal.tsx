@@ -128,15 +128,15 @@ export default function Transmittal() {
         const trimmedMonth = months[monthSelected]
 
         const result = allTData
-            .filter(t => {
-                const start = t.start_date.toLowerCase()
-                const end = t.end_date.toLowerCase()
+            // .filter(t => {
+            //     const start = t.start_date.toLowerCase()
+            //     const end = t.end_date.toLowerCase()
 
-                return (
-                    (start.includes(trimmedMonth) && end.includes(trimmedMonth)) ||
-                    (end === "" && start.includes(trimmedMonth))
-                )
-            })
+            //     return (
+            //         (start.includes(trimmedMonth) && end.includes(trimmedMonth)) ||
+            //         (end === "" && start.includes(trimmedMonth))
+            //     )
+            // })
             .filter(t =>
                 t.accountType === 1 &&
                 t.regType === 0 &&

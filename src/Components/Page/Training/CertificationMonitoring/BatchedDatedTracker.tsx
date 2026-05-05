@@ -13,6 +13,7 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 
 import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
+import { InHouseCert, UBT_PssrCert } from '@/Components/Page/Training/CertificationMonitoring'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleCertStatus } from '@/handlers/trainee_handler'
@@ -62,6 +63,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [t_date, setTDate] = useState<Timestamp | undefined>(Timestamp.now())
 
     const [courseName, setCourseName] = useState<string>('')
+    const [courseType, setCourseType] = useState<number>(0)
     const [trainingBatch, setTrainingBatch ] = useState<CourseBatchByID>(initCourseBatch)
     const [openIndexes, setOpenIndexes] = useState<number[] | number>([])
     const [filename, setFileName] = useState<string>('No file chosen yet...')
@@ -517,7 +519,9 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                             <Text w="100px" onClick={() => {
                                 const foundBatch = courseBatch?.find((cb) => cb.id === training.batch)
                                 const foundCourse = allCourses?.find((course) => course.id === foundBatch?.course)
+
                                 if (foundBatch && foundCourse) {
+                                    setCourseType(foundCourse.courseType)   
                                     setCourseName(foundCourse.course_name.toUpperCase());
                                     setCourseID(foundCourse.id)
                                     setTrainingBatch(foundBatch);
@@ -537,7 +541,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                 {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                             </Text> 
                             <Text w="110px">{formatTrainingDate(training.end_date, training.start_date)}</Text>                                                                             
-                            <Text w="120px" _hover={{ cursor: 'pointer'}} onClick={() => {(training.cert_status !== 0 && training.cert_status !== 1) && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >{((training.cert_status !== 0 && training.cert_status !== 1) ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}</Text>  
+                            <Text w="120px" _hover={{ cursor: 'pointer'}} 
+                                onClick={() => {(training.cert_status !== 0 && training.cert_status !== 1) && onOpenEdit(); setID(training.id); setTDate(training.cert_released);}} >
+                                    {((training.cert_status !== 0 && training.cert_status !== 1) ? parsingTimestamp(training.cert_released).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : '')}
+                            </Text>  
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
                             <Box w='150px' display='flex' justifyContent='center' gap='2'>
                                 <Checkbox shadow='md' onChange={() => {setFirstSelected(training.cert_status === 1 ? true : false); setTrainingIDs(prev => [...prev, training.id])}} isChecked={training?.id === trainingIDs.find((id) => id === training.id)} />
@@ -606,6 +613,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                 <ModalBody pb='5'>
                     {(() => {
                         const batchTrainings = trainings.filter((td) => td.batch === trainingBatch.id)
+                        
                         return(
                         <>
                             <Box borderBottom='1px solid black' pb='4' w='100%' display='flex' justifyContent='space-around' px='5' alignItems='center'>
@@ -900,181 +908,13 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         </>
                         )
                     })()}
-                    <Box ref={componentRef} w='100%' placeItems='center' p='0' fontFamily='Arial'
-                        sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
-                    >
-                    {trainings?.filter((td) => td.batch === trainingBatch.id).filter((t) => {if(trainingID.length === 0) return true; return trainingID.includes(t.id)}).map((training: TRAINING_BY_ID, index: number) => {
-                        const registration = allRegData?.find((r) => r.id === training.reg_ref_id)
-                        const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
-                        const reg_num = allRegData?.find((reg) => reg.id === training.reg_ref_id)?.reg_no
-                        //const reg_id = allRegData?.find((reg) => 
-                        const batchYear = courseBatch?.find((batch) => batch.id === training.batch)?.createdAt
-                        const getYear = batchYear?.toDate().getFullYear()
-                        const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[0]
-                        const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), getYear || 0).split(' ')[1].replace(/\D/g, '')
-                        const nthDay = getOrdinalHTML(Number(splitDay))
-    
-                        const trainingDate = training.numOfDays === 1 
-                            ? formatTrainingSchedule(training.start_date, getYear || 0) 
-                            : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
-    
-                        if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
-                        ))
-                        {return(
-                        <>
-                        <Box w='216mm' h='279mm' position='relative' display='flex' flexDir='column' p='0' justifyContent='center' alignItems='center' >
-                            <Box pt='6' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center'>
-                                <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.05in' h='1.15in'  objectFit='cover'/>
-                                <Box pt='5' pr='9' pb='0' display='flex' justifyContent='end' w='85%'>
-                                    <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
-                                        <Text>
-                                            Certificate No. : 
-                                            <Text as='span' fontWeight={'normal'}>
-                                                {` ${training.cert_no}`}
-                                            </Text>
-                                        </Text>
-                                        <Text>
-                                            Registration No. : 
-                                            <Text as='span' fontWeight={'normal'}>
-                                                {` REG-${reg_num}`}
-                                            </Text>
-                                        </Text>
-                                    </Box>
-                                </Box>
-                                <Box w='100%' h='85%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
-                                    <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
-                                    <Text pt='8'>This Certificate is issued to</Text>
-                                    <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
-                                    <Text>for having successfully completed the training course in</Text>
-                                    <Text fontSize='14pt' w='75%' mt='4' textAlign='center' fontWeight='bold'>
-                                        <div
-                                            dangerouslySetInnerHTML={{
-                                                __html: `${training.certTitle}`
-                                            }}
-                                        />
-                                    </Text>
-                                    <Box w='85%' mt='3' textAlign='center' sx={{
-                                        '& ul': {
-                                            listStyleType: 'disc',
-                                            listStylePosition: 'inside',
-                                            paddingLeft: '1.5rem',
-                                            margin: '0.5rem 0',
-                                        },
-                                        '& ol': {
-                                            listStyleType: 'decimal',
-                                            listStylePosition: 'inside',
-                                            paddingLeft: '1.5rem',
-                                            margin: '0.5rem 0',
-                                        },
-                                        '& li': {
-                                            marginBottom: '0.25rem',
-                                        },
-                                        '& p, & div': {
-                                            display: 'inline',
-                                            lineHeight: '1.2',
-                                            margin: 0,
-                                        },
-                                        '& br': {
-                                            display: 'inline',
-                                        },
-                                    }}>
-                                        {training?.conductedOnline ? (
-                                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
-                                                dangerouslySetInnerHTML={{
-                                                    __html: `<span>Conducted online on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
-                                                }}
-                                            />
-                                        ) : (
-                                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
-                                                dangerouslySetInnerHTML={{
-                                                    __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
-                                                }}
-                                            />
-                                        )}
-                                    </Box>
-                                    <div style={{marginTop: '40px'}}
-                                        dangerouslySetInnerHTML={{
-                                            __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
-                                        }}
-                                    />
-                                    <Box pt='12' pb='16' display='flex' alignItems='end' w='85%'>
-                                        <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
-                                            {(() => {
-                                                const isMentalHelth = training.certTitle?.toUpperCase().trim() === 'MENTAL HEALTH AWARENESS'
-                                                const targetIns = isMentalHelth ? 'NEPTHALI A. SAGUIL' : 'ROGELIO C. MAHINAY'
-                                                const ins = allInstructors?.find((i) => i.name === targetIns)
-                                                const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                                                return(
-                                                    <>
-                                                        <Box position='absolute' top='-55px' left='5%' w='220px' h='110px' transform="translateX(-10%)" zIndex={2} >
-                                                            <NextImage src={eSignSrc} fill priority style={{ objectFit: 'contain'}} alt='signature' />
-                                                        </Box>
-                                                        <Box borderTop='1px solid black' w='90%' /> 
-                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
-                                                            {(() => {
-                                                                if (!ins) return 'No Instructor';
-                                                                return `${ins.rank !== 'DR.' ? ins.rank : ''} ${ins.name}${ins.rank === 'DR.' ? ', MD' : ''}`;
-                                                            })()}
-                                                        </Text>
-                                                        <Text fontSize='10pt'>{`${ins?.rank === 'DR.' ? 'Facilitator' : 'Training Director'}`}</Text>
-                                                    </>
-                                                )
-                                            })()}
-                                        </Box>
-                                        <Box w='50%' pb='9' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center'>
-                                            <Box w='1.5in' h='1.5in' _hover={{cursor: 'pointer'}}>
-                                                <ChakraImage src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
-                                            </Box>
-                                        </Box>
-                                        <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
-                                            {(() => {
-                                                const ins = allInstructors?.find((i) => i.name === 'MA. JOSEFA T. ALONSAGAY')
-                                                const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                                                return(
-                                                    <>
-                                                        <Box position='absolute' top='-40px' left='-8%' transform="translateX(5%)" zIndex={2} >
-                                                            <ChakraImage src={eSignSrc} w='100%' h='100%' alt='signature' />
-                                                        </Box>
-                                                        <Box borderTop='1px solid black' w='90%' />
-                                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bolder'>
-                                                            {(() => {
-                                                                if (!ins) return 'No Instructor';
-                                                                return `${ins.rank} ${ins.name}`;
-                                                            })()}
-                                                        </Text>
-                                                        <Text fontSize='10pt'>President</Text>
-                                                    </>
-                                                )
-                                            })()}
-                                        </Box>
-                                    </Box>
-                                    <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
-                                        <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.30in' h='0.70in' />
-                                        <Box w='0.8in' display='flex' justifyContent='center' alignItems='center' h='0.65in'>
-                                            <Box w='0.68in' h='0.7in'>
-                                                <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
-                                            </Box>
-                                        </Box>
-                                        <Box fontWeight='bold' display='block' lineHeight={1.35} fontSize='9pt' ps='7' pr='7' py='2' borderLeft='1px solid black'>
-                                            <Text>Landline: (02) 8281-8155</Text>
-                                            <Text>Email: pentagonmaritimeservices@gmail.com</Text>
-                                            <Text>FB: pentagonmaritimeservicescorp</Text>
-                                        </Box>
-                                    </Box>
-                                </Box>
-                            </Box>
-                            <Box position='absolute' bottom='0px' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
-                                <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.15in'  objectFit='cover'/>
-                            </Box>
-                        </Box>
-                        </>
-                        )}})
-                    }
+                    <Box ref={componentRef}>
+                        {/* <UBT_PssrCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} /> */}
+                    {courseType === 0 ? (
+                        <UBT_PssrCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
+                    ) : (
+                        <InHouseCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
+                    )}
                     </Box>
                 </ModalBody>
             </ModalContent>

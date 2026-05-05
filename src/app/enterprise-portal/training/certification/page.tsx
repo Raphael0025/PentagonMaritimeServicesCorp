@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker, Transmittal, ReleaseLog, Certificate_Template_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, Transmittal, ReleaseLog, Certificate_Content_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -106,7 +106,9 @@ export default function TrackerPage(){
                     const trimmedMonth = months[monthSelected]; // convert number → "jan"
                 
                     return (
-                        (start.includes(trimmedMonth) && end.includes(trimmedMonth)) ||
+                        (start.includes(trimmedMonth) 
+                        && end.includes(trimmedMonth)
+                    ) ||
                         (end === '' && start.includes(trimmedMonth))
                     );
                 })
@@ -445,7 +447,7 @@ export default function TrackerPage(){
                             )}
                         </TabPanel>
                         <TabPanel>
-                            <Certificate_Template_Mgmt />
+                            <Certificate_Content_Mgmt />
                         </TabPanel>
                     </TabPanels>
                 </Tabs>

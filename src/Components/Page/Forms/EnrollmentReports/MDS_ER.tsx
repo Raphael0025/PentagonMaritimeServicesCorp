@@ -234,13 +234,6 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                                         <Box position='absolute' top='-5px' left='5%' w='180px' h='80px' transform="translateX(-10%)" zIndex={2} >
                                             <NextImage src={eSignSrc} fill priority style={{ objectFit: 'contain'}} alt='signature' />
                                         </Box>
-                                        {/* <Box borderTop='1px solid black' w='90%' /> 
-                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
-                                            {(() => {
-                                                if (!ins) return 'No Instructor';
-                                                return `${ins.name}`;
-                                            })()}
-                                        </Text> */}
                                     </>
                                 )
                             })()}
@@ -259,13 +252,6 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                                         <Box position='absolute' top='-10px' left='-8%' transform="translateX(5%)" zIndex={2} >
                                             <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
                                         </Box>
-                                        {/* <Box borderTop='1px solid black' w='90%' />
-                                        <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bolder'>
-                                            {(() => {
-                                                if (!ins) return 'No Instructor';
-                                                return `${ins.rank} ${ins.name}`;
-                                            })()}
-                                        </Text> */}
                                     </>
                                 )
                             })()}

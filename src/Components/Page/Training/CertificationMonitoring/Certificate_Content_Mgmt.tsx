@@ -521,16 +521,6 @@ export default function Certificate_Template_Mgmt() {
                                 <Button size="sm" onClick={() => exec('outdent', editorRef)}><FiArrowLeft /></Button>
                                 <Button size="sm" onClick={() => exec('insertUnorderedList', editorRef)}><FiList /></Button>
                                 <Button size="sm" onClick={() => exec('insertOrderedList', editorRef)}><MdOutlineFormatListNumbered /></Button>
-                                {/* Font Size Selector */}
-                                <select onChange={(e) => exec('fontSize', titleRef, e.target.value)} defaultValue="3" style={{ height: '30px' }}>
-                                    <option value="1">8pt</option>
-                                    <option value="2">10pt</option>
-                                    <option value="3">12pt</option>
-                                    <option value="4">14pt</option>
-                                    <option value="5">18pt</option>
-                                    <option value="6">24pt</option>
-                                    <option value="7">36pt</option>
-                                </select>
                             </Box>
                             <Box ref={editorRef} contentEditable minH="280px" maxH="280px" w="900px" maxW="900px" overflowY="auto" overflowX="auto" whiteSpace="pre-wrap" wordBreak="break-word" border="1px solid #ccc" borderRadius="md" p="4" fontWeight="normal" onKeyDown={handleEnter} onInput={() => {setCertContentHtml(editorRef.current?.innerHTML || ''); setWebCertContentHtml(editorRef.current?.innerText || '');}} suppressContentEditableWarning
                                 sx={{
