@@ -35,7 +35,7 @@ import { useTraining } from '@/context/TrainingContext'
 import { useCertification } from '@/context/CertificationContext'
 
 import { GENERATE_BD_BATCH, UPDATE_BD_BATCH } from '@/lib/course_batches_controller'
-import { UPDATE_TRAINING, changeImg } from '@/lib/trainee_controller'
+import { UPDATE_TRAINING, UPDATE_TRAINEE_PARTIAL, changeImg } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 import { EditIcon } from '@/Components/Icons'
 
@@ -91,6 +91,7 @@ export default function BDTrackerCertification (){
 
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     // Controlled states for preview & saving
     const [certTitleHtml, setCertTitleHtml] = useState('')
@@ -101,6 +102,7 @@ export default function BDTrackerCertification (){
     const [allTData, setAllTData] = useState<any[]>([])
     const [t_ids, setIDS] = useState<string[]>([])
     const [firstSelected, setFirstSelected] = useState<boolean>(false)
+    const [traineeName, setTraineeName] = useState<{id: string, last_name: string, first_name: string, middle_name: string}>({id: '', last_name: '', first_name: '', middle_name: ''})
 
     const [totalTraineeC, setTraineeCharge] = useState<number>(0)
     const [totalCompanyC, setCompanyCharge] = useState<number>(0)
@@ -672,7 +674,7 @@ export default function BDTrackerCertification (){
                     setLoading(false)
                     return resolve(null)
                 }
-                console.log(courseCodes?.find((course) => course.id === courseID))
+
                 const course = allCourses?.find((course) => course.id === courseID)?.id || courseCodes?.find((course) => course.id === courseID)?.id_course_ref || null
                 if (!course) {
                     console.warn("Course not found.")
@@ -759,6 +761,7 @@ export default function BDTrackerCertification (){
             }
         })
     }
+
     const handlePreviewCert = () => {
         setSelectedTrainings(prev => 
             prev.map(t => {
@@ -794,6 +797,15 @@ export default function BDTrackerCertification (){
         }).finally(() => {
             setLoading(false)
         })
+    }
+
+    const handleTraineeName = async () => {
+        try{
+            await UPDATE_TRAINEE_PARTIAL(traineeName)
+            setTraineeName({id: '', last_name: '', first_name: '', middle_name: ''})
+        }catch(error){
+            console.error(error)
+        }
     }
 
     return(
@@ -1119,7 +1131,7 @@ export default function BDTrackerCertification (){
         <Modal size='7xl' closeOnOverlayClick={false} scrollBehavior='inside' isOpen={isOpenCert} onClose={() => {setTrainingBatch(initCourseBatch); setSelectedTrainingID([]); setCategory(''); setCourseID(''); setSelectedTrainings([] as (TRAINING_BY_ID & { year?: string })[]); onCloseCert();}}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader w='90%'>{`Batch: ${trainingBatch.batch_no} ${courseName}`}</ModalHeader>
+                <ModalHeader>Preview Certificate</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody pb='5'>
                     {(() => {
@@ -1252,7 +1264,7 @@ export default function BDTrackerCertification (){
                                 const splitMonth = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || 0).split(' ')[0]
                                 const splitDay = formatTrainingSchedule((training.end_date === '' ? training.start_date : training.end_date), training.year || 0).split(' ')[1].replace(/\D/g, '')
                                 const nthDay = getOrdinalHTML(Number(splitDay))
-            
+                                
                                 const trainingDate = training.numOfDays === 1 
                                     ? formatTrainingSchedule(training.start_date, training.year || 0) 
                                     : `${formatTrainingSchedule(training.start_date, training.year || 0)} to ${formatTrainingSchedule(training.end_date, training.year || 0)}`
@@ -1263,8 +1275,8 @@ export default function BDTrackerCertification (){
                                     trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
-                                ))
-                                {
+                                )){
+                                
                                 return(
                                     <AccordionItem key={training.id} _hover={{bgColor: 'gray.50', color: 'black'}} borderRadius='5px' fontWeight='normal' >
                                         <AccordionButton fontSize='sm' display='flex' justifyContent='space-between' textTransform='uppercase'>
@@ -1437,20 +1449,27 @@ export default function BDTrackerCertification (){
                                             <Box borderRadius='10px' h='100%' shadow='md' p='2' w='780px'>
                                                 <Box display='flex' justifyContent='space-between'>
                                                     <FormLabel>Trainee Name</FormLabel>
-                                                    <Button size='sm' shadow='md' bgColor='blue.700' colorScheme='blue'>Save Details</Button>
+                                                    <Button onClick={(e) => {
+                                                            traineeName.id === '' 
+                                                            ? setTraineeName({id: trainee.id, last_name: trainee.last_name, first_name: trainee.first_name, middle_name: trainee.middle_name})
+                                                            : handleTraineeName()
+                                                        }} size='sm' shadow='md' bgColor='blue.700' colorScheme='blue'
+                                                    >
+                                                        {`${traineeName.id === '' ?  'Override' : 'Save'} Details`}
+                                                    </Button>
                                                 </Box>
                                                 <Box display='flex' gap='3' px='4'>
                                                     <FormControl>
                                                         <FormLabel color='gray.500' fontSize='sm'>Last Name</FormLabel>
-                                                        <Input shadow='md' />
+                                                        <Input value={`${traineeName.id !== trainee.id ? '' : traineeName.last_name}`} onChange={(e) => setTraineeName(prev => ({...prev, last_name: e.target.value}))} shadow='md' />
                                                     </FormControl>
                                                     <FormControl>
                                                         <FormLabel color='gray.500' fontSize='sm'>Given Name</FormLabel>
-                                                        <Input shadow='md' />
+                                                        <Input value={`${traineeName.id !== trainee.id ? '' : traineeName.first_name}`} onChange={(e) => setTraineeName(prev => ({...prev, first_name: e.target.value}))} shadow='md' />
                                                     </FormControl>
                                                     <FormControl>
                                                         <FormLabel color='gray.500' fontSize='sm'>Middle Name</FormLabel>
-                                                        <Input shadow='md' />
+                                                        <Input value={`${traineeName.id !== trainee.id ? '' : traineeName.middle_name}`} onChange={(e) => setTraineeName(prev => ({...prev, middle_name: e.target.value}))} shadow='md' />
                                                     </FormControl>
                                                 </Box>
                                                 <FormControl mt='2'>
@@ -1466,7 +1485,7 @@ export default function BDTrackerCertification (){
                                                 </FormControl>
                                                 <Box w='500px'>
                                                     <Text fontWeight='bold' fontSize='lg'>Valid ID:</Text>
-                                                    <ChakraImage src={trainee.valid_id} alt={`Trainee Valid ID`}/>
+                                                    <ChakraImage src={trainee?.valid_id} alt={`Trainee Valid ID`}/>
                                                 </Box>
                                             </Box>
                                         </AccordionPanel>

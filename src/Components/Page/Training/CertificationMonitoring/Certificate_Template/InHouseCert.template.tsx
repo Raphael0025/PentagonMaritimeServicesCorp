@@ -135,14 +135,14 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                         <Text pt='8'>This Certificate is issued to</Text>
                         <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                         <Text>for having successfully completed the training course in</Text>
-                        <Text fontSize='14pt' w='65%' mt='4' textAlign='center' fontWeight='bold'>
+                        <Text fontSize='14pt' w='70%' mt='4' textAlign='center' fontWeight='bold'>
                             <div style={{display: 'block', lineHeight: '1.1'}}
                                 dangerouslySetInnerHTML={{
                                     __html: `${training.certTitle}`
                                 }}
                             />
                         </Text>
-                        <Box w='85%' mt='3' textAlign='center' sx={{
+                        <Box w='100%' mt='3' textAlign='center' sx={{
                             '& ul': {
                                 listStyleType: 'disc',
                                 listStylePosition: 'inside',

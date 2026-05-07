@@ -138,7 +138,6 @@ export default function BDTransmittal() {
             //     )
             // })
             .filter(t =>
-                t.accountType === 1 &&
                 t.regType === 1 &&
                 (t?.transmittalID === "" || t?.transmittalID === undefined) &&
                 t.reg_status === 6 &&
@@ -193,7 +192,7 @@ export default function BDTransmittal() {
     const handleCertificates = async () => {
         const trans_id = await ADD_TRANSMITTAL({
             companyID: filterCompany,
-            isDated: true,
+            isDated: false,
             endorsements: innerEndorsements
         })
         if (trans_id) {

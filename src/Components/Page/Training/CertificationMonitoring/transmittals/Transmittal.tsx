@@ -138,7 +138,6 @@ export default function Transmittal() {
             //     )
             // })
             .filter(t =>
-                t.accountType === 1 &&
                 t.regType === 0 &&
                 (t?.transmittalID === "" || t?.transmittalID === undefined) &&
                 t.reg_status === 6 &&

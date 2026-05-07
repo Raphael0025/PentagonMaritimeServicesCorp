@@ -362,6 +362,19 @@ export const UPDATE_TRAINEE = async (traineeInfo: TRAINEE_BY_ID, actor: string |
     }
 }
 
+export const UPDATE_TRAINEE_PARTIAL = async (traineeInfo: Partial<TRAINEE_BY_ID>) => {
+    try{
+        const id = traineeInfo.id
+        if(!id) throw new Error('Trainee id is required for partial update')
+            
+        const traineeRef = doc(firestore, 'TRAINEES', id)
+        await updateDoc(traineeRef, {...traineeInfo})
+    }catch(error){
+        console.error('Error: ', error)
+        throw error
+    }
+}
+
 export const SAVE_REMARKS = async (training_id: string, remarks: string, actor: string | null) => {
     try{
         const traineeRef = doc(firestore, 'TRAINING', training_id)
