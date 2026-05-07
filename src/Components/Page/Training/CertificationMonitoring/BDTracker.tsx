@@ -4,9 +4,9 @@ import NextImage from 'next/image'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Box, Image as ChakraImage, Text, Textarea, InputGroup, Switch, InputLeftAddon, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, Menu, MenuList, MenuItem, MenuButton, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
-Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, FormLabel
+Accordion, AccordionButton, AccordionIcon, IconButton, AccordionItem, AccordionPanel, FormLabel, ButtonGroup,
 } from '@chakra-ui/react';
-import { ArrowBackIcon, ChevronDownIcon } from '@chakra-ui/icons'
+import { ArrowBackIcon, RepeatIcon, AddIcon, MinusIcon, ChevronDownIcon } from '@chakra-ui/icons'
 import { SearchIcon } from '@/Components/Icons';
 
 import { Timestamp } from 'firebase/firestore'
@@ -108,6 +108,8 @@ export default function BDTrackerCertification (){
     const [totalCompanyC, setCompanyCharge] = useState<number>(0)
     const [releasedCerts, setReleasedCerts] = useState<number>(0)
     const [pendingCerts, setPendingCerts] = useState<number>(0)
+    const [rotation, setRotation] = useState(0);
+    const [zoom, setZoom] = useState(1); // 1 = 100%
 
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
@@ -808,6 +810,12 @@ export default function BDTrackerCertification (){
         }
     }
 
+    const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
+    
+    // Limits zoom between 1x and 3x
+    const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
+    const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 1));
+
     return(
         <>
         <Text>BackDated Monitoring</Text>
@@ -1485,7 +1493,28 @@ export default function BDTrackerCertification (){
                                                 </FormControl>
                                                 <Box w='500px'>
                                                     <Text fontWeight='bold' fontSize='lg'>Valid ID:</Text>
-                                                    <ChakraImage src={trainee?.valid_id} alt={`Trainee Valid ID`}/>
+                                                    <Box>
+                                                        <ButtonGroup size='sm' isAttached variant='outline' mb='2' colorScheme='blue'>
+                                                            <IconButton aria-label="Zoom in" icon={<AddIcon />} onClick={handleZoomIn} />
+                                                            <IconButton aria-label="Zoom out" icon={<MinusIcon />} onClick={handleZoomOut} />
+                                                            <Button leftIcon={<RepeatIcon />} onClick={handleRotate}>Rotate</Button>
+                                                            <Button onClick={() => {setZoom(1); setRotation(0)}}>Reset</Button>
+                                                        </ButtonGroup>
+                                                    </Box>
+                                                    <Box border='1px' 
+                                                        borderColor='gray.200' 
+                                                        borderRadius='md' 
+                                                        overflow='hidden' 
+                                                        bg='gray.50'
+                                                        h='400px'
+                                                        display='flex'
+                                                        alignItems='center'
+                                                        justifyContent='center'
+                                                        position='relative'
+                                                        p='4'
+                                                    >
+                                                        <ChakraImage src={trainee?.valid_id} transition="transform 0.2s ease-out" transform={`rotate(${rotation}deg) scale(${zoom})`} maxW='100%' maxH='100%' cursor={zoom > 1 ? 'zoom-out' : 'zoom-in'} objectFit='contain' alt={`Trainee Valid ID`}/>
+                                                    </Box>
                                                 </Box>
                                             </Box>
                                         </AccordionPanel>
