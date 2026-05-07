@@ -4,9 +4,9 @@ import NextImage from 'next/image'
 import React, { useState, useRef, useMemo } from 'react'
 import { Box, Image as ChakraImage, Text, Textarea, InputGroup, Switch, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, Menu, MenuList, MenuItem, MenuButton, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
-Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, FormLabel
+Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, FormLabel, IconButton, ButtonGroup,
 } from '@chakra-ui/react';
-import { ArrowBackIcon, ChevronDownIcon } from '@chakra-ui/icons'
+import { ArrowBackIcon, RepeatIcon, AddIcon, MinusIcon, ChevronDownIcon } from '@chakra-ui/icons'
 
 import { Timestamp } from 'firebase/firestore'
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -29,7 +29,7 @@ import { useTrainees } from '@/context/TraineeContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCertification } from '@/context/CertificationContext'
 
-import { UPDATE_TRAINING, changeImg } from '@/lib/trainee_controller'
+import { UPDATE_TRAINING, UPDATE_TRAINEE_PARTIAL, changeImg } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 import { EditIcon } from '@/Components/Icons'
 
@@ -83,6 +83,10 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [courseID, setCourseID] = useState<string>('')
     const [category, setCategory] = useState('')
     const [closeBlur, setCloseBlur] = useState<boolean>(false)
+    const [traineeName, setTraineeName] = useState<{id: string, last_name: string, first_name: string, middle_name: string}>({id: '', last_name: '', first_name: '', middle_name: ''})
+
+    const [rotation, setRotation] = useState(0);
+    const [zoom, setZoom] = useState(1); // 1 = 100%
 
     // Controlled states for preview & saving
     const [certTitleHtml, setCertTitleHtml] = useState('')
@@ -465,6 +469,21 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
             })
         )
     }
+
+    const handleTraineeName = async () => {
+        try{
+            await UPDATE_TRAINEE_PARTIAL(traineeName)
+            setTraineeName({id: '', last_name: '', first_name: '', middle_name: ''})
+        }catch(error){
+            console.error(error)
+        }
+    }
+
+    const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
+    
+    // Limits zoom between 1x and 3x
+    const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
+    const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 1));
 
     return(
         <>
@@ -895,9 +914,55 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                                                 </Box>
                                             </Box>
                                             <Box >
+                                                <Box display='flex' justifyContent='space-between'>
+                                                    <FormLabel>Trainee Name</FormLabel>
+                                                    <Button onClick={(e) => {
+                                                            traineeName.id === '' 
+                                                            ? setTraineeName({id: trainee.id, last_name: trainee.last_name, first_name: trainee.first_name, middle_name: trainee.middle_name})
+                                                            : handleTraineeName()
+                                                        }} size='sm' shadow='md' bgColor='blue.700' colorScheme='blue'
+                                                    >
+                                                        {`${traineeName.id === '' ?  'Override' : 'Save'} Details`}
+                                                    </Button>
+                                                </Box>
+                                                <Box display='flex' gap='3' px='4'>
+                                                    <FormControl>
+                                                        <FormLabel color='gray.500' fontSize='sm'>Last Name</FormLabel>
+                                                        <Input value={`${traineeName.id !== trainee.id ? '' : traineeName.last_name}`} onChange={(e) => setTraineeName(prev => ({...prev, last_name: e.target.value}))} shadow='md' />
+                                                    </FormControl>
+                                                    <FormControl>
+                                                        <FormLabel color='gray.500' fontSize='sm'>Given Name</FormLabel>
+                                                        <Input value={`${traineeName.id !== trainee.id ? '' : traineeName.first_name}`} onChange={(e) => setTraineeName(prev => ({...prev, first_name: e.target.value}))} shadow='md' />
+                                                    </FormControl>
+                                                    <FormControl>
+                                                        <FormLabel color='gray.500' fontSize='sm'>Middle Name</FormLabel>
+                                                        <Input value={`${traineeName.id !== trainee.id ? '' : traineeName.middle_name}`} onChange={(e) => setTraineeName(prev => ({...prev, middle_name: e.target.value}))} shadow='md' />
+                                                    </FormControl>
+                                                </Box>
                                                 <Box w='500px'>
                                                     <Text fontWeight='bold' fontSize='lg'>Valid ID:</Text>
-                                                    <ChakraImage src={trainee.valid_id} alt={`Trainee Valid ID`}/>
+                                                    <Box>
+                                                        <ButtonGroup size='sm' isAttached variant='outline' mb='2' colorScheme='blue'>
+                                                            <IconButton aria-label="Zoom in" icon={<AddIcon />} onClick={handleZoomIn} />
+                                                            <IconButton aria-label="Zoom out" icon={<MinusIcon />} onClick={handleZoomOut} />
+                                                            <Button leftIcon={<RepeatIcon />} onClick={handleRotate}>Rotate</Button>
+                                                            <Button onClick={() => {setZoom(1); setRotation(0)}}>Reset</Button>
+                                                        </ButtonGroup>
+                                                    </Box>
+                                                    <Box border='1px' 
+                                                        borderColor='gray.200' 
+                                                        borderRadius='md' 
+                                                        overflow='hidden' 
+                                                        bg='gray.50'
+                                                        h='400px'
+                                                        display='flex'
+                                                        alignItems='center'
+                                                        justifyContent='center'
+                                                        position='relative'
+                                                        p='4'
+                                                    >
+                                                        <ChakraImage src={trainee?.valid_id} transition="transform 0.2s ease-out" transform={`rotate(${rotation}deg) scale(${zoom})`} maxW='100%' maxH='100%' cursor={zoom > 1 ? 'zoom-out' : 'zoom-in'} objectFit='contain' alt={`Trainee Valid ID`}/>
+                                                    </Box>
                                                 </Box>
                                             </Box>
                                         </AccordionPanel>
