@@ -13,7 +13,7 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 
 import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
-import { InHouseCert, UBT_PssrCert } from '@/Components/Page/Training/CertificationMonitoring'
+import { InHouseCert, UBT_PssrCert, CCMD_CERT, SDSDCertTemplate } from '@/Components/Page/Training/CertificationMonitoring'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleCertStatus } from '@/handlers/trainee_handler'
@@ -63,6 +63,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const [t_date, setTDate] = useState<Timestamp | undefined>(Timestamp.now())
 
     const [courseName, setCourseName] = useState<string>('')
+    const [courseCode, setCourseCode] = useState<string>('')
     const [courseType, setCourseType] = useState<number>(0)
     const [trainingBatch, setTrainingBatch ] = useState<CourseBatchByID>(initCourseBatch)
     const [openIndexes, setOpenIndexes] = useState<number[] | number>([])
@@ -485,6 +486,26 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
     const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 1));
 
+    const renderCertificate = () => {
+        if (courseType !== 0) {
+            return <InHouseCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />;
+        }
+    
+        switch (courseCode) {
+            case 'UBT-PSSR':
+                return <UBT_PssrCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />;
+            case 'SAT/SDSD':
+                return <SDSDCertTemplate selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
+            case 'CCMD':
+                return <CCMD_CERT selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
+            case 'RFPEW':
+            case 'RFPNW':
+                return <></>; // Currently empty per your code
+            default:
+                return <></>;
+        }
+    }
+
     return(
         <>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
@@ -541,7 +562,8 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
 
                                 if (foundBatch && foundCourse) {
                                     setCourseType(foundCourse.courseType)   
-                                    setCourseName(foundCourse.course_name.toUpperCase());
+                                    setCourseCode(foundCourse.course_code)
+                                    setCourseName(foundCourse.course_name.toUpperCase())
                                     setCourseID(foundCourse.id)
                                     setTrainingBatch(foundBatch);
                                     onOpenCert();
@@ -974,12 +996,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
                         )
                     })()}
                     <Box ref={componentRef}>
-                        {/* <UBT_PssrCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} /> */}
-                    {courseType === 0 ? (
-                        <UBT_PssrCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
-                    ) : (
-                        <InHouseCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
-                    )}
+                        {renderCertificate()}
                     </Box>
                 </ModalBody>
             </ModalContent>
