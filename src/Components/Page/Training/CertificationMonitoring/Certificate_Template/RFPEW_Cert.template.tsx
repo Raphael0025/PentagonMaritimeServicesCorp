@@ -92,12 +92,12 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
         let date = new Date(year, monthIndex, dayNum);
     
         // 4. Move to the next day
-        date.setDate(date.getDate() + 1);
+        date.setDate(date.getDate());
     
         // 5. Check if the NEW date is a Sunday (0 = Sunday)
         // If it is, add one more day to get Monday
         if (date.getDay() === 0) {
-            date.setDate(date.getDate() + 1);
+            date.setDate(date.getDate());
         }
     
         // 6. Format the output
@@ -149,9 +149,9 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
             {return(
             <>
             <Box w='216mm' h='279mm' position='relative' display='flex' flexDir='column' p='0' justifyContent='center' alignItems='center' >
-                <Box pt='10' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center'>
+                <Box pt='14' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center'>
                     <ChakraImage src={'/certificateHeader_UBT.png'} alt='header image' w='7.05in' h='0.85in'  objectFit='cover'/>
-                    <Box pt='12' pr='4' pb='6' display='flex' justifyContent='end' w='95%'>
+                    <Box pt='8' pr='4' pb='32' display='flex' justifyContent='end' w='95%'>
                         <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
                             <Text>
                                 Certificate No. :
@@ -172,7 +172,7 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
                         <Text pt='3'>This Certificate is issued to</Text>
                         <Text fontWeight='bold' fontSize='20pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
                         <Text>for having successfully completed the training course in</Text>
-                        <Text fontSize='12pt' w='100%' mt='4' textAlign='center' fontWeight='bold'>
+                        <Text fontSize='14pt' w='100%' mt='4' textAlign='center' fontWeight='bold'>
                             <div style={{display: 'block', lineHeight: '1.1'}}
                                 dangerouslySetInnerHTML={{
                                     __html: `${training.certTitle}`
@@ -244,7 +244,7 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
                                 mt='5'
                                 mx='auto'
                                 fontSize='12pt' 
-                                textAlign='justify' // This aligns both left and right edges
+                                textAlign='center' // This aligns both left and right edges
                                 lineHeight='1.2'    // Increased slightly; '1' often causes letters to touch
                                 fontFamily='Arial, Helvetica, sans-serif'
                             >
@@ -292,9 +292,6 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
                                     const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
                                     return(
                                         <>
-                                            <Box position='absolute' top='-152px' left='25%' transform="translateX(10%)" zIndex={2} >
-                                                <ChakraImage src={'/GenericQRCode.jpg'} w='0.8in' h='0.8in' alt='signature' />
-                                            </Box>
                                             <Box position='absolute' top='-42px' left='-25%' transform="translateX(20%)" zIndex={2} >
                                                 <ChakraImage src={eSignSrc} w='80%' h='80%' alt='signature' />
                                             </Box>
@@ -310,17 +307,6 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
                                     )
                                 })()}
                             </Box>
-                        </Box>
-                    </Box>
-                    <Box display='flex' pt='8' alignItems='end' gap='3'>
-                        <Text as='i' fontSize='9.5pt' fontFamily='Calibri, sans serif'>{`This can be verified at https://stakeholder.marina.gov.ph/verify-updating-pssr`}</Text>
-                        <Box w='1.47in' display='flex' justifyContent='center' alignItems='center' h='1.47in'>
-                            <Box w='1.47in' h='1.47in'>
-                                <ChakraImage src={'/MARINA_UBT_QRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
-                            </Box>
-                        </Box>
-                        <Box w='1.5in' h='1.5in' _hover={{cursor: 'pointer'}}>
-                            <ChakraImage src={trainee.photo} w='100%' h='100%' alt='trainee_picture' />
                         </Box>
                     </Box>
                 </Box>

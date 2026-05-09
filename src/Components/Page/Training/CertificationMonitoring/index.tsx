@@ -9,10 +9,14 @@ import InHouseCert from "./Certificate_Template/InHouseCert.template"
 import UBT_PssrCert from "./Certificate_Template/UBT_PssrCert.template"
 import SDSDCertTemplate from "./Certificate_Template/SDSD_Cert.template"
 import CCMD_CERT from "./Certificate_Template/CCMD_Cert.template"
+import RFPEW_CERT from "./Certificate_Template/RFPEW_Cert.template"
+import RFPNW_CERT from "./Certificate_Template/RFPNW_Cert.template"
 
 export {
     SDSDCertTemplate,
     CCMD_CERT,
+    RFPEW_CERT,
+    RFPNW_CERT,
     InHouseCert,
     UBT_PssrCert,
     BatchedDated,

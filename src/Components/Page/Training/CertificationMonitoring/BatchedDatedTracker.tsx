@@ -13,7 +13,7 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 
 import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
-import { InHouseCert, UBT_PssrCert, CCMD_CERT, SDSDCertTemplate } from '@/Components/Page/Training/CertificationMonitoring'
+import { InHouseCert, UBT_PssrCert, CCMD_CERT, RFPEW_CERT, RFPNW_CERT, SDSDCertTemplate } from '@/Components/Page/Training/CertificationMonitoring'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleCertStatus } from '@/handlers/trainee_handler'
@@ -499,8 +499,9 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
             case 'CCMD':
                 return <CCMD_CERT selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
             case 'RFPEW':
+                return <RFPEW_CERT selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
             case 'RFPNW':
-                return <></>; // Currently empty per your code
+                return <RFPNW_CERT selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
             default:
                 return <></>;
         }

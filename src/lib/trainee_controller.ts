@@ -484,7 +484,7 @@ export const ENROLL_COURSE = async (user_code: number, batch: string, training_i
                 data.push(docData);
             })
             // then it ensures that some of the documents have enrolled (3) and enrolled date are the same as the current date
-            const hasRegStat3 = data.some((doc) => doc.reg_status === 3)
+            const hasRegStat3 = data.some((doc) => doc.reg_status === 3 || doc.reg_status === 6)
             const hasMatchingDate = data.some((doc) => {
                 if (doc.date_enrolled instanceof Timestamp) {
                     const enrolledDate = doc.date_enrolled.toDate();
