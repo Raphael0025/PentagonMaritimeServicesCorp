@@ -115,19 +115,6 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                 <Text textAlign='end' w='50%' as='span' color='gray.600'>Practicum Date:</Text>
                                 <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>{batch?.practicumDate}</Text>
                             </Box>
-                            <Box w='100%' fontSize='15px' display='flex' alignItems='center' mr='2'>
-                                <Text textAlign='end' w='50%' as='span' color='gray.600'>Assessor:</Text>
-                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>
-                                {(() => {
-                                    const ins = allInstructors?.find((i) => i.id === batch?.assessor);
-                                    if (!ins) return batch?.assessor || 'No Instructor';
-
-                                    // Add 'MM' if rank is 'CAPT'
-                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
-                                    return `${ins.rank} ${ins.name}${suffix}`;
-                                })()}
-                                </Text>
-                            </Box>
                             <Box w='100%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text textAlign='end' w='50%' as='span' color='gray.600'>Instructor:</Text>
                                 <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>
@@ -139,6 +126,19 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                         const suffix = ins.rank === 'CAPT' ? ', MM' : '';
                                         return `${ins.rank} ${ins.name}${suffix}`;
                                     })()}
+                                </Text>
+                            </Box>
+                            <Box w='100%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text textAlign='end' w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Text textAlign='center' borderBottom='0.5pt solid black' w='100%'>
+                                {(() => {
+                                    const ins = allInstructors?.find((i) => i.id === batch?.assessor);
+                                    if (!ins) return batch?.assessor || 'No Instructor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                    return `${ins.rank} ${ins.name}${suffix}`;
+                                })()}
                                 </Text>
                             </Box>
                         </Box>

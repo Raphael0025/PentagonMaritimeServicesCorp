@@ -56,7 +56,6 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
     const [batch, setBatch] = useState<CourseBatchByID>(initCourseBatch)
-    const [fldrValues, setFldrValues] = useState<Record<string, string>>({});
     const [remarksValues, setRemarksValues] = useState<Record<string, string>>({});
 
     const [loading, setLoading] = useState<boolean>(false)
@@ -214,16 +213,6 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
                                 <Input w='100%' shadow='md' isDisabled={!canDo('update')} value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
                             </Box>
-                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
-                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
-                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
-                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
-                                    {allInstructors && allInstructors.map((i) => (
-                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
-                                    ))}
-                                    <option value={'N/A'}>N/A</option>
-                                </Select>
-                            </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
                                 {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
@@ -232,6 +221,16 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {allInstructors && allInstructors.map((i) => (
                                         <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
                                     ))}
+                                </Select>
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                    <option value={'N/A'}>N/A</option>
                                 </Select>
                             </Box>
                         </Box>
@@ -278,16 +277,6 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
                                 <Input w='100%' shadow='md' isDisabled={!canDo('update')} value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
                             </Box>
-                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
-                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
-                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
-                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
-                                    {allInstructors && allInstructors.map((i) => (
-                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
-                                    ))}
-                                    <option value={'N/A'}>N/A</option>
-                                </Select>
-                            </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
                                 {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
@@ -296,6 +285,16 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {allInstructors && allInstructors.map((i) => (
                                         <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
                                     ))}
+                                </Select>
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                    <option value={'N/A'}>N/A</option>
                                 </Select>
                             </Box>
                         </Box>
@@ -383,7 +382,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {`Reg-${registrations?.reg_no}`}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    <Input size='xs' placeholder='Type here...' textAlign='center' onChange={(e) => setFldrValues({...fldrValues, [training.id]: e.target.value})} variant='flushed' />
+                                    {trainee?.srn ? trainee?.srn : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
                                     <Input size='xs' placeholder='Type here...' textAlign='center' onChange={(e) => setRemarksValues({...remarksValues, [training.id]: e.target.value})} variant='flushed' />
@@ -501,7 +500,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                             <Text w='100px' textAlign='center'>Vessel</Text>
                             <Text w='50px' textAlign='center'>FEE</Text>
                             <Text w='80px' textAlign='center'>MOP</Text>
-                            <Text w='50px' textAlign='center'>Fldr</Text>
+                            <Text w='50px' textAlign='center'>SRN</Text>
                             <Text w='120px' textAlign='center'>Remarks</Text>
                         </Box>
                         <Box>
@@ -570,7 +569,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                             {training?.accountType === 0 ? 'CREW' : 'COMPANY'}
                                         </Text>
                                         <Text w='50px' display='flex' textAlign='center' borderRight="none" justifyContent='center' alignItems='center'>
-                                            {fldrValues[training.id] || ''}
+                                            {trainee?.srn ? trainee.srn : ''}
                                         </Text>
                                         <Text w='120px' display='flex' textAlign='center' borderRight="none" justifyContent='center' alignItems='center'>
                                             {remarksValues[training.id] || ''}
