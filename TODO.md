@@ -9,6 +9,18 @@ This document outlines the tasks and improvements planned for the project. Each 
 - that it is a dated registration, this is a combined training. Also on this instance, email advise was executed first before the enrollment
 
 ## Tasks
+- [] **Certification**
+    -[] MAKE IT SAMPLE CERT ON CERT TEMPLATE MANAGEMENT
+    -[] AUTO GENERATE BD CERT NO
+    -[] FIX RELEASE LOGS IN BD
+    -[] MULTIPLE PRINT FOR TRANSMITTAL BD/DATED
+    -[] EDITABLE RECORDS FOR TRANSMITTAL BD/DATED
+    -[] ADD BUTTON FOR CERT RELEASING PAGE
+    -[] ADD SOTC IN FILTER COURSE
+    -[] ADD URGENT STATUS ON BD
+    -[] ADD NA STAT ON BD
+    -[] 
+
 - [] **Registration**
     - [] Include Payments for Registration 
     - [] include bd when creating batches / think about this one
@@ -28,13 +40,13 @@ This document outlines the tasks and improvements planned for the project. Each 
     - [] Implement Send Training Details to instructor in advance on Instructors Tab
         - [] if certain field is empty, it will send only the course presentation link for review
         - [] if certain field is not empty, it will send the whole training details
-    - [] Implement Send Training Details even if not enrolled, separate tab or create a modal inside either scheduling or tracker
-    - [] Implement Send Training Details for dated on this case, dated included already in a batch and suddenly training mode is modular
+    - [*] Implement Send Training Details even if not enrolled, separate tab or create a modal inside either scheduling or tracker
+    - [*] Implement Send Training Details for dated on this case, dated included already in a batch and suddenly training mode is modular
     - [] Implement Send Training Details on this case
-    - [] For BD tracker, include Actual training dates
+    - [*] For BD tracker, include Actual training dates
     - [-] Certification Module
-        - [] Batch Certificates
-        - [] Transmittals
+        - [*] Batch Certificates
+        - [*] Transmittals
         - [*] Monitoring
         - [*] Auto-Generate Cert No. once Graduated
         - [*] Once Graduated Update Certification

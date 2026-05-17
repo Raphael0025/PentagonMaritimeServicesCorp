@@ -49,6 +49,12 @@ export default function TabAdmin() {
             {canAccess("Overview") && (
                 <Link className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'admin' ? 'border-tab-active ' : 'border-tab-inactive'} `} href='/enterprise-portal/admin' onClick={() => {handleClick('admin')}}>Overview</Link>
             )}
+            {/* {canAccess("Feedback Management") && (
+                <Link className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'fms' ? 'border-tab-active ' : 'border-tab-inactive'} `} href='/enterprise-portal/admin/feedback-management-system' onClick={() => {handleClick('fms')}}>Feedback Management</Link>
+            )} */}
+            {canAccess("Feedback Management") && (
+                <Link className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'fms' ? 'border-tab-active ' : 'border-tab-inactive'} `} href='/enterprise-portal/admin/feedback-management-system/post-training' onClick={() => {handleClick('fms')}}>Feedback Management</Link>
+            )}
             {canAccess("Employee") && (
                 <Link className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'employee' ? 'border-tab-active ' : 'border-tab-inactive'} `} href='/enterprise-portal/admin/employee' onClick={() => {handleClick('employee')}}>Employee</Link>
             )}

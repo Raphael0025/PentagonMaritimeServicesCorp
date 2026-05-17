@@ -83,7 +83,7 @@ export default function CCMD_CERT({selectedTrainings, trainingID, searchTerm}: C
 
     return(
         <Box w='100%' placeItems='center' p='0' fontFamily='Arial'
-            // sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
         >
         {selectedTrainings?.filter((t) => {
             if(trainingID.length === 0) return true; 

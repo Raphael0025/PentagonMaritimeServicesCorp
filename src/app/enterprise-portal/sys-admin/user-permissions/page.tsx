@@ -43,7 +43,7 @@ export default function Tickets(){
         },
         {
             dept_name: "Admin",
-            features: ["Overview", "Employee", "Candidates", "Facilities", "Catalog"]
+            features: ["Overview", "Feedback Management", "Employee", "Candidates", "Facilities", "Catalog"]
         },
         {
             dept_name: "R&D",
