@@ -192,6 +192,42 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
         onCloseM()
     }
 
+    const handleTrainingDates = async () => {
+        setLoading(true)
+        const actor: string | null = localStorage.getItem('customToken')
+
+        handleToast('Processing...', `This may take some time to finish, Kindly wait for it to complete.`, 5000, 'info')
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    // This function is to add some more trainings, if the condition is true then function will execute 
+                    selectedTraining.length > 0 && (
+                        await Promise.all(
+                            selectedTraining.map((trainingData) => {
+                                return Promise.resolve(UPDATE_TRAINING(trainingData.training.id, 
+                                    {
+                                        start_date: startDate,
+                                        end_date: endDate
+                                    }, 
+                                    actor
+                                ))
+                            })
+                        )
+                    )
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() => {
+            handleToast('Batch Successfully Updated!', `Batch# ${batch} for this course ${courseName?.course_code} has been updated.`, 5000, 'success')
+        }).catch((error) => {
+            console.log('Error:, ', error)
+        }).finally(() => {
+            setLoading(false)
+        })
+    }
+
     return(
     <>
         <ModalContent px='5'>
@@ -266,19 +302,24 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                             </Box>
                             <Text fontSize='14px' display='flex' flexDir='column' whiteSpace={'8'} ml='4'>
                                 <Text as='span'>{`From:`}</Text>
-                                <Text as='span'>{`${startDate}`}</Text>
+                                <Input value={startDate} type='text' onChange={(e) => setStart(e.target.value)} />
                             </Text>
                             <Text fontSize='14px' display='flex' flexDir='column' whiteSpace={'8'} ml='4'>
                                 <Text as='span'>{`To:`}</Text>
-                                <Text as='span'>{`${endDate}`}</Text>
+                                <Input value={endDate} type='text' onChange={(e) => setEnd(e.target.value)} />
                             </Text>
-                            <Button onClick={() => {setStart(''); setEnd(''); setBatch(''); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
+                            <Box display='flex' flexDir='column' ml='4' gap='3'>
+                                <Button onClick={() => {setStart(''); setEnd(''); setBatch(''); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
+                                <Button isLoading={loading} onClick={handleTrainingDates} colorScheme='blue' bgColor='blue.700' shadow='md' ms='4' >Save Details</Button>
+                            </Box>
                         </Box>
                         <Box py='4'>
                             <Box px='6' display='flex' color='gray.600' py='3' justifyContent={'space-between'} alignItems={'center'} borderRadius='5px' borderWidth='1px' borderColor='gray.400'>
                                 <Text w='30%' textAlign='start'>#</Text>
                                 <Text w='100%' textAlign='start'>Name</Text>
                                 <Text w='100%' textAlign='center'>Rank</Text>
+                                <Text w='100%' textAlign='center'>Start Date</Text>
+                                <Text w='100%' textAlign='center'>End Date</Text>
                                 <Text w='100%' textAlign='center'>Registration No.</Text>
                             </Box>
                             {selectedTraining.map((row, index) => (
@@ -286,6 +327,8 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                                     <Text w='30%' textAlign='start'>{(index + 1)}</Text>
                                     <Text w='100%' textAlign='start'>{`${row.trainee.last_name}, ${row.trainee.first_name} ${!row.trainee.middle_name || ['n/a', 'na'].includes(row.trainee.middle_name.toLowerCase()) ? '' : `${row.trainee.middle_name.charAt(0)}.`} ${!row.trainee.suffix || ['n/a', 'na'].includes(row.trainee.suffix.toLowerCase()) ? '' : row.trainee.suffix}`}</Text>
                                     <Text w='100%' textAlign='center'>{`${row.trainee.rank}`}</Text>
+                                    <Text w='100%' textAlign='center'>{`${row.training.start_date}`}</Text>
+                                    <Text w='100%' textAlign='center'>{`${row.training.end_date !== '' ? row.training.end_date: '--'}`}</Text>
                                     <Text w='100%' textAlign='center'>{`REG-${row.registration.reg_no}`}</Text>
                                 </Box>
                             ))}
