@@ -220,7 +220,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         );
                     })}
                 </Box>
-                {/** Footer */}
+                {/** Footer */} 
                 <Box w='100%' display='flex' justifyContent='space-around' alignItems={'start'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' mt='4'>
                     <Box w='50%' display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                         <Text w='50%' textAlign='start'>Certified Correct:</Text>

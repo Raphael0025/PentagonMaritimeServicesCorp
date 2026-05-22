@@ -18,7 +18,7 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useTransmittal } from '@/context/TransmittalContext'
 import { useTraining } from '@/context/TrainingContext'
 
-import { ADD_TRANSMITTAL, scannedAttachment, DELETE_TRANSMITTAL} from '@/lib/certification_controller'
+import { ADD_TRANSMITTAL, scannedAttachment, UPDATE_TRANSMITTAL, DELETE_TRANSMITTAL} from '@/lib/certification_controller'
 import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -54,6 +54,7 @@ export default function BDTransmittal() {
     const [imgFile, setImgFile] = useState<File[]>([])
     const [attachmentFile, setAttachment] = useState<string>('')
     const [transID, setTransID] = useState<string>('')
+    const [transmittalDate, setDate] = useState<Timestamp | undefined>(Timestamp.now())
 
     const currDate = new Date().toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'})
 
@@ -330,6 +331,15 @@ export default function BDTransmittal() {
     const transmittal = allTransmittals?.find(t => t.id === transID)
     const attachments = transmittal?.images ?? []
 
+    const handleSaveDate = async () => {
+        if (!transmittalDate || !transID) return;
+        try{
+            await UPDATE_TRANSMITTAL({createdAt: transmittalDate}, transID)
+        }catch(e){
+            console.error(e)
+        }
+    }
+
     return(
     <>
         <Box display='flex' alignItems='center' justifyContent='space-between'>
@@ -445,6 +455,18 @@ export default function BDTransmittal() {
                 <ModalHeader>Transmittal Details</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
+                    <Box display='flex' justifyContent='space-between' alignItems='end' gap='3' mb='4'>
+                        <Box display='flex' gap='2' alignItems='end'>
+                            <FormControl>
+                                <FormLabel>Transmittal Date</FormLabel>
+                                <Input w='200px' type='date' onChange={(e) => setDate(Timestamp.fromDate(new Date(e.target.value)))} value={transmittalDate ? transmittalDate.toDate().toISOString().split('T')[0] : ''} shadow='md' />
+                            </FormControl>
+                            <Button onClick={handleSaveDate} w='200px' colorScheme='blue' bgColor='blue.700' shadow='md'>Save Date</Button>
+                        </Box>
+                        <Button bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handlePrint}>
+                            Print Transmittal
+                        </Button>
+                    </Box>
                     {/** PREVIEW OF TRANSMITTAL */}
                     <Box>
                         <Box ref={componentRef} w='203mm' h='276mm' border='1px solid black' mt='4' mx='auto' display='flex' flexDir='column'

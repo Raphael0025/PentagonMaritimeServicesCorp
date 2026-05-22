@@ -149,6 +149,17 @@ export const GET_TRANSMITTAL = async (): Promise<TRANSMITTAL[]> => {
     }
 }
 
+export const UPDATE_TRANSMITTAL = async (data: Partial<TRANSMITTAL>, t_id: string) => {
+    try {
+        const t_ref = doc(firestore, 'TRANSMITTALS', t_id)
+        await setDoc(t_ref, data, { merge: true })
+        
+    } catch (error) {
+        console.error('Error saving certificate template:', error)
+        throw error
+    }
+}
+
 export const scannedAttachment = async (id: string, companyName: string, accountType: string, transFile: any, fileID: string) => {
     try{
         let transmittalScanned = '';

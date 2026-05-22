@@ -10,10 +10,10 @@ This document outlines the tasks and improvements planned for the project. Each 
 
 ## Tasks
 - [] **Certification**
+    -[*] MULTIPLE PRINT FOR TRANSMITTAL BD/DATED
     -[] MAKE IT SAMPLE CERT ON CERT TEMPLATE MANAGEMENT
     -[] AUTO GENERATE BD CERT NO
     -[] FIX RELEASE LOGS IN BD
-    -[] MULTIPLE PRINT FOR TRANSMITTAL BD/DATED
     -[] EDITABLE RECORDS FOR TRANSMITTAL BD/DATED
     -[] ADD BUTTON FOR CERT RELEASING PAGE
     -[] ADD SOTC IN FILTER COURSE

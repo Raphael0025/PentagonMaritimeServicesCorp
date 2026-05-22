@@ -1,10 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { Box, Image as ChakraImage, Text, Textarea, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
-FormControl, useDisclosure, useToast, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
-Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel
-} from '@chakra-ui/react';
+import React, { useState, useEffect, useRef } from 'react'
+import { Box, Image as ChakraImage, Text, Center, Button, Checkbox, Select, Input, 
+FormControl, useDisclosure, useToast, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton,} from '@chakra-ui/react';
 import { useReactToPrint } from 'react-to-print' 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { Timestamp } from 'firebase/firestore'
@@ -18,13 +16,13 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useTransmittal } from '@/context/TransmittalContext'
 import { useTraining } from '@/context/TrainingContext'
 
-import { ADD_TRANSMITTAL, scannedAttachment, DELETE_TRANSMITTAL} from '@/lib/certification_controller'
+import { ADD_TRANSMITTAL, UPDATE_TRANSMITTAL, scannedAttachment, DELETE_TRANSMITTAL} from '@/lib/certification_controller'
 import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 import { TRAINING_BY_ID } from '@/types/trainees'
 import { TransmittalEndorsement, TRANSMITTAL } from '@/types/certification'
 
-import { getDownloadURL, ref, getStorage  } from "firebase/storage";
+import { getStorage  } from "firebase/storage";
 
 export default function Transmittal() {
     const toast = useToast()
@@ -54,6 +52,7 @@ export default function Transmittal() {
     const [imgFile, setImgFile] = useState<File[]>([])
     const [attachmentFile, setAttachment] = useState<string>('')
     const [transID, setTransID] = useState<string>('')
+    const [transmittalDate, setDate] = useState<Timestamp | undefined>(Timestamp.now())
 
     const currDate = new Date().toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'})
 
@@ -269,7 +268,6 @@ export default function Transmittal() {
 
     const companyName = allClients?.find((client) => client.id === filterCompany)?.alias || filterCompany
 
-    
     const handleImgFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
@@ -292,26 +290,6 @@ export default function Transmittal() {
         setPreview(null)
     }
 
-    const handleDownload = async () => {
-        if (attachmentFile) {
-            try {
-                // Get the download URL for the attachmentFile from Firebase Storage
-                const storageRef = ref(storage, attachmentFile); // Assuming 'storage' is your Firebase Storage instance
-                const downloadUrl = await getDownloadURL(storageRef);
-                // Create a link element and trigger the download
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.download = downloadUrl;
-                link.target = `_blank`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (error) {
-                console.error("Error fetching download URL:", error);
-            }
-        }
-    }
-
     const handleUploadImg = async () => {
         try{
             setLoading(true)
@@ -329,6 +307,15 @@ export default function Transmittal() {
 
     const transmittal = allTransmittals?.find(t => t.id === transID)
     const attachments = transmittal?.images ?? []
+
+    const handleSaveDate = async () => {
+        if (!transmittalDate || !transID) return;
+        try{
+            await UPDATE_TRANSMITTAL({createdAt: transmittalDate}, transID)
+        }catch(e){
+            console.error(e)
+        }
+    }
 
     return(
     <>
@@ -359,12 +346,15 @@ export default function Transmittal() {
                     <Text fontWeight="medium" color="gray.600">No Transmittals Found</Text>
                 </Center>
             ) : (
-                allTransmittals.map((transmittal, index) => (
+                allTransmittals.filter((transmittal) => filterCompany ? transmittal.companyID === filterCompany : true).map((transmittal, index) => (
                     <Box key={index} _hover={{bgColor: 'blue.100', color: 'black'}} display='flex' alignItems='center' justifyContent='space-between' px='4' py='2' borderBottom='1px solid' borderColor='gray.200'>
                         <Text w='10%'>{index + 1}</Text>
                         <Text w='100%'>{transmittal?.createdAt ? parsingTimestamp(transmittal.createdAt).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',}) : 'N/A'}</Text>
-                        <Text w='100%'>{allClients?.find((client) => client.id === transmittal.companyID)?.alias || transmittal.companyID}</Text>
-                        <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setCompanyID(transmittal.companyID); setInnerEndorsements(transmittal.endorsements); onOpenTransmittalView();}}>{transmittal.endorsements.length > 0 && 'View'}</Text>
+                        <Text w='100%'>{(() => {
+                            const client = allClients?.find((client) => client.id === transmittal.companyID);
+                            return client ? (client.alias || client.company) : 'N/A';
+                        })()}</Text>
+                        <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setDate(transmittal.createdAt); setCompanyID(transmittal.companyID); setInnerEndorsements(transmittal.endorsements); onOpenTransmittalView();}}>{transmittal.endorsements.length > 0 && 'View'}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setCompanyName(allClients?.find((client) => client.id === transmittal.companyID)?.alias ?? transmittal.companyID ?? ''); onOpenTransmittalScan();}}>{(transmittal?.images ?? []).length > 0 ? 'View' : 'UnAvailable'}</Text>
                     </Box>
                 ))
@@ -442,9 +432,23 @@ export default function Transmittal() {
         <Modal closeOnOverlayClick={false} size='6xl' scrollBehavior='inside' isOpen={isOpenTransmittalView} onClose={() => {setInnerEndorsements([]); onCloseTransmittalView();}}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>Transmittal Details</ModalHeader>
+                <ModalHeader pt='12' display='flex' justifyContent='space-between' alignItems='center' mx='5'>
+                    <Text>Transmittal Details</Text>
+                </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
+                    <Box display='flex' justifyContent='space-between' alignItems='end' gap='3' mb='4'>
+                        <Box display='flex' gap='2' alignItems='end'>
+                            <FormControl>
+                                <FormLabel>Transmittal Date</FormLabel>
+                                <Input w='200px' type='date' onChange={(e) => setDate(Timestamp.fromDate(new Date(e.target.value)))} value={transmittalDate ? transmittalDate.toDate().toISOString().split('T')[0] : ''} shadow='md' />
+                            </FormControl>
+                            <Button onClick={handleSaveDate} w='200px' colorScheme='blue' bgColor='blue.700' shadow='md'>Save Date</Button>
+                        </Box>
+                        <Button bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handlePrint}>
+                            Print Transmittal
+                        </Button>
+                    </Box>
                     {/** PREVIEW OF TRANSMITTAL */}
                     <Box>
                         <Box ref={componentRef} w='203mm' h='276mm' border='1px solid black' mt='4' mx='auto' display='flex' flexDir='column'
@@ -480,7 +484,7 @@ export default function Transmittal() {
                                     <Text h='25pt' ps='2' display='flex' alignItems='center' justifyContent='start' borderRight='1px solid black'>ASSESSOR:</Text>
                                 </Box>
                                 <Box w='28cm' textAlign='center'>
-                                    <Text h='25pt' display='flex' alignItems='center' justifyContent='center' borderBottom='1px solid black' >{currDate}</Text>
+                                    <Text h='25pt' display='flex' alignItems='center' justifyContent='center' borderBottom='1px solid black' >{transmittalDate ? transmittalDate.toDate().toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : ''}</Text>
                                     <Text h='25pt' display='flex' alignItems='center' justifyContent='center' borderBottom='1px solid black' >{'\u200B'}</Text>
                                     <Text h='25pt' display='flex' alignItems='center' justifyContent='center'>{'\u200B'}</Text>
                                 </Box>
@@ -562,7 +566,7 @@ export default function Transmittal() {
                                     <Text w='100%' textAlign='center' fontFamily='Calibri' fontSize='10pt' borderTop='1px solid black'>Company</Text>
                                 </Box>
                                 <Box h='90pt' w='14.8cm' display='flex' flexDir='column' alignItems='center' justifyContent='end'>
-                                    <Text fontFamily='Calibri' fontWeight='bold' fontSize='10pt'>{currDate}</Text>
+                                    <Text fontFamily='Calibri' fontWeight='bold' fontSize='10pt'>{transmittalDate ? transmittalDate.toDate().toLocaleDateString('en-US', {  month: 'short',  day: 'numeric', year: 'numeric'}) : ''}</Text>
                                     <Text w='100%' textAlign='center' fontFamily='Calibri' fontSize='10pt' borderTop='1px solid black'>Date</Text>
                                 </Box>
                             </Box>
