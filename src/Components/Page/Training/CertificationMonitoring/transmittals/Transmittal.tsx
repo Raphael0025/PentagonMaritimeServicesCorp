@@ -37,6 +37,7 @@ export default function Transmittal() {
 
     const [endorser, setEndorser] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
+    const [filterCourse, setCourse] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
     const [isPrinting, setIsPrinting] = useState<boolean>(false)
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
@@ -142,6 +143,14 @@ export default function Transmittal() {
                 t.reg_status === 6 &&
                 (t.cert_status === 1 || t.cert_status === 2)
             )
+            .filter((t) => {
+                if (!filterCourse || filterCourse === '') return true;
+                
+                return (
+                    allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
+                    courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+                )
+            })
             .filter(training => {
                 const reg = regMap.get(training.reg_ref_id)
                 if (!reg) return false
@@ -186,7 +195,7 @@ export default function Transmittal() {
             })
         setFilteredTrainings(result)
 
-    }, [ allTData, monthSelected, yearSelected, filterCompany, allRegData, allTrainee, allCourses, courseCodes ])
+    }, [ allTData, monthSelected, yearSelected, filterCompany, filterCourse, allRegData, allTrainee, allCourses, courseCodes ])
 
     const handleCertificates = async () => {
         const trans_id = await ADD_TRANSMITTAL({
@@ -328,8 +337,8 @@ export default function Transmittal() {
                     <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
                 ))}
             </Select>
-            {filterCompany && (
-                <Button onClick={() => setCompanyFilter('')} colorScheme='red' shadow='md' mr='4' size='sm'>Clear</Button>
+            {(filterCompany || filterCourse) && (
+                <Button onClick={() => {setCompanyFilter(''); setCourse('');}} colorScheme='red' shadow='md' mr='4' size='sm'>Clear</Button>
             )}
             <Button onClick={onOpenTransmittalModal} size='sm' colorScheme='blue' bgColor='blue.700' shadow='md' fontWeight='normal' borderRadius='5px'>Create Transmittal</Button>
         </Box>
@@ -583,7 +592,7 @@ export default function Transmittal() {
                 <ModalBody sx={{'&::-webkit-scrollbar': {width: '15px'}, '&::-webkit-scrollbar-thumb': {backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '4px'}}}>
                     <Box display='flex' justifyContent='space-between'>
                         <Box w='60%'>
-                            <FormLabel color='gray.500'>Select a Company</FormLabel>
+                            <FormLabel color='gray.500'>Filters:</FormLabel>
                             <Box display='flex'>
                                 <Select size='sm' w='50%' mr='4' value={filterCompany} onChange={(e) => {setCompanyFilter(e.target.value);}} shadow='md'>
                                     <option hidden>Filter Company</option>
@@ -593,8 +602,16 @@ export default function Transmittal() {
                                         <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
                                     ))}
                                 </Select>
-                                {filterCompany && (
-                                    <Button onClick={() => setCompanyFilter('')} colorScheme='red' shadow='md' size='sm'>Clear</Button>
+                                <Select size='sm' w='200px' mr='4' value={filterCourse} onChange={(e) => {setCourse(e.target.value);}} shadow='md'>
+                                    <option hidden>Filter Course</option>
+                                    {allCourses && [...allCourses]
+                                    .sort((a, b) => a.course_code.localeCompare(b.course_code))
+                                    .map((c) => (
+                                        <option key={c.id} value={c.course_code}>{c.course_code.toUpperCase()}</option>
+                                    ))}
+                                </Select>
+                                {(filterCompany || filterCourse) && (
+                                    <Button onClick={() => {setCompanyFilter(''); setCourse('');}} colorScheme='red' shadow='md' size='sm'>Clear</Button>
                                 )}
                             </Box>
                             <Checkbox mt='2' isChecked={selectedID.length > 0}

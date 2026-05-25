@@ -38,7 +38,7 @@ export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course
     const { data: allTrainee } = useTrainees()
     const { data: allCourses } = useCourses()
     const { data: allRanks } = useRank()
-    const { courseCodes } = useClients()
+    const { data: allClients, courseCodes } = useClients()
 
     const [selectedTraining, setSelectedTrainings] = useState<SelectedTraining[]>([])
     const [additionalTraining, setAdditionalTrainings] = useState<SelectedTraining[]>([])
@@ -253,6 +253,7 @@ export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course
             setTimeout(async () => {
                 try{
                     // This function is to add some more trainings, if the condition is true then function will execute 
+                    await UPDATE_BATCH(batch_id, {start_date: startDate, end_date: endDate}, '')
                     selectedTraining.length > 0 && (
                         await Promise.all(
                             selectedTraining.map((trainingData) => {
