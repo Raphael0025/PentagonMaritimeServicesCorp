@@ -106,7 +106,15 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                     const batch_id = await GENERATE_BATCH(newBatchRecord, actor) 
                     await Promise.all(
                         selectedTraining.map((trainingData) => 
-                            UPDATE_TRAINING(trainingData.training.id, {batch: batch_id}, actor)
+                            UPDATE_TRAINING(
+                                trainingData.training.id, 
+                                {
+                                    batch: batch_id,
+                                    start_date: startDate,
+                                    end_date: endDate,
+                                }, 
+                                actor
+                            )
                         )
                     )
                     res()
@@ -201,7 +209,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             setTimeout(async () => {
                 try{
                     // This function is to add some more trainings, if the condition is true then function will execute 
-                    await UPDATE_BATCH(batch_id, {start_date: startDate, end_date: endDate}, '')
+                    // await UPDATE_BATCH(batch_id, {start_date: startDate, end_date: endDate}, '')
                     selectedTraining.length > 0 && (
                         await Promise.all(
                             selectedTraining.map((trainingData) => {
@@ -311,7 +319,6 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                             </Text>
                             <Box display='flex' flexDir='column' ml='4' gap='3'>
                                 <Button onClick={() => {setStart(''); setEnd(''); setBatch(''); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
-                                <Button isLoading={loading} onClick={handleTrainingDates} colorScheme='blue' bgColor='blue.700' shadow='md' ms='4' >Save Details</Button>
                             </Box>
                         </Box>
                         <Box py='4'>

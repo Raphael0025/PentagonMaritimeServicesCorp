@@ -253,7 +253,6 @@ export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course
             setTimeout(async () => {
                 try{
                     // This function is to add some more trainings, if the condition is true then function will execute 
-                    await UPDATE_BATCH(batch_id, {start_date: startDate, end_date: endDate}, '')
                     selectedTraining.length > 0 && (
                         await Promise.all(
                             selectedTraining.map((trainingData) => {
@@ -280,6 +279,7 @@ export default function EditBatch({onClose, batch_id, batchNum, reg_Type, course
                             })
                         )
                     )
+                    await UPDATE_BATCH(batch_id, {start_date: startDate, end_date: endDate}, '')
                     res()
                 }catch(error){
                     rej(error)
