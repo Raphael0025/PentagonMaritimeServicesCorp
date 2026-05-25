@@ -130,7 +130,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                 {/** Table */}
                 <Box mt='4'>
                     {/** Table header */}
-                    <Grid templateColumns="0.38in 2.64in 1.12in 2.44in" gap={0} fontSize='10pt' h='0.49in' fontWeight='bold' fontFamily='Arial, sans-serif' >
+                    <Grid templateColumns="0.38in 3.14in 0.95in 2.04in" gap={0} fontSize='10pt' h='0.49in' fontWeight='bold' fontFamily='Arial, sans-serif' >
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>No.</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>NAME OF ENROLLEES</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" textAlign='center' justifyContent='center' pt='2' alignItems='start' whiteSpace="normal" wordBreak="break-word">RANK/ POSITION</GridItem>
@@ -165,7 +165,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
-                            <Grid key={training.id} templateColumns="0.38in 2.64in 1.12in 2.44in" h='0.19in' textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Arial, sans-serif'>
+                            <Grid key={training.id} templateColumns="0.38in 3.14in 0.95in 2.04in" h='0.19in' textTransform='uppercase' fontSize='9pt' gap={0} fontWeight={'normal'} fontFamily='Arial, sans-serif'>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {(index + 1)}
                                 </GridItem>
@@ -183,7 +183,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
                     {(trainingArray ?? []).length < 30 && (
-                        <Grid templateColumns="0.38in 2.64in 1.12in 2.44in" h="0.19in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
+                        <Grid templateColumns="0.38in 3.14in 0.95in 2.04in" h="0.19in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingArray?.length || 0) + 1}
                             </GridItem>
@@ -203,7 +203,7 @@ export default function MDS_ER({ e_report, course, schedule, year, room, trainin
                         [...Array(30 - (trainingArray ?? []).length - 1)].map((_, index) => {
                         const startingIndex = (trainingArray?.length || 0) + 1 // Start numbering after the last data row
                         return (
-                            <Grid key={index} templateColumns="0.38in 2.64in 1.12in 2.44in" h="0.19in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
+                            <Grid key={index} templateColumns="0.38in 3.14in 0.95in 2.04in" h="0.19in" textTransform="uppercase" fontSize="10pt" gap={0} fontWeight="normal" fontFamily="Arial, sans-serif">
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {startingIndex + index + 1}
                                 </GridItem>

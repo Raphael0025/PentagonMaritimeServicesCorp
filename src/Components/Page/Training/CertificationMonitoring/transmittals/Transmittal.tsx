@@ -610,6 +610,24 @@ export default function Transmittal() {
                                         <option key={c.id} value={c.course_code}>{c.course_code.toUpperCase()}</option>
                                     ))}
                                 </Select>
+                                <Select size='sm' w='200px' mr='4' value={filterCourse} onChange={(e) => {setCourse(e.target.value);}} shadow='md'>
+                                    <option hidden>Filter Course</option>
+                                    {courseBatch && [...courseBatch]
+                                    .filter((b) => {
+                                        // 1. If no filter is selected, let all records pass through
+                                        if (!filterCourse || filterCourse === '') return true;
+                                        if (!b.course) return false;
+
+                                        // 2. Find the course object in allCourses that matches the ID in b.course
+                                        const matchedCourse = allCourses?.find((course) => String(course.id) === String(b.course));
+
+                                        // 3. If a course was found, check if its course_code matches your filter (case-insensitive)
+                                        return matchedCourse?.course_code?.toUpperCase() === filterCourse.toUpperCase();
+                                    })
+                                    .map((c) => (
+                                        <option key={c.id} value={c.id}>{c.batch_no}</option>
+                                    ))}
+                                </Select>
                                 {(filterCompany || filterCourse) && (
                                     <Button onClick={() => {setCompanyFilter(''); setCourse('');}} colorScheme='red' shadow='md' size='sm'>Clear</Button>
                                 )}
