@@ -38,6 +38,7 @@ export default function Transmittal() {
     const [endorser, setEndorser] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
     const [filterCourse, setCourse] = useState<string>('')
+    const [filterBatch, setBatch] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
     const [isPrinting, setIsPrinting] = useState<boolean>(false)
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
@@ -151,6 +152,14 @@ export default function Transmittal() {
                     courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
                 )
             })
+            .filter((t) => {
+                // If no batch filter is selected, let all records pass through
+                if (!filterBatch || filterBatch === '') return true;
+                
+                // Check if training record matches the selected batch ID. 
+                // Note: If your database uses 't.batch_id' instead of 't.batch', update it here.
+                return String(t.batch) === String(filterBatch);
+            })
             .filter(training => {
                 const reg = regMap.get(training.reg_ref_id)
                 if (!reg) return false
@@ -195,7 +204,7 @@ export default function Transmittal() {
             })
         setFilteredTrainings(result)
 
-    }, [ allTData, monthSelected, yearSelected, filterCompany, filterCourse, allRegData, allTrainee, allCourses, courseCodes ])
+    }, [ allTData, monthSelected, yearSelected, filterCompany, filterCourse, filterBatch, allRegData, allTrainee, allCourses, courseCodes ])
 
     const handleCertificates = async () => {
         const trans_id = await ADD_TRANSMITTAL({
@@ -610,8 +619,8 @@ export default function Transmittal() {
                                         <option key={c.id} value={c.course_code}>{c.course_code.toUpperCase()}</option>
                                     ))}
                                 </Select>
-                                <Select size='sm' w='200px' mr='4' value={filterCourse} onChange={(e) => {setCourse(e.target.value);}} shadow='md'>
-                                    <option hidden>Filter Course</option>
+                                <Select size='sm' w='200px' mr='4' value={filterBatch} onChange={(e) => {setBatch(e.target.value);}} shadow='md'>
+                                    <option hidden>Filter Batch</option>
                                     {courseBatch && [...courseBatch]
                                     .filter((b) => {
                                         // 1. If no filter is selected, let all records pass through
@@ -624,12 +633,24 @@ export default function Transmittal() {
                                         // 3. If a course was found, check if its course_code matches your filter (case-insensitive)
                                         return matchedCourse?.course_code?.toUpperCase() === filterCourse.toUpperCase();
                                     })
+                                    .sort((a, b) => {
+                                        // Helper function to safely parse ISO strings, Firebase Timestamps, or missing values
+                                        const getMs = (dateObj: any) => {
+                                            if (!dateObj) return 0;
+                                            if (typeof dateObj.toDate === 'function') return dateObj.toDate().getTime(); // Firestore Timestamp
+                                            if (dateObj.seconds) return dateObj.seconds * 1000; // Raw Epoch Timestamp
+                                            return new Date(dateObj).getTime(); // ISO String or Native Date fallback
+                                        };
+
+                                        // To sort Oldest First instead, swap the order to: getMs(a.createdAt) - getMs(b.createdAt)
+                                        return getMs(b.createdAt) - getMs(a.createdAt); 
+                                    })
                                     .map((c) => (
                                         <option key={c.id} value={c.id}>{c.batch_no}</option>
                                     ))}
                                 </Select>
-                                {(filterCompany || filterCourse) && (
-                                    <Button onClick={() => {setCompanyFilter(''); setCourse('');}} colorScheme='red' shadow='md' size='sm'>Clear</Button>
+                                {(filterCompany || filterCourse || filterBatch) && (
+                                    <Button onClick={() => {setBatch(''); setCompanyFilter(''); setCourse('');}} colorScheme='red' shadow='md' size='sm'>Clear</Button>
                                 )}
                             </Box>
                             <Checkbox mt='2' isChecked={selectedID.length > 0}
