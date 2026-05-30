@@ -3,7 +3,7 @@
 import NextImage from 'next/image'
 import React from 'react';
 import { useState, useRef } from 'react'
-import { Box, Text, Input, Image as ChakraImage, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
+import { Box, Text, Input, Image as ChakraImage, FormControl, FormLabel, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -20,6 +20,8 @@ import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
 import { useReactToPrint } from 'react-to-print'
 import { AttendanceForm } from '@/Components/Page/Forms/TrainingForms';
+
+import { scannedAttachment } from '@/lib/course_batches_controller'
 
 interface TFProps {
     onClose: () => void;
@@ -50,6 +52,8 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
     const [practicumSite, setSite] = useState<string>('')
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
+    const [file, setFile] = useState<File[]>([])
+    const [attachmentType, setAttachmentType] = useState<string>('attendance')
 
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -77,15 +81,25 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
         })
     }
 
+    const handleAttachment = async () => {
+        try{
+            await scannedAttachment(batchID, attachmentType, courseCode, file, file[0].name)
+            handleToast('File uploaded successfully', '', 3000, 'success')
+        }catch(error){
+            console.error('Error uploading file:', error);
+            handleToast('Error uploading file', 'Please try again later.', 3000, 'error')
+        }
+    }
+
     return(
         <>
         <Box w='100%' display={'flex'} flexDir='column' justifyContent='center'>
             <Box mb={4} pb={3} borderBottom='1px' borderColor='gray.400' >
                 <Text fontSize='15px' display='flex' justifyContent='start' mb={4}>
                     <Text as='span' color='gray.600' mr={3}>Course:</Text>
-                    <Text as='span' fontWeight='normal'>{course}</Text>
+                    <Text as='span' fontWeight='normal'>{course.toUpperCase()}</Text>
                 </Text>
-                <Box w='100%' display='flex' justifyContent='center' alignItems='center' mb={4}>
+                <Box w='100%' display='flex' justifyContent='start' alignItems='center' mb={4}>
                     <Box w='100%' >
                         <Box display='flex' w='100%' justifyContent='space-between' alignItems='center' mb={4}>
                             <Text w='100%' fontSize='15px' display='flex' justifyContent='start'>
@@ -141,6 +155,13 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                 })()}
                                 </Text>
                             </Box>
+                        </Box>
+                        <Box w='100%' display='flex' gap='3' justifyContent='start' alignItems='end' mb={2}>
+                            <FormControl w='auto' display='flex' gap='2' alignItems='center'>
+                                <FormLabel m='0' fontWeight='normal' >Attachment:</FormLabel>
+                                <Input w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])} />
+                            </FormControl>
+                            <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md' >Upload</Button>
                         </Box>
                     </Box>
                 </Box>
@@ -443,6 +464,11 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                     </Box>
                 </Box>
             </Box>
+        </Box>
+        <Box>
+            {batch?.attendance && batch?.attendance !== '' && (
+                <ChakraImage src={batch?.attendance} width='100%' height='100%' alt='attachment' />
+            )}
         </Box>
         <Box w='100%' 
             ref={componentRef} 

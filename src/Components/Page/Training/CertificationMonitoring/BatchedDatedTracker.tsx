@@ -39,21 +39,22 @@ interface BatchedDatedProps {
     searchTerm: string;
     trainings: TRAINING_BY_ID[];
     trainingIDs: string[];
+    filterCompany: string;
     setTrainingIDs: React.Dispatch<React.SetStateAction<string[]>>;
     setFirstSelected: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setTrainingIDs, setFirstSelected }: BatchedDatedProps){
+export default function BatchedDated ({ searchTerm, filterCompany, trainings, trainingIDs, setTrainingIDs, setFirstSelected }: BatchedDatedProps){
     const toast = useToast()
     const storage = getStorage();
     const { data: allCertTemplates } = useCertification()
     const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
     const { data: allTrainee } = useTrainees()
+    const { allData: allRegData } = useRegistrations()
     const { data: courseBatch } = useCourseBatch()
     const { data: allInstructors } = useInstructors()
     const { data: allClients, courseCodes } = useClients()
-    const { allData: allRegData } = useRegistrations()
 
     const [loading, setLoading] = useState<boolean>(false)
     const [certLoading, setCertLoading] = useState<boolean>(false)
@@ -102,6 +103,7 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
     const { isOpen: isOpenView, onOpen: onOpenView, onClose: onCloseView } = useDisclosure()
 
     const componentRef = useRef<HTMLDivElement | null>(null)
+    const listRef = useRef<HTMLDivElement | null>(null)
     const attachment = useRef<HTMLDivElement>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -127,6 +129,30 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         onAfterPrint: () => {
             handleToast('Certificates Printed!', ``, 3000, 'success');
             onCloseRemarks()
+        },
+    })
+    
+    const handlePrintList = useReactToPrint({
+        content: () => listRef.current,
+        documentTitle: `TRAINEE LIST.pdf`,
+        pageStyle: `
+            @media print {
+                body {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                * {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                }
+            }
+        `,
+        onBeforePrint: () => {
+            setIsPrinting(false);
+            handleToast('Preparing to print List...', ``, 3000, 'info');
+        },
+        onAfterPrint: () => {
+            handleToast('List Printed!', ``, 3000, 'success');
         },
     })
 
@@ -529,8 +555,108 @@ export default function BatchedDated ({ searchTerm, trainings, trainingIDs, setT
         }
     }
 
+    const groupedTrainees = () => {
+        if (!trainings || trainings.length === 0) return [];
+
+        // Accumulator structure to collect training details per trainee document ID
+        const accumulator: { [traineeId: string]: { name: string; entries: string[] } } = {};
+
+        trainings.forEach((t) => {
+            // Find the registration tying this training to a trainee
+            const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
+            if (!registration) return;
+
+            // Find the trainee details
+            const trainee = allTrainee?.find((tr) => tr.id === registration.trainee_ref_id);
+            if (!trainee) return;
+
+            // Apply search filter if active (checks against trainee's name)
+            if (searchTerm && !trainee.last_name?.toLowerCase().includes(searchTerm.toLowerCase())) {
+                return;
+            }
+
+            // Find batch info to get the batch descriptor/number
+            const batchObj = courseBatch?.find((b) => b.id === t.batch);
+            const batchLabel = batchObj ? (batchObj.batch_no) : t.batch;
+
+            // Create your display format chunk: "training 1, batch"
+            const courseFound = allCourses?.find((course) => course.id === t.course)?.course_code || courseCodes?.find((course) => course.id === t.course)?.company_course_code || ''
+            const trainingString = `${courseFound}, ${batchLabel}`;
+            const traineeId = trainee.id;
+
+            if (!accumulator[traineeId]) {
+                accumulator[traineeId] = {
+                    name: `${trainee.first_name?.toUpperCase()} ${trainee.middle_name?.toUpperCase()} ${trainee.last_name?.toUpperCase()}` || 'UNKNOWN TRAINEE',
+                    entries: [trainingString]
+                };
+            } else {
+                // Avoid duplicating the exact same course/batch string if it somehow exists twice
+                if (!accumulator[traineeId].entries.includes(trainingString)) {
+                    accumulator[traineeId].entries.push(trainingString);
+                }
+            }
+        });
+
+        return Object.values(accumulator);
+    };
+
+    const traineesToShow = groupedTrainees();
+    const maxTrainingColumns = Math.max(...traineesToShow.map(t => t.entries.length), 1);
+
     return(
         <>
+        <Box ref={listRef} w="100%" overflowX="auto"
+            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+        > {/* Handles horizontal scroll if columns exceed container width */}
+            <Box>
+                <Text>Company:</Text>
+                <Text>{allClients?.find((client) => client.id === filterCompany)?.alias || filterCompany}</Text>
+            </Box>
+            {/* ---------- TABLE HEADER ---------- */}
+            {traineesToShow.length > 0 && (
+                <Box  display="flex"  alignItems="center"  py="1"  px="3" bg="gray.100"  borderRadius="md"  mb="2" fontWeight="bold" minW="max-content" >
+                    <Text w="50px" fontSize="xs" color="gray.600">NO.</Text>
+                    <Text w="320px" fontSize="xs" color="gray.600">TRAINEE NAME</Text>
+                    {Array.from({ length: maxTrainingColumns }).map((_, idx) => (
+                        <Text key={idx} w="180px" fontSize="xs" color="gray.600" mr="4">
+                            TRAINING {idx + 1}
+                        </Text>
+                    ))}
+                </Box>
+            )}
+
+            {/* ---------- TABLE ROWS ---------- */}
+            {traineesToShow.length === 0 ? (
+                <Text fontSize="sm" color="gray.500" fontStyle="italic" p="2">
+                    No matching trainee records found.
+                </Text>
+            ) : (
+                traineesToShow.map((trainee, index) => (
+                    <Box  key={index}  display="flex"  alignItems="center"  py="1"  px="3" borderBottom="1px solid" borderColor="gray.100" _hover={{ bg: "gray.50" }} minW="max-content" >
+                        {/* Column 1: Trainee Name */}
+                        <Text w="50px" color="blue.900" fontSize="7pt">
+                            {index + 1}.
+                        </Text>
+                        <Text w="320px" color="blue.900" fontWeight='normal' fontSize="7pt">
+                            {trainee.name}
+                        </Text>
+                        {/* Columns 3+: Individual Training Cells */}
+                        {trainee.entries.map((entry, entryIdx) => (
+                            <Box key={entryIdx} w="180px" mr="4">
+                                <Text  fontSize="7pt"  color="gray.700"  fontWeight="medium" bg="blue.50"  borderRadius="sm" isTruncated >
+                                    {entry}
+                                </Text>
+                            </Box>
+                        ))}
+                    </Box>
+                ))
+            )}
+        </Box>
+        {filterCompany && (
+            <Box mb='2' display='flex' justifyContent='end'>
+                <Button onClick={handlePrintList} colorScheme='blue' bgColor='blue.700' shadow='md'>Print List</Button>
+            </Box>
+        )}
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}
             <Box w='1750px' bgColor='blue.700' position='sticky' top='0' zIndex='9' mb='2' color='white' display='flex' textAlign='center' className='space-x-3' alignItems='center' borderRadius='5px' borderColor='gray' borderWidth='1px' borderStyle='solid' p='2'>

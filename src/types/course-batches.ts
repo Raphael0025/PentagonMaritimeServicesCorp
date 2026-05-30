@@ -20,6 +20,8 @@ export interface CourseBatchByID extends CourseBatch{
     time_duration: string
     training_mode: string;
     remarks: string;
+    attendance: string;
+    ccr: string;
     createdAt: Timestamp;
     updateAt: Timestamp;
 }
@@ -37,6 +39,8 @@ export interface BDCourseBatch {
 export const initCourseBatch = {
     id: '',
     course: '',
+    attendance: '',
+    ccr: '',
     batch_no: '',
     start_date: '',
     end_date: '',

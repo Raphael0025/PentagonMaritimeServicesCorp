@@ -24,7 +24,7 @@ import { fullMonth, } from '@/handlers/util_handler'
 
 import { ToastStatus } from '@/types/handling'
 
-import { BatchedDated, BDTracker, Transmittal, BDTransmittal, ReleaseLog, Certificate_Content_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
+import { BatchedDated, BDTracker, Transmittal, BDTransmittal, ReleaseLog, BDReleaseLog, Certificate_Content_Mgmt } from '@/Components/Page/Training/CertificationMonitoring'
 
 export default function TrackerPage(){
     const toast = useToast()
@@ -417,7 +417,7 @@ export default function TrackerPage(){
                                 <Text fontWeight="medium" color="gray.600">Loading Certification Records...</Text>
                             </Center>
                         ) : (
-                            <BatchedDated searchTerm={searchTerm} trainings={batchedData || []} trainingIDs={t_ids} setTrainingIDs={setIDS} setFirstSelected={setFirstSelected} />
+                            <BatchedDated filterCompany={filterCompany} searchTerm={searchTerm} trainings={batchedData || []} trainingIDs={t_ids} setTrainingIDs={setIDS} setFirstSelected={setFirstSelected} />
                         )}
                     </TabPanel>
                     <TabPanel>
@@ -460,7 +460,7 @@ export default function TrackerPage(){
                         <BDTransmittal />
                     </TabPanel>
                     <TabPanel>
-                        
+                        <BDReleaseLog />
                     </TabPanel>
                 </TabPanels>
             </Tabs>

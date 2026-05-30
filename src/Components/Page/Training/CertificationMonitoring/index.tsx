@@ -4,6 +4,7 @@ import Certificate_Content_Mgmt from "./Certificate_Content_Mgmt";
 import Transmittal from "./transmittals/Transmittal";
 import BDTransmittal from "./transmittals/BD_Transmittal";
 import ReleaseLog from "./release-log/ReleaseLog";
+import BDReleaseLog from "./release-log/BDReleaseLog";
 
 import InHouseCert from "./Certificate_Template/InHouseCert.template"
 import UBT_PssrCert from "./Certificate_Template/UBT_PssrCert.template"
@@ -22,6 +23,7 @@ export {
     BatchedDated,
     BDTracker,
     ReleaseLog,
+    BDReleaseLog,
     Transmittal,
     BDTransmittal,
     Certificate_Content_Mgmt,

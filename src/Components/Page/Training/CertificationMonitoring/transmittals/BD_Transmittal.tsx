@@ -39,6 +39,7 @@ export default function BDTransmittal() {
 
     const [endorser, setEndorser] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
+    const [filterCourse, setCourse] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
     const [isPrinting, setIsPrinting] = useState<boolean>(false)
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
@@ -155,6 +156,14 @@ export default function BDTransmittal() {
 
                 return true
             })
+            .filter((t) => {
+                if (!filterCourse || filterCourse === '') return true;
+                
+                return (
+                    allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
+                    courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+                )
+            })
             .sort((a, b) => {
                 const getTime = (d?: string) => d ? new Date(d).getTime() : 0
 
@@ -188,7 +197,7 @@ export default function BDTransmittal() {
             })
         setFilteredTrainings(result)
 
-    }, [ allTData, monthSelected, yearSelected, filterCompany, allRegData, allTrainee, allCourses, courseCodes ])
+    }, [ allTData, monthSelected, yearSelected, filterCourse, filterCompany, allRegData, allTrainee, allCourses, courseCodes ])
 
     const handleCertificates = async () => {
         const trans_id = await ADD_TRANSMITTAL({
@@ -269,7 +278,6 @@ export default function BDTransmittal() {
     }
 
     const companyName = allClients?.find((client) => client.id === filterCompany)?.alias || filterCompany
-
     
     const handleImgFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -601,7 +609,7 @@ export default function BDTransmittal() {
                 <ModalBody sx={{'&::-webkit-scrollbar': {width: '15px'}, '&::-webkit-scrollbar-thumb': {backgroundColor: 'rgba(0, 0, 0, 0.2)', borderRadius: '4px'}}}>
                     <Box display='flex' justifyContent='space-between'>
                         <Box w='60%'>
-                            <FormLabel color='gray.500'>Select a Company</FormLabel>
+                            <FormLabel color='gray.500'>Filters:</FormLabel>
                             <Box display='flex'>
                                 <Select size='sm' w='50%' mr='4' value={filterCompany} onChange={(e) => {setCompanyFilter(e.target.value);}} shadow='md'>
                                     <option hidden>Filter Company</option>
@@ -611,8 +619,16 @@ export default function BDTransmittal() {
                                         <option key={c.id} value={c.id}>{c.company.toUpperCase()}</option>
                                     ))}
                                 </Select>
-                                {filterCompany && (
-                                    <Button onClick={() => setCompanyFilter('')} colorScheme='red' shadow='md' size='sm'>Clear</Button>
+                                <Select size='sm' w='200px' mr='4' value={filterCourse} onChange={(e) => {setCourse(e.target.value);}} shadow='md'>
+                                    <option hidden>Filter Course</option>
+                                    {allCourses && [...allCourses]
+                                    .sort((a, b) => a.course_code.localeCompare(b.course_code))
+                                    .map((c) => (
+                                        <option key={c.id} value={c.course_code}>{c.course_code.toUpperCase()}</option>
+                                    ))}
+                                </Select>
+                                {(filterCompany || filterCourse) && (
+                                    <Button onClick={() => {setCompanyFilter(''); setCourse('');}} colorScheme='red' shadow='md' size='sm'>Clear</Button>
                                 )}
                             </Box>
                             <Checkbox mt='2' isChecked={selectedID.length > 0}

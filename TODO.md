@@ -11,7 +11,10 @@ This document outlines the tasks and improvements planned for the project. Each 
 ## Tasks
 - [] **Certification**
     -[*] MULTIPLE PRINT FOR TRANSMITTAL BD/DATED
-    -[] MAKE IT SAMPLE CERT ON CERT TEMPLATE MANAGEMENT
+    -[] add attachments on CCR and Attendance
+    -[] add email sending 
+    -[] MAKE IT SAMPLE CERT ON CERT TEMPLATE MANAGEMENT and make it printable
+    -[] fix filter date on release logs and transmittals
     -[] AUTO GENERATE BD CERT NO
     -[] FIX RELEASE LOGS IN BD
     -[] EDITABLE RECORDS FOR TRANSMITTAL BD/DATED

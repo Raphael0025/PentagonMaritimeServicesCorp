@@ -1,7 +1,10 @@
-import { addDoc, deleteDoc, DocumentReference, updateDoc, doc, getDocs, query, collection, getFirestore, Timestamp } from 'firebase/firestore'
+import { addDoc, deleteDoc, DocumentReference, updateDoc, arrayUnion, doc, getDocs, query, collection, getFirestore, Timestamp } from 'firebase/firestore'
 import { app } from './firebase'
 import { CourseBatch, BDCourseBatch, BDCourseBatchByID, CourseBatchByID } from '@/types/course-batches'
 import { addLog } from '@/lib/history_log_controller'
+
+import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage'
+import { storage } from './firebase'
 
 export const firestore = getFirestore(app)
 // Course batches Collection
@@ -25,6 +28,33 @@ export const GENERATE_BD_BATCH = async (batch_record: BDCourseBatch) => {
         const batchID: DocumentReference = await addDoc(bdCourseBatches, {...newBatch})
         //await addLog(actor, 'New Batch Created', 'BATCHES', batchID.id)
         return batchID.id
+    }catch(error){
+        throw error
+    }
+}
+
+export const scannedAttachment = async (BATCH_ID: string, attachmentType: string, course: string, file: any, fileID: string) => {
+    try{
+        let scanned = '';
+
+        if (fileID !== 'No file chosen yet...') {
+            // Upload valid id to Storage
+            // attachment Type: attendance | CCR
+            const idRef = ref(storage, `BATCH_ATTACHMENTS/${attachmentType}/${course}/${fileID}`);
+            const id_data = await uploadBytes(idRef, file[0]);
+            scanned = await getDownloadURL(id_data.ref);
+        }
+        const getDoc = doc(firestore, `BATCH_RECORDS/${BATCH_ID}`)
+        switch(attachmentType){
+            case 'attendance':
+                await updateDoc(getDoc, { attendance: scanned})
+                break;
+            case 'ccr':
+                await updateDoc(getDoc, { ccr: scanned})
+                break;
+            default:                 
+                break;
+        }
     }catch(error){
         throw error
     }
