@@ -111,6 +111,37 @@ export default function Transmittal() {
         },
     })
 
+    const handleRePrint = useReactToPrint({
+        content: () => componentRef.current,
+        documentTitle: `TRANSMITTAL.pdf`,
+        pageStyle: `
+            @media print {
+                body {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                * {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                }
+            }
+        `,
+        onBeforePrint: () => {
+            setIsPrinting(true);
+            handleToast('Preparing to print certificates...', ``, 3000, 'info');
+        },
+        onAfterPrint: () => {
+            if(isPrinting) {
+                console.log('printing...')
+                handleToast('Certificates Printed!', ``, 3000, 'success');
+            }
+            setInnerEndorsements([]) 
+            setCompanyFilter('')
+            onCloseTransmittalModal();
+            setIsPrinting(false);
+        },
+    })
+
     useEffect(() => {
         if (!allTrainingData) return
         setAllTData(allTrainingData)
@@ -335,6 +366,14 @@ export default function Transmittal() {
         }
     }
 
+    const handleDeletetransmittal = async (t_id: string) => {
+        try{
+            await DELETE_TRANSMITTAL(t_id)
+        }catch(error){
+            console.error(error)
+        }
+    }
+
     return(
     <>
         <Box display='flex' alignItems='center' justifyContent='space-between'>
@@ -358,13 +397,26 @@ export default function Transmittal() {
                 <Text w='100%'>Company</Text>
                 <Text w='100%'>E-Transmittal</Text>
                 <Text w='100%'>Attachment</Text>
+                <Text w='100%'>Action</Text>
             </Box>
             {!allTransmittals || allTransmittals.length === 0 ? (
                 <Center mt='10'>
                     <Text fontWeight="medium" color="gray.600">No Transmittals Found</Text>
                 </Center>
             ) : (
-                allTransmittals.filter((transmittal) => filterCompany ? transmittal.companyID === filterCompany : true).map((transmittal, index) => (
+                allTransmittals
+                .filter((transmittal) => filterCompany ? transmittal.companyID === filterCompany : true)
+                .filter((transmittal) => transmittal.isDated && true)
+                .sort((a, b) => {
+                    // Fallback to timestamp 0 if createdAt is missing
+                    const dateA = a?.createdAt ? parsingTimestamp(a.createdAt).getTime() : 0;
+                    const dateB = b?.createdAt ? parsingTimestamp(b.createdAt).getTime() : 0;
+
+                    // Sorts descending (Newest -> Oldest)
+                    // Switch to 'dateA - dateB' if you prefer Oldest -> Newest
+                    return dateB - dateA;
+                })
+                .map((transmittal, index) => (
                     <Box key={index} _hover={{bgColor: 'blue.100', color: 'black'}} display='flex' alignItems='center' justifyContent='space-between' px='4' py='2' borderBottom='1px solid' borderColor='gray.200'>
                         <Text w='10%'>{index + 1}</Text>
                         <Text w='100%'>{transmittal?.createdAt ? parsingTimestamp(transmittal.createdAt).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',}) : 'N/A'}</Text>
@@ -374,6 +426,7 @@ export default function Transmittal() {
                         })()}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setDate(transmittal.createdAt); setCompanyID(transmittal.companyID); setInnerEndorsements(transmittal.endorsements); onOpenTransmittalView();}}>{transmittal.endorsements.length > 0 && 'View'}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setCompanyName(allClients?.find((client) => client.id === transmittal.companyID)?.alias ?? transmittal.companyID ?? ''); onOpenTransmittalScan();}}>{(transmittal?.images ?? []).length > 0 ? 'View' : 'UnAvailable'}</Text>
+                        <Text onClick={() => transmittal?.id && handleDeletetransmittal(transmittal.id)} w='100%' _hover={{cursor: 'pointer', textDecoration: 'underline'}} color='red.500'>{`Delete`}</Text>
                     </Box>
                 ))
             )}
@@ -463,7 +516,7 @@ export default function Transmittal() {
                             </FormControl>
                             <Button onClick={handleSaveDate} w='200px' colorScheme='blue' bgColor='blue.700' shadow='md'>Save Date</Button>
                         </Box>
-                        <Button bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handlePrint}>
+                        <Button bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handleRePrint}>
                             Print Transmittal
                         </Button>
                     </Box>

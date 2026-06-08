@@ -2,7 +2,7 @@
 
 import NextImage from 'next/image'
 import React, { useEffect, useState, useRef } from 'react'
-import { Box, Text, Input, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
+import { Box, Text, Input, useToast, Image as ChakraImage, FormControl, FormLabel, Button, Grid, GridItem } from '@chakra-ui/react'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -23,6 +23,8 @@ import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 import { useReactToPrint } from 'react-to-print'
 import { CCR } from '@/Components/Page/Forms/TrainingForms'
+
+import { scannedAttachment } from '@/lib/course_batches_controller'
 
 interface TFProps {
     onClose: () => void;
@@ -49,6 +51,9 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
     const [loading, setLoading] = useState<boolean>(false)
     const [trainingsArr, setTrainingsArr] = useState<TRAINING_BY_ID[]>([])
 
+    const [file, setFile] = useState<File[]>([])
+    const [attachmentType, setAttachmentType] = useState<string>('ccr')
+
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     useEffect(() => {
         const fetchData = () => {
@@ -68,7 +73,20 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
         content: () => componentRef.current,
         documentTitle: `CCR_FORM B${batch?.batch_no}.pdf`,
         onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
-        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); onClose()},
+        onAfterPrint: () => {
+            handlePrintAttachment();
+            handleToast('Print Completed!', ``, 3000, 'success'); 
+        },
+    })
+
+    const attachRef = useRef<HTMLDivElement | null>(null);
+    const handlePrintAttachment = useReactToPrint({
+        content: () => attachRef.current,
+        documentTitle: `CCR_Attachment B${batch?.batch_no}.pdf`,
+        onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
+        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); 
+            //onClose()
+        },
     })
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
@@ -123,6 +141,16 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
             handleToast('An error occurred while updating data.', '', 5000, 'error');
         } finally {
             setLoading(false);
+        }
+    }
+
+    const handleAttachment = async () => {
+        try{
+            await scannedAttachment(batchID, attachmentType, courseCode, file, file[0].name)
+            handleToast('File uploaded successfully', '', 3000, 'success')
+        }catch(error){
+            console.error('Error uploading file:', error);
+            handleToast('Error uploading file', 'Please try again later.', 3000, 'error')
         }
     }
 
@@ -192,6 +220,13 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                             </Box>
                         </Box>
                     </Box>
+                </Box>
+                <Box w='100%' display='flex' gap='3' justifyContent='start' alignItems='end' mb={2}>
+                    <FormControl w='auto' display='flex' gap='2' alignItems='center'>
+                        <FormLabel m='0' fontWeight='normal' >Attachment:</FormLabel>
+                        <Input w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])} />
+                    </FormControl>
+                    <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md' >Upload</Button>
                 </Box>
             </Box>
             <Box display='flex' mb='5' justifyContent='space-between'>
@@ -300,6 +335,57 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
             // className="printable-content"
         >
             <CCR batch={batch} trainingsArr={trainingsArr} />
+        </Box>
+        <Box 
+            ref={attachRef} 
+            display="flex" 
+            flexDirection="column"
+            position='relative' 
+            w='210mm' h='297mm' // Ensures it stretches to full screen/container height
+            sx={{display: 'none', '@media print': {display: 'block', position: 'relative', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+        >
+            {/* FIXED LOGO HEADER */}
+            <Box 
+                display='flex' 
+                w='100%' 
+                justifyContent='center' 
+                alignItems='center'
+                flexShrink={0} // Prevents the logo container from squishing
+            >
+                <ChakraImage src='/Logo.jpg' width='350px' h='100%' alt='attachment placeholder' />
+            </Box>
+            {/* MIDDLE CONTENT - SCROLLS / STRETCHES */}
+            <Box display='flex' mt='4' justifyContent='center' alignItems='center' flexDir='column'>
+                <Text fontSize='2xl'>ASSESSMENT ATTACHMENT</Text>
+                <Box mt='4' fontSize='lg' w='100%' px='8'>
+                    <Text>{`Course: ${course.toUpperCase()}`}</Text>
+                    <Text>{`Training Schedule: ${batch?.start_date} ${batch?.end_date !== '' ? `to ${batch?.end_date}` : ''}`}</Text>
+                </Box>
+            </Box>
+            <Box 
+                flex="1" // Takes up all remaining vertical space pushing header up and footer down
+                overflowY="auto" // Allows content to scroll inside if it overflows
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+            >
+                {batch?.ccr && batch?.ccr !== '' && (
+                    <ChakraImage src={batch?.ccr} width='100%' height='auto' alt='attachment' />
+                )}
+            </Box>
+            {/* FIXED FOOTER */}
+            <Box 
+                position='absolute'
+                w='100%' 
+                display='flex' 
+                justifyContent='center' 
+                alignItems='center'
+                bottom='0'
+                left='0'
+                pb='4'
+            >
+                <ChakraImage src='/Footer.png' width='500px' h='100%' alt='Footer placeholder' />
+            </Box>
         </Box>
         </>
     )

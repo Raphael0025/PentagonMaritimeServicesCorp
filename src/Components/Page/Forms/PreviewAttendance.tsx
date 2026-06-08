@@ -66,7 +66,20 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
         content: () => componentRef.current,
         documentTitle: `ATTENDANCE_FORM B${batch?.batch_no}.pdf`,
         onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
-        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); onClose()},
+        onAfterPrint: () => {
+            handlePrintAttachment();
+            handleToast('Print Completed!', ``, 3000, 'success'); 
+        },
+    })
+    
+    const attachRef = useRef<HTMLDivElement | null>(null);
+    const handlePrintAttachment = useReactToPrint({
+        content: () => attachRef.current,
+        documentTitle: `ATT_Attachment B${batch?.batch_no}.pdf`,
+        onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
+        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); 
+            //onClose()
+        },
     })
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
@@ -474,16 +487,60 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                 </Box>
             </Box>
         </Box>
-        <Box>
-            {batch?.attendance && batch?.attendance !== '' && (
-                <ChakraImage src={batch?.attendance} width='100%' height='100%' alt='attachment' />
-            )}
-        </Box>
         <Box w='100%' 
             ref={componentRef} 
             className="printable-content"
         >
             <AttendanceForm batch={batch} trainingArray={trainingsArr} />
+        </Box>
+        <Box 
+            ref={attachRef} 
+            display="flex" 
+            flexDirection="column" 
+            w='216mm' h='279mm' // Ensures it stretches to full screen/container height
+            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+
+        >
+            {/* FIXED LOGO HEADER */}
+            <Box 
+                display='flex' 
+                w='100%' 
+                justifyContent='center' 
+                alignItems='center'
+                flexShrink={0} // Prevents the logo container from squishing
+            >
+                <ChakraImage src='/Logo.jpg' width='350px' h='100%' alt='attachment placeholder' />
+            </Box>
+            {/* MIDDLE CONTENT - SCROLLS / STRETCHES */}
+            <Box display='flex' mt='4' justifyContent='center' alignItems='center' flexDir='column'>
+                <Text fontSize='2xl'>ATTENDANCE ATTACHMENT</Text>
+                <Box mt='4' fontSize='lg' w='100%' px='8'>
+                    <Text>{`Course: ${course.toUpperCase()}`}</Text>
+                    <Text>{`Training Schedule: ${batch?.start_date} ${batch?.end_date !== '' ? `to ${batch?.end_date}` : ''}`}</Text>
+                </Box>
+            </Box>
+            <Box 
+                flex="1" // Takes up all remaining vertical space pushing header up and footer down
+                overflowY="auto" // Allows content to scroll inside if it overflows
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+            >
+                {batch?.attendance && batch?.attendance !== '' && (
+                    <ChakraImage src={batch?.attendance} width='100%' height='auto' alt='attachment' />
+                )}
+            </Box>
+            {/* FIXED FOOTER */}
+            <Box 
+                mt='16'
+                w='100%' 
+                display='flex' 
+                justifyContent='center' 
+                alignItems='center'
+                flexShrink={0} // Prevents the footer container from squishing
+            >
+                <ChakraImage src='/Footer.png' width='500px' h='100%' alt='Footer placeholder' />
+            </Box>
         </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>

@@ -23,6 +23,7 @@ import { ToastStatus } from '@/types/handling'
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 import { SAVED_CERT_TEMPLATE, UPDATE_VERSION_FIELDS, DELETE_CERT_VERSION, ADD_CERT_VERSION, ADD_CHANGELOG_ENTRY } from '@/lib/certification_controller'
 import { Timestamp } from 'firebase/firestore';
+import { useReactToPrint } from 'react-to-print'
 
 export default function Certificate_Template_Mgmt() {
     const toast = useToast()
@@ -47,6 +48,7 @@ export default function Certificate_Template_Mgmt() {
     // Editor & Title refs
     const editorRef = useRef<HTMLDivElement>(null)
     const titleRef = useRef<HTMLDivElement>(null)
+    const printSampleRef = useRef<HTMLDivElement | null>(null)
 
     // Controlled states for preview & saving
     const [certTitleHtml, setCertTitleHtml] = useState('')
@@ -61,6 +63,41 @@ export default function Certificate_Template_Mgmt() {
     /* ----------------------------- */
     /* Load Courses */
     /* ----------------------------- */
+
+    const handlePrint = useReactToPrint({
+        content: () => printSampleRef.current,
+        documentTitle: `${courseName}.pdf`,
+        pageStyle: `
+            @media print {
+                body {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                * {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                }
+            }
+        `,
+        onBeforePrint: () => {
+            handleToast('Preparing to print certificates...', ``, 3000, 'info');
+        },
+        onAfterPrint: () => {
+            handleToast('Certificates Printed!', ``, 3000, 'success');
+        },
+    })
+    
+    const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
+        toast({
+            title: title,
+            description: desc,
+            position: 'top-right',
+            variant: 'left-accent',
+            status: status,
+            duration: timer,
+            isClosable: true,
+        })
+    }
 
     const certificates = useMemo(() => {
         return allCertTemplates ?? []
@@ -547,17 +584,20 @@ export default function Certificate_Template_Mgmt() {
                                 <Text fontWeight='normal'>{versionNumber}</Text>
                             </Box>
                         </Box>
-                        <Button onClick={() => {setAct('edit'); if (editorRef.current) { editorRef.current.innerHTML = certContentHtml; } if(titleRef.current) {titleRef.current.innerHTML = certTitleHtml}}} shadow='md' size='sm' bgColor='blue.700' colorScheme='blue'>Edit Content</Button>
+                        <Box display='flex' gap='2'>
+                            <Button onClick={handlePrint} size='sm' colorScheme='blue' bgColor='blue.700' shadow='md' >Print Sample Cert.</Button>
+                            <Button onClick={() => {setAct('edit'); if (editorRef.current) { editorRef.current.innerHTML = certContentHtml; } if(titleRef.current) {titleRef.current.innerHTML = certTitleHtml}}} shadow='md' size='sm' bgColor='blue.700' colorScheme='blue'>Edit Content</Button>
+                        </Box>
                     </Box>
-                    <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
-                        <Box w='90%' border='1px solid gray' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' px='4' pt='8'>
-                            <Image src={'/certificateHeader.png'} alt='header image' w='7.25in' h='1.20in'  objectFit='cover'/>
-                            <Box pt='12' pr='5' pb='5' display='flex' justifyContent='end' w='85%'>
+                    <Box ref={printSampleRef} position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
+                        <Box w='100%' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='6'>
+                            <Image src={'/certificateHeader.png'} alt='header image' w='7.05in' h='1.15in' objectFit='cover'/>
+                            <Box pt='5' pr='9' pb='0' display='flex' justifyContent='end' w='85%'>
                                 <Box fontWeight='bold' fontSize='12pt' textAlign='start'>
                                     <Text>
                                         Certificate No.: 
                                         <Text as='span' fontWeight={'normal'}>
-                                            {`${courseCode}-B00-0001`}
+                                            {`${courseCode}-2026-B00-0001`}
                                         </Text>
                                     </Text>
                                     <Text>
@@ -568,12 +608,12 @@ export default function Certificate_Template_Mgmt() {
                                     </Text>
                                 </Box>
                             </Box>
-                            <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
+                            <Box w='100%' h='85%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
                                 <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
-                                <Text >This Certificate is issued to</Text>
-                                <Text fontWeight='bold' fontSize='16pt'>NAME</Text>
+                                <Text pt='8'>This Certificate is issued to</Text>
+                                <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`NAME`}</Text>
                                 <Text>for having successfully completed the training course in</Text>
-                                <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
+                                <Text fontSize='14pt' w='70%' mt='4' textAlign='center' fontWeight='bold'>
                                     {/* {certTitleHtml.toUpperCase()} */}
                                     <div
                                         dangerouslySetInnerHTML={{
@@ -581,7 +621,7 @@ export default function Certificate_Template_Mgmt() {
                                         }}
                                     />
                                 </Text>
-                                <Box w='85%' textAlign='center' sx={{
+                                <Box w='100%' mt='3' textAlign='center' sx={{
                                     '& ul': {
                                         listStyleType: 'disc',
                                         listStylePosition: 'inside',
@@ -605,14 +645,14 @@ export default function Certificate_Template_Mgmt() {
                                         display: 'inline',
                                     },
                                 }}>
-                                    <div
+                                    <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                         dangerouslySetInnerHTML={{
                                             __html: `Conducted on _____________ ${certContentHtml}`
                                         }}
                                     />
                                 </Box>
-                                <Text>{`Issued this ____ day of __________, 2026 in Manila City, Philippines`}</Text>
-                                <Box pt='8' display='flex' gap='4' alignItems='end' justifyContent='space-between' w='100%'>
+                                <Text mt='40px'>{`Issued this ____ day of __________, 2026 in Manila City, Philippines`}</Text>
+                                <Box pt='12' pb='12' display='flex' alignItems='end' w='85%'>
                                     <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                         {(() => {
                                             const ins = allInstructors?.find((i: { name: string }) => i.name === 'ROGELIO C. MAHINAY')
@@ -621,7 +661,7 @@ export default function Certificate_Template_Mgmt() {
                                             return(
                                                 <>
                                                     <Box position='absolute' top='-50px' left='20%' transform="translateX(-10%)" zIndex={2} >
-                                                        <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                        {/* <Image src={eSignSrc} w='100%' h='100%' alt='signature' /> */}
                                                     </Box>
                                                     <Box borderTop='1px solid black' w='80%' />
                                                     <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
@@ -647,7 +687,7 @@ export default function Certificate_Template_Mgmt() {
                                             return(
                                                 <>
                                                     <Box position='absolute' top='-45px' left='-8%' transform="translateX(5%)" zIndex={2} >
-                                                        <Image src={eSignSrc} w='100%' h='100%' alt='signature' />
+                                                        {/* <Image src={eSignSrc} w='100%' h='100%' alt='signature' /> */}
                                                     </Box>
                                                     <Box borderTop='1px solid black' w='90%' />
                                                     <Text position='relative' textAlign='center' zIndex={1} w='100%' pt='2' fontSize='10pt' fontWeight='bold'>
@@ -663,11 +703,11 @@ export default function Certificate_Template_Mgmt() {
                                         })()}
                                     </Box>
                                 </Box>
-                                <Box pt='7' pb='10' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
+                                <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
                                     <Image src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'   objectFit='cover'/>
-                                    <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
-                                        <Box w='0.8in' border='1px solid black' h='0.8in'>
-                                            <Text textAlign='center' >QR Code here</Text>
+                                    <Box w='0.8in' display='flex' justifyContent='center' alignItems='center' h='0.65in'>
+                                        <Box w='0.68in' h='0.7in'>
+                                            <Image src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
                                         </Box>
                                     </Box>
                                     <Box fontWeight='bold' fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>

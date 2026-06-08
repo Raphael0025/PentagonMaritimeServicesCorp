@@ -348,6 +348,14 @@ export default function BDTransmittal() {
         }
     }
 
+    const handleDeletetransmittal = async (t_id: string) => {
+        try{
+            await DELETE_TRANSMITTAL(t_id)
+        }catch(error){
+            console.error(error)
+        }
+    }
+
     return(
     <>
         <Box display='flex' alignItems='center' justifyContent='space-between'>
@@ -371,19 +379,32 @@ export default function BDTransmittal() {
                 <Text w='100%'>Company</Text>
                 <Text w='100%'>E-Transmittal</Text>
                 <Text w='100%'>Attachment</Text>
+                <Text w='100%'>Action</Text>
             </Box>
             {!allTransmittals || allTransmittals.length === 0 ? (
                 <Center mt='10'>
                     <Text fontWeight="medium" color="gray.600">No Transmittals Found</Text>
                 </Center>
             ) : (
-                allTransmittals.filter(transmittal => !transmittal.isDated).map((transmittal, index) => (
+                allTransmittals
+                .sort((a, b) => {
+                    // Fallback to timestamp 0 if createdAt is missing
+                    const dateA = a?.createdAt ? parsingTimestamp(a.createdAt).getTime() : 0;
+                    const dateB = b?.createdAt ? parsingTimestamp(b.createdAt).getTime() : 0;
+
+                    // Sorts descending (Newest -> Oldest)
+                    // Switch to 'dateA - dateB' if you prefer Oldest -> Newest
+                    return dateB - dateA;
+                })
+                .filter(transmittal => !transmittal.isDated)
+                .map((transmittal, index) => (
                     <Box key={index} _hover={{bgColor: 'blue.100', color: 'black'}} display='flex' alignItems='center' justifyContent='space-between' px='4' py='2' borderBottom='1px solid' borderColor='gray.200'>
                         <Text w='10%'>{index + 1}</Text>
                         <Text w='100%'>{transmittal?.createdAt ? parsingTimestamp(transmittal.createdAt).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',}) : 'N/A'}</Text>
                         <Text w='100%'>{allClients?.find((client) => client.id === transmittal.companyID)?.alias || transmittal.companyID}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setCompanyID(transmittal.companyID); setInnerEndorsements(transmittal.endorsements); onOpenTransmittalView();}}>{transmittal.endorsements.length > 0 && 'View'}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setCompanyName(allClients?.find((client) => client.id === transmittal.companyID)?.alias ?? transmittal.companyID ?? ''); onOpenTransmittalScan();}}>{(transmittal?.images ?? []).length > 0 ? 'View' : 'UnAvailable'}</Text>
+                        <Text onClick={() => handleDeletetransmittal(transmittal.id)} w='100%' _hover={{cursor: 'pointer', textDecoration: 'underline'}} color='red.500'>{`Delete`}</Text>
                     </Box>
                 ))
             )}
