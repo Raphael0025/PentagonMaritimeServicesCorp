@@ -404,7 +404,7 @@ export default function BDTransmittal() {
                         <Text w='100%'>{allClients?.find((client) => client.id === transmittal.companyID)?.alias || transmittal.companyID}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setCompanyID(transmittal.companyID); setInnerEndorsements(transmittal.endorsements); onOpenTransmittalView();}}>{transmittal.endorsements.length > 0 && 'View'}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setCompanyName(allClients?.find((client) => client.id === transmittal.companyID)?.alias ?? transmittal.companyID ?? ''); onOpenTransmittalScan();}}>{(transmittal?.images ?? []).length > 0 ? 'View' : 'UnAvailable'}</Text>
-                        <Text onClick={() => handleDeletetransmittal(transmittal.id)} w='100%' _hover={{cursor: 'pointer', textDecoration: 'underline'}} color='red.500'>{`Delete`}</Text>
+                        <Text onClick={() => handleDeletetransmittal(transmittal?.id ?? '')} w='100%' _hover={{cursor: 'pointer', textDecoration: 'underline'}} color='red.500'>{`Delete`}</Text>
                     </Box>
                 ))
             )}
