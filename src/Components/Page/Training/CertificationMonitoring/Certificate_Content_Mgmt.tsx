@@ -590,7 +590,7 @@ export default function Certificate_Template_Mgmt() {
                         </Box>
                     </Box>
                     <Box ref={printSampleRef} position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' >
-                        <Box w='100%' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='6'>
+                        <Box w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='6'>
                             <Image src={'/certificateHeader.png'} alt='header image' w='7.05in' h='1.15in' objectFit='cover'/>
                             <Box pt='5' pr='9' pb='0' display='flex' justifyContent='end' w='85%'>
                                 <Box fontWeight='bold' fontSize='12pt' textAlign='start'>
