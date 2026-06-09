@@ -254,7 +254,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                     </Box>
                 </Box>
                 <Box position='absolute' bottom='0px' left='0' zIndex='1' w='100%' display='flex' justifyContent='center' alignItems='center'>
-                    <ChakraImage  src={'/certificateFooter.png'} alt='header image' w='9in' h='2.15in'  objectFit='cover'/>
+                    <ChakraImage  src={'/certificateFooter2.png'} alt='header image' w='9in' h='2.15in'  objectFit='cover'/>
                 </Box>
             </Box>
             </>

@@ -368,9 +368,10 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                 display="flex"
                 justifyContent="center"
                 alignItems="center"
+                mt='8'
             >
                 {batch?.ccr && batch?.ccr !== '' && (
-                    <ChakraImage src={batch?.ccr} width='100%' height='auto' alt='attachment' />
+                    <ChakraImage src={batch?.ccr} width='70%' height='auto' alt='attachment' />
                 )}
             </Box>
             {/* FIXED FOOTER */}

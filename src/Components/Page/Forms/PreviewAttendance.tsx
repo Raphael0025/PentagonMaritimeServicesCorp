@@ -497,7 +497,8 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
             ref={attachRef} 
             display="flex" 
             flexDirection="column" 
-            w='216mm' h='279mm' // Ensures it stretches to full screen/container height
+            position='relative' 
+            w='210mm' h='297mm'  // Ensures it stretches to full screen/container height
             sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
 
         >
@@ -525,19 +526,22 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                 display="flex"
                 justifyContent="center"
                 alignItems="center"
+                mt='8'
             >
                 {batch?.attendance && batch?.attendance !== '' && (
-                    <ChakraImage src={batch?.attendance} width='100%' height='auto' alt='attachment' />
+                    <ChakraImage src={batch?.attendance} width='80%' height='auto' alt='attachment' />
                 )}
             </Box>
             {/* FIXED FOOTER */}
             <Box 
-                mt='16'
+                position='absolute'
                 w='100%' 
                 display='flex' 
                 justifyContent='center' 
                 alignItems='center'
-                flexShrink={0} // Prevents the footer container from squishing
+                bottom='0'
+                left='0'
+                pb='4'
             >
                 <ChakraImage src='/Footer.png' width='500px' h='100%' alt='Footer placeholder' />
             </Box>
