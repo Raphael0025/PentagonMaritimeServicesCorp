@@ -177,7 +177,7 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                     <Input w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])} />
                                 </FormControl>
                             </Box>
-                            <Box display='flex' jusitfyContent='start' alignItems='end' mb='2' gap='3'>
+                            <Box display='flex' justifyContent='start' alignItems='end' mb='2' gap='3'>
                                 <FormControl  w='auto' display='flex' alignItems='end'>    
                                     <FormLabel fontWeight='normal'>Remarks:</FormLabel>
                                     <Input type='text' onChange={(e) => setRemarks(e.target.value)} shadow='md'/>
