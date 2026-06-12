@@ -542,7 +542,7 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                 {batch?.attendance && batch?.attendance !== '' && (
                     <ChakraImage src={batch?.attendance} width='80%' height='auto' alt='attachment' />
                 )}
-                <Box w='100%' display='flex' justifyContent='start' pt='10' gap='3'>
+                <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='10' gap='3'>
                     <Text>REMARKS:</Text>
                     <Text fontWeight='normal'>{batch.remarks}</Text>
                 </Box>
