@@ -134,7 +134,7 @@ export default function Dated () {
                     trainingMode: batch.training_mode,
                     cancelled: cancelled.toString(),
                     non_appearance: nonAppearance.toString(),
-                    remarks: batch.remarks,
+                    attendance_remarks: batch.attendance_remarks,
                 }
             })
 
