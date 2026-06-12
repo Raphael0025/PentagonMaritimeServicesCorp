@@ -386,7 +386,7 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                 )}
                 <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='10' gap='3'>
                     <Text fontSize='lg'>REMARKS:</Text>
-                    <Text fontWeight='normal'>{batch.remarks}</Text>
+                    <Text fontWeight='normal'>{batch?.remarks}</Text>
                 </Box>
             </Box>
             {/* FIXED FOOTER */}
