@@ -163,7 +163,7 @@ export default function Dated () {
     const handleRemarks = async () => {
         try {
             setLoading(true)
-            await UPDATE_BATCH_ID(batchID, {remarks: bRemarks}, null)
+            await UPDATE_BATCH_ID(batchID, {attendance_remarks: bRemarks}, null)
             handleToast(`Remarks Updated`, ``, 5000, 'success')
             onCloseRemarks()
             setBatchID('')
