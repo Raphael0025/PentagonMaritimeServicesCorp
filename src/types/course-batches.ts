@@ -19,7 +19,8 @@ export interface CourseBatchByID extends CourseBatch{
     id: string;
     time_duration: string
     training_mode: string;
-    remarks: string;
+    attendance_remarks: string;
+    ccr_remarks: string;
     attendance: string;
     ccr: string;
     createdAt: Timestamp;

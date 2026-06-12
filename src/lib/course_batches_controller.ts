@@ -47,10 +47,10 @@ export const scannedAttachment = async (BATCH_ID: string, attachmentType: string
         const getDoc = doc(firestore, `BATCH_RECORDS/${BATCH_ID}`)
         switch(attachmentType){
             case 'attendance':
-                await updateDoc(getDoc, { attendance: scanned, remarks: batch_remarks})
+                await updateDoc(getDoc, { attendance: scanned, attendance_remarks: batch_remarks})
                 break;
             case 'ccr':
-                await updateDoc(getDoc, { ccr: scanned, remarks: batch_remarks})
+                await updateDoc(getDoc, { ccr: scanned, ccr_remarks: batch_remarks})
                 break;
             default:                 
                 break;
