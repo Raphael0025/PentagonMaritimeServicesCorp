@@ -343,6 +343,34 @@ export default function BDTransmittal() {
         if (!transmittalDate || !transID) return;
         try{
             await UPDATE_TRANSMITTAL({createdAt: transmittalDate}, transID)
+            if (innerEndorsements && innerEndorsements.length > 0) {
+                const allUpdatePromises: any[] = [];
+    
+                innerEndorsements.forEach((endorsement) => {
+                    // Check if certificate_id exists and is an array as seen in the image
+                    if (Array.isArray(endorsement?.certificate_id)) {
+                        
+                        // Loop through each individual string ID inside the certificate_id array
+                        endorsement.certificate_id.forEach((id) => {
+                            if (id) {
+                                // Queue up the update promise using the string as the document ID
+                                const updatePromise = UPDATE_TRAINING(
+                                    id,
+                                    { cert_released: transmittalDate }, 
+                                    '',
+                                );
+                                allUpdatePromises.push(updatePromise);
+                            }
+                        });
+                    }
+                });
+    
+                // 3. Fire all database updates simultaneously and wait for completion
+                if (allUpdatePromises.length > 0) {
+                    await Promise.all(allUpdatePromises);
+                }
+            }
+            handleToast(`Successfully changed Transmittal Date.`, `Transmittal Date has been updated.`, 5000, 'success')
         }catch(e){
             console.error(e)
         }
@@ -402,7 +430,7 @@ export default function BDTransmittal() {
                         <Text w='10%'>{index + 1}</Text>
                         <Text w='100%'>{transmittal?.createdAt ? parsingTimestamp(transmittal.createdAt).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',}) : 'N/A'}</Text>
                         <Text w='100%'>{allClients?.find((client) => client.id === transmittal.companyID)?.alias || transmittal.companyID}</Text>
-                        <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setCompanyID(transmittal.companyID); setInnerEndorsements(transmittal.endorsements); onOpenTransmittalView();}}>{transmittal.endorsements.length > 0 && 'View'}</Text>
+                        <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setCompanyID(transmittal.companyID); setInnerEndorsements(transmittal.endorsements); onOpenTransmittalView();}}>{transmittal.endorsements.length > 0 && 'View'}</Text>
                         <Text w='100%' _hover={{cursor: 'pointer'}} onClick={() => {setTransID(transmittal?.id ?? ''); setCompanyName(allClients?.find((client) => client.id === transmittal.companyID)?.alias ?? transmittal.companyID ?? ''); onOpenTransmittalScan();}}>{(transmittal?.images ?? []).length > 0 ? 'View' : 'UnAvailable'}</Text>
                         <Text onClick={() => handleDeletetransmittal(transmittal?.id ?? '')} w='100%' _hover={{cursor: 'pointer', textDecoration: 'underline'}} color='red.500'>{`Delete`}</Text>
                     </Box>

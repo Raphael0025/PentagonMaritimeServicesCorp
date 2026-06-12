@@ -33,7 +33,7 @@ export const GENERATE_BD_BATCH = async (batch_record: BDCourseBatch) => {
     }
 }
 
-export const scannedAttachment = async (BATCH_ID: string, attachmentType: string, course: string, file: any, fileID: string) => {
+export const scannedAttachment = async (BATCH_ID: string, attachmentType: string, course: string, batch_remarks: string, file: any, fileID: string) => {
     try{
         let scanned = '';
 
@@ -47,10 +47,10 @@ export const scannedAttachment = async (BATCH_ID: string, attachmentType: string
         const getDoc = doc(firestore, `BATCH_RECORDS/${BATCH_ID}`)
         switch(attachmentType){
             case 'attendance':
-                await updateDoc(getDoc, { attendance: scanned})
+                await updateDoc(getDoc, { attendance: scanned, remarks: batch_remarks})
                 break;
             case 'ccr':
-                await updateDoc(getDoc, { ccr: scanned})
+                await updateDoc(getDoc, { ccr: scanned, remarks: batch_remarks})
                 break;
             default:                 
                 break;

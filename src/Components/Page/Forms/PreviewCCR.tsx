@@ -53,6 +53,7 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
 
     const [file, setFile] = useState<File[]>([])
     const [attachmentType, setAttachmentType] = useState<string>('ccr')
+    const [batchRemarks, setRemarks] = useState<string>('')
 
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     useEffect(() => {
@@ -146,7 +147,7 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
 
     const handleAttachment = async () => {
         try{
-            await scannedAttachment(batchID, attachmentType, courseCode, file, file[0].name)
+            await scannedAttachment(batchID, attachmentType, courseCode, batchRemarks, file, file[0].name)
             handleToast('File uploaded successfully', '', 3000, 'success')
         }catch(error){
             console.error('Error uploading file:', error);
@@ -221,12 +222,20 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                         </Box>
                     </Box>
                 </Box>
-                <Box w='100%' display='flex' gap='3' justifyContent='start' alignItems='end' mb={2}>
-                    <FormControl w='auto' display='flex' gap='2' alignItems='center'>
-                        <FormLabel m='0' fontWeight='normal' >Attachment:</FormLabel>
-                        <Input w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])} />
-                    </FormControl>
-                    <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md' >Upload</Button>
+                <Box display='flex' gap='3' justifyContent='start'>
+                    <Box display='flex' gap='3' justifyContent='start' alignItems='end' mb={2}>
+                        <FormControl w='auto' display='flex' gap='2' alignItems='center'>
+                            <FormLabel m='0' fontWeight='normal' >Attachment:</FormLabel>
+                            <Input w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])} />
+                        </FormControl>
+                    </Box>
+                    <Box display='flex' jusitfyContent='start' alignItems='end' mb='2' gap='3'>
+                        <FormControl w='auto' display='flex' alignItems='end'>
+                            <FormLabel fontWeight='normal'>Remarks:</FormLabel>
+                            <Input type='text' onChange={(e) => setRemarks(e.target.value)} shadow='md'/>
+                        </FormControl>
+                        <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md' >Upload</Button>
+                    </Box>
                 </Box>
             </Box>
             <Box display='flex' mb='5' justifyContent='space-between'>
@@ -369,10 +378,16 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                 justifyContent="center"
                 alignItems="center"
                 mt='8'
+                flexDir='column'
+                gap='6'
             >
                 {batch?.ccr && batch?.ccr !== '' && (
                     <ChakraImage src={batch?.ccr} width='70%' height='auto' alt='attachment' />
                 )}
+                <Box w='100%' display='flex' justifyContent='start' pt='10' gap='3'>
+                    <Text>REMARKS:</Text>
+                    <Text fontWeight='normal'>{batch.remarks}</Text>
+                </Box>
             </Box>
             {/* FIXED FOOTER */}
             <Box 
