@@ -38,7 +38,7 @@ export default function Page(){
                     training_mode: batch.training_mode,
                     room: batch.room,
                     instructor: batch.instructor,
-                    remarks: batch.remarks,
+                    remarks: batch.attendance_remarks,
                 }
                 : null;
         })
