@@ -385,7 +385,7 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                     <ChakraImage src={batch?.ccr} width='70%' height='auto' alt='attachment' />
                 )}
                 <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='10' gap='3'>
-                    <Text>REMARKS:</Text>
+                    <Text fontSize='lg'>REMARKS:</Text>
                     <Text fontWeight='normal'>{batch.remarks}</Text>
                 </Box>
             </Box>
