@@ -490,7 +490,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                 </Box>
                 <Box mt='3'>
                     <Text fontSize='10pt'>Remarks:</Text>
-                    <Textarea id='remarks' fontWeight='normal' value={batch.remarks} onChange={OnChangeBatchDetailsTextArea} placeholder='Type here your remarks' shadow='md' size='sm' resize='vertical' minH='150px' />
+                    <Textarea id='remarks' fontWeight='normal' value={batch.attendance_remarks} onChange={OnChangeBatchDetailsTextArea} placeholder='Type here your remarks' shadow='md' size='sm' resize='vertical' minH='150px' />
                 </Box>
             </DrawerBody>
             <DrawerFooter>
