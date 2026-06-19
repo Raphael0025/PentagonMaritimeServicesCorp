@@ -83,7 +83,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
 
     return(
         <Box w='100%' placeItems='center' p='0' fontFamily='Arial'
-            //sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
         >
         {selectedTrainings?.filter((t) => {
             if(trainingID.length === 0) return true; 
@@ -246,9 +246,9 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                                 </Box>
                             </Box>
                             <Box fontWeight='bold' display='block' lineHeight={1.35} fontSize='9pt' ps='7' pr='7' py='2' borderLeft='1px solid black'>
-                                <Text>Landline: (02) 8281-8155</Text>
-                                <Text>Email: pentagonmaritimeservices@gmail.com</Text>
-                                <Text>FB: pentagonmaritimeservicescorp</Text>
+                                <Text style={{WebkitTextStroke: "0.35px currentColor",}}>Landline: (02) 8281-8155</Text>
+                                <Text style={{WebkitTextStroke: "0.35px currentColor",}}>Email: pentagonmaritimeservices@gmail.com</Text>
+                                <Text style={{WebkitTextStroke: "0.35px currentColor",}}>FB: pentagonmaritimeservicescorp</Text>
                             </Box>
                         </Box>
                     </Box>
