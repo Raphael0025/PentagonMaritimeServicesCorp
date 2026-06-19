@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react';
-import { Box, Text, Input, Textarea, Button, InputLeftAddon, Image, Grid, GridItem, FormControl, Select, Switch, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Input, Textarea, Button, InputLeftAddon, Image, Grid, GridItem, FormControl, Select, Switch, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, Checkbox } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon, EditIcon, DownloadIcon, CheckCircleIcon } from '@chakra-ui/icons'
 import { Timestamp } from 'firebase/firestore'
@@ -75,7 +75,8 @@ export default function Page(){
 
     const [companyRef, setCompanyRef] = useState<string>('')
     const [selectCompany, setSelectCompany] = useState<string>('')
-
+    const [selectedTrainingIds, setSelectedTrainingIds] = useState<string[]>([])
+    
     const [birth_date, setBirth_Date] = useState<Date | null>(new Date())
 
     const { isOpen: isOpenMarketing, onOpen: onOpenMarketing, onClose: onCloseMarketing  } = useDisclosure()
@@ -293,6 +294,66 @@ export default function Page(){
         onCloseRank()
     }
     
+    const getFilteredTrainings = () => {
+        if (!allTraining) return [];
+        return allTraining
+            .sort((a, b) => b.date_enrolled.toMillis() - a.date_enrolled.toMillis())
+            .filter((t) => t.reg_status >= 3 && t.regType === 0)
+            .filter((t) => {
+                const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
+                const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
+                if (!trainee) return false;
+                if (filterCompany === '') return true;
+                return trainee.company === filterCompany;
+            })
+            .filter((t) => {
+                if (!filterCourse || filterCourse === '') return true;
+                return (
+                    allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
+                    courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+                );
+            })
+            .filter((t) => {
+                const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
+                const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
+                if (!trainee) return false;
+                if (filterMarket === "") return true;
+                return trainee.marketing?.toUpperCase() === filterMarket;
+            })
+            .filter((training) => {
+                const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id);
+                const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id);
+                return !!(trainee && registration && (
+                    trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })?.toLowerCase().includes(searchTerm.toLowerCase())
+                ));
+            }
+        )
+    }
+
+    const handleSelectAllToggle = (isChecked: boolean) => {
+        if (isChecked) {
+            const filteredData = getFilteredTrainings();
+            const allIds = filteredData.map(t => t.id); // Maps out the training doc IDs
+            setSelectedTrainingIds(allIds);
+        } else {
+            setSelectedTrainingIds([]);
+        }
+    }
+
+    // Handles individual row toggles
+    const handleRowSelectToggle = (trainingId: string, isChecked: boolean) => {
+        if (isChecked) {
+            setSelectedTrainingIds(prev => [...prev, trainingId]);
+        } else {
+            setSelectedTrainingIds(prev => prev.filter(id => id !== trainingId));
+        }
+    }
+
     return(
         <>
             <main className="w-full space-y-3">
@@ -350,8 +411,18 @@ export default function Page(){
                             <Box position='sticky' top='0' zIndex='1' w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Box className="space-x-3 flex w-full" justifyContent='center' alignItems='center'>
-                                        <Text w="150px" className="text-center">Enrolled Date</Text>
-                                        <Text w="80px" className="text-center">Enrolled By</Text>
+                                        {/* {filterCourse && filterCourse !== '' && (
+                                            <Box w='30px' display='flex' justifyContent='center' alignItems='center' pl='2'>
+                                                <Checkbox 
+                                                    isChecked={getFilteredTrainings().length > 0 && selectedTrainingIds.length === getFilteredTrainings().length}
+                                                    isIndeterminate={selectedTrainingIds.length > 0 && selectedTrainingIds.length < getFilteredTrainings().length}
+                                                    onChange={(e) => handleSelectAllToggle(e.target.checked)}
+                                                    colorScheme="blue"
+                                                />
+                                            </Box>
+                                        )} */}
+                                        <Text w="80px" whiteSpace='normal' className="text-center">Enrolled Date</Text>
+                                        <Text w="80px" whiteSpace='normal' className="text-center">Enrolled By</Text>
                                         {/* <Text w="150px" className="text-center">Trainee Type</Text> */}
                                         <Text w="150px" className="text-center">Registration No.</Text>
                                         <Text w="130px" className="text-center">Batch</Text>
@@ -451,11 +522,20 @@ export default function Page(){
                                 )
                                 ){
                                     return(
-                                        <Box key={training.id} w='4150px' _hover={{bgColor: 'blue.100', borderBottomWidth: '1px', borderColor: 'blue.700'}} className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
+                                        <Box key={training.id} w='4150px' _hover={{bgColor: 'blue.100', borderBottomWidth: '1px', borderColor: 'blue.700'}} className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" px='3' whiteSpace='nowrap' >
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
-                                                    <Text w="150px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
-                                                    <Text w="80px">{training.enrolledBy}</Text>                                                                             
+                                                    {/* {filterCourse && filterCourse !== '' && (
+                                                        <Box w='20px' placeItems='center' >
+                                                            <Checkbox 
+                                                                shadow='md' 
+                                                                isChecked={selectedTrainingIds.includes(training.id)}
+                                                                onChange={(e) => handleRowSelectToggle(training.id, e.target.checked)}
+                                                            />
+                                                        </Box>
+                                                    )} */}
+                                                    <Text w="50px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
+                                                    <Text w="120px">{training.enrolledBy}</Text>                                                                             
                                                     {/* <Text w="150px">
                                                         {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
                                                     </Text>                                         */}

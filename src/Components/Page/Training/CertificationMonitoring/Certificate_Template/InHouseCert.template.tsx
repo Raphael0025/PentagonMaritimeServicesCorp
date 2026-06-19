@@ -83,7 +83,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
 
     return(
         <Box w='100%' placeItems='center' p='0' fontFamily='Arial'
-            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+            //sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
         >
         {selectedTrainings?.filter((t) => {
             if(trainingID.length === 0) return true; 
@@ -115,28 +115,28 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                 <Box pt='6' w='216mm' h='279mm' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal'  flexDir='column' alignItems='center'>
                     <ChakraImage src={'/certificateHeader.png'} alt='header image' w='7.05in' h='1.15in'  objectFit='cover'/>
                     <Box pt='5' pr='9' pb='0' display='flex' justifyContent='end' w='85%'>
-                        <Box fontWeight='bold' lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
+                        <Box style={{WebkitTextStroke: "0.95px black",}} lineHeight='1.2' gap='0' display='block' fontSize='12pt' textAlign='start'>
                             <Text>
                                 Certificate No. :
-                                <Text as='span' fontWeight={'normal'}>
+                                <Text as='span' style={{WebkitTextStroke: "0.75px black",}}>
                                     {` ${training.cert_no}`}
                                 </Text>
                             </Text>
                             <Text>
                                 Registration No. : 
-                                <Text as='span' fontWeight={'normal'}>
+                                <Text as='span' style={{WebkitTextStroke: "0.75px black",}}>
                                     {` REG-${reg_num}`}
                                 </Text>
                             </Text>
                         </Box>
                     </Box>
-                    <Box w='100%' h='85%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
-                        <Text fontWeight='bold' fontSize='26pt'>Certificate of Completion</Text>
-                        <Text pt='8'>This Certificate is issued to</Text>
-                        <Text fontWeight='bold' fontSize='16pt' textTransform='uppercase'>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
-                        <Text>for having successfully completed the training course in</Text>
-                        <Text fontSize='14pt' w='70%' mt='4' textAlign='center' fontWeight='bold'>
-                            <div style={{display: 'block', lineHeight: '1.1'}}
+                    <Box w='100%' h='85%' display='flex' color='black' flexDir='column' alignItems='center' justifyContent='center' gap='0'>
+                        <Text style={{WebkitTextStroke: "1.75px currentColor",}} fontSize='26pt'>Certificate of Completion</Text>
+                        <Text pt='8' style={{WebkitTextStroke: "0.35px currentColor",}}>This Certificate is issued to</Text>
+                        <Text fontSize='16pt' textTransform='uppercase' style={{WebkitTextStroke: "1.75px currentColor",}}>{`${trainee.first_name} ${trainee.middle_name} ${trainee.last_name}`}</Text>
+                        <Text color='black' style={{WebkitTextStroke: "0.35px currentColor",}} >for having successfully completed the training course in</Text>
+                        <Text fontSize='14pt' w='70%' mt='4' textAlign='center'>
+                            <div style={{display: 'block', WebkitTextStroke: "1.75px currentColor", lineHeight: '1.1'}}
                                 dangerouslySetInnerHTML={{
                                     __html: `${training.certTitle}`
                                 }}
@@ -168,20 +168,20 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                             },
                         }}>
                             {training?.conductedOnline ? (
-                                <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                <div style={{fontSize: '12pt', WebkitTextStroke: "0.35px currentColor",display: 'block', lineHeight: '1.2'}}
                                     dangerouslySetInnerHTML={{
                                         __html: `<span>Conducted online on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
                                     }}
                                 />
                             ) : (
-                                <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                <div style={{fontSize: '12pt', WebkitTextStroke: "0.35px currentColor", display: 'block', lineHeight: '1.2'}}
                                     dangerouslySetInnerHTML={{
                                         __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
                                     }}
                                 />
                             )}
                         </Box>
-                        <div style={{marginTop: '40px'}}
+                        <div style={{WebkitTextStroke: "0.35px currentColor", marginTop: '40px'}}
                             dangerouslySetInnerHTML={{
                                 __html: `Issued this ${nthDay} day of ${splitMonth}, ${training.year || getYear} in Manila City, Philippines`
                             }}
