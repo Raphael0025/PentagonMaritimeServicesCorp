@@ -255,28 +255,28 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                     {/** Table Body */}
                     {trainingsArr// Create a shallow copy to avoid mutating the original array
                     ?.slice() // Create a shallow copy to avoid mutating the original array
-                    // .sort((a, b) => {
-                    //     const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
-                    //     const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
-                
-                    //     // Extract numeric parts of the registration number
-                    //     const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
-                    //     const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
-                
-                    //     // Compare by year first, then by number
-                    //     if (yearA !== yearB) {
-                    //         return yearA - yearB;
-                    //     }
-                    //     return numberA - numberB;
-                    // })
                     .sort((a, b) => {
-                        // Use .toMillis() for Firestore Timestamps, default to 0 if missing
-                        const timeA = a.date_enrolled ? a.date_enrolled.toMillis() : 0;
-                        const timeB = b.date_enrolled ? b.date_enrolled.toMillis() : 0;
-
-                        // Ascending order (Oldest -> Newest)
-                        return timeA - timeB;
+                        const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
+                        const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
+                
+                        // Extract numeric parts of the registration number
+                        const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
+                        const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
+                
+                        // Compare by year first, then by number
+                        if (yearA !== yearB) {
+                            return yearA - yearB;
+                        }
+                        return numberA - numberB;
                     })
+                    // .sort((a, b) => {
+                    //     // Use .toMillis() for Firestore Timestamps, default to 0 if missing
+                    //     const timeA = a.date_enrolled ? a.date_enrolled.toMillis() : 0;
+                    //     const timeB = b.date_enrolled ? b.date_enrolled.toMillis() : 0;
+
+                    //     // Ascending order (Oldest -> Newest)
+                    //     return timeA - timeB;
+                    // })
                     .map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
