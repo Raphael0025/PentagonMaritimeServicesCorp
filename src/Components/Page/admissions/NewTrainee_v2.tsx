@@ -209,7 +209,6 @@ export default function NewTrainee_v2(){
         }
     }
     
-
     const handleValidMC = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
 
@@ -520,6 +519,7 @@ export default function NewTrainee_v2(){
         onCloseThankYou()
         router.push('/admissions/ol/forms')
     }
+    
     return(
     <>
         <Registration_Background />
@@ -566,12 +566,12 @@ export default function NewTrainee_v2(){
                                             </FormLabel>
                                             <Input readOnly value={courseFound ? `${courseFound.course_code} - ${courseFound.course_name}` : ''} onClick={() => {onOpenModal(); setCourseIndex(index); }} fontWeight="400" textTransform="uppercase" placeholder="Select Course" shadow="md" />
                                         </FormControl>
-                                        <FormControl display={tempCourses[index]?.accountType === 0 ? 'block' : 'none'} w={{ base: "100%", md: "30%" }} isRequired>
+                                        {/*<FormControl display={tempCourses[index]?.accountType === 0 ? 'block' : 'none'} w={{ base: "100%", md: "30%" }} isRequired>
                                             <FormLabel htmlFor={`fee-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
                                                 Course Fee
                                             </FormLabel>
                                             <Input id={`fee-${index}`} value={tempCourses[index]?.course_fee} readOnly /> 
-                                        </FormControl>
+                                        </FormControl>*/}
                                     </Box>
                                     <Box display="flex" flexDir={{ base: "column", md: "row" }} gap="4" pt="3" pb="8">
                                         <FormControl isRequired>
@@ -638,7 +638,7 @@ export default function NewTrainee_v2(){
                                         <p>{trainee.relationship === '' ? `* Relationship to Contact person` : ''}</p>
                                         <p>{trainee.marketing === '' ? `* Marketing` : ''}</p>
                                         {trainee.marketing !== '' && (
-                                            <p>{trainee.otherMarketing === '' ? `* Marketing` : ''}</p>
+                                            <p>{(trainee.otherMarketing === '' && trainee?.marketing === 'OTHERS') ? `* Marketing` : ''}</p>
                                         )}
                                     </Box>
                                 </Box>
@@ -828,39 +828,67 @@ export default function NewTrainee_v2(){
                                 <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                 <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                             </FormControl>
-                            {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (
-                                <>
+                            {/* {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (<> */}
                                 <FormControl isRequired >
                                     <FormLabel htmlFor='mismoSC' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
                                     <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
                                     <Input id='mismoSC' onChange={handleValidSC} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                                 </FormControl>
-                                </>
-                            )}
+                                {/* </>)} */}
                         </Box>
-                        {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (
-                            <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                            {/* 1. Medical Certificate Section */}
+                            {tempCourses.some(fc => {
+                                const courseFound = allCourses?.find(c => c.id === fc.course);
+                                return (
+                                    courseFound &&
+                                    [0, 2, 3].includes(courseFound.courseType) &&
+                                    ['BT', 'AFF', 'RAFF', 'RBT'].includes(courseFound.course_code.toUpperCase())
+                                );
+                            }) && (
                                 <FormControl isRequired >
                                     <FormLabel htmlFor='med_cert' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Medical Certificate</FormLabel>
                                     <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your Medical Certificate)</FormHelperText>
-                                    <Input id='med_cert' onChange={handleValidID} p='4px' placeholder='e.g. Doe' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <Input id='med_cert' onChange={handleValidMC} p='4px' accept='.jpg,.jpeg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                     <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                                 </FormControl>
+                            )}
+                            {/* 2. COP Section */}
+                            {tempCourses.some(fc => {
+                                const courseFound = allCourses?.find(c => c.id === fc.course);
+                                return (
+                                    courseFound &&
+                                    [0, 2, 3].includes(courseFound.courseType) &&
+                                    ['UBT-PSSR', 'RAFF', 'RBT'].includes(courseFound.course_code.toUpperCase())
+                                );
+                            }) && (
                                 <FormControl isRequired >
-                                    <FormLabel htmlFor='cop' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>{`Certificate of Proficiency (COP)`}</FormLabel>
+                                    <FormLabel htmlFor='cop' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Certificate of Proficiency (COP)</FormLabel>
                                     <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your COP)</FormHelperText>
-                                    <Input id='cop' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <Input id='cop' onChange={handleValidCOP} p='4px' accept='.jpg,.jpeg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>{`COP Cert (BT) or (AFF) for UBT-PSSR COP Cert (BT)`}</FormHelperText>
                                     <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                                 </FormControl>
+                            )}
+                            {/* 3. Sea Service Records Section */}
+                            {tempCourses.some(fc => {
+                                const courseFound = allCourses?.find(c => c.id === fc.course);
+                                return (
+                                    courseFound &&
+                                    [0, 2, 3].includes(courseFound.courseType) &&
+                                    ['RAFF', 'RBT'].includes(courseFound.course_code.toUpperCase())
+                                );
+                            }) && (
                                 <FormControl isRequired >
                                     <FormLabel htmlFor='ssr' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Sea Service Records</FormLabel>
-                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your Sea Service Records)</FormHelperText>
-                                    <Input id='ssr' onChange={handleValidSC} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Provide a SCANNED COPY of your Sea Service Records)</FormHelperText>
+                                    <Input id='ssr' onChange={handleValidSSR} p='4px' accept='.jpg,.jpeg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>It MUST be ATLEAST 12 months recent.</FormHelperText>
                                     <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                                 </FormControl>
-                            </Box>
-                        )}
+                            )}
+                        </Box>
                     </Box>
                 </Box>
                 {/** Company Policies & Guidelines*/}

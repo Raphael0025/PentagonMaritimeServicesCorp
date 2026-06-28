@@ -20,6 +20,10 @@ export interface BATCH_ANALYSIS {
     sortedBatches: batchArr[];
     total_trainees: number; // solve
     total_batches: number; // solve
+    ttl_simu: number;
+    ttl_non_simu: number;
+    ttl_stcw: number;
+    ttl_mds: number;
 }
 
 export interface batchArr {

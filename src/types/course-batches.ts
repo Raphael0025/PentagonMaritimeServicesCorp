@@ -21,6 +21,7 @@ export interface CourseBatchByID extends CourseBatch{
     training_mode: string;
     attendance_remarks: string;
     ccr_remarks: string;
+    remarks: string;
     attendance: string;
     ccr: string;
     createdAt: Timestamp;
@@ -54,6 +55,7 @@ export const initCourseBatch = {
     practicumSite: '',
     practicumDate: '',
     attendance_remarks: '',
+    remarks: '',
     ccr_remarks: '',
     createdAt: Timestamp.now(),
     updateAt: Timestamp.now(),

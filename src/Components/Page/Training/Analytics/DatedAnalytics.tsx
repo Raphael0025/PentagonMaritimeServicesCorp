@@ -40,7 +40,8 @@ export default function Dated () {
     const [batchID, setBatchID] = useState<string>('')
     const [bRemarks, setBRemarks] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(false)
-    
+    const [filterCourse, setFilterCourse] = useState<string>('');
+
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear()
     const startYear = parseInt(deployYDate, 10)
@@ -62,7 +63,12 @@ export default function Dated () {
             "jan", "feb", "mar", "apr", "may", "jun",
             "jul", "aug", "sep", "oct", "nov", "dec"
         ];
-        const trimmedMonth = months[monthSelected];
+        const trimmedMonth = months[monthSelected]
+
+        const coursesToProcess = filterCourse 
+        ? allCourses.filter(c => c.course_code === filterCourse)
+        : allCourses;
+
         /* ----------------------------------------
             1. Filter batches by CREATED date
         ----------------------------------------- */
@@ -99,7 +105,7 @@ export default function Dated () {
         /* ----------------------------------------
             3. Build analysis per course
         ----------------------------------------- */
-        const batchAnalysis = allCourses.reduce<BATCH_ANALYSIS[]>((acc, course) => {
+        const batchAnalysis = coursesToProcess.reduce<BATCH_ANALYSIS[]>((acc, course) => {
             const courseBatches = filteredBatches.filter((b) =>{
                 const start = b.start_date.toLowerCase();
                 const end = b.end_date.toLowerCase();
@@ -114,7 +120,14 @@ export default function Dated () {
 
             if (!courseBatches.length) return acc;
 
+            const tMode = Number(course?.trainingMode);
+            const cType = Number(course?.courseType);
+
+            const isSimulator = tMode === 1 && cType === 1;
+            const isNonSimulator = tMode === 0 && cType === 1;
+
             let totalTraineesCount = 0;
+            let courseDeliveredCount = 0;
 
             const batches = courseBatches.map((batch) => {
                 const trainees = allTrainData.filter(
@@ -126,6 +139,8 @@ export default function Dated () {
                 const nonAppearance = trainees.filter(t => t.reg_status === 9).length;
 
                 totalTraineesCount += trainees.length;
+                courseDeliveredCount += delivered;
+
                 return {
                     batch_id: batch.id,
                     batch_no: batch.batch_no.toString(),
@@ -134,9 +149,11 @@ export default function Dated () {
                     trainingMode: batch.training_mode,
                     cancelled: cancelled.toString(),
                     non_appearance: nonAppearance.toString(),
-                    remarks: batch.attendance_remarks,
+                    remarks: batch.remarks,
                 }
             })
+            const ttl_simu = isSimulator ? courseDeliveredCount : 0;
+            const ttl_non_simu = isNonSimulator ? courseDeliveredCount : 0;
 
             acc.push({
                 course: course.course_code,
@@ -145,6 +162,10 @@ export default function Dated () {
                 sortedBatches: batches.sort((a, b) => b.batch_no.localeCompare(a.batch_no)),
                 total_batches: courseBatches.length,
                 total_trainees: totalTraineesCount,
+                ttl_simu,
+                ttl_non_simu,
+                ttl_stcw: 0,
+                ttl_mds: 0,
             })
             return acc;
         }, [])
@@ -158,12 +179,12 @@ export default function Dated () {
             ),
         }));
         setBatchCourses(sortedBatchCourses)
-    }, [ allCourses, courseBatch, allTrainingData, monthSelected, yearSelected ])
+    }, [ allCourses, courseBatch, allTrainingData, monthSelected, yearSelected, filterCourse ])
 
     const handleRemarks = async () => {
         try {
             setLoading(true)
-            await UPDATE_BATCH_ID(batchID, {attendance_remarks: bRemarks}, null)
+            await UPDATE_BATCH_ID(batchID, {remarks: bRemarks}, null)
             handleToast(`Remarks Updated`, ``, 5000, 'success')
             onCloseRemarks()
             setBatchID('')
@@ -193,128 +214,194 @@ export default function Dated () {
         })
     }
 
+    const headerStyle= {
+        h: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRight: '1px solid white',
+    }
+
     return(
         <>
-            <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
+            <Box display='flex' justifyContent='space-between'>
+                <Text fontSize='xl' fontFamily='Arial, sans-serif' textTransform='uppercase' >Training Analysis</Text>
+                <Box display='flex' alignItems='center'>
+                    <Text fontSize='lg' mr='3'>Filters:</Text>
+                    <Button w='auto' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
+                    {/* Clean Dropdown Selection tied directly to the useEffect state trigger */}
+                    <Select 
+                        size="sm" 
+                        shadow='md'
+                        w="auto"
+                        value={filterCourse} 
+                        onChange={(e) => setFilterCourse(e.target.value)}
+                    >
+                        <option hidden>All Courses</option>
+                        {allCourses
+                        ?.sort((a, b) => a.course_code.localeCompare(b.course_code))
+                        .map(c => (
+                            <option key={c.id} value={c.course_code}>{c.course_code.toUpperCase()}</option>
+                        ))}
+                    </Select>
+                    {filterCourse && (
+                        <Button ms='3' onClick={() => setFilterCourse('')} colorScheme='red' shadow='md' size='sm'>Clear</Button>
+                    )}
+                </Box>
+            </Box>
             <Box >
-                <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
-                    <Box w='200px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
-                        <Text>Total Courses</Text>
-                        <Text>{batchCourses.length}</Text>
+                <Box display='flex' justifyContent='space-between'>
+                    <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
+                        <Box w='200px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
+                            <Text>Total Courses</Text>
+                            <Text>{batchCourses.length}</Text>
+                        </Box>
+                        <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>Total Batches</Text>
+                            <Text>
+                            {batchCourses.reduce(
+                                (total, bc) => total + bc.sortedBatches.length,
+                                0
+                            )}
+                            </Text>
+                        </Box>
+                        <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>Total Declared</Text>
+                            <Text>
+                            {batchCourses.reduce(
+                                (total, bc) => total + bc.total_trainees,
+                                0
+                            )}
+                            </Text>
+                        </Box>
+                        <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>Total Delivered</Text>
+                            <Text>
+                            {batchCourses.reduce(
+                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
+                                0
+                            )}
+                            </Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>F2F</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => {
+                                return total + bc.sortedBatches.reduce((sum, batch) => {
+                                    return sum +
+                                        (['f2f', 'f2ft', 'f2fp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
+                                    }, 0);
+                                }, 0)
+                            }
+                            </Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>OINS</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => {
+                                return total + bc.sortedBatches.reduce((sum, batch) => {
+                                    return sum +
+                                        (['ol', 'olt', 'olp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
+                                    }, 0);
+                                }, 0)
+                            }
+                            </Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>OM</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => {
+                                return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'olm' ? Number(batch.delivered) : 0), 0);
+                                }, 0)
+                            }
+                            </Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>CBT</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => {
+                                return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'f2fm' ? Number(batch.delivered) : 0), 0);
+                                }, 0)
+                            }
+                            </Text>
+                        </Box>
+                        <Box w='100px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>BLENDED</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => total + bc.sortedBatches
+                                .reduce((sum, batch) => 
+                                    sum + (batch.trainingMode === 'blended' ? Number(batch.delivered) : 0), 
+                                0), 
+                            0)}
+                            </Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>C</Text>
+                            <Text>
+                            {batchCourses.reduce(
+                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.cancelled), 0),
+                                0
+                            )}
+                            </Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>F</Text>
+                            <Text>&nbsp;</Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>NT</Text>
+                            <Text>&nbsp;</Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>NA</Text>
+                            <Text>
+                            {batchCourses.reduce(
+                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.non_appearance), 0),
+                                0
+                            )}
+                            </Text>
+                        </Box>
+                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray' borderTopEndRadius={'5px'} borderBottomEndRadius={'5px'}>
+                            <Text>D</Text>
+                            <Text>
+                            {batchCourses.reduce(
+                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
+                                0
+                            )}
+                            </Text>
+                        </Box>
                     </Box>
-                    <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>Total Batches</Text>
-                        <Text>
-                        {batchCourses.reduce(
-                            (total, bc) => total + bc.sortedBatches.length,
-                            0
-                        )}
-                        </Text>
-                    </Box>
-                    <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>Total Declared</Text>
-                        <Text>
-                        {batchCourses.reduce(
-                            (total, bc) => total + bc.total_trainees,
-                            0
-                        )}
-                        </Text>
-                    </Box>
-                    <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>Total Delivered</Text>
-                        <Text>
-                        {batchCourses.reduce(
-                            (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
-                            0
-                        )}
-                        </Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>F2F</Text>
-                        <Text>
-                        {batchCourses.reduce((total, bc) => {
-                            return total + bc.sortedBatches.reduce((sum, batch) => {
-                                return sum +
-                                    (['f2f', 'f2ft', 'f2fp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
-                                }, 0);
-                            }, 0)
-                        }
-                        </Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>OINS</Text>
-                        <Text>
-                        {batchCourses.reduce((total, bc) => {
-                            return total + bc.sortedBatches.reduce((sum, batch) => {
-                                return sum +
-                                    (['ol', 'olt', 'olp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
-                                }, 0);
-                            }, 0)
-                        }
-                        </Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>OM</Text>
-                        <Text>
-                        {batchCourses.reduce((total, bc) => {
-                            return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'olm' ? Number(batch.delivered) : 0), 0);
-                            }, 0)
-                        }
-                        </Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>CBT</Text>
-                        <Text>
-                        {batchCourses.reduce((total, bc) => {
-                            return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'f2fm' ? Number(batch.delivered) : 0), 0);
-                            }, 0)
-                        }
-                        </Text>
-                    </Box>
-                    <Box w='100px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>BLENDED</Text>
-                        <Text>
-                        {batchCourses.reduce((total, bc) => total + bc.sortedBatches
-                            .reduce((sum, batch) => 
-                                sum + (batch.trainingMode === 'blended' ? Number(batch.delivered) : 0), 
-                            0), 
-                        0)}
-                        </Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>C</Text>
-                        <Text>
-                        {batchCourses.reduce(
-                            (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.cancelled), 0),
-                            0
-                        )}
-                        </Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>F</Text>
-                        <Text>&nbsp;</Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>NT</Text>
-                        <Text>&nbsp;</Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                        <Text>NA</Text>
-                        <Text>
-                        {batchCourses.reduce(
-                            (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.non_appearance), 0),
-                            0
-                        )}
-                        </Text>
-                    </Box>
-                    <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray' borderTopEndRadius={'5px'} borderBottomEndRadius={'5px'}>
-                        <Text>D</Text>
-                        <Text>
-                        {batchCourses.reduce(
-                            (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
-                            0
-                        )}
-                        </Text>
+                    <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
+                        <Box w='80px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
+                            <Text>Simu</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => total + (bc.ttl_simu || 0), 0)}
+                            </Text>
+                        </Box>
+                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>Non-Simu</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => total + (bc.ttl_non_simu || 0), 0)}
+                            </Text>
+                        </Box>
+                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>STCW</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => total + (bc.ttl_stcw || 0), 0)}
+                            </Text>
+                        </Box>
+                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
+                            <Text>Safety</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => total + (bc.ttl_stcw || 0), 0)}
+                            </Text>
+                        </Box>
+                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray' borderTopEndRadius={'5px'} borderBottomEndRadius={'5px'}>
+                            <Text>MDS</Text>
+                            <Text>
+                            {batchCourses.reduce((total, bc) => total + (bc.ttl_mds || 0), 0)}
+                            </Text>
+                        </Box>
                     </Box>
                 </Box>
                 <Box h='700px' style={{maxHeight: '750px', overflowY: 'auto', scrollbarWidth: 'thin'}}>
@@ -404,8 +491,8 @@ export default function Dated () {
                                 </Box>
                                 <Text w='300px' >
                                 {bc.sortedBatches.map((b, idx, arr) => 
-                                    <Text key={idx} onClick={() => {setBatchID(b.batch_id); setBRemarks(b.remarks); onOpenRemarks()}} _hover={{cursor: 'pointer'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'}>
-                                        {b.remarks === '' ? 'None' : b.remarks}
+                                    <Text key={idx} onClick={() => {setBatchID(b.batch_id); setBRemarks(b.remarks); onOpenRemarks()}} fontWeight={b?.remarks === '' || b?.remarks === null ? 'normal' : 'bold'} _hover={{cursor: 'pointer'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'}>
+                                        {b?.remarks === '' || b?.remarks === null ? 'None' : b.remarks}
                                     </Text>)
                                 }
                                 </Text>
@@ -465,12 +552,4 @@ export default function Dated () {
             </Modal>
         </>
     )
-}
-
-const headerStyle= {
-    h: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRight: '1px solid white',
 }

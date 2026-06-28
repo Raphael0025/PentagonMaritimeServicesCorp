@@ -198,6 +198,8 @@ export default function EditCourseForm({ onClose, id } : IProps){
                             <option hidden>Select Type</option>
                             <option value={0}>Marina</option>
                             <option value={1}>In-House</option>
+                            <option value={2}>STCW</option>
+                            <option value={3}>Safety Courses</option>
                         </Select>
                     </Box>
                     <Box className='w-full'>

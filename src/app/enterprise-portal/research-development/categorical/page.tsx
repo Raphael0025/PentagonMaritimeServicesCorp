@@ -127,6 +127,25 @@ export default function Page(){
         }
     }
 
+    const courseType = (type: number) => {
+        switch(type){
+            case 0:
+                return 'Marina'
+                break;
+            case 1:
+                return 'In-House'
+                break;
+            case 2:
+                return 'STCW'
+                break;
+            case 3:
+                return 'Safety Course'
+                break;
+            default:
+                break;
+        }
+    }
+
     return(
     <>
         <main className='w-full space-y-3'>
@@ -169,7 +188,7 @@ export default function Page(){
                                         <Text fontSize='12px' className='text-wrap uppercase text-center w-full'>{course.course_name}</Text>
                                         <Text fontSize='12px' className='text-center w-1/2 font-semibold'>{course.course_fee}</Text>
                                         <Text fontSize='12px' className='text-center w-1/2 font-semibold'>{course.trainingMode === 0 ? 'Non-Simulator' : 'Simulator'}</Text>
-                                        <Text fontSize='12px' className='text-center w-1/2 font-semibold'>{course.courseType === 0 ? 'Marina' : 'In-House'}</Text>
+                                        <Text fontSize='12px' className='text-center w-1/2 font-semibold'>{courseType(course.courseType)}</Text>
                                         <Box className='flex w-1/2 justify-center'>
                                             <Button variant='ghost' colorScheme='blue' size='sm' ref={trainingSchedRef} onClick={() => {openSchedule(); setDayRef(course.day); setNumRef(course.numOfDays); setStartTimeRef(course.startTime); setEndTimeRef(course.endTime); handleRange(course.day, course.numOfDays)}} >
                                                 <Text fontSize='12px'>

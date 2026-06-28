@@ -535,7 +535,7 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
     const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 1));
 
     const renderCertificate = () => {
-        if (courseType !== 0) {
+        if (![0, 2, 3].includes(courseType)) {
             return <InHouseCert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />;
         }
     
