@@ -133,29 +133,31 @@ export default function TopWithSideNav() {
                         <PopoverContent w='350px'>
                             <PopoverHeader fontWeight='semibold'>Notifications</PopoverHeader>
                             <PopoverArrow />
-                            <PopoverBody className='overflow-y-auto' h='300px'>
-                                {notifications.length === 0 ? (
-                                    <>
-                                        <Text textAlign='center'>No Notifications received yet...</Text>
-                                    </>
-                                ): (
-                                    notifications.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds).map((n) => {
-                                        return(
-                                        <Box key={n.id} onClick={() => {setViewMessage(n); handleReadMessage(n.id); onOpenNotif();}} borderRadius='5px' _hover={{cursor: 'pointer', bgColor: 'cyan.100'}} bgColor={!n.read ? 'gray.100' : ''} borderBottom='1px solid #E2E8F0' mb={2} p={2} >
-                                            <Box display='flex' alignItems='center' mb={1}>
-                                                {n.type === 'alert' && <AlertIcon size={'22'} color={'#9B2C2C'} />}
-                                                {n.type === 'announcement' && <AnnouncementIcon size={'22'} color={'#D69E2E'} />}
-                                                {n.type === 'info' && <InfoIcon size={'22'} color={'#2b6cb0'} />}
-                                                <Box ms='2'>
-                                                    <Text fontSize='sm' fontWeight={!n.read ? 'bold' : 'normal'}>{n.title}</Text>
+                            <PopoverBody >
+                                <Box maxHeight='300px' overflowY='auto' className='scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'>
+                                    {notifications.length === 0 ? (
+                                        <>
+                                            <Text textAlign='center'>No Notifications received yet...</Text>
+                                        </>
+                                    ): (
+                                        notifications.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds).map((n) => {
+                                            return(
+                                            <Box key={n.id} onClick={() => {setViewMessage(n); handleReadMessage(n.id); onOpenNotif();}} borderRadius='5px' _hover={{cursor: 'pointer', bgColor: 'cyan.100'}} bgColor={!n.read ? 'gray.100' : ''} borderBottom='1px solid #E2E8F0' mb={2} p={2} >
+                                                <Box display='flex' alignItems='center' mb={1}>
+                                                    {n.type === 'alert' && <AlertIcon size={'22'} color={'#9B2C2C'} />}
+                                                    {n.type === 'announcement' && <AnnouncementIcon size={'22'} color={'#D69E2E'} />}
+                                                    {n.type === 'info' && <InfoIcon size={'22'} color={'#2b6cb0'} />}
+                                                    <Box ms='2'>
+                                                        <Text fontSize='sm' fontWeight={!n.read ? 'bold' : 'normal'}>{n.title}</Text>
+                                                    </Box>
                                                 </Box>
+                                                <Text fontWeight='normal' fontSize='8pt'>
+                                                    {n.createdAt ? getFormatTimeDate(n.createdAt.toDate()) : ''}
+                                                </Text>
                                             </Box>
-                                            <Text fontWeight='normal' fontSize='8pt'>
-                                                {n.createdAt ? getFormatTimeDate(n.createdAt.toDate()) : ''}
-                                            </Text>
-                                        </Box>
-                                    )})
-                                )}
+                                        )})
+                                    )}
+                                </Box>
                             </PopoverBody>
                             <PopoverFooter>
                                 <Text onClick={(e) => {e.preventDefault(); (document.activeElement as HTMLElement)?.blur(); router.push('/enterprise-portal/notifications'); setCurrent('notifications'); }} className='flex space-x-2 items-center hover:cursor-pointer' >

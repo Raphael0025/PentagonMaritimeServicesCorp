@@ -214,7 +214,11 @@ export default function Page() {
                 }
             }, 1500)
         }).then(() => {
-            handleToast('Enrolled Successfully!', `Registration was enrolled, trainee can proceed for their training.`, 7000, 'success')
+            if(reg_type===0){
+                handleToast('Enrolled Successfully!', `Registration was enrolled, trainee can proceed for their training.`, 7000, 'success')
+            }else if (reg_type===1){
+                handleToast('Enrolled to Backdated Successfully!', `Registration was enrolled, trainee can proceed for their training.`, 7000, 'success')
+            }
         }).catch((error) => {
             console.log('Error:, ', error)
         }).finally(() => {
@@ -461,7 +465,7 @@ export default function Page() {
                                                     ) : training.reg_status === 2 && canDo('update') ? (
                                                         isBoth('both') ? (
                                                             // If scope is set to both
-                                                            <Button w='90%' onClick={() => {setTrainingID(training.id); setRegistrationID(registration.id); setTraineeID(traineeFound.id); setTAccountType(training.accountType); onOpenScope();}} colorScheme='green' className="text-xs uppercase text-center" size='xs' py={4} variant='link'>Enroll As</Button>
+                                                            <Button w='90%' onClick={() => {setTrainingID(training.id); setRegistrationID(registration.id); setTraineeID(traineeFound.id); setTAccountType(training.accountType); onOpenScope();}} colorScheme='green' className="text-xs uppercase text-center" size='xs' py={4} variant='link'>Enroll Training</Button>
                                                         ) : (
                                                             // If scope is set to dated only
                                                             <Button w='90%' onClick={() => {handleEnrollment(training.id, registration.id, traineeFound.id, 0, training.accountType)}} colorScheme='green' className="text-xs uppercase text-center" size='xs' py={4} variant='link' isLoading={activeBtn === training.id} isDisabled={!loadBtn} loadingText='Enrolling...'>Enroll Course</Button>
@@ -740,14 +744,17 @@ export default function Page() {
         <Modal isOpen={isOpenScope} onClose={onCloseScope}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>Enroll this Training As</ModalHeader>
+                <ModalHeader >
+                    <Box onClick={(e) => {e.stopPropagation(); handleEnrollment(training_id, registration_id, trainee_id, 1, t_accountType);}} _hover={{cursor: 'default'}}>
+                        Confirm Enrollment
+                    </Box>
+                </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <Text fontWeight='normal' textAlign='center' >{`Please make sure that all details are correct before enrolling the crew to this course. Also make sure that you are enrolling the crew on the correct category.`}</Text>
+                    <Text fontWeight='normal' textAlign='center' >{`Before proceeding, please verify the crew's profile details and select the correct training for this course.`}</Text>
                 </ModalBody>
                 <ModalFooter gap='2'>
-                    <Button onClick={() => {handleEnrollment(training_id, registration_id, trainee_id, 0, t_accountType)}} colorScheme='blue' isLoading={activeBtn === training_id} loadingText='Loading...' bgColor='blue.700' shadow='md' w='100%'>Dated</Button>
-                    <Button onClick={() => {handleEnrollment(training_id, registration_id, trainee_id, 1, t_accountType)}} colorScheme='blue' isLoading={activeBtn === training_id} loadingText='Loading...' bgColor='blue.900' shadow='md' w='100%'>BackDated</Button>
+                    <Button onClick={() => {handleEnrollment(training_id, registration_id, trainee_id, 0, t_accountType)}} colorScheme='blue' isLoading={activeBtn === training_id} loadingText='Loading...' bgColor='blue.700' shadow='md' w='100%'>YES, CONFIRM ENROLMENT</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

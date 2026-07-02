@@ -24,6 +24,7 @@ export interface BATCH_ANALYSIS {
     ttl_non_simu: number;
     ttl_stcw: number;
     ttl_mds: number;
+    ttl_safety: number;
 }
 
 export interface batchArr {
