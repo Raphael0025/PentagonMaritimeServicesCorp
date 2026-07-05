@@ -135,16 +135,19 @@ export const CertificateAndAccountChart = ({ trainingData = [] }: CertificateAnd
                     </Box>
                 </Box>
             </Box>
-
             {/* Displaying both distinct Pie Charts dynamically side-by-side */}
             <Box display='flex' flexDir={{ base: 'column', md: 'row' }} gap='8' justifyContent='center' w='100%'>
                 <Box w='400px' h='440px' textAlign='center'>
                     <Text fontWeight='600' mb='2' fontSize='14px'>CERTIFICATE CHARGED TO</Text>
-                    <Box h='400px'><Pie data={accountChartData} options={getChartOptions(totalAccounts)} /></Box>
+                    <Box h='400px'>
+                        <Pie data={accountChartData} options={getChartOptions(totalAccounts)} />
+                    </Box>
                 </Box>
                 <Box w='400px' h='440px' textAlign='center'>
                     <Text fontWeight='600' mb='2' fontSize='14px'>CERTIFICATE STATUS</Text>
-                    <Box h='400px'><Pie data={certChartData} options={getChartOptions(totalCerts)} /></Box>
+                    <Box h='400px'>
+                        <Pie data={certChartData} options={getChartOptions(totalCerts)} />
+                    </Box>
                 </Box>
             </Box>
         </Box>

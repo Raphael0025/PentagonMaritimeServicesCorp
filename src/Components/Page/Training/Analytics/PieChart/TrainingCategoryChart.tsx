@@ -92,7 +92,7 @@ export const TrainingCategoryChart = ({ batchCourses = [] }: TrainingModeChartPr
                     // Optional: Make text dark if it gets pushed out onto the white background
                     const value = context.dataset.data[context.dataIndex];
                     const percentage = (value / grandTotal) * 100;
-                    return percentage < 5 ? '#333333' : '#ffffff'; 
+                    return percentage < 5 ? '#000000' : '#ffffff'; 
                 }, // Text color inside the pie slice
                 fontWeight: 'bold',
                 font: {
@@ -103,12 +103,12 @@ export const TrainingCategoryChart = ({ batchCourses = [] }: TrainingModeChartPr
                 align: (context: any) => {
                     const value = context.dataset.data[context.dataIndex];
                     const percentage = (value / grandTotal) * 100;
-                    return percentage < 5 ? 'center' : 'start';
+                    return percentage < 5 ? 'end' : 'start';
                 },
                 offset: (context: any) => {
                     const value = context.dataset.data[context.dataIndex];
                     const percentage = (value / grandTotal) * 100;
-                    return percentage < 5 ? 8 : 0;
+                    return percentage < 5 ? 15 : 0;
                 },
                 formatter: (value: number) => {
                     // If the slice value is 0, don't render text to keep it clean

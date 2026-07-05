@@ -153,32 +153,29 @@ export default function SimuVsNonSimu({ tableData }: TrainingDashboardChartsProp
     })
 
     return (
-        <Box width="100%">
-        {/* Group components side-by-side on wide views, stack on mobile devices */}
-            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
-                {/* CHART A: SIMULATOR PANEL */}
-                <Card border="1px solid" borderColor="gray.200" borderRadius="md" boxShadow="sm" bg="white">
-                    <CardBody p="5">
-                        <Heading size="md" textAlign="center" color="#4a4a4a" mb="6" letterSpacing="1px">
-                        SIMULATOR
-                        </Heading>
-                        <Box h="250px" w="100%">
-                            <Bar data={simulatorChartData} options={createChartOptions(Math.max(simWithInstructorDated, simWithoutInstructorDated) + 15)} />
-                        </Box>
-                    </CardBody>
-                </Card>
-                {/* CHART B: NON-SIMULATOR PANEL */}
-                <Card border="1px solid" borderColor="gray.200" borderRadius="md" boxShadow="sm" bg="white">
-                    <CardBody p="5">
-                        <Heading size="md" textAlign="center" color="#4a4a4a" mb="6" letterSpacing="1px">
+        <Box width="100%" display='flex' justifyContent='center'>
+            {/* CHART A: SIMULATOR PANEL */}
+            <Card bg="white">
+                <CardBody p="2">
+                    <Heading size="md" textAlign="center" color="#4a4a4a" mb="2" fontSize='10pt' letterSpacing="1px">
+                    SIMULATOR
+                    </Heading>
+                    <Box h="450px" w="100%">
+                        <Bar data={simulatorChartData} options={createChartOptions(Math.max(simWithInstructorDated, simWithoutInstructorDated) + 15)} />
+                    </Box>
+                </CardBody>
+            </Card>
+            {/* CHART B: NON-SIMULATOR PANEL */}
+            <Card bg="white">
+                <CardBody p="2">
+                    <Heading size="md" textAlign="center" color="#4a4a4a" mb="2" fontSize='10pt' letterSpacing="1px">
                         NON-SIMULATOR
-                        </Heading>
-                        <Box h="250px" w="100%">
-                            <Bar data={nonSimulatorChartData} options={createChartOptions(Math.max(nonSimWithInstructorDated, nonSimWithoutInstructorDated) + 30)} />
-                        </Box>
-                    </CardBody>
-                </Card>
-            </SimpleGrid>
+                    </Heading>
+                    <Box h="450px" w="100%">
+                        <Bar data={nonSimulatorChartData} options={createChartOptions(Math.max(nonSimWithInstructorDated, nonSimWithoutInstructorDated) + 30)} />
+                    </Box>
+                </CardBody>
+            </Card>
         </Box>
     )
 }
