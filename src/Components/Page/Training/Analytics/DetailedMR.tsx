@@ -500,7 +500,7 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
                 
                 // 🟢 Update Track 2 state with the new database markers
                 setDbReport({
-                    id: savedRecord.id,
+                    id: savedRecord,
                     generatedAt: new Date(),
                     generatedBy: actor,
                 });
