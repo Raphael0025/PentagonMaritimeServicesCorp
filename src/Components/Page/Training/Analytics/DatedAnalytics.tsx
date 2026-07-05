@@ -665,9 +665,9 @@ export default function Dated () {
             <Modal isOpen={isOpenMR} onClose={onCloseMR} scrollBehavior='outside' size='4xl'>
                 <ModalOverlay />
                 <DetailedMonthlyReport 
-                    batchCourses={batchCourses} 
-                    filteredTrainList={filteredTrainList} 
-                    allInstructors={allInstructors}
+                    batchCourses={batchCourses || []} 
+                    filteredTrainList={filteredTrainList || []} 
+                    allInstructors={allInstructors || []}
                     monthSelected={monthSelected}
                     yearSelected={yearSelected} 
                     courseBatch={courseBatch} 
