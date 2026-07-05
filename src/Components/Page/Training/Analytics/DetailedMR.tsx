@@ -498,6 +498,7 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
                 const savedRecord = await GENERATE_REPORT(reportMetaData, actor);
                 // 🟢 Update Track 2 state with the new database markers
                 setDbReport({
+                    ...reportMetaData,
                     id: savedRecord,
                     generatedAt: Timestamp.now(),
                     generatedBy: actor || '',
