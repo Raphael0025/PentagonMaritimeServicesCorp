@@ -502,7 +502,7 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
                 setDbReport({
                     id: savedRecord,
                     generatedAt: Timestamp.now(),
-                    generatedBy: actor,
+                    generatedBy: actor | null,
                 });
     
                 handleToast('Monthly Report Saved!', ``, 3000, 'success');
