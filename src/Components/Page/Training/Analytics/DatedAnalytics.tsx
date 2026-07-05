@@ -662,7 +662,7 @@ export default function Dated () {
                     </Box>
                 </Box>
             </Box>
-            <Modal isOpen={isOpenMR} onClose={onCloseMR} scrollBehaviour='outside' size='4xl'>
+            <Modal isOpen={isOpenMR} onClose={onCloseMR} scrollBehavior='outside' size='4xl'>
                 <ModalOverlay />
                 <DetailedMonthlyReport 
                     batchCourses={batchCourses} 
