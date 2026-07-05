@@ -668,9 +668,9 @@ export default function Dated () {
                     batchCourses={batchCourses || []} 
                     filteredTrainList={filteredTrainList || []} 
                     allInstructors={allInstructors || []}
+                    courseBatch={courseBatch || []} 
                     monthSelected={monthSelected}
                     yearSelected={yearSelected} 
-                    courseBatch={courseBatch} 
                     currentYear={currentYear} 
                     currMonth={currMonth} 
                 />
