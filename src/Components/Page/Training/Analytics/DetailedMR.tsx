@@ -36,26 +36,22 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
     const toast = useToast()
     const { data: fetchedReportData } = useReportMetaData()
 
-    const [ issuesArr, setIssuesArr ] = useState<Issues_Challenges>(initIssues_Challenges)
     const [ reportMetaData, setReport ] = useState<TrainingReport | null>(initTrainingReport)
-    const [reportDbMetaData, setDbReport] = useState<{
-        id: string;
-        generatedAt: Timestamp;
-        generatedBy: string;
-    } | null>(null);
-    
+    const [ reportDbMetaData, setDbReport ] = useState<TrainingReportByID | null>({...initTrainingReport, id: '', generatedAt: Timestamp.now(), generatedBy: '',})
+    const [ issuesArr, setIssuesArr ] = useState<Issues_Challenges>(initIssues_Challenges)
+
     useEffect(() => {
         // 2. Loop / find the unique record matching the selected month and year
-        const matchedRecord = fetchedReportData?.find(report => 
+        const matchedRecord = fetchedReportData.find(report => 
             report?.month === monthSelected && 
             report?.year === yearSelected
         );
 
         if (matchedRecord) {
             setReport({
-                plannedTrainingSched: {
                 ...initTrainingReport, 
                 ...matchedRecord,   
+                plannedTrainingSched: {
                     ...initTrainingReport.plannedTrainingSched,
                     ...(matchedRecord.plannedTrainingSched || {})
                 },
@@ -65,6 +61,8 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
     
             // 🟢 FIX 2: Set the database trace parameters correctly on track 2
             setDbReport({
+                ...initTrainingReport, // Optional: fallback template safety
+                ...matchedRecord,
                 id: matchedRecord.id,
                 generatedAt: matchedRecord.generatedAt,
                 generatedBy: matchedRecord.generatedBy || ''
