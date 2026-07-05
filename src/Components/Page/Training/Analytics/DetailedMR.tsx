@@ -36,10 +36,14 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
     const toast = useToast()
     const { data: fetchedReportData } = useReportMetaData()
 
-    const [ reportMetaData, setReport ] = useState<TrainingReport | null>(initTrainingReport)
-    const [ reportDbMetaData, setDbReport ] = useState<TrainingReportByID | null>({...initTrainingReport, id: '', generatedAt: Timestamp.now(), generatedBy: '',})
     const [ issuesArr, setIssuesArr ] = useState<Issues_Challenges>(initIssues_Challenges)
-
+    const [ reportMetaData, setReport ] = useState<TrainingReport | null>(initTrainingReport)
+    const [reportDbMetaData, setDbReport] = useState<{
+        id: string;
+        generatedAt: Timestamp;
+        generatedBy: string;
+    } | null>(null);
+    
     useEffect(() => {
         // 2. Loop / find the unique record matching the selected month and year
         const matchedRecord = fetchedReportData?.find(report => 
@@ -49,9 +53,9 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
 
         if (matchedRecord) {
             setReport({
+                plannedTrainingSched: {
                 ...initTrainingReport, 
                 ...matchedRecord,   
-                plannedTrainingSched: {
                     ...initTrainingReport.plannedTrainingSched,
                     ...(matchedRecord.plannedTrainingSched || {})
                 },
