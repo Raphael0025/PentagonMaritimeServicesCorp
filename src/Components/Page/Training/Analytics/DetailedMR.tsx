@@ -398,7 +398,6 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
             }
 
             const cat = matrix[catKey];
-            
             // 🟢 FIXED: Add total course trainees to the category's scheduled total
             cat.scheduledTrainees += Number(bc.total_trainees || 0);
 
@@ -497,7 +496,6 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
             } else {
                 // Execute fresh save transaction
                 const savedRecord = await GENERATE_REPORT(reportMetaData, actor);
-                
                 // 🟢 Update Track 2 state with the new database markers
                 setDbReport({
                     id: savedRecord,
