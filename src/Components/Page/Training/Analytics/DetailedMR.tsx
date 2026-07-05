@@ -112,7 +112,7 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
             if (!prev) return prev;
     
             // 1. Create a blank blueprint layout mapping your interface properties
-            const newRow: IssuesChallenges = {
+            const newRow: Issues_Challenges = {
                 issue: '',
                 action: '',
                 recommend: '',
