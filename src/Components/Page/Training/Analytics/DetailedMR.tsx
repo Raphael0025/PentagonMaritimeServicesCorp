@@ -5,8 +5,8 @@ import { useReactToPrint } from 'react-to-print'
 
 import { Image as ChakraImage, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, Box, Text, Input, Button, useToast,  } from '@chakra-ui/react'
 import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
-import { ChevronDownIcon } from '@chakra-ui/icons'
 
+import { ToastStatus } from '@/types/handling'
 import { BATCH_ANALYSIS, } from '@/types/training'
 import { InstructorByID } from '@/types/instructor'
 import { CourseBatchByID } from '@/types/course-batches'
