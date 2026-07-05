@@ -42,9 +42,9 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
 
     useEffect(() => {
         // 2. Loop / find the unique record matching the selected month and year
-        const matchedRecord = fetchedReportData.find(report => 
-            report.month === monthSelected && 
-            report.year === yearSelected
+        const matchedRecord = fetchedReportData?.find(report => 
+            report?.month === monthSelected && 
+            report?.year === yearSelected
         );
 
         if (matchedRecord) {
