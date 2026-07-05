@@ -730,7 +730,7 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
                                             </Box>
                                             {/** Bar Chart */}
                                             <SimuVsNonSimu tableData={tableData} />
-                                            <PlannedTrainingSched tableData={tableData} getTotal={getCategoryTotal} getTotalBatches={getTotalBatches} schedData={reportMetaData?.plannedTrainingSched} onInputChange={handleSchedChange} />
+                                            <PlannedTrainingSched tableData={tableData} getTotal={getCategoryTotal} getTotalBatches={getTotalBatches} schedData={reportMetaData?.plannedTrainingSched ?? initTrainingReport?.plannedTrainingSched} onInputChange={handleSchedChange} />
                                             <Box mt='4'>
                                                 <TrainerPerformanceTable batches={batchCourses || []} allInstructors={allInstructors || []} courseBatch={courseBatch || []} />
                                             </Box>
