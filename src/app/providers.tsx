@@ -13,7 +13,8 @@ import { InstructorProvider } from '@/context/InstructorContext';
 import { UserRoleProvider } from '@/context/UserRolesContext';
 import { CommsProvider } from '@/context/CommunicationContext';
 import { CertificationProvider } from '@/context/CertificationContext'; 
-import { TransmittalProvider } from '@/context/TransmittalContext'; 
+import { TransmittalProvider } from '@/context/TransmittalContext';
+import { ReportMetadataProvider } from '@/context/ReportMetaDataContext';
 
 export function Providers({children}: { children: React.ReactNode}) {
     return (
@@ -31,7 +32,9 @@ export function Providers({children}: { children: React.ReactNode}) {
                                                     <TransmittalProvider>
                                                         <InstructorProvider>
                                                             <TraineeProvider>
-                                                                {children}
+                                                                <ReportMetadataProvider>
+                                                                    {children}
+                                                                </ReportMetadataProvider>
                                                             </TraineeProvider>
                                                         </InstructorProvider>
                                                     </TransmittalProvider>

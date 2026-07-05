@@ -135,7 +135,7 @@ export const InstructorComparisonChart = ({ batchCourses = [] }: TrainingModeCha
                 </Box>
             </Box>
             {/* Dynamic Pie Chart Render Box Container */}
-            <Box w={{ base: '280px', md: '400px' }} h={{ base: '280px', md: '400px' }}>
+            <Box w={{ base: '220px', md: '300px' }} h={{ base: '220px', md: '300px' }}>
                 <Pie data={chartData} options={chartOptions} />
             </Box>
         </Box>

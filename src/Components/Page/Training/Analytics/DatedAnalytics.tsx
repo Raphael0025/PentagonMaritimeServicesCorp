@@ -322,7 +322,7 @@ export default function Dated () {
     return(
         <>
             <Text fontSize='xl' fontFamily='Arial, sans-serif' textTransform='uppercase' >Training Analysis</Text>
-            <Box display='flex' justifyContent='space-between'>
+            <Box display='flex' gap='4'>
                 <Box display='flex' alignItems='center'>
                     <Text fontSize='lg' mr='3'>Filters:</Text>
                     <Button w='auto' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
@@ -350,10 +350,11 @@ export default function Dated () {
                     <Button onClick={handlePrint} colorScheme='blue' bgColor='blue.700' shadow='md' size='sm'>Print Analysis</Button>
                 </Box>
             </Box>
-            <Box >
-                <Box display='flex' justifyContent='space-between'>
+            <Box ref={componentRef} width='100%' display='flex' flexDir='column' justifyContent='center' >
+                <Text>Raw Data Analysis</Text>
+                <Box display='flex' gap='5'>
                     <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
-                        <Box w='200px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
+                        <Box w='150px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
                             <Text>Total Courses</Text>
                             <Text>{batchCourses.length}</Text>
                         </Box>
@@ -505,9 +506,9 @@ export default function Dated () {
                         </Box>
                     </Box>
                 </Box>
-                <Box h='700px' style={{maxHeight: '750px', overflowY: 'auto', scrollbarWidth: 'thin'}}>
+                <Box style={{scrollbarWidth: 'thin'}}>
                     {/** HEADER */}
-                    <Box w='1727px' py='1' h='60px' display='flex' alignItems='start' textAlign='center' borderRadius={'5px'} bgColor='blue.700' color='white' position='sticky' top='0' zIndex='1'>
+                    <Box w='1557px' py='1' h='60px' display='flex' alignItems='start' textAlign='center' borderRadius={'5px'} bgColor='blue.700' color='white' position='sticky' top='0' zIndex='1'>
                         <Box w='200px' sx={headerStyle}> Courses </Box>
                         <Box w='140px' sx={headerStyle}>Batch</Box>
                         <Box w='140px' sx={headerStyle}>Total # of Batches</Box>
@@ -539,13 +540,13 @@ export default function Dated () {
                                 <Text w='50px' sx={headerStyle}>D</Text>
                             </Box>
                         </Box>
-                        <Box w='300px' sx={headerStyle}>REMARKS</Box>
+                        <Box w='150px' sx={headerStyle}>REMARKS</Box>
                     </Box>
                     {/** BODY */}
                     <Box>
                     {batchCourses.map((bc, index) => {
                         return(
-                            <Box key={index} _hover={{bgColor: 'gray.200'}} w='1727px' display='flex' alignItems='center' textAlign='center' fontWeight='normal' borderBottom='1px solid gray' borderX='1px solid gray'>
+                            <Box key={index} _hover={{bgColor: 'gray.200'}} w='1557px' display='flex' alignItems='center' textAlign='center' fontWeight='normal' borderBottom='1px solid gray' borderX='1px solid gray'>
                                 <Text w='200px' fontWeight='bold' color={bc.courseType === '1' ? '#0070c0' : 'black'}>{bc.course.toUpperCase()}</Text>
                                 <Box w='140px' >
                                     {bc.sortedBatches.map((b, idx, arr) => 
@@ -590,7 +591,7 @@ export default function Dated () {
                                         </Box>
                                     ))}
                                 </Box>
-                                <Text w='300px' >
+                                <Text w='150px' >
                                 {bc.sortedBatches.map((b, idx, arr) => 
                                     <Text key={idx} onClick={() => {setBatchID(b.batch_id); setBRemarks(b.remarks); onOpenRemarks()}} fontWeight={b?.remarks === '' || b?.remarks === null ? 'normal' : 'bold'} _hover={{cursor: 'pointer'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'}>
                                         {b?.remarks === '' || b?.remarks === null ? 'None' : b.remarks}
@@ -639,25 +640,25 @@ export default function Dated () {
                 </Box>
                 {/** Training Mode and Category Chart */}
                 <Box display='flex' gap='4'>
-                    <Box display='flex' justifyContent='center' mt={4}>
+                    <Box display='flex' justifyContent='center' mt={10}>
                         <TrainingModeChart batchCourses={batchCourses as any} />
                     </Box>
-                    <Box display='flex' justifyContent='center' mt={4}>
+                    <Box display='flex' justifyContent='center' mt={10}>
                         <TrainingCategoryChart batchCourses={batchCourses as any} />
                     </Box>
                 </Box>
                 {/** Instructor Comparison and Accomplished Forms Chart */}
                 <Box display='flex' gap='4'>
-                    <Box display='flex' justifyContent='center' mt={4}>
+                    <Box display='flex' justifyContent='center' mt={10}>
                         <InstructorComparisonChart batchCourses={batchCourses as any} />
                     </Box>
-                    <Box display='flex' justifyContent='center' mt={4}>
+                    <Box display='flex' justifyContent='center' mt={10}>
                         <AccomplishedForm batchCourses={batchCourses as any} />
                     </Box>
                 </Box>
                 {/** Certificates Chart */}
-                <Box display='flex' gap='4'>
-                    <Box display='flex' justifyContent='center' mt={4}>
+                <Box display='flex' gap='4' mt={6}>
+                    <Box display='flex' justifyContent='center' mt={10}>
                         <CertificateAndAccountChart trainingData={filteredTrainList} />
                     </Box>
                 </Box>

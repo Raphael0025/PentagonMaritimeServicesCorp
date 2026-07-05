@@ -1,15 +1,23 @@
 'use client';
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import { Input, Table, Thead, Tbody, Tr, Th, Td, TableContainer, Card, CardBody, Text,} from '@chakra-ui/react';
+import { PlannedTrainingSchedMD } from '@/types/ReportMetadata.model'
 
 interface PlannedTrainingSchedProps {
     tableData: any;
     getTotal: (cat: any) => number;
     getTotalBatches: (cat: any, category: string) => number;
+    schedData: PlannedTrainingSchedMD;
+    onInputChange: (category: keyof PlannedTrainingSchedMD, field: 'w_oIns' | 'w_Ins', value: number) => void;
 }
 
-export default function PlannedTrainingSched({tableData, getTotal, getTotalBatches}: PlannedTrainingSchedProps) {
+export default function PlannedTrainingSched({tableData, getTotal, getTotalBatches, schedData, onInputChange}: PlannedTrainingSchedProps) {
     
+    const handleFieldChange = (category: keyof PlannedTrainingSchedMD, field: 'w_oIns' | 'w_Ins', e: ChangeEvent<HTMLInputElement>) => {
+        const val = Number(e.target.value) || 0
+        onInputChange(category, field, val)
+    }
+
     const firstColStyle = {
         textAlign: 'start',
         fontWeight: 'bold',
@@ -95,7 +103,38 @@ export default function PlannedTrainingSched({tableData, getTotal, getTotalBatch
     const simBatchesWInsTotal = getTotalBatches(tableData.simulator, 'with');
     const simBatchesWOInsTotal = getTotalBatches(tableData.simulator, 'without');
     
+    // Helper utility function to safely compute percentages without breaking on zero denominators
+    const calculateSafePct = (batchesTotal, schedInput) => {
+        const denominator = Number(schedInput) || 0;
+        if (denominator === 0) return 0; // Prevent dividing by zero early
+        
+        const result = (batchesTotal / denominator) * 100;
+        return isNaN(result) || !isFinite(result) ? 0 : result;
+    }
+
+    // 1. Calculate each category percentage safely
+    const stcwWInsPctTotal = calculateSafePct(stcwBatchesWInsTotal, schedData?.stcw?.w_Ins);
+    const stcwWoInsPctTotal = calculateSafePct(stcwBatchesWOInsTotal, schedData?.stcw?.w_oIns);
+
+    const mdsWInsPctTotal = calculateSafePct(mdsBatchesWInsTotal, schedData?.mds?.w_Ins);
+    const mdsWoInsPctTotal = calculateSafePct(mdsBatchesWOInsTotal, schedData?.mds?.w_oIns);
+
+    const simWInsPctTotal = calculateSafePct(simBatchesWInsTotal, schedData?.simu?.w_Ins);
+    const simWoInsPctTotal = calculateSafePct(simBatchesWOInsTotal, schedData?.simu?.w_oIns);
+
+    const nonSimWInsPctTotal = calculateSafePct(nonSimBatchesWInsTotal, schedData?.nonSimu?.w_Ins);
+    const nonSimWoInsPctTotal = calculateSafePct(nonSimBatchesWOInsTotal, schedData?.nonSimu?.w_oIns);
+
+    // 2. The grand total will now add up perfectly without any NaN or Infinity corruption
+    const grandPctTotal = (
+        stcwWInsPctTotal + stcwWoInsPctTotal + 
+        mdsWInsPctTotal + mdsWoInsPctTotal + 
+        simWInsPctTotal + simWoInsPctTotal + 
+        nonSimWInsPctTotal + nonSimWoInsPctTotal
+    )
+
     const grandBatchesTotal = stcwBatchesWInsTotal + stcwBatchesWOInsTotal + mdsBatchesWInsTotal + mdsBatchesWOInsTotal + nonSimBatchesWInsTotal + nonSimBatchesWOInsTotal + simBatchesWInsTotal + simBatchesWOInsTotal;
+    const grandInputTotal = (schedData?.stcw?.w_Ins ?? 0) + (schedData?.stcw?.w_oIns ?? 0) + (schedData?.mds?.w_Ins ?? 0) + (schedData?.mds?.w_oIns ?? 0) + (schedData?.simu?.w_Ins ?? 0) + (schedData?.simu?.w_oIns ?? 0) + (schedData?.nonSimu?.w_Ins ?? 0) + (schedData?.nonSimu?.w_oIns ?? 0)
 
     return (
     <>  
@@ -131,10 +170,16 @@ export default function PlannedTrainingSched({tableData, getTotal, getTotalBatch
                             <Tr>
                                 <Td sx={firstColStyle2} >With Instructor</Td>
                                 <Td sx={dataColStyle} >
-                                    <Input sx={inputStyle} size='xs' variant='flushed' />
+                                    <Input onChange={(e) => handleFieldChange('stcw', 'w_Ins', e)} value={schedData?.stcw?.w_Ins} sx={inputStyle} size='xs' variant='flushed' />
                                 </Td>
                                 <Td sx={dataColStyle} >{stcwBatchesWInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(stcwWInsPctTotal) || !isFinite(stcwWInsPctTotal)) return '0.00%'
+
+                                    return `${stcwWInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
@@ -142,10 +187,16 @@ export default function PlannedTrainingSched({tableData, getTotal, getTotalBatch
                             <Tr>
                                 <Td sx={firstColStyle2} >Without Instructor</Td>
                                 <Td sx={dataColStyle} >
-                                    <Input sx={inputStyle} size='xs' variant='flushed' />
+                                    <Input onChange={(e) => handleFieldChange('stcw', 'w_oIns', e)} value={schedData?.stcw?.w_oIns} sx={inputStyle} size='xs' variant='flushed' />
                                 </Td>
                                 <Td sx={dataColStyle} >{stcwBatchesWOInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(stcwWoInsPctTotal) || !isFinite(stcwWoInsPctTotal)) return '0.00%'
+
+                                    return `${stcwWoInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
@@ -161,18 +212,34 @@ export default function PlannedTrainingSched({tableData, getTotal, getTotalBatch
                             </Tr>
                             <Tr>
                                 <Td sx={firstColStyle2} >With Instructor</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} > 
+                                    <Input onChange={(e) => handleFieldChange('mds', 'w_Ins', e)} value={schedData?.mds?.w_Ins} sx={inputStyle} size='xs' variant='flushed' />
+                                </Td>
                                 <Td sx={dataColStyle} >{mdsBatchesWInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(mdsWInsPctTotal) || !isFinite(mdsWInsPctTotal)) return '0.00%'
+
+                                    return `${mdsWInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
                             </Tr>
                             <Tr>
                                 <Td sx={firstColStyle2} >Without Instructor</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                    <Input onChange={(e) => handleFieldChange('mds', 'w_oIns', e)} value={schedData?.mds?.w_oIns} sx={inputStyle} size='xs' variant='flushed' />
+                                </Td>
                                 <Td sx={dataColStyle} >{mdsBatchesWOInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(mdsWoInsPctTotal) || !isFinite(mdsWoInsPctTotal)) return '0.00%'
+
+                                    return `${mdsWoInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
@@ -188,18 +255,34 @@ export default function PlannedTrainingSched({tableData, getTotal, getTotalBatch
                             </Tr>
                             <Tr>
                                 <Td sx={firstColStyle2} >With Instructor</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >                                    
+                                    <Input onChange={(e) => handleFieldChange('simu', 'w_Ins', e)} value={schedData?.simu?.w_Ins} sx={inputStyle} size='xs' variant='flushed' />
+                                </Td>
                                 <Td sx={dataColStyle} >{simBatchesWInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(simWInsPctTotal) || !isFinite(simWInsPctTotal)) return '0.00%'
+
+                                    return `${simWInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
                             </Tr>
                             <Tr>
                                 <Td sx={firstColStyle2} >Without Instructor</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >                                    
+                                    <Input onChange={(e) => handleFieldChange('simu', 'w_oIns', e)} value={schedData?.simu?.w_oIns} sx={inputStyle} size='xs' variant='flushed' />
+                                </Td>
                                 <Td sx={dataColStyle} >{simBatchesWOInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(simWoInsPctTotal) || !isFinite(simWoInsPctTotal)) return '0.00%'
+
+                                    return `${simWoInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
@@ -215,27 +298,53 @@ export default function PlannedTrainingSched({tableData, getTotal, getTotalBatch
                             </Tr>
                             <Tr>
                                 <Td sx={firstColStyle2} >With Instructor</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                    <Input onChange={(e) => handleFieldChange('nonSimu', 'w_Ins', e)} value={schedData?.nonSimu?.w_Ins} sx={inputStyle} size='xs' variant='flushed' />
+                                </Td>
                                 <Td sx={dataColStyle} >{nonSimBatchesWInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(nonSimWInsPctTotal) || !isFinite(nonSimWInsPctTotal)) return '0.00%'
+
+                                    return `${nonSimWInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
                             </Tr>
                             <Tr>
                                 <Td sx={firstColStyle2} >Without Instructor</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                    <Input onChange={(e) => handleFieldChange('nonSimu', 'w_oIns', e)} value={schedData?.nonSimu?.w_oIns} sx={inputStyle} size='xs' variant='flushed' />
+                                </Td>
                                 <Td sx={dataColStyle} >{nonSimBatchesWOInsTotal || 0}</Td>
-                                <Td sx={dataColStyle} > </Td>
+                                <Td sx={dataColStyle} >
+                                {(() => {
+                                    if(isNaN(nonSimWoInsPctTotal) || !isFinite(nonSimWoInsPctTotal)) return '0.00%'
+
+                                    return `${nonSimWoInsPctTotal.toFixed(2)}%`
+                                })()}
+                                </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={dataColStyle} > </Td>
                                 <Td sx={lastColStyle} ></Td>
                             </Tr>
                             <Tr>
                                 <Td sx={firstColStyle3} >Total</Td>
-                                <Td sx={dataColTotalStyle} > </Td>
+                                <Td sx={dataColTotalStyle} >
+                                {(() => {
+                                    if(isNaN(grandInputTotal) || !isFinite(grandInputTotal)) return '0'
+
+                                    return `${grandInputTotal}`
+                                })()}
+                                </Td>
                                 <Td sx={dataColTotalStyle} >{grandBatchesTotal || '-'}</Td>
-                                <Td sx={dataColTotalStyle} > </Td>
+                                <Td sx={dataColStyle}>
+                                    {isNaN(grandPctTotal) || !isFinite(grandPctTotal) 
+                                        ? '0.00%' 
+                                        : `${grandPctTotal.toFixed(2)}%`}
+                                </Td>
                                 <Td sx={dataColTotalStyle} >{grandTotal || '-'}</Td>
                                 <Td sx={dataColTotalStyle} >{grandTotalCancelled || '-'}</Td>
                                 <Td sx={lastColStyle} ></Td>
