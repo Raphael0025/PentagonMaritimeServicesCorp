@@ -86,7 +86,7 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
         },
     })
 
-    const handleIssueFieldChange = (index: number, field: keyof IssuesChallenges, value: string) => {
+    const handleIssueFieldChange = (index: number, field: keyof Issues_Challenges, value: string) => {
         setReport((prev) => {
             if (!prev) return prev;
     
