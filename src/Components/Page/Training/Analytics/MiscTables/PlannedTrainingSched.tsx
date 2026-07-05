@@ -104,7 +104,7 @@ export default function PlannedTrainingSched({tableData, getTotal, getTotalBatch
     const simBatchesWOInsTotal = getTotalBatches(tableData.simulator, 'without');
     
     // Helper utility function to safely compute percentages without breaking on zero denominators
-    const calculateSafePct = (batchesTotal, schedInput) => {
+    const calculateSafePct = (batchesTotal: number, schedInput: any) => {
         const denominator = Number(schedInput) || 0;
         if (denominator === 0) return 0; // Prevent dividing by zero early
         
