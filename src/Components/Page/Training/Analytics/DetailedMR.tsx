@@ -872,17 +872,17 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
                                                 </Text>
                                                 <div className="screen-section-view">
                                                     <Textarea
-                                                        value={reportMetaData?.improvement || ''}
-                                                        onChange={(e) => setReport(prev => prev ? { ...prev, improvement: e.target.value } : null)}
-                                                        onKeyDown={(e) => handleListKeyDown(e, reportMetaData?.improvement || '', (val) => {
-                                                            setReport(prev => prev ? { ...prev, improvement: val } : null);
+                                                        value={reportMetaData?.improvements || ''}
+                                                        onChange={(e) => setReport(prev => prev ? { ...prev, improvements: e.target.value } : null)}
+                                                        onKeyDown={(e) => handleListKeyDown(e, reportMetaData?.improvements || '', (val) => {
+                                                            setReport(prev => prev ? { ...prev, improvements: val } : null);
                                                         })}
                                                         placeholder="Type improvement initiatives here..."
                                                         size="sm" minH="100px" fontSize="10pt"
                                                     />
                                                 </div>
                                                 <div className="print-section-view" style={{ fontSize: '8pt', fontWeight: 'normal',  whiteSpace: 'pre-wrap', lineHeight: '1.0', paddingLeft: '10px' }}>
-                                                    {reportMetaData?.improvement || ' '}
+                                                    {reportMetaData?.improvements || ' '}
                                                 </div>
                                                 {/* ==================== B. List of planned training sessions ==================== */}
                                                 <Text fontSize="10pt" mt='2' fontWeight="bold" mb="1" color="gray.800">
