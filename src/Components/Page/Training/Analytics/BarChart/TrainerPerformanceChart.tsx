@@ -188,7 +188,7 @@ export default function TrainerPerformanceChart({ batches, allInstructors, cours
         <Card boxShadow="none" mt='5' m="1" bg="white">
             <CardBody p="1">
                 <Heading fontSize='9pt' mb="2" fontWeight="bold" color="gray.700" textAlign="center" textTransform="uppercase" letterSpacing="1px">
-                    Trainer's Performance Highlight
+                    {`Trainer's Performance Highlight`}
                 </Heading>
                 <Box h="200px" w="100%">
                 {chartDataComputed && (

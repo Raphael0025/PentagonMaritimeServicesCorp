@@ -17,12 +17,12 @@ import SimuVsNonSimu from './BarChart/SimuVsNonSimu'
 import TrainerPerformanceTable from './MiscTables/TrainerPerformanceTable'
 
 interface DetailedMRProps {
-    batchCourses: BATCH_ANALYSIS;
+    batchCourses: BATCH_ANALYSIS[];
     filteredTrainList: any;
-    allInstructors: InstructorByID;
+    allInstructors: InstructorByID[];
     monthSelected: number;
     yearSelected: number;
-    courseBatch: CourseBatchByID;
+    courseBatch: CourseBatchByID[];
     currentYear: number;
     currMonth: number;
 }
