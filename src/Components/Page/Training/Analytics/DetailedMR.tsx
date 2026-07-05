@@ -926,17 +926,17 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
                                                 </Text>
                                                 <div className="screen-section-view">
                                                     <Textarea
-                                                        value={reportMetaData?.simuProblems || ''}
-                                                        onChange={(e) => setReport(prev => prev ? { ...prev, simuProblems: e.target.value } : null)}
-                                                        onKeyDown={(e) => handleListKeyDown(e, reportMetaData?.simuProblems || '', (val) => {
-                                                            setReport(prev => prev ? { ...prev, simuProblems: val } : null);
+                                                        value={reportMetaData?.simulatorProbs || ''}
+                                                        onChange={(e) => setReport(prev => prev ? { ...prev, simulatorProbs: e.target.value } : null)}
+                                                        onKeyDown={(e) => handleListKeyDown(e, reportMetaData?.simulatorProbs || '', (val) => {
+                                                            setReport(prev => prev ? { ...prev, simulatorProbs: val } : null);
                                                         })}
                                                         placeholder="Type simulator problems here..."
                                                         size="sm" minH="100px" fontSize="10pt"
                                                     />
                                                 </div>
                                                 <div className="print-section-view" style={{ fontSize: '8pt', fontWeight: 'normal',  whiteSpace: 'pre-wrap', lineHeight: '1.0', paddingLeft: '10px' }}>
-                                                    {reportMetaData?.simuProblems || ' '}
+                                                    {reportMetaData?.simulatorProbs || ' '}
                                                 </div>
                                                 {/* ==================== E. Additional ==================== */}
                                                 <Text fontSize="10pt" mt='2' fontWeight="bold" mb="1" color="gray.800">
