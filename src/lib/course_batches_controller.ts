@@ -33,30 +33,51 @@ export const GENERATE_BD_BATCH = async (batch_record: BDCourseBatch) => {
     }
 }
 
-export const scannedAttachment = async (BATCH_ID: string, attachmentType: string, course: string, batch_remarks: string, file: any, fileID: string) => {
-    try{
-        let scanned = '';
+export const scannedAttachment = async (BATCH_ID: string, attachmentType: string, course: string, batch_remarks: string, fileList: any) => {
+    try {
+        const filesArray = Array.from(fileList);
+        if (filesArray.length === 0) return;
 
-        if (fileID !== 'No file chosen yet...') {
-            // Upload valid id to Storage
-            // attachment Type: attendance | CCR
-            const idRef = ref(storage, `BATCH_ATTACHMENTS/${attachmentType}/${course}/${fileID}`);
-            const id_data = await uploadBytes(idRef, file[0]);
-            scanned = await getDownloadURL(id_data.ref);
-        }
-        const getDoc = doc(firestore, `BATCH_RECORDS/${BATCH_ID}`)
-        switch(attachmentType){
+        // 1. Upload files concurrently (Storing only name and url)
+        const uploadedAttachments = await Promise.all(
+            filesArray.map(async (individualFile: any) => {
+                const uniqueFileName = `${Date.now()}_${individualFile.name}`;
+                const idRef = ref(storage, `BATCH_ATTACHMENTS/${attachmentType}/${course}/${uniqueFileName}`);
+                
+                const snapshot = await uploadBytes(idRef, individualFile);
+                const downloadUrl = await getDownloadURL(snapshot.ref);
+
+                return {
+                    name: individualFile.name,
+                    url: downloadUrl
+                };
+            })
+        );
+
+        const getDoc = doc(firestore, `BATCH_RECORDS/${BATCH_ID}`);
+
+        // 2. Push files into the list and save the single remarks string globally
+        switch(attachmentType) {
             case 'attendance':
-                await updateDoc(getDoc, { attendance: scanned, attendance_remarks: batch_remarks})
+                await updateDoc(getDoc, { 
+                    attendance: arrayUnion(...uploadedAttachments),
+                    attendance_remarks: batch_remarks // 🟢 Single global remarks field
+                });
                 break;
             case 'ccr':
-                await updateDoc(getDoc, { ccr: scanned, ccr_remarks: batch_remarks})
+                await updateDoc(getDoc, { 
+                    ccr: arrayUnion(...uploadedAttachments),
+                    ccr_remarks: batch_remarks // 🟢 Single global remarks field
+                });
                 break;
             default:                 
                 break;
         }
-    }catch(error){
-        throw error
+        
+        return uploadedAttachments;
+    } catch(error) {
+        console.error("Failed processing file upload cycle:", error);
+        throw error;
     }
 }
 

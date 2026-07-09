@@ -3,7 +3,7 @@
 import NextImage from 'next/image'
 import React from 'react';
 import { useState, useRef } from 'react'
-import { Box, Text, Input, Image as ChakraImage, FormControl, FormLabel, useToast, Button, Grid, GridItem } from '@chakra-ui/react'
+import { Box, Text, Input, Image as ChakraImage, FormControl, FormLabel, useToast, Button, Grid, Badge, CloseButton, VStack, HStack, GridItem } from '@chakra-ui/react'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -52,9 +52,12 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
     const [practicumSite, setSite] = useState<string>('')
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
-    const [file, setFile] = useState<File[]>([])
-    const [attachmentType, setAttachmentType] = useState<string>('attendance')
-    const [batchRemarks, setRemarks] = useState<string>('')
+    const [batchData, setBatchData] = useState<CourseBatchByID | null>(null)
+
+    const [file, setFile] = useState<File[]>([]);
+    const [attachmentType, setAttachmentType] = useState<string>('attendance');
+    const [remarks, setRemarks] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
 
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -95,13 +98,47 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
         })
     }
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const handleRemoveFile = (indexToRemove: number) => {
+        setFile(prevFiles => prevFiles.filter((_, idx) => idx !== indexToRemove));
+        
+        // If the user clears out all items manually, wipe the native DOM input value
+        if (file.length <= 1 && fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }
+
     const handleAttachment = async () => {
-        try{
-            await scannedAttachment(batchID, attachmentType, courseCode, batchRemarks, file, file[0].name)
-            handleToast('File uploaded successfully', '', 3000, 'success')
-        }catch(error){
-            console.error('Error uploading file:', error);
-            handleToast('Error uploading file', 'Please try again later.', 3000, 'error')
+        try {
+            if (!file || file.length === 0) {
+                handleToast('No files selected', 'Please select files to upload.', 3000, 'warning');
+                return;
+            }
+            setIsUploading(true);
+            const newUploads = await scannedAttachment(batchID, attachmentType, courseCode, remarks, file);
+            
+            setFile([]); 
+            if (fileInputRef.current) fileInputRef.current.value = ''; 
+            
+            if (newUploads && newUploads.length > 0) {
+                setBatchData((prevBatch: any) => {
+                    const currentList = prevBatch?.attendance || [];
+                    
+                    return {
+                        ...prevBatch,
+                        attendance: [...currentList, ...newUploads],
+                        attendance_remarks: remarks 
+                    };
+                });
+            }
+            
+            handleToast('Files uploaded successfully', 'Ready for viewing/printing.', 3000, 'success');
+            setRemarks(''); // Clear remarks input field only after state merging is complete
+        } catch (error) {
+            console.error('Error uploading file cluster:', error);
+            handleToast('Error uploading file', 'Please try again later.', 3000, 'error');
+        } finally {
+            setIsUploading(false);
         }
     }
 
@@ -149,7 +186,6 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                     {(() => {
                                         const ins = allInstructors?.find((i) => i.id === batch?.instructor);
                                         if (!ins) return batch?.instructor || 'No Instructor';
-
                                         // Add 'MM' if rank is 'CAPT'
                                         const suffix = ins.rank === 'CAPT' ? ', MM' : '';
                                         return `${ins.rank} ${ins.name}${suffix}`;
@@ -162,7 +198,6 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                 {(() => {
                                     const ins = allInstructors?.find((i) => i.id === batch?.assessor);
                                     if (!ins) return batch?.assessor || 'No Instructor';
-
                                     // Add 'MM' if rank is 'CAPT'
                                     const suffix = ins.rank === 'CAPT' ? ', MM' : '';
                                     return `${ins.rank} ${ins.name}${suffix}`;
@@ -170,21 +205,44 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                                 </Text>
                             </Box>
                         </Box>
-                        <Box display='flex' gap='3' justifyContent='start'>
-                            <Box display='flex' gap='3' justifyContent='start' alignItems='end' mb={2}>
-                                <FormControl w='auto' display='flex' gap='2' alignItems='center'>
-                                    <FormLabel m='0' fontWeight='normal' >Attachment:</FormLabel>
-                                    <Input w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])} />
+                        <VStack align="stretch" spacing={3} w="100%">
+                            <Box display='flex' justifyContent='start' alignItems='end' mb='2' gap='3' flexWrap="wrap">
+                                <FormControl w='auto' display='flex' alignItems='end'>    
+                                    <FormLabel w='200px' fontWeight='normal'>Choose Files:</FormLabel>
+                                    <Input ref={fileInputRef} type='file' multiple 
+                                        onChange={(e) => {
+                                            if (e.target.files) {
+                                                setFile(Array.from(e.target.files));
+                                            }
+                                        }} 
+                                        shadow='md' p="1" accept='.jpeg, .jpg, .png'
+                                    />
                                 </FormControl>
-                            </Box>
-                            <Box display='flex' justifyContent='start' alignItems='end' mb='2' gap='3'>
-                                <FormControl  w='auto' display='flex' alignItems='end'>    
+                                <FormControl w='auto' display='flex' alignItems='end'>    
                                     <FormLabel fontWeight='normal'>Remarks:</FormLabel>
-                                    <Input type='text' onChange={(e) => setRemarks(e.target.value)} shadow='md'/>
+                                    <Input type='text' value={remarks}onChange={(e) => setRemarks(e.target.value)} shadow='md' />
                                 </FormControl>
-                                <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md' >Upload</Button>
+                                <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md'isLoading={isUploading} >
+                                    Upload
+                                </Button>
                             </Box>
-                        </Box>
+                            {/* 🟢 Interactive File Selection Preview Panel */}
+                            {file && file.length > 0 && (
+                                <Box p="3" bg="gray.50" borderRadius="md" border="1px solid #E2E8F0" maxW="500px">
+                                    <Text fontSize="11px" fontWeight="bold" color="gray.500" mb="2">STAGED ATTACHMENTS ({file.length}):</Text>
+                                    <VStack align="stretch" spacing={1.5}>
+                                        {file.map((f: File, idx: number) => (
+                                            <HStack key={idx} justifyContent="space-between" bg="white" p="1.5" px="2" borderRadius="sm" shadow="sm" border="1px solid" borderColor="gray.100">
+                                                <Text fontSize="12px" color="gray.700" isTruncated maxW="85%">
+                                                    📄 {f.name} <Text as="span" color="gray.400" fontSize="10px">({(f.size / 1024).toFixed(1)} KB)</Text>
+                                                </Text>
+                                                <CloseButton size="sm" color="red.500" onClick={() => handleRemoveFile(idx)} />
+                                            </HStack>
+                                        ))}
+                                    </VStack>
+                                </Box>
+                            )}
+                        </VStack>
                     </Box>
                 </Box>
             </Box>
@@ -496,24 +554,41 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                 </Box>
             </Box>
         </Box>
-        <Box w='100%' 
-            ref={componentRef} 
-            className="printable-content"
-        >
+        <Box display="flex" flexDir="column" alignItems="center" gap="6" w="100%" mt="4">
+            <Text fontSize="sm" fontWeight="bold" color="gray.800" alignSelf="start" px="8">
+                📜 UPLOADED ATTACHMENTS:
+            </Text>
+            {(batch as any)?.attendance && (batch as any).attendance.length > 0 ? (
+                (batch as any).attendance.map((item: any, idx: number) => (
+                    <Box key={idx} w="100%" display="flex" flexDir="column" alignItems="center" gap="2">
+                        <ChakraImage src={item.url} width='70%' height='50%' alt={item.name} borderRadius="md" shadow="md" />
+                        <Text fontSize="xs" color="gray.800">📄 {item.name}</Text>
+                    </Box>
+                ))
+            ) : (
+                batch?.attendance && batch?.attendance !== '' ? (
+                    <ChakraImage src={batch.attendance} width='80%' height='auto' alt='legacy attachment' />
+                ) : (
+                    <Box py="6" color="gray.400" fontSize="sm">No existing files saved for this batch.</Box>
+                )
+            )}
+            {/* Single Global Remarks Display */}
+            <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='4' gap='2'>
+                <Text fontWeight="bold">REMARKS:</Text>
+                <Text fontWeight='normal' bg="gray.50" p="3" borderRadius="md" border="1px solid" borderColor="gray.200">
+                    {batch?.attendance_remarks || 'No remarks recorded.'}
+                </Text>
+            </Box>
+        </Box>
+        <Box w='100%' ref={componentRef} className="printable-content" >
             <AttendanceForm batch={batch} trainingArray={trainingsArr} />
         </Box>
-        <Box 
-            ref={attachRef} 
-            display="flex" 
-            flexDirection="column" 
-            position='relative' 
+        <Box ref={attachRef} display="flex" flexDirection="column" position='relative' 
             w='210mm' h='297mm'  // Ensures it stretches to full screen/container height
             sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
-
         >
             {/* FIXED LOGO HEADER */}
-            <Box 
-                display='flex' 
+            <Box display='flex' 
                 w='100%' 
                 justifyContent='center' 
                 alignItems='center'
@@ -529,35 +604,37 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                     <Text>{`Training Schedule: ${batch?.start_date} ${batch?.end_date !== '' ? `to ${batch?.end_date}` : ''}`}</Text>
                 </Box>
             </Box>
-            <Box 
-                flex="1" // Takes up all remaining vertical space pushing header up and footer down
-                overflowY="auto" // Allows content to scroll inside if it overflows
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                mt='8'
-                flexDir='column'
-                gap='6'
-            >
-                {batch?.attendance && batch?.attendance !== '' && (
-                    <ChakraImage src={batch?.attendance} width='80%' height='auto' alt='attachment' />
+            <Box flex="1" overflowY="auto" display="flex"justifyContent="start"alignItems="center"mt='8'flexDir='column'gap='6'w="100%" >
+                {/* 🟢 Split the attendance string by commas to get an array of image URLs */}
+                {(batchData as any)?.attendance && (batchData as any).attendance.length > 0 ? (
+                    (batchData as any).attendance.map((item: any, idx: number) => (
+                        <Box key={`db-${idx}`} w="100%" display="flex" flexDir="column" alignItems="center" gap="2">
+                            <ChakraImage src={item.url} width='70%' height='auto' alt={item.name} borderRadius="md" shadow="sm" />
+                            <Text fontSize="xs" color="gray.400">📄 {item.name}</Text>
+                        </Box>
+                    ))
+                ) : file && file.length > 0 ? (
+                    /* 🟢 CONDITION 2: If DB is empty but user just selected local files, render them for printing! */
+                    file.map((f: File, idx: number) => (
+                        <Box key={`local-${idx}`} w="100%" display="flex" flexDir="column" alignItems="center" gap="2">
+                            <ChakraImage src={URL.createObjectURL(f)} width='70%' height='auto' alt={f.name} borderRadius="md" shadow="sm"  />
+                            <Text fontSize="xs" color="gray.400">📄 {f.name} (Staged Local File)</Text>
+                        </Box>
+                    ))
+                ) : (
+                    batchData?.attendance && batchData?.attendance !== '' && (
+                        <ChakraImage src={batchData.attendance} width='50%' height='auto' alt='legacy attachment' />
+                    )
                 )}
-                <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='10' gap='3'>
-                    <Text>REMARKS:</Text>
-                    <Text fontWeight='normal'>{batch?.attendance_remarks}</Text>
+                <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='4' gap='3'>
+                    <Text fontWeight="bold">REMARKS:</Text>
+                    <Text fontWeight='normal'>
+                        {batch?.attendance_remarks || remarks || 'No remarks provided.'}
+                    </Text>
                 </Box>
             </Box>
             {/* FIXED FOOTER */}
-            <Box 
-                position='absolute'
-                w='100%' 
-                display='flex' 
-                justifyContent='center' 
-                alignItems='center'
-                bottom='0'
-                left='0'
-                pb='4'
-            >
+            <Box position='absolute'w='100%' display='flex' justifyContent='center' alignItems='center'bottom='0'left='0'pb='4' >
                 <ChakraImage src='/Footer.png' width='500px' h='100%' alt='Footer placeholder' />
             </Box>
         </Box>

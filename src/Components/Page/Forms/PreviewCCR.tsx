@@ -51,9 +51,12 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
     const [loading, setLoading] = useState<boolean>(false)
     const [trainingsArr, setTrainingsArr] = useState<TRAINING_BY_ID[]>([])
 
-    const [file, setFile] = useState<File[]>([])
-    const [attachmentType, setAttachmentType] = useState<string>('ccr')
-    const [batchRemarks, setRemarks] = useState<string>('')
+    const [batchData, setBatchData] = useState<CourseBatchByID | null>(null);
+    const [file, setFile] = useState<File[]>([]);
+    const [remarks, setRemarks] = useState('');
+    const [attachmentType, setAttachmentType] = useState<string>('ccr');
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     useEffect(() => {
@@ -146,12 +149,42 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
     }
 
     const handleAttachment = async () => {
-        try{
-            await scannedAttachment(batchID, attachmentType, courseCode, batchRemarks, file, file[0].name)
-            handleToast('File uploaded successfully', '', 3000, 'success')
-        }catch(error){
+        try {
+            if (!file || file.length === 0) {
+                handleToast('No file chosen yet...', '', 3000, 'warning');
+                return;
+            }
+
+            setIsUploading(true);
+
+            // 1. Pass the values down to your original background service function
+            // file[0] sends the single selected file object; file[0].name provides the ID string.
+            await scannedAttachment(batchID, attachmentType, courseCode, remarks, file);
+
+            // 2. Generate a local runtime preview link to update the UI instantly
+            const localPreviewUrl = URL.createObjectURL(file[0]);
+
+            // 3. 🟢 Update local state instantly so it loads right up for printing!
+            setBatchData((prevBatch: any) => {
+                return {
+                    ...prevBatch,
+                    ccr: localPreviewUrl,       // Stores the preview string mapping path instantly
+                    ccr_remarks: remarks        // Binds the text comment directly
+                };
+            });
+
+            handleToast('File uploaded successfully', 'Ready for viewing/printing.', 3000, 'success');
+            
+            // 4. Reset entry form variables
+            setFile([]);
+            setRemarks('');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+
+        } catch (error) {
             console.error('Error uploading file:', error);
-            handleToast('Error uploading file', 'Please try again later.', 3000, 'error')
+            handleToast('Error uploading file', 'Please try again later.', 3000, 'error');
+        } finally {
+            setIsUploading(false);
         }
     }
 
@@ -225,16 +258,18 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                 <Box display='flex' gap='3' justifyContent='start'>
                     <Box display='flex' gap='3' justifyContent='start' alignItems='end' mb={2}>
                         <FormControl w='auto' display='flex' gap='2' alignItems='center'>
-                            <FormLabel m='0' fontWeight='normal' >Attachment:</FormLabel>
-                            <Input w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])} />
+                            <FormLabel m='0' fontWeight='normal'>Attachment:</FormLabel>
+                            <Input ref={fileInputRef}w='400px' type='file' accept='image/*, .pdf' onChange={(e) => setFile(e.target.files ? Array.from(e.target.files) : [])}  />
                         </FormControl>
                     </Box>
                     <Box display='flex' justifyContent='start' alignItems='end' mb='2' gap='3'>
                         <FormControl w='auto' display='flex' alignItems='end'>
                             <FormLabel fontWeight='normal'>Remarks:</FormLabel>
-                            <Input type='text' onChange={(e) => setRemarks(e.target.value)} shadow='md'/>
+                            <Input type='text' value={remarks}onChange={(e) => setRemarks(e.target.value)} shadow='md' />
                         </FormControl>
-                        <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md' >Upload</Button>
+                        <Button onClick={handleAttachment} colorScheme='blue' bgColor='blue.700' shadow='md' isLoading={isUploading} >
+                            Upload
+                        </Button>
                     </Box>
                 </Box>
             </Box>
@@ -339,28 +374,16 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
             <Text>PRINTABLE COURSE COMPLETION</Text>
             <Button onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md'>Print Course Completion</Button>
         </Box>
-        <Box w='100%' 
-            ref={componentRef} 
+        <Box w='100%' pb='12' ref={componentRef} 
             // className="printable-content"
         >
             <CCR batch={batch} trainingsArr={trainingsArr} />
         </Box>
-        <Box 
-            ref={attachRef} 
-            display="flex" 
-            flexDirection="column"
-            position='relative' 
-            w='210mm' h='297mm' // Ensures it stretches to full screen/container height
-            sx={{display: 'none', '@media print': {display: 'block', position: 'relative', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+        <Box ref={attachRef} display="flex" pt='12' flexDirection="column"position='relative' w='210mm' h='297mm' // Ensures it stretches to full screen/container height
+            // sx={{display: 'none', '@media print': {display: 'block', position: 'relative', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
         >
             {/* FIXED LOGO HEADER */}
-            <Box 
-                display='flex' 
-                w='100%' 
-                justifyContent='center' 
-                alignItems='center'
-                flexShrink={0} // Prevents the logo container from squishing
-            >
+            <Box display='flex' w='100%' justifyContent='center' alignItems='center' flexShrink={0} >
                 <ChakraImage src='/Logo.jpg' width='350px' h='100%' alt='attachment placeholder' />
             </Box>
             {/* MIDDLE CONTENT - SCROLLS / STRETCHES */}
@@ -371,35 +394,41 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
                     <Text>{`Training Schedule: ${batch?.start_date} ${batch?.end_date !== '' ? `to ${batch?.end_date}` : ''}`}</Text>
                 </Box>
             </Box>
-            <Box 
-                flex="1" // Takes up all remaining vertical space pushing header up and footer down
-                overflowY="auto" // Allows content to scroll inside if it overflows
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                mt='8'
-                flexDir='column'
-                gap='6'
-            >
-                {batch?.ccr && batch?.ccr !== '' && (
-                    <ChakraImage src={batch?.ccr} width='70%' height='auto' alt='attachment' />
+            <Box flex="1" overflowY="auto" display="flex" justifyContent="start" alignItems="center" mt='8' flexDir='column' gap='6' w="100%"  >
+                {/* 🟢 Render Single CCR Document Component Layout */}
+                {((batchData as any)?.ccr && Array.isArray((batchData as any).ccr) && (batchData as any).ccr.length > 0) ? (
+                    (batchData as any).ccr.map((item: any, idx: number) => (
+                        <Box key={`db-ccr-${idx}`} w="100%" display="flex" flexDir="column" alignItems="center" gap="2">
+                            <ChakraImage src={item.url || item} width='70%' height='auto' alt={item.name || `ccr-${idx}`} borderRadius="md" shadow="sm"  />
+                            {item.name && <Text fontSize="xs" color="gray.400">📄 {item.name}</Text>}
+                        </Box>
+                    ))
+                ) : ((batch as any)?.ccr && Array.isArray((batch as any).ccr) && (batch as any).ccr.length > 0) ? (
+                    /* 🟢 PROP FALLBACK: Safely reads the array from the database prop on first page entry */
+                    (batch as any).ccr.map((item: any, idx: number) => (
+                        <Box key={`prop-ccr-${idx}`} w="100%" display="flex" flexDir="column" alignItems="center" gap="2">
+                            <ChakraImage src={item.url || item} width='70%' height='auto' alt={item.name || `ccr-${idx}`} borderRadius="md" shadow="sm"  />
+                            {item.name && <Text fontSize="xs" color="gray.400">📄 {item.name}</Text>}
+                        </Box>
+                    ))
+                ) : file && file.length > 0 ? (
+                    /* Instant temporary RAM preview while the upload is executing */
+                    <Box w="100%" display="flex" flexDir="column" alignItems="center" gap="2">
+                        <ChakraImage src={URL.createObjectURL(file[0])} width='70%' height='auto' alt='staged single ccr preview' borderRadius="md" shadow="sm"  />
+                        <Text fontSize="xs" color="gray.400">📄 {file[0].name} (Staged)</Text>
+                    </Box>
+                ) : (
+                    <Box py="6" color="gray.800" fontSize="xl">No Assessment available for this course.</Box>
                 )}
-                <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='10' gap='3'>
-                    <Text fontSize='lg'>REMARKS:</Text>
-                    <Text fontWeight='normal'>{batch?.ccr_remarks}</Text>
+                <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='4' gap='3'>
+                    <Text fontWeight="bold">REMARKS:</Text>
+                    <Text fontWeight='normal'>
+                        {batchData?.ccr_remarks || batch?.ccr_remarks || 'No remarks provided.'}
+                    </Text>
                 </Box>
             </Box>
             {/* FIXED FOOTER */}
-            <Box 
-                position='absolute'
-                w='100%' 
-                display='flex' 
-                justifyContent='center' 
-                alignItems='center'
-                bottom='0'
-                left='0'
-                pb='4'
-            >
+            <Box position='absolute'w='100%' display='flex' justifyContent='center' alignItems='center'bottom='0'left='0'pb='4' >
                 <ChakraImage src='/Footer.png' width='500px' h='100%' alt='Footer placeholder' />
             </Box>
         </Box>
