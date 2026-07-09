@@ -117,7 +117,7 @@ export const TrainingModeChart = ({ batchCourses = [] }: TrainingModeChartProps)
     };
 
     return (
-        <Box mt='4' display='flex' flexDir='column' gap='6' alignItems='center'>
+        <Box display='flex' flexDir='column' gap='6' alignItems='center'>
             {/* Original Data Grid Table View */}
             <Box maxW='100%' overflowX='auto'>
                 <Box w='500px'>
@@ -141,7 +141,7 @@ export const TrainingModeChart = ({ batchCourses = [] }: TrainingModeChartProps)
                 </Box>
             </Box>
             {/* Dynamic Pie Chart Render Box Container */}
-            <Box w={{ base: '220px', md: '310px' }} h={{ base: '220px', md: '300px' }}>
+            <Box w={{ base: '220px', md: '310px' }} h={{ base: '220px', md: '310px' }}>
                 <Pie data={chartData} options={chartOptions} />
             </Box>
         </Box>

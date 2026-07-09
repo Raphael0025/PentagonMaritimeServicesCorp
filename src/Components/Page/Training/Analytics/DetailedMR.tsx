@@ -548,31 +548,31 @@ export default function DetailedMonthlyReport ({ batchCourses, filteredTrainList
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             {/* 1. FIXED HEADER: The browser automatically clones this at the top of page 1, page 2, page 3, etc. */}
                             <thead>
-                            <tr>
-                                <td>
-                                    <Box display="flex" justifyContent="space-between" alignItems="center" pb="4" mb="6" >
-                                        <ChakraImage src="/Logo.jpg" width="2.81in" height="0.66in" alt="logo" />
-                                        <Box>
-                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
-                                            <Text as="span" mr={1}><PinIcon size="12" color="#000" /></Text>
-                                            2/F 801 Building UN Avenue Ermita Manila
-                                        </Text>
-                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
-                                            <Text as="span" mr={1}><PhoneIcon size="12" color="#000" /></Text>
-                                            (02) 8 281-8155
-                                        </Text>
-                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
-                                            <Text as="span" mr={1}><MailIcon size="12" color="#000" /></Text>
-                                            pentagonmaritimeservicescorp@gmail.com
-                                        </Text>
-                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
-                                            <Text as="span" mr={1}><FacebookIcon size="12" color="#000" /></Text>
-                                            /pentagonmaritimeservicescorp
-                                        </Text>
+                                <tr>
+                                    <td>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center" pb="4" mb="6" >
+                                            <ChakraImage src="/Logo.jpg" width="2.81in" height="0.66in" alt="logo" />
+                                            <Box>
+                                            <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                <Text as="span" mr={1}><PinIcon size="12" color="#000" /></Text>
+                                                2/F 801 Building UN Avenue Ermita Manila
+                                            </Text>
+                                            <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                <Text as="span" mr={1}><PhoneIcon size="12" color="#000" /></Text>
+                                                (02) 8 281-8155
+                                            </Text>
+                                            <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                <Text as="span" mr={1}><MailIcon size="12" color="#000" /></Text>
+                                                pentagonmaritimeservicescorp@gmail.com
+                                            </Text>
+                                            <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                <Text as="span" mr={1}><FacebookIcon size="12" color="#000" /></Text>
+                                                /pentagonmaritimeservicescorp
+                                            </Text>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
                             </thead>
                             {/* 2. AUTOMATIC CONTENT STREAM: Your long table fills this space and breaks safely across page margins */}
                             <tbody>

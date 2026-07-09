@@ -26,7 +26,7 @@ import RegistrationForm from '@/Components/Page/Forms/RegistrationForm'
 import AdmissionForm from '@/Components/Page/Forms/AdmissionForm'
 import { EditRegistration } from '@/Components/Modal/Registration'
 
-import { SAVE_REMARKS, UPDATE_TRAINEE, UPDATE_TRAINING, UPDATE_REGISTRATION, changeImg } from '@/lib/trainee_controller'
+import { SAVE_REMARKS, UPDATE_TRAINEE, UPDATE_TRAINING, UPDATE_REGISTRATION, updateTraineeAttachments, changeImg } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
 
 //import './Registration.css'
@@ -791,11 +791,47 @@ export default function Page(){
                     <ModalBody>
                     <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6} p={4}>
                         {attachmentsConfig.map((item) => (
-                            <AttachmentCard key={item.key} label={item.label} currentUrl={traineeInfo[item.key] as string} isLoading={loading} 
-                                onUpload={async (file) => { await changeImg( traineeInfo.id,  traineeInfo.last_name,  traineeInfo.first_name,  item.cat,  item.type,  [file],  'New File',  'Staff Update' );}}
+                            <AttachmentCard 
+                                key={item.key} 
+                                label={item.label} 
+                                currentUrl={traineeInfo[item.key] as string} 
+                                isLoading={loading} 
+                                onUpload={async (file) => { 
+                                    // 1. Build the files structure to match what updateTraineeAttachments checks for
+                                    const filesPayload = {
+                                        // Data elements (The raw file array)
+                                        validID: item.key === 'valid_id' ? [file] : null,
+                                        validPfp: item.key === 'photo' ? [file] : null,
+                                        validSignature: item.key === 'e_sig' ? [file] : null,
+                                        screenshotFile: item.key === 'mismoSC' ? [file] : null,
+                                        medCertFile: item.key === 'medCert' ? [file] : null,
+                                        copFile: item.key === 'cop' ? [file] : null,
+                                        ssrFile: item.key === 'ssr' ? [file] : null,
+
+                                        // Check elements (Bypasses the 'No file chosen yet...' conditional rule)
+                                        file: item.key === 'valid_id' ? 'Uploaded' : null,
+                                        pfpFile: item.key === 'photo' ? 'Uploaded' : null,
+                                        sig_file: item.key === 'e_sig' ? 'Uploaded' : null,
+                                        sc_fileName: item.key === 'mismoSC' ? 'Uploaded' : null,
+                                        mc_fileName: item.key === 'medCert' ? 'Uploaded' : null,
+                                        cop_fileName: item.key === 'cop' ? 'Uploaded' : null,
+                                        ssr_fileName: item.key === 'ssr' ? 'Uploaded' : null,
+                                    };
+
+                                    // 2. Execute your new function package cleanly
+                                    const updatedUrls = await updateTraineeAttachments(
+                                        traineeInfo.id,       // Trainee ID string
+                                        traineeInfo,          // Trainee details object (reads first_name, last_name)
+                                        filesPayload,         // Calculated conditional payload bundle
+                                        'Staff Update'        // Staff operator identifier
+                                    );
+
+                                    // 💡 Recommended: If you maintain local component view state trackers, 
+                                    // you can update it right here using the return token values:
+                                    // setTraineeInfo(prev => ({ ...prev, ...updatedUrls }));
+                                }}
                                 onDownload={() => { 
                                     const fileUrl = traineeInfo[item.key];
-                                    // Ensure it's a string before using it in the link
                                     if (typeof fileUrl === 'string') {
                                         const link = document.createElement('a'); 
                                         link.href = fileUrl; 
@@ -803,7 +839,8 @@ export default function Page(){
                                         link.target = "_blank"; 
                                         link.click();
                                     }
-                            }}/>
+                                }}
+                            />
                         ))}
                     </Grid>
                     </ModalBody>

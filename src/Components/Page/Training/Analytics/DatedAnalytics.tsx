@@ -351,316 +351,350 @@ export default function Dated () {
                 </Box>
             </Box>
             <Box ref={componentRef} width='100%' display='flex' flexDir='column' justifyContent='center' >
-                <Text>Raw Data Analysis</Text>
-                <Box display='flex' gap='5'>
-                    <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
-                        <Box w='150px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
-                            <Text>Total Courses</Text>
-                            <Text>{batchCourses.length}</Text>
-                        </Box>
-                        <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>Total Batches</Text>
-                            <Text>
-                            {batchCourses.reduce(
-                                (total, bc) => total + bc.sortedBatches.length,
-                                0
-                            )}
-                            </Text>
-                        </Box>
-                        <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>Total Declared</Text>
-                            <Text>
-                            {batchCourses.reduce(
-                                (total, bc) => total + bc.total_trainees,
-                                0
-                            )}
-                            </Text>
-                        </Box>
-                        <Box w='140px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>Total Delivered</Text>
-                            <Text>
-                            {batchCourses.reduce(
-                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
-                                0
-                            )}
-                            </Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>F2F</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => {
-                                return total + bc.sortedBatches.reduce((sum, batch) => {
-                                    return sum +
-                                        (['f2f', 'f2ft', 'f2fp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
-                                    }, 0);
-                                }, 0)
-                            }
-                            </Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>OINS</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => {
-                                return total + bc.sortedBatches.reduce((sum, batch) => {
-                                    return sum +
-                                        (['ol', 'olt', 'olp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
-                                    }, 0);
-                                }, 0)
-                            }
-                            </Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>OM</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => {
-                                return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'olm' ? Number(batch.delivered) : 0), 0);
-                                }, 0)
-                            }
-                            </Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>CBT</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => {
-                                return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'f2fm' ? Number(batch.delivered) : 0), 0);
-                                }, 0)
-                            }
-                            </Text>
-                        </Box>
-                        <Box w='100px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>BLENDED</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => total + bc.sortedBatches
-                                .reduce((sum, batch) => 
-                                    sum + (batch.trainingMode === 'blended' ? Number(batch.delivered) : 0), 
-                                0), 
-                            0)}
-                            </Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>C</Text>
-                            <Text>
-                            {batchCourses.reduce(
-                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.cancelled), 0),
-                                0
-                            )}
-                            </Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>F</Text>
-                            <Text>&nbsp;</Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>NT</Text>
-                            <Text>&nbsp;</Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>NA</Text>
-                            <Text>
-                            {batchCourses.reduce(
-                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.non_appearance), 0),
-                                0
-                            )}
-                            </Text>
-                        </Box>
-                        <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray' borderTopEndRadius={'5px'} borderBottomEndRadius={'5px'}>
-                            <Text>D</Text>
-                            <Text>
-                            {batchCourses.reduce(
-                                (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
-                                0
-                            )}
-                            </Text>
-                        </Box>
-                    </Box>
-                    <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
-                        <Box w='80px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
-                            <Text>Simu</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => total + (bc.ttl_simu || 0), 0)}
-                            </Text>
-                        </Box>
-                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>Non-Simu</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => total + (bc.ttl_non_simu || 0), 0)}
-                            </Text>
-                        </Box>
-                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>STCW</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => total + (bc.ttl_stcw || 0), 0)}
-                            </Text>
-                        </Box>
-                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
-                            <Text>Safety</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => total + (bc.ttl_safety || 0), 0)}
-                            </Text>
-                        </Box>
-                        <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray' borderTopEndRadius={'5px'} borderBottomEndRadius={'5px'}>
-                            <Text>MDS</Text>
-                            <Text>
-                            {batchCourses.reduce((total, bc) => total + (bc.ttl_mds || 0), 0)}
-                            </Text>
-                        </Box>
-                    </Box>
-                </Box>
-                <Box style={{scrollbarWidth: 'thin'}}>
-                    {/** HEADER */}
-                    <Box w='1557px' py='1' h='60px' display='flex' alignItems='start' textAlign='center' borderRadius={'5px'} bgColor='blue.700' color='white' position='sticky' top='0' zIndex='1'>
-                        <Box w='200px' sx={headerStyle}> Courses </Box>
-                        <Box w='140px' sx={headerStyle}>Batch</Box>
-                        <Box w='140px' sx={headerStyle}>Total # of Batches</Box>
-                        <Box w='140px' sx={headerStyle}>No. of Trainees per Batch</Box>
-                        <Box w='140px' sx={headerStyle}>Total # of Trainees</Box>
-                        <Box w='140px' sx={headerStyle}>Delivered</Box>
-                        <Box w='300px' borderRight='1px solid white'>
-                            <Text>MODE OF TRAINING</Text>
-                            <Box display={'flex'} h='35px' borderTop='1px solid white'alignItems='center' justifyContent='space-between'>
-                                <Text w='50px' sx={headerStyle} >F2F</Text>
-                                <Box w='100px' borderRight='1px solid white' >
-                                    <Text>ONLINE</Text>
-                                    <Box display='flex' justifyContent='space-between'>
-                                        <Text w='50px' borderRight='1px solid white' borderTop='1px solid white'>INS</Text>
-                                        <Text w='50px' borderTop='1px solid white'>MOD</Text>
+                <Box w='100%' p='2'>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr>
+                                <td>
+                                    <Box display="flex" justifyContent="space-between" alignItems="center" pb="4" mb="6" >
+                                        <ChakraImage src="/Logo.jpg" width="2.81in" height="0.66in" alt="logo" />
+                                        <Box>
+                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                            <Text as="span" mr={1}><PinIcon size="12" color="#000" /></Text>
+                                            2/F 801 Building UN Avenue Ermita Manila
+                                        </Text>
+                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                            <Text as="span" mr={1}><PhoneIcon size="12" color="#000" /></Text>
+                                            (02) 8 281-8155
+                                        </Text>
+                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                            <Text as="span" mr={1}><MailIcon size="12" color="#000" /></Text>
+                                            pentagonmaritimeservicescorp@gmail.com
+                                        </Text>
+                                        <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                            <Text as="span" mr={1}><FacebookIcon size="12" color="#000" /></Text>
+                                            /pentagonmaritimeservicescorp
+                                        </Text>
+                                        </Box>
                                     </Box>
-                                </Box>
-                                <Text w='50px' sx={headerStyle} >CBT</Text>
-                                <Text w='100px' >BLENDED</Text>
-                            </Box>
-                        </Box>
-                        <Box w='250px' >
-                            <Text borderRight='1px solid white'>COMPLETION</Text>
-                            <Box display='flex' h='35px' borderTop='1px solid white' alignItems='center' justifyContent='space-between'>
-                                <Text w='50px' sx={headerStyle}>C</Text>
-                                <Text w='50px' sx={headerStyle}>F</Text>
-                                <Text w='50px' sx={headerStyle}>NT</Text>
-                                <Text w='50px' sx={headerStyle}>NA</Text>
-                                <Text w='50px' sx={headerStyle}>D</Text>
-                            </Box>
-                        </Box>
-                        <Box w='150px' sx={headerStyle}>REMARKS</Box>
-                    </Box>
-                    {/** BODY */}
-                    <Box>
-                    {batchCourses.map((bc, index) => {
-                        return(
-                            <Box key={index} _hover={{bgColor: 'gray.200'}} w='1557px' display='flex' alignItems='center' textAlign='center' fontWeight='normal' borderBottom='1px solid gray' borderX='1px solid gray'>
-                                <Text w='200px' fontWeight='bold' color={bc.courseType === '1' ? '#0070c0' : 'black'}>{bc.course.toUpperCase()}</Text>
-                                <Box w='140px' >
-                                    {bc.sortedBatches.map((b, idx, arr) => 
-                                        <Text  _hover={{bgColor: 'blue.100'}} key={idx} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
-                                            {b.batch_no}
-                                        </Text>)
-                                    }
-                                </Box>
-                                <Text w='140px'>{bc.total_batches}</Text>
-                                <Box w='140px' >
-                                    {bc.sortedBatches.map((b, idx, arr) => 
-                                        <Text key={idx} _hover={{bgColor: 'blue.100'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
-                                            {b.trainees_per_batch}
-                                        </Text>)
-                                    }
-                                </Box>
-                                <Text w='140px'>{bc.total_trainees}</Text>
-                                <Box>
-                                    {bc.sortedBatches.map((b, idx, arr) => (
-                                        <Box key={idx} _hover={{bgColor: 'blue.100'}} display='flex' alignItems='center' justifyContent='space-between' borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
-                                            <Text w='140px' borderRight='1px solid gray'>{b.delivered}</Text>
-                                            <Box w='300px' >
-                                                <Box display={'flex'} alignItems='center' justifyContent='space-between'>
-                                                    <Text w='50px' bgColor='#eaf1dd' sx={headerStyle} borderRight='1px solid gray'>{['f2f', 'f2ft', 'f2fp'].includes(b.trainingMode) ? b.delivered : <>&nbsp;</>}</Text>
-                                                    <Box w='100px' >
-                                                        <Box display='flex' justifyContent='space-between'>
-                                                            <Text bgColor='#daeef3' w='50px' borderX='1px solid gray'>{['ol', 'olt', 'olp'].includes(b.trainingMode) ? b.delivered : <>&nbsp;</>}</Text>
-                                                            <Text bgColor='#daeef3' w='50px' borderRight='1px solid gray'>{b.trainingMode === 'olm' ? b.delivered : <>&nbsp;</>}</Text>
-                                                        </Box>
-                                                    </Box>
-                                                    <Text w='50px' bgColor='#ddd9c3' sx={headerStyle} >{b.trainingMode === 'f2fm' ? b.delivered : <>&nbsp;</>}</Text>
-                                                    <Text w='100px' bgColor='#b6dde8' borderX='1px solid gray'>{b.trainingMode === 'blended' ? b.delivered : <>&nbsp;</>}</Text>
-                                                </Box>
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <Box display='flex' gap='5'>
+                                        <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
+                                            <Box w='100px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
+                                                <Text>Total Courses</Text>
+                                                <Text>{batchCourses.length}</Text>
                                             </Box>
-                                            <Box w='250px' display='flex' alignItems='center' justifyContent='space-between'>
-                                                <Text w='50px' borderRight={'1px solid gray'}>{b.cancelled !== '0' ? b.cancelled : <>&nbsp;</>}</Text> {/** Re-evaluate this status */}
-                                                <Text w='50px' borderRight={'1px solid gray'}>&nbsp;</Text>
-                                                <Text w='50px' borderRight={'1px solid gray'}>&nbsp;</Text>
-                                                <Text w='50px' borderRight={'1px solid gray'}>{b.non_appearance !== '0' ? b.non_appearance : <>&nbsp;</>}</Text> {/** Re-evaluate this status */}
-                                                <Text w='50px'>{b.delivered !== '0' ? b.delivered : <>&nbsp;</>}</Text>
+                                            <Box w='100px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>Total Batches</Text>
+                                                <Text>
+                                                {batchCourses.reduce(
+                                                    (total, bc) => total + bc.sortedBatches.length,
+                                                    0
+                                                )}
+                                                </Text>
+                                            </Box>
+                                            <Box w='100px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>Total Declared</Text>
+                                                <Text>
+                                                {batchCourses.reduce(
+                                                    (total, bc) => total + bc.total_trainees,
+                                                    0
+                                                )}
+                                                </Text>
+                                            </Box>
+                                            <Box w='120px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>Total Delivered</Text>
+                                                <Text>
+                                                {batchCourses.reduce(
+                                                    (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
+                                                    0
+                                                )}
+                                                </Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>F2F</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => {
+                                                    return total + bc.sortedBatches.reduce((sum, batch) => {
+                                                        return sum +
+                                                            (['f2f', 'f2ft', 'f2fp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
+                                                        }, 0);
+                                                    }, 0)
+                                                }
+                                                </Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>OINS</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => {
+                                                    return total + bc.sortedBatches.reduce((sum, batch) => {
+                                                        return sum +
+                                                            (['ol', 'olt', 'olp'].includes(batch.trainingMode) ? Number(batch.delivered) : 0);
+                                                        }, 0);
+                                                    }, 0)
+                                                }
+                                                </Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>OM</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => {
+                                                    return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'olm' ? Number(batch.delivered) : 0), 0);
+                                                    }, 0)
+                                                }
+                                                </Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>CBT</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => {
+                                                    return total + bc.sortedBatches.reduce((sum, batch) => sum + (batch.trainingMode === 'f2fm' ? Number(batch.delivered) : 0), 0);
+                                                    }, 0)
+                                                }
+                                                </Text>
+                                            </Box>
+                                            <Box w='90px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>BLENDED</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => total + bc.sortedBatches
+                                                    .reduce((sum, batch) => 
+                                                        sum + (batch.trainingMode === 'blended' ? Number(batch.delivered) : 0), 
+                                                    0), 
+                                                0)}
+                                                </Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>C</Text>
+                                                <Text>
+                                                {batchCourses.reduce(
+                                                    (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.cancelled), 0),
+                                                    0
+                                                )}
+                                                </Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>F</Text>
+                                                <Text>&nbsp;</Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>NT</Text>
+                                                <Text>&nbsp;</Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>NA</Text>
+                                                <Text>
+                                                {batchCourses.reduce(
+                                                    (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.non_appearance), 0),
+                                                    0
+                                                )}
+                                                </Text>
+                                            </Box>
+                                            <Box w='50px' borderY='1px solid gray' borderRight='1px solid gray' borderTopEndRadius={'5px'} borderBottomEndRadius={'5px'}>
+                                                <Text>D</Text>
+                                                <Text>
+                                                {batchCourses.reduce(
+                                                    (total, bc) => total + bc.sortedBatches.reduce((sum, batch) => sum + Number(batch.delivered), 0),
+                                                    0
+                                                )}
+                                                </Text>
                                             </Box>
                                         </Box>
-                                    ))}
-                                </Box>
-                                <Text w='150px' >
-                                {bc.sortedBatches.map((b, idx, arr) => 
-                                    <Text key={idx} onClick={() => {setBatchID(b.batch_id); setBRemarks(b.remarks); onOpenRemarks()}} fontWeight={b?.remarks === '' || b?.remarks === null ? 'normal' : 'bold'} _hover={{cursor: 'pointer'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'}>
-                                        {b?.remarks === '' || b?.remarks === null ? 'None' : b.remarks}
-                                    </Text>)
-                                }
-                                </Text>
-                            </Box>
-                        )
-                    })}
-                    </Box>
-                </Box>
-                {/** Overlap Training Data Table UI */}
-                <Box mt="6" maxW="100%" overflowX="auto">
-                    <Box w="650px" border="1px solid black" display="flex" flexDir="column">
-                        {/* Table Title Header */}
-                        <Text textAlign="center" fontWeight="700" p="2" bg="white" borderBottom="1px solid black" letterSpacing="0.5px">
-                            OVERLAP TRAINING
-                        </Text>
-                        {/* Columns Header Row */}
-                        <Box display="flex" bg="gray.100" fontWeight="600" fontSize="13px" borderBottom="1px solid black" textAlign="center">
-                            <Text w="150px" p="1.5" borderRight="1px solid black">COURSE</Text>
-                            <Text flex="1" p="1.5" borderRight="1px solid black">DATE</Text>
-                            <Text w="180px" p="1.5">NO. OF TRAINEES</Text>
-                        </Box>
-                        {/* Dynamic Rows Content Layer */}
-                        {groupedOverlapList.length === 0 ? (
-                            <Box p="6" textAlign="center" fontSize="14px" fontWeight="600">
-                                NO OVERLAP TRAINING FROM {monthsList[monthSelected]} TO {monthsList[(monthSelected + 1) % 12]}
-                            </Box>
-                        ) : (
-                            groupedOverlapList.map((row, idx) => (
-                                <Box  key={idx}  display="flex"  textAlign="center"  fontSize="13px"  borderBottom={idx === groupedOverlapList.length - 1 ? "none" : "1px solid black"} >
-                                    <Text w="150px" p="2" fontWeight='normal' borderRight="1px solid black" display="flex" alignItems="center" justifyContent="center">
-                                        {row.courseCode.toUpperCase()}
-                                    </Text>
-                                    <Text flex="1" p="2" fontWeight='normal' borderRight="1px solid black" display="flex" alignItems="center" justifyContent="center">
-                                        {row.dateStr}
-                                    </Text>
-                                    <Text w="180px" p="2" fontWeight='normal' display="flex" alignItems="center" justifyContent="center">
-                                        {row.count}
-                                    </Text>
-                                </Box>
-                            ))
-                        )}
-                    </Box>
-                </Box>
-                {/** Training Mode and Category Chart */}
-                <Box display='flex' gap='4'>
-                    <Box display='flex' justifyContent='center' mt={10}>
-                        <TrainingModeChart batchCourses={batchCourses as any} />
-                    </Box>
-                    <Box display='flex' justifyContent='center' mt={10}>
-                        <TrainingCategoryChart batchCourses={batchCourses as any} />
-                    </Box>
-                </Box>
-                {/** Instructor Comparison and Accomplished Forms Chart */}
-                <Box display='flex' gap='4'>
-                    <Box display='flex' justifyContent='center' mt={10}>
-                        <InstructorComparisonChart batchCourses={batchCourses as any} />
-                    </Box>
-                    <Box display='flex' justifyContent='center' mt={10}>
-                        <AccomplishedForm batchCourses={batchCourses as any} />
-                    </Box>
-                </Box>
-                {/** Certificates Chart */}
-                <Box display='flex' gap='4' mt={6}>
-                    <Box display='flex' justifyContent='center' mt={10}>
-                        <CertificateAndAccountChart trainingData={filteredTrainList} />
-                    </Box>
+                                        <Box display='flex' mb='2' textAlign='center' fontWeight='normal'>
+                                            <Box w='80px' borderY='1px solid gray' borderX='1px solid gray' borderTopStartRadius={'5px'} borderBottomStartRadius={'5px'}>
+                                                <Text>Simu</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => total + (bc.ttl_simu || 0), 0)}
+                                                </Text>
+                                            </Box>
+                                            <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>Non-Simu</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => total + (bc.ttl_non_simu || 0), 0)}
+                                                </Text>
+                                            </Box>
+                                            <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>STCW</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => total + (bc.ttl_stcw || 0), 0)}
+                                                </Text>
+                                            </Box>
+                                            <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray'>
+                                                <Text>Safety</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => total + (bc.ttl_safety || 0), 0)}
+                                                </Text>
+                                            </Box>
+                                            <Box w='80px' borderY='1px solid gray' borderRight='1px solid gray' borderTopEndRadius={'5px'} borderBottomEndRadius={'5px'}>
+                                                <Text>MDS</Text>
+                                                <Text>
+                                                {batchCourses.reduce((total, bc) => total + (bc.ttl_mds || 0), 0)}
+                                                </Text>
+                                            </Box>
+                                        </Box>
+                                    </Box>
+                                    <Box style={{scrollbarWidth: 'thin'}}>
+                                        {/** HEADER */}
+                                        <Box w='1420px' py='1' h='60px' display='flex' alignItems='start' textAlign='center' borderRadius={'5px'} bgColor='blue.700' color='white' position='sticky' top='0' zIndex='1'>
+                                            <Box w='150px' sx={headerStyle}> Courses </Box>
+                                            <Box w='100px' sx={headerStyle}>Batch</Box>
+                                            <Box w='110px' sx={headerStyle}>Total # of Batches</Box>
+                                            <Box w='100px' sx={headerStyle}>No. of Trainees per Batch</Box>
+                                            <Box w='120px' sx={headerStyle}>Total # of Trainees</Box>
+                                            <Box w='140px' sx={headerStyle}>Delivered</Box>
+                                            <Box w='300px' borderRight='1px solid white'>
+                                                <Text>MODE OF TRAINING</Text>
+                                                <Box display={'flex'} h='35px' borderTop='1px solid white'alignItems='center' justifyContent='space-between'>
+                                                    <Text w='50px' sx={headerStyle} >F2F</Text>
+                                                    <Box w='100px' borderRight='1px solid white' >
+                                                        <Text>ONLINE</Text>
+                                                        <Box display='flex' justifyContent='space-between'>
+                                                            <Text w='50px' borderRight='1px solid white' borderTop='1px solid white'>INS</Text>
+                                                            <Text w='50px' borderTop='1px solid white'>MOD</Text>
+                                                        </Box>
+                                                    </Box>
+                                                    <Text w='50px' sx={headerStyle} >CBT</Text>
+                                                    <Text w='100px' >BLENDED</Text>
+                                                </Box>
+                                            </Box>
+                                            <Box w='250px' >
+                                                <Text borderRight='1px solid white'>COMPLETION</Text>
+                                                <Box display='flex' h='35px' borderTop='1px solid white' alignItems='center' justifyContent='space-between'>
+                                                    <Text w='50px' sx={headerStyle}>C</Text>
+                                                    <Text w='50px' sx={headerStyle}>F</Text>
+                                                    <Text w='50px' sx={headerStyle}>NT</Text>
+                                                    <Text w='50px' sx={headerStyle}>NA</Text>
+                                                    <Text w='50px' sx={headerStyle}>D</Text>
+                                                </Box>
+                                            </Box>
+                                            <Box w='200px' sx={headerStyle}>REMARKS</Box>
+                                        </Box>
+                                        {/** BODY */}
+                                        <Box>
+                                        {batchCourses.map((bc, index) => {
+                                            return(
+                                                <Box key={index} _hover={{bgColor: 'gray.200'}} w='1420px' display='flex' alignItems='center' textAlign='center' fontWeight='normal' borderBottom='1px solid gray' borderX='1px solid gray'>
+                                                    <Text w='150px' fontWeight='bold' color={bc.courseType === '1' ? '#0070c0' : 'black'}>{bc.course.toUpperCase()}</Text>
+                                                    <Box w='100px' >
+                                                        {bc.sortedBatches.map((b, idx, arr) => 
+                                                            <Text  _hover={{bgColor: 'blue.100'}} key={idx} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
+                                                                {b.batch_no}
+                                                            </Text>)
+                                                        }
+                                                    </Box>
+                                                    <Text w='110px'>{bc.total_batches}</Text>
+                                                    <Box w='100px' >
+                                                        {bc.sortedBatches.map((b, idx, arr) => 
+                                                            <Text key={idx} _hover={{bgColor: 'blue.100'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
+                                                                {b.trainees_per_batch}
+                                                            </Text>)
+                                                        }
+                                                    </Box>
+                                                    <Text w='120px'>{bc.total_trainees}</Text>
+                                                    <Box>
+                                                        {bc.sortedBatches.map((b, idx, arr) => (
+                                                            <Box key={idx} _hover={{bgColor: 'blue.100'}} display='flex' alignItems='center' justifyContent='space-between' borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'} borderX='1px solid gray'>
+                                                                <Text w='140px' borderRight='1px solid gray'>{b.delivered}</Text>
+                                                                <Box w='300px' >
+                                                                    <Box display={'flex'} alignItems='center' justifyContent='space-between'>
+                                                                        <Text w='50px' bgColor='#eaf1dd' sx={headerStyle} borderRight='1px solid gray'>{['f2f', 'f2ft', 'f2fp'].includes(b.trainingMode) ? b.delivered : <>&nbsp;</>}</Text>
+                                                                        <Box w='100px' >
+                                                                            <Box display='flex' justifyContent='space-between'>
+                                                                                <Text bgColor='#daeef3' w='50px' borderX='1px solid gray'>{['ol', 'olt', 'olp'].includes(b.trainingMode) ? b.delivered : <>&nbsp;</>}</Text>
+                                                                                <Text bgColor='#daeef3' w='50px' borderRight='1px solid gray'>{b.trainingMode === 'olm' ? b.delivered : <>&nbsp;</>}</Text>
+                                                                            </Box>
+                                                                        </Box>
+                                                                        <Text w='50px' bgColor='#ddd9c3' sx={headerStyle} >{b.trainingMode === 'f2fm' ? b.delivered : <>&nbsp;</>}</Text>
+                                                                        <Text w='100px' bgColor='#b6dde8' borderX='1px solid gray'>{b.trainingMode === 'blended' ? b.delivered : <>&nbsp;</>}</Text>
+                                                                    </Box>
+                                                                </Box>
+                                                                <Box w='250px' display='flex' alignItems='center' justifyContent='space-between'>
+                                                                    <Text w='50px' borderRight={'1px solid gray'}>{b.cancelled !== '0' ? b.cancelled : <>&nbsp;</>}</Text> {/** Re-evaluate this status */}
+                                                                    <Text w='50px' borderRight={'1px solid gray'}>&nbsp;</Text>
+                                                                    <Text w='50px' borderRight={'1px solid gray'}>&nbsp;</Text>
+                                                                    <Text w='50px' borderRight={'1px solid gray'}>{b.non_appearance !== '0' ? b.non_appearance : <>&nbsp;</>}</Text> {/** Re-evaluate this status */}
+                                                                    <Text w='50px'>{b.delivered !== '0' ? b.delivered : <>&nbsp;</>}</Text>
+                                                                </Box>
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                    <Text w='200px' >
+                                                    {bc.sortedBatches.map((b, idx, arr) => 
+                                                        <Text key={idx} onClick={() => {setBatchID(b.batch_id); setBRemarks(b.remarks); onOpenRemarks()}} fontWeight={b?.remarks === '' || b?.remarks === null ? 'normal' : 'bold'} _hover={{cursor: 'pointer'}} borderBottom={idx === arr.length - 1 ? 'none' : '1px solid gray'}>
+                                                            {b?.remarks === '' || b?.remarks === null ? 'None' : b.remarks}
+                                                        </Text>)
+                                                    }
+                                                    </Text>
+                                                </Box>
+                                            )
+                                        })}
+                                        </Box>
+                                    </Box>
+                                    {/** Overlap Training Data Table UI */}
+                                    <Box my="8" display='flex' gap='5'>
+                                        <Box w="450px" borderTop="1px solid black" borderBottom='none' display="flex" flexDir="column">
+                                            {/* Table Title Header */}
+                                            <Text textAlign="center" fontWeight="700" p="1" bg="white" borderX="1px solid black" borderBottom="1px solid black" letterSpacing="0.5px">
+                                                OVERLAP TRAINING
+                                            </Text>
+                                            {/* Columns Header Row */}
+                                            <Box display="flex" bg="gray.100" fontWeight="600" fontSize="10pt" borderBottom="1px solid black" textAlign="center">
+                                                <Text w="120px" p="1.5" borderX="1px solid black">COURSE</Text>
+                                                <Text flex="1" p="1.5" >DATE</Text>
+                                                <Text w="130px" p="1.5" borderX="1px solid black">NO. OF TRAINEES</Text>
+                                            </Box>
+                                            {/* Dynamic Rows Content Layer */}
+                                            {groupedOverlapList.length === 0 ? (
+                                                <Box p="6" textAlign="center" fontSize="14px" fontWeight="600">
+                                                    NO OVERLAP TRAINING FROM {monthsList[monthSelected]} TO {monthsList[(monthSelected + 1) % 12]}
+                                                </Box>
+                                            ) : (
+                                                groupedOverlapList.map((row, idx) => (
+                                                    <Box  key={idx}  display="flex"  textAlign="center"  fontSize="10pt"  borderBottom={"1px solid black"} >
+                                                        <Text w="120px" p="2" fontWeight='normal' borderX="1px solid black" display="flex" alignItems="center" justifyContent="center">
+                                                            {row.courseCode.toUpperCase()}
+                                                        </Text>
+                                                        <Text flex="1" p="2" fontWeight='normal' display="flex" alignItems="center" justifyContent="center">
+                                                            {row.dateStr}
+                                                        </Text>
+                                                        <Text w="130px" p="2" fontWeight='normal' borderX="1px solid black" display="flex" alignItems="center" justifyContent="center">
+                                                            {row.count}
+                                                        </Text>
+                                                    </Box>
+                                                ))
+                                            )}
+                                        </Box>
+                                        {/** Training Mode and Category Chart */}
+                                        <Box display='flex' justifyContent='center' >
+                                            <TrainingModeChart batchCourses={batchCourses as any} />
+                                        </Box>
+                                        <Box display='flex' justifyContent='center'>
+                                            <TrainingCategoryChart batchCourses={batchCourses as any} />
+                                        </Box>
+                                    </Box>
+                                    {/** Instructor Comparison and Accomplished Forms Chart */}
+                                    <Box display='flex' my='8' gap='4'>
+                                        <Box display='flex' justifyContent='center' mt={10}>
+                                            <InstructorComparisonChart batchCourses={batchCourses as any} />
+                                        </Box>
+                                        <Box display='flex' justifyContent='center' mt={10}>
+                                            <AccomplishedForm batchCourses={batchCourses as any} />
+                                        </Box>
+                                    </Box>
+                                    {/** Certificates Chart */}
+                                    <Box display='flex' mt='8' gap='4' >
+                                        <Box display='flex' justifyContent='center' mt={10}>
+                                            <CertificateAndAccountChart trainingData={filteredTrainList} />
+                                        </Box>
+                                    </Box>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </Box>
             </Box>
             <Modal isOpen={isOpenMR} onClose={onCloseMR} scrollBehavior='outside' size='4xl'>

@@ -102,9 +102,9 @@ export const CertificateAndAccountChart = ({ trainingData = [] }: CertificateAnd
     const totalCerts = ttlReleased + ttlPending + ttlUnClaimed;
 
     return (
-        <Box mt='6' display='flex' flexDir='column' gap='8' alignItems='center' w='100%'>
+        <Box my='6' display='flex' flexDir='column' gap='8' alignItems='center' w='100%'>
             {/* Split Grid Layout for Metrics summary table */}
-            <Box maxW='100%' overflowX='auto'>
+            <Box maxW='100%' mb='8' overflowX='auto'>
                 <Box w='900px' display='flex' flexDir='column' border='1px solid black'>
                     <Text textAlign='center' fontWeight="700" p='2' bg='gray.50' borderBottom='1px solid black'>
                         CERTIFICATES & ACCOUNT TYPES OVERVIEW
@@ -137,13 +137,13 @@ export const CertificateAndAccountChart = ({ trainingData = [] }: CertificateAnd
             </Box>
             {/* Displaying both distinct Pie Charts dynamically side-by-side */}
             <Box display='flex' flexDir={{md: 'row'}} justifyContent='space-between' w='100%'>
-                <Box w='310px' h='300px' textAlign='center'>
+                <Box w='310px' h='310px' textAlign='center'>
                     <Text fontWeight='600' mb='2' fontSize='14px'>CERTIFICATE CHARGED TO</Text>
                     <Box h='280px'>
                         <Pie data={accountChartData} options={getChartOptions(totalAccounts)} />
                     </Box>
                 </Box>
-                <Box w='310px' h='300px' textAlign='center'>
+                <Box w='310px' h='310px' textAlign='center'>
                     <Text fontWeight='600' mb='2' fontSize='14px'>CERTIFICATE STATUS</Text>
                     <Box h='280px'>
                         <Pie data={certChartData} options={getChartOptions(totalCerts)} />
