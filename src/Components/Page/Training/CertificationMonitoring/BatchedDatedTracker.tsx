@@ -5,7 +5,7 @@ import React, { useState, useRef, useMemo } from 'react'
 import { Box, Image as ChakraImage, Text, Textarea, InputGroup, Switch, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, Menu, MenuList, MenuItem, MenuButton, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, FormLabel, IconButton, ButtonGroup,
-} from '@chakra-ui/react';
+} from '@chakra-ui/react'
 import { ArrowBackIcon, RepeatIcon, AddIcon, MinusIcon, ChevronDownIcon } from '@chakra-ui/icons'
 
 import { Timestamp } from 'firebase/firestore'
@@ -506,28 +506,6 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
         }
     }
 
-    // const handleCompany = async () => {
-    //     // 1. Use forEach instead of map since we are executing a side effect (logging), not returning a new array.
-    //     trainingID.forEach(async (t) => {
-    //         // 2. Use loose equality (==) in case one ID is a string and the other is a number
-    //         const corrs_training = trainings.find((tr) => tr.id === t)
-
-    //         const reg = allRegData && allRegData.find((r) => r.id === corrs_training.reg_ref_id)
-    //         if (!reg) {
-    //             console.log(`No registration found matching reg_ref_id: ${corrs_training.reg_ref_id}`);
-    //             return;
-    //         }
-            
-    //         const train = allTrainee && allTrainee.find((tra) => tra.id === reg.trainee_ref_id)
-    //         if (!train) {
-    //             console.log(`No trainee found matching trainee_ref_id: ${reg.trainee_ref_id}`);
-    //             return;
-    //         }
-    
-    //         await UPDATE_TRAINEE_PARTIAL({id: train.id, company: 'rtWhyE9rEQzqnQGfUg0K'})
-    //     })
-    // }
-
     const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
     
     // Limits zoom between 1x and 3x
@@ -626,7 +604,6 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                     ))}
                 </Box>
             )}
-
             {/* ---------- TABLE ROWS ---------- */}
             {traineesToShow.length === 0 ? (
                 <Text fontSize="sm" color="gray.500" fontStyle="italic" p="2">

@@ -44,3 +44,34 @@ export interface TransmittalEndorsement {
     endorser: string;
     certificate_id: string[];
 }
+
+export interface CERTIFICATION_REPORT_BY_ID extends CERTIFICATION_REPORT {
+    id: string;
+}
+
+export interface CERTIFICATION_REPORT {
+    year: number;
+    type: 'dated' | 'bd';
+    jan: MonthlyData;
+    feb: MonthlyData;
+    mar: MonthlyData;
+    apr: MonthlyData;
+    may: MonthlyData;
+    jun: MonthlyData;
+    jul: MonthlyData;
+    aug: MonthlyData;
+    sep: MonthlyData;
+    oct: MonthlyData;
+    nov: MonthlyData;
+    dec: MonthlyData;
+}
+
+interface MonthlyData {
+    ttl_certs: number;
+    issued: number;
+    unClaimed: number;
+    pending: number;
+    trainee: number;
+    company: number;
+    note: string;
+}

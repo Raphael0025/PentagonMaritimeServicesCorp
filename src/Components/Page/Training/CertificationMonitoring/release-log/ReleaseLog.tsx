@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Box, Image as ChakraImage, Text, Center, Button, Select, InputLeftAddon, InputGroup, Input, 
-FormControl, useDisclosure, useToast, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
-} from '@chakra-ui/react';
+FormControl, useDisclosure, useToast, FormLabel, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, } from '@chakra-ui/react';
 import { useReactToPrint } from 'react-to-print' 
 import { ToastStatus } from '@/types/handling'
 import { Timestamp } from 'firebase/firestore'
 import { SearchIcon } from '@/Components/Icons'
+import { ChevronDownIcon } from '@chakra-ui/icons'
 
 import { useCourses } from '@/context/CourseContext'
 import { useCourseBatch } from '@/context/BatchContext'
@@ -19,8 +19,10 @@ import { useTraining } from '@/context/TrainingContext'
 import { ADD_TRANSMITTAL} from '@/lib/certification_controller'
 import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
+import { deployYDate } from '@/types/utils' 
 import { TRAINING_BY_ID } from '@/types/trainees'
 import { TransmittalEndorsement } from '@/types/certification'
+import { fullMonth, } from '@/handlers/util_handler'
 
 export default function ReleaseLog() {
     const toast = useToast()
@@ -28,8 +30,8 @@ export default function ReleaseLog() {
     const { data: allTrainee } = useTrainees()
     const { data: courseBatch } = useCourseBatch()
     const { data: allClients, courseCodes } = useClients()
-    const { allData: allTrainingData } = useTraining()
-    const { allData: allRegData } = useRegistrations()
+    const { allData: allTrainingData, setMonth: setTMonth, setYear: setTYear } = useTraining()
+    const { allData: allRegData, setMonth: setRMonth, setYear: setRYear } = useRegistrations()
 
     const [monthSelected, setMonthSelected] = useState<number>(new Date().getMonth())
     const [yearSelected, setYearSelected] = useState<number>(new Date().getFullYear())
@@ -55,6 +57,21 @@ export default function ReleaseLog() {
 
     const { isOpen: isOpenRelease, onOpen: onOpenRelease, onClose: onCloseRelease } = useDisclosure()
     const { isOpen: isOpenModal, onOpen: onOpenModal, onClose: onCloseModal } = useDisclosure()
+    const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear()
+    const startYear = parseInt(deployYDate, 10)
+
+    const years = Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i)
+
+    const handleData = () => {
+        setTMonth(monthSelected + 1) 
+        setTYear(yearSelected)
+        setRMonth(monthSelected + 1) 
+        setRYear(yearSelected)
+        onCloseDate()
+    }
 
     useEffect(() => {
         const fetchData = () => {
@@ -317,6 +334,7 @@ export default function ReleaseLog() {
             {(filterCompany || filterCourse || searchTerm) && (
                 <Button onClick={() => {setCompanyFilter(''); setCFilter(''); setSearch('');}} colorScheme='red' shadow='md' w='150px' size='sm'>Clear</Button>
             )}
+            <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
             {/* <Button onClick={onOpenTransmittalModal} size='sm' colorScheme='blue' bgColor='blue.700' shadow='md' fontWeight='normal' borderRadius='5px'>Create Transmittal</Button> */}
         </Box>
         <Box h='700px' w='1700px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}}>
@@ -422,6 +440,41 @@ export default function ReleaseLog() {
                     <Button isLoading={loading} loadingText='Saving...' bgColor='blue.700' colorScheme='blue' mr={3} onClick={() => {handleReleasedBy('', '')}}>
                         Save
                     </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+        <Modal isOpen={isOpenDate} scrollBehavior='inside' onClose={onCloseDate}>
+            <ModalOverlay />
+            <ModalContent px={4}>
+                <ModalHeader className='text-sky-700' fontWeight='800'>Select Month & Year</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody display='flex'>
+                    <Box w='50%' mr={4}>
+                        <Text fontSize='xl' color='blue.700'>Months</Text>
+                        <Box>
+                        {fullMonth.map((month, index) => (
+                            <Text borderRadius={'10px'} color='gray.500' fontSize='xl' p={2} _hover={{bg: 'gray.100'}} onClick={() => {setMonthSelected(index)}} key={index}>
+                                {month}
+                            </Text>
+                        ))}
+                        </Box>
+                    </Box>
+                    <Box w='50%'>
+                        <Text fontSize='xl' color='blue.700'>Years</Text>
+                        <Box h='550px' overflowY='auto'>
+                        {years.map((year) => (
+                            <Text  borderRadius="10px"  color="gray.500"  fontSize="xl"  p={2}  _hover={{ bg: "gray.100" }}  onClick={() => setYearSelected(year)}  key={year}>
+                                {year}
+                            </Text>
+                        ))}
+                        </Box>
+                    </Box>
+                </ModalBody>
+                <ModalFooter display='flex' justifyContent='space-between' borderTopWidth='1px'>
+                    <Text fontSize='lg'>{`Date: ${fullMonth[monthSelected]} ${yearSelected}`}</Text>
+                    <Box> 
+                        <Button onClick={handleData} colorScheme='blue'>Select</Button>
+                    </Box>
                 </ModalFooter>
             </ModalContent>
         </Modal>

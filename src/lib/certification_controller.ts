@@ -3,7 +3,7 @@ import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage
 import { storage } from './firebase'
 import { app } from './firebase'
 
-import { CERTIFICATION_BY_ID, TRANSMITTAL, CERTIFICATION, certVersion, changeLog } from '@/types/certification'
+import { CERTIFICATION_BY_ID, TRANSMITTAL, CERTIFICATION_REPORT, CERTIFICATION_REPORT_BY_ID, CERTIFICATION, certVersion, changeLog } from '@/types/certification'
 import { sortByCreatedAt, removeVersion, reassignActiveVersion } from '@/handlers/cert_helper'
 
 import { addLog } from '@/lib/history_log_controller'
@@ -11,7 +11,62 @@ import { addLog } from '@/lib/history_log_controller'
 export const firestore = getFirestore(app)
 
 export const certificateController = collection(firestore, 'CERTIFICATE_CONTROL')
+export const certificateReportController = collection(firestore, 'CERTIFICATE_REPORT')
 export const transmittalController = collection(firestore, 'TRANSMITTALS')
+
+type MonthKeys = 'jan' | 'feb' | 'mar' | 'apr' | 'may' | 'jun' | 'jul' | 'aug' | 'sep' | 'oct' | 'nov' | 'dec';
+type MetricFields = 'ttl_certs' | 'issued' | 'unClaimed' | 'pending' | 'note' | 'trainee' | 'company';
+
+export const UPDATE_CERT_MONTHLY_METRIC = async (
+    docId: string,
+    monthKey: MonthKeys,
+    fieldKey: MetricFields,
+    newValue: number | string
+): Promise<void> => {
+    try {
+        // 🟢 Uses your collection instance reference directly to build the document path safely
+        const docRef = doc(certificateReportController, docId); 
+        const nestedFieldPath = `${monthKey}.${fieldKey}`;
+
+        await updateDoc(docRef, {
+            [nestedFieldPath]: newValue
+        });
+
+        console.log(`Successfully updated ${nestedFieldPath} in CERTIFICATE_REPORT`);
+    } catch (error) {
+        console.error(`Error updating metric for ${monthKey}.${fieldKey}:`, error);
+        throw error;
+    }
+}
+
+export const GET_CERT_REPORT_BY_YEAR = async (targetYear: number): Promise<CERTIFICATION_REPORT_BY_ID | null> => {
+    try {
+        const certQuery = query(
+            certificateReportController, 
+            where('year', '==', targetYear),
+            limit(1) // 🟢 Tells Firestore to stop searching once it finds the matching year document
+        );
+        
+        const certSnapshot = await getDocs(certQuery);
+        
+        // If no document exists for that year, return null
+        if (certSnapshot.empty) {
+            return null;
+        }
+
+        // Grab the very first document in the query results
+        const doc = certSnapshot.docs[0];
+        
+        return { 
+            id: doc.id, 
+            ...doc.data() 
+        } as CERTIFICATION_REPORT_BY_ID;
+        
+    } catch (error) {
+        console.error(`Error fetching certificate report for year ${targetYear}:`, error);
+        throw error;
+    }
+}
 
 export const SAVED_CERT_TEMPLATE = async (certData: CERTIFICATION, userID: string) => {
     try {
