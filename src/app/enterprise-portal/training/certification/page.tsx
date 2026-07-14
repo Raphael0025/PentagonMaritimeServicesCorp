@@ -402,7 +402,11 @@ export default function TrackerPage(){
     ]
 
     const getRowTotal = (fieldKey: 'ttl_certs' | 'issued' | 'pending' | 'unClaimed' | 'trainee' | 'company') => {
-        return MONTH_MAP.reduce((sum, m) => sum + (selectedReport?.[m.key]?.[fieldKey] || 0), 0);
+        return MONTH_MAP.reduce((sum, m) => {
+            // Cast to 'any' to stop TypeScript from worrying about the 'string | MonthlyData' union type
+            const monthData = selectedReport?.[m.key] as any; 
+            return sum + (monthData?.[fieldKey] || 0);
+        }, 0);
     }
 
     const handleMetricUpdate = async (
@@ -736,58 +740,76 @@ export default function TrackerPage(){
                                     </Tr>
                                 </Thead>
                                 <Tbody>
-                                {/* Row 1: Total Certificates */}
+                                    {/* Row 1: Total Certificates */}
                                     <Tr>
                                         <Td fontWeight="medium" textAlign="left">Total # of Certificates</Td>
-                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.ttl_certs || 0}</Td>)}
+                                        {MONTH_MAP.map((m) => {
+                                        // 🟢 Cast the retrieved month object to any so TS doesn't complain
+                                        const monthData = selectedReport?.[m.key] as any;
+                                        return <Td key={m.key}>{monthData?.ttl_certs || 0}</Td>;
+                                        })}
                                         <Td fontWeight="bold">{getRowTotal('ttl_certs')}</Td>
-                                        <Td rowSpan={4}></Td> {/* Spans down alongside metric data row fields */}
+                                        <Td rowSpan={6}></Td> 
                                     </Tr>
+
                                     {/* Row 2: Issued */}
                                     <Tr>
                                         <Td textAlign="left">Issued</Td>
-                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.issued || 0}</Td>)}
+                                        {MONTH_MAP.map((m) => {
+                                        const monthData = selectedReport?.[m.key] as any;
+                                        return <Td key={m.key}>{monthData?.issued || 0}</Td>;
+                                        })}
                                         <Td fontWeight="bold">{getRowTotal('issued')}</Td>
                                     </Tr>
-                                    {/* Row 4: Unclaimed (Matching your 'unClaimed' interface key) */}
-                                    <Tr>
-                                        <Td textAlign="left">Unclaimed</Td>
-                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.unClaimed || 0}</Td>)}
-                                        <Td fontWeight="bold">{getRowTotal('unClaimed')}</Td>
-                                    </Tr>
+
                                     {/* Row 3: Pending / On-Hold */}
                                     <Tr>
                                         <Td textAlign="left">Pending/On-Hold</Td>
-                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.pending || 0}</Td>)}
+                                        {MONTH_MAP.map((m) => {
+                                        const monthData = selectedReport?.[m.key] as any;
+                                        return <Td key={m.key}>{monthData?.pending || 0}</Td>;
+                                        })}
                                         <Td fontWeight="bold">{getRowTotal('pending')}</Td>
                                     </Tr>
+
+                                    {/* Row 4: Empty Gap row */}
                                     <Tr>
                                         <Td minH="24px"></Td>
                                         {MONTH_MAP.map((m) => <Td key={m.key}></Td>)}
                                         <Td></Td>
                                     </Tr>
 
-                                    {/* 🟢 Row 5: Trainee */}
+                                    {/* Row 5: Trainee */}
                                     <Tr>
                                         <Td textAlign="left">Trainee</Td>
-                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.trainee || 0}</Td>)}
+                                        {MONTH_MAP.map((m) => {
+                                        const monthData = selectedReport?.[m.key] as any;
+                                        return <Td key={m.key}>{monthData?.trainee || 0}</Td>;
+                                        })}
                                         <Td fontWeight="bold">{getRowTotal('trainee')}</Td>
                                     </Tr>
 
-                                    {/* 🟢 Row 6: Company */}
+                                    {/* Row 6: Company */}
                                     <Tr>
-                                        <Td textAlign="left">Company</Td>
-                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.company || 0}</Td>)}
+                                        <Td textAlign="left">company</Td>
+                                        {MONTH_MAP.map((m) => {
+                                        const monthData = selectedReport?.[m.key] as any;
+                                        return <Td key={m.key}>{monthData?.company || 0}</Td>;
+                                        })}
                                         <Td fontWeight="bold">{getRowTotal('company')}</Td>
                                     </Tr>
-                                    {/* Row 5: Global Notes Summary */}
+
+                                    {/* Row 7: Notes */}
                                     <Tr>
-                                        <Td fontWeight="semibold" textAlign="left">Note / Remarks</Td>
-                                        {MONTH_MAP.map((m) => (
-                                        <Td key={m.key} fontSize="10px" color="gray.600">
-                                            {selectedReport?.[m.key]?.note || ''}
-                                        </Td>
-                                        ))}
+                                        <Td fontWeight="semibold" textAlign="left">Note:CANCEL</Td>
+                                        {MONTH_MAP.map((m) => {
+                                        const monthData = selectedReport?.[m.key] as any;
+                                        return (
+                                            <Td key={m.key} fontSize="xs" fontWeight="medium">
+                                            {monthData?.note || ''}
+                                            </Td>
+                                        );
+                                        })}
                                         <Td></Td>
                                         <Td></Td>
                                     </Tr>
