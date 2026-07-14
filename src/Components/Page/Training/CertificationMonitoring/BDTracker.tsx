@@ -1480,10 +1480,11 @@ export default function BDTrackerCertification (){
                                                 <Text>{`MONTHLY DATED REPORT FOR THE MONTH OF: ${MONTH_MAP[monthSelected]?.label.toUpperCase() || ''} ${yearSelected}`}</Text>
                                                 {(() => {
                                                     // 1. Get the target month key string (e.g., 'jan', 'feb', 'nov') using the selected index
-                                                    const currentMonthKey = MONTH_MAP[monthSelected]?.key as any;
+                                                    const currentMonthKey = MONTH_MAP[monthSelected]?.key;
                                                     
                                                     // 2. Safely look up that month's total certificates from your state, defaulting to 0
-                                                    const currentMonthTtlCerts = selectedDatedReport?.[currentMonthKey]?.ttl_certs || 0;
+                                                    const monthData = selectedDatedReport?.[currentMonthKey] as any;
+                                                    const currentMonthTtlCerts = monthData?.ttl_certs || 0;
 
                                                     return (
                                                         <Text fontWeight='normal'>
