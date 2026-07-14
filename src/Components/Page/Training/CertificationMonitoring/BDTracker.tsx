@@ -927,7 +927,11 @@ export default function BDTrackerCertification (){
     }
 
     const getDatedRowTotal = (fieldKey: 'ttl_certs' | 'issued' | 'pending' | 'unClaimed' | 'trainee' | 'company') => {
-        return MONTH_MAP.reduce((sum, m) => sum + (selectedDatedReport?.[m.key]?.[fieldKey] || 0), 0);
+        return MONTH_MAP.reduce((sum, m) => {
+            // Cast to 'any' to stop TypeScript from worrying about the 'string | MonthlyData' union type
+            const monthData = selectedDatedReport?.[m.key] as any; 
+            return sum + (monthData?.[fieldKey] || 0);
+        }, 0);
     }
 
     const handleMetricUpdate = async (
