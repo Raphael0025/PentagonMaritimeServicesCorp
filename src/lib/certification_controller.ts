@@ -39,11 +39,12 @@ export const UPDATE_CERT_MONTHLY_METRIC = async (
     }
 }
 
-export const GET_CERT_REPORT_BY_YEAR = async (targetYear: number): Promise<CERTIFICATION_REPORT_BY_ID | null> => {
+export const GET_CERT_REPORT_BY_YEAR = async (targetYear: number, reportType: 'dated' | 'bd'): Promise<CERTIFICATION_REPORT_BY_ID | null> => {
     try {
         const certQuery = query(
             certificateReportController, 
             where('year', '==', targetYear),
+            where('type', '==', reportType),
             limit(1) // 🟢 Tells Firestore to stop searching once it finds the matching year document
         );
         

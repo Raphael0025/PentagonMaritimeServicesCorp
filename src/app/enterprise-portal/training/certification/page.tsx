@@ -342,7 +342,7 @@ export default function TrackerPage(){
             
             const getYear = new Date().getFullYear();
             // 1. Attempt to fetch the report for the current year
-            let report = await GET_CERT_REPORT_BY_YEAR(getYear);
+            let report = await GET_CERT_REPORT_BY_YEAR(getYear, 'dated');
             
             // 🟢 2. If no record returns, create the initial empty document structure
             if (!report) {
@@ -782,7 +782,7 @@ export default function TrackerPage(){
                                     </Tr>
                                     {/* Row 5: Global Notes Summary */}
                                     <Tr>
-                                        <Td fontWeight="semibold" textAlign="left">Note / Remarks Context</Td>
+                                        <Td fontWeight="semibold" textAlign="left">Note / Remarks</Td>
                                         {MONTH_MAP.map((m) => (
                                         <Td key={m.key} fontSize="10px" color="gray.600">
                                             {selectedReport?.[m.key]?.note || ''}

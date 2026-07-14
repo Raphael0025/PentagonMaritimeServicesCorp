@@ -5,11 +5,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Box, Image as ChakraImage, Text, Textarea, InputGroup, Switch, InputLeftAddon, Spinner, Center, Button, Tooltip, Checkbox, Select, Input, 
 FormControl, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, Menu, MenuList, MenuItem, MenuButton, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
 Accordion, AccordionButton, AccordionIcon, IconButton, AccordionItem, AccordionPanel, FormLabel, ButtonGroup,
+Table, Thead, Tbody, Tr, Th, Td, TableContainer, Badge, 
 } from '@chakra-ui/react';
 import { ArrowBackIcon, RepeatIcon, AddIcon, MinusIcon, ChevronDownIcon } from '@chakra-ui/icons'
-import { SearchIcon } from '@/Components/Icons';
+import { SearchIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons';
 
-import { Timestamp } from 'firebase/firestore'
+import { writeBatch, doc, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { TRAINING_BY_ID } from '@/types/trainees'
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 
@@ -34,6 +35,9 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useTraining } from '@/context/TrainingContext'
 import { useCertification } from '@/context/CertificationContext'
 
+import { CERTIFICATION_REPORT_BY_ID } from '@/types/certification'
+
+import { GET_CERT_REPORT_BY_YEAR, UPDATE_CERT_MONTHLY_METRIC, certificateReportController } from '@/lib/certification_controller'
 import { GENERATE_BD_BATCH, UPDATE_BD_BATCH } from '@/lib/course_batches_controller'
 import { UPDATE_TRAINING, UPDATE_TRAINEE_PARTIAL, changeImg } from '@/lib/trainee_controller'
 import { useReactToPrint } from 'react-to-print'
@@ -108,9 +112,15 @@ export default function BDTrackerCertification (){
     const [totalCompanyC, setCompanyCharge] = useState<number>(0)
     const [releasedCerts, setReleasedCerts] = useState<number>(0)
     const [pendingCerts, setPendingCerts] = useState<number>(0)
+    const [unClaimed, setUnclaimed] = useState<number>(0)
     const [rotation, setRotation] = useState(0);
     const [zoom, setZoom] = useState(1); // 1 = 100%
 
+    const [selectedReport, setSelectedReport] = useState<CERTIFICATION_REPORT_BY_ID | null>(null)
+    const [selectedDatedReport, setSelectedDatedReport] = useState<CERTIFICATION_REPORT_BY_ID | null>(null)
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const { isOpen: isOpenReport, onOpen: onOpenReport, onClose: onCloseReport } = useDisclosure()
     const { isOpen: isOpenRemarks, onOpen: onOpenRemarks, onClose: onCloseRemarks } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
     const { isOpen: isOpenCert, onOpen: onOpenCert, onClose: onCloseCert } = useDisclosure()
@@ -120,9 +130,33 @@ export default function BDTrackerCertification (){
     const { isOpen: isOpenDate, onOpen: onOpenDate, onClose: onCloseDate } = useDisclosure()
     const { isOpen: isOpenBDCert, onOpen: onOpenBDCert, onClose: onCloseBDCert } = useDisclosure()
 
+    const reportRef = useRef<HTMLDivElement | null>(null)
     const componentRef = useRef<HTMLDivElement | null>(null)
     const attachment = useRef<HTMLDivElement>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+    const handlePrintReport = useReactToPrint({
+        content: () => reportRef.current,
+        documentTitle: `CertificationReport.pdf`,
+        pageStyle: `
+            @media print {
+                body {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                * {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                }
+            }
+        `,
+        onBeforePrint: () => {
+            handleToast('Preparing to print certificates...', ``, 3000, 'info');
+        },
+        onAfterPrint: () => {
+            handleToast('Certificates Printed!', ``, 3000, 'success');
+        },
+    })
 
     useEffect(() => {
         const fetchData = () => {
@@ -205,7 +239,8 @@ export default function BDTrackerCertification (){
             const filteredTrainingData: TRAINING_BY_ID[] = allTrainData || []
             const traineeChargeCount = filteredTrainingData?.filter(t => t.accountType === 0).length
             const companyChargeCount = filteredTrainingData?.filter(t => t.accountType === 1).length
-            const ttlReleased = filteredTrainingData?.filter(t => t.cert_status === 1).length
+            const ttlReleased = filteredTrainingData?.filter(t => t.cert_status === 2).length
+            const ttlUnClaimed = filteredTrainingData?.filter(t => t.cert_status === 1).length
             const ttlPending = filteredTrainingData?.filter(t => t.cert_status === 0).length
 
             // 3️⃣ Set the states
@@ -213,8 +248,9 @@ export default function BDTrackerCertification (){
 
             setTraineeCharge(traineeChargeCount)
             setCompanyCharge(companyChargeCount)
-            setReleasedCerts(ttlReleased);
-            setPendingCerts(ttlPending);
+            setReleasedCerts(ttlReleased)
+            setPendingCerts(ttlPending)
+            setUnclaimed(ttlUnClaimed)
             setLoading(false)
         }
         fetchData()
@@ -816,6 +852,107 @@ export default function BDTrackerCertification (){
     const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 3));
     const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 1));
 
+    const handleViewReport = async () => {
+        try {
+            setIsLoading(true);
+            
+            const getYear = new Date().getFullYear();
+            // 1. Attempt to fetch the report for the current year
+            let report = await GET_CERT_REPORT_BY_YEAR(getYear, 'bd');
+            let datedReport = await GET_CERT_REPORT_BY_YEAR(getYear, 'dated');
+            
+            // 🟢 2. If no record returns, create the initial empty document structure
+            if (!report) {
+                console.log(`No report found for ${getYear}. Creating initial record...`);
+                
+                // Generate a fresh new document reference inside your collection
+                const newDocRef = doc(certificateReportController);
+                const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+                const emptyMonthStructure = { ttl_certs: 0, issued: 0, unClaimed: 0, pending: 0, note: "" };
+                
+                // Build out the baseline object structure
+                const initialPayload: any = {
+                    year: getYear,
+                    type: 'bd', // Default fallback type
+                };
+                
+                // Automatically initialize all 12 months with zeros so the table matrix doesn't crash
+                monthKeys.forEach((month) => {
+                    initialPayload[month] = emptyMonthStructure;
+                });
+                
+                // Save the document to Firestore
+                await setDoc(newDocRef, initialPayload);
+                
+                // Shape the object matching your CERTIFICATION_REPORT_BY_ID structure to feed the state
+                report = {
+                    id: newDocRef.id,
+                    ...initialPayload
+                } as CERTIFICATION_REPORT_BY_ID;
+            }
+            
+            // 3. Save to state and pop the modal open
+            setSelectedReport(report); 
+            setSelectedDatedReport(datedReport); 
+            onOpenReport();   
+        } catch (error) {
+            console.error("Error managing report viewing session:", error);
+            alert("Something went wrong trying to initialize the report records.");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const MONTH_MAP: Array<{ key: keyof Omit<CERTIFICATION_REPORT_BY_ID, 'id' | 'year' | 'type'>; label: string }> = [
+        { key: 'jan', label: 'January' },
+        { key: 'feb', label: 'February' },
+        { key: 'mar', label: 'March' },
+        { key: 'apr', label: 'April' },
+        { key: 'may', label: 'May' },
+        { key: 'jun', label: 'June' },
+        { key: 'jul', label: 'July' },
+        { key: 'aug', label: 'August' },
+        { key: 'sep', label: 'September' },
+        { key: 'oct', label: 'October' },
+        { key: 'nov', label: 'November' },
+        { key: 'dec', label: 'December' },
+    ]
+
+    const getRowTotal = (fieldKey: 'ttl_certs' | 'issued' | 'pending' | 'unClaimed' | 'trainee' | 'company') => {
+        return MONTH_MAP.reduce((sum, m) => sum + (selectedReport?.[m.key]?.[fieldKey] || 0), 0);
+    }
+
+    const getDatedRowTotal = (fieldKey: 'ttl_certs' | 'issued' | 'pending' | 'unClaimed' | 'trainee' | 'company') => {
+        return MONTH_MAP.reduce((sum, m) => sum + (selectedDatedReport?.[m.key]?.[fieldKey] || 0), 0);
+    }
+
+    const handleMetricUpdate = async (
+        monthKey: 'jan' | 'feb' | 'mar' | 'apr' | 'may' | 'jun' | 'jul' | 'aug' | 'sep' | 'oct' | 'nov' | 'dec',
+        fieldKey: 'ttl_certs' | 'issued' | 'unClaimed' | 'pending' | 'note' | 'trainee' | 'company',
+        newValue: number | string
+    ) => {
+        if (!selectedReport?.id) return;
+
+        try {
+            // 1. Update Firestore Database
+            await UPDATE_CERT_MONTHLY_METRIC(selectedReport.id, monthKey, fieldKey, newValue);
+
+            // 2. Update React State locally so the grid updates instantly
+            setSelectedReport((prevReport) => {
+                if (!prevReport) return null;
+                return {
+                    ...prevReport,
+                    [monthKey]: {
+                        ...prevReport[monthKey],
+                        [fieldKey]: newValue
+                    }
+                };
+            });
+        } catch (error) {
+            console.error("Failed to update report data:", error);
+        }
+    }
+
     return(
         <>
         <Text>BackDated Monitoring</Text>
@@ -885,31 +1022,38 @@ export default function BDTrackerCertification (){
             <Box w='30%' display='flex' fontWeight='normal' justifyContent='space-between' gap='8' ml='2' mb='2'>
                 <Box w='100%'>
                     <Box w='100%' display='flex'>
-                        <Box p='1' px='3' border='1px solid black' borderTopLeftRadius={'5px'} borderBottom='none' borderRight='none' w='100%'>
-                            <Text>Company</Text>
-                            <Text fontWeight='bold' textAlign='center' >{totalCompanyC}</Text>
-                        </Box>
-                        <Box p='1' px='3' border='1px solid black' borderBottom='none' borderRight='none' w='100%'>
-                            <Text>Trainee</Text>
-                            <Text fontWeight='bold' textAlign='center' >{totalTraineeC}</Text>
-                        </Box>
-                        <Box p='1' px='3' border='1px solid black' borderTopRightRadius={'5px'} borderBottom='none' w='100%'>
-                            <Text>Total of Enrollees</Text>
-                            <Text fontWeight='bold' textAlign='center' >{(totalTraineeC + totalCompanyC)}</Text>
-                        </Box>
-                    </Box>
-                    <Box w='100%' display='flex'>
-                        <Box p='1' px='3' border='1px solid black' borderBottomLeftRadius={'5px'} borderRight='none' w='100%'>
-                            <Text>Certificate Released</Text>
+                        <Box p='1' px='3' border='1px solid black' borderTopLeftRadius={'5px'} borderRight='none' w='100%'>
+                            <Text>Issued</Text>
                             <Text fontWeight='bold' textAlign='center' >{releasedCerts}</Text>
                         </Box>
                         <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
-                            <Text>Pending Certificates</Text>
+                            <Text>Unclaimed</Text>
+                            <Text fontWeight='bold' textAlign='center' >{unClaimed}</Text>
+                        </Box>
+                        <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                            <Text>Pending</Text>
                             <Text fontWeight='bold' textAlign='center' >{pendingCerts}</Text>
                         </Box>
-                        <Box p='1' px='3' borderBottomRightRadius={'5px'} border='1px solid black' w='100%'>
+                        <Box p='1' px='3' borderTopRightRadius={'5px'} border='1px solid black' w='100%'>
                             <Text>Total</Text>
-                            <Text fontWeight='bold' textAlign='center' >{releasedCerts + pendingCerts}</Text>
+                            <Text fontWeight='bold' textAlign='center' >{releasedCerts + unClaimed + pendingCerts}</Text>
+                        </Box>
+                    </Box>
+                    <Box w='100%' display='flex'>
+                        <Box p='1' px='3' border='1px solid black' borderBottomLeftRadius={'5px'} borderTop='none' borderRight='none' w='100%'>
+                            <Text>Company</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalCompanyC}</Text>
+                        </Box>
+                        <Box p='1' px='3' border='1px solid black' borderTop='none' borderRight='none' w='100%'>
+                            <Text>Trainee</Text>
+                            <Text fontWeight='bold' textAlign='center' >{totalTraineeC}</Text>
+                        </Box>
+                        <Box p='1' px='3' border='1px solid black' borderTop='none' borderRight='none' w='100%'>
+                            <Text>Total of Enrollees</Text>
+                            <Text fontWeight='bold' textAlign='center' >{(totalTraineeC + totalCompanyC)}</Text>
+                        </Box>
+                        <Box p='1' px='3' border='1px solid black' display='flex' alignItems='center' justifyContent='center' borderBottomRightRadius={'5px'} borderTop='none' w='100%'>
+                            <Text onClick={handleViewReport} _hover={{textDecoration: 'underline', color: 'sky.400', cursor: 'pointer', fontWeight: 'bold' }} >Generate Report</Text>
                         </Box>
                     </Box>
                 </Box>
@@ -1102,6 +1246,304 @@ export default function BDTrackerCertification (){
             }))}
             </Box>
         </Box>
+        <Modal isOpen={isOpenReport} size='6xl' scrollBehavior='inside' onClose={onCloseReport}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Certification Report</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Box w='100%'>
+                        <Box w='100%' display='flex'>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                                <Text>Total</Text>
+                                <Text fontWeight='bold' textAlign='center' >{releasedCerts + unClaimed + pendingCerts}</Text>
+                            </Box>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                                <Text>Issued</Text>
+                                <Text fontWeight='bold' textAlign='center' >{releasedCerts}</Text>
+                            </Box>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                                <Text>Unclaimed</Text>
+                                <Text fontWeight='bold' textAlign='center' >{unClaimed}</Text>
+                            </Box>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                                <Text>Pending</Text>
+                                <Text fontWeight='bold' textAlign='center' >{pendingCerts}</Text>
+                            </Box>
+                            <Box p='1' px='3' border='1px solid black' borderRight='none' w='100%'>
+                                <Text>Company</Text>
+                                <Text fontWeight='bold' textAlign='center' >{totalCompanyC}</Text>
+                            </Box>
+                            <Box p='1' px='3' border='1px solid black'  w='100%'>
+                                <Text>Trainee</Text>
+                                <Text fontWeight='bold' textAlign='center' >{totalTraineeC}</Text>
+                            </Box>
+                        </Box>
+                        <Box display='flex' justifyContent='end' mt='3' gap='2'>
+                            <Button
+                                size="sm"
+                                colorScheme="blue"
+                                borderRadius="md"
+                                // Disables button if there's no active document loaded to avoid errors
+                                onClick={async () => {
+                                    const monthKeys = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const;
+                                    const currentMonth = monthKeys[monthSelected]; // Safely resolves to 'jan', 'feb', etc.
+                                    
+                                    try {
+                                        // Batch/fire updates for this month sequentially or all together
+                                        await handleMetricUpdate(currentMonth, 'ttl_certs', (releasedCerts + unClaimed + pendingCerts));
+                                        await handleMetricUpdate(currentMonth, 'issued', releasedCerts);
+                                        await handleMetricUpdate(currentMonth, 'unClaimed', unClaimed);
+                                        await handleMetricUpdate(currentMonth, 'pending', pendingCerts);
+                                        await handleMetricUpdate(currentMonth, 'trainee', totalTraineeC);
+                                        await handleMetricUpdate(currentMonth, 'company', totalCompanyC);
+                                        
+                                        handleToast(
+                                            'Report Updated', 
+                                            `Successfully updated metrics for ${currentMonth.toUpperCase()}!`, 
+                                            3000, 
+                                            'success'
+                                        )
+                                    } catch (err) {
+                                        alert("Failed to sync metrics to database.");
+                                    }
+                                }}
+                            >
+                                Save Current Metrics to Report
+                            </Button>
+                            <Button colorScheme="teal" size="sm" onClick={handlePrint}>
+                                Print / Save PDF Report
+                            </Button>
+                        </Box>
+                    </Box>
+                    <Box mt='2' ref={componentRef}>
+                        <TableContainer border="1px solid" borderColor="black" bg="white">
+                            <Table 
+                                variant="unstyled" 
+                                size="sm" 
+                                sx={{
+                                    'th, td': { border: '1px solid black', textAlign: 'center', fontSize: 'xs', px: 2, py: 1.5 }
+                                }}
+                            >
+                                <Thead>
+                                {/* Top Year Header spanning the entire width */}
+                                    <Tr border='none'>
+                                        <Td colSpan={15} border='none'>
+                                            <Box display="flex" justifyContent="space-between" alignItems="center" pb="4" mb="3" >
+                                                <ChakraImage src="/Logo.jpg" width="2.81in" height="0.66in" alt="logo" />
+                                                <Box>
+                                                <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                    <Text as="span" mr={1}><PinIcon size="12" color="#000" /></Text>
+                                                    2/F 801 Building UN Avenue Ermita Manila
+                                                </Text>
+                                                <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                    <Text as="span" mr={1}><PhoneIcon size="12" color="#000" /></Text>
+                                                    (02) 8 281-8155
+                                                </Text>
+                                                <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                    <Text as="span" mr={1}><MailIcon size="12" color="#000" /></Text>
+                                                    pentagonmaritimeservicescorp@gmail.com
+                                                </Text>
+                                                <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                                                    <Text as="span" mr={1}><FacebookIcon size="12" color="#000" /></Text>
+                                                    /pentagonmaritimeservicescorp
+                                                </Text>
+                                                </Box>
+                                            </Box>
+                                            <Box display='flex' justifyContent='space-between' >
+                                                <Box textAlign='start'>
+                                                    <Text>{`MONTHLY BACKDATED REPORT FOR THE MONTH OF: ${MONTH_MAP[monthSelected]?.label.toUpperCase() || ''} ${yearSelected}`}</Text>
+                                                    <Text>{`PREPARED BY: RAFFY P. LOPEZ`}</Text>
+                                                </Box>
+                                                <Box>
+                                                    <Text>{`DEPARTMENT: ADMIN-CERTIFICATION`}</Text>
+                                                </Box>
+                                            </Box>
+                                            <Box textAlign='start' mt='2'>
+                                                <Text>OVERVIEW</Text>
+                                                <Text fontWeight='normal'>{`For the month of ${MONTH_MAP[monthSelected]?.label || ''} a total number of ${(releasedCerts + unClaimed + pendingCerts)} certificates has been processed.`}</Text>
+                                            </Box>
+                                        </Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Th rowSpan={2} fontWeight="bold" minW="150px">Particulars</Th>
+                                        <Th colSpan={13} fontWeight="bold">{selectedReport?.year || '2026'}</Th>
+                                        <Th rowSpan={2} fontWeight="bold" minW="100px">Remarks</Th>
+                                    </Tr>
+                                    {/* Sub-header MONTH_MAP list columns */}
+                                    <Tr>
+                                        {MONTH_MAP.map((m) => (
+                                            <Th key={m.key} fontWeight="semibold" textTransform="capitalize">{m.key}</Th>
+                                        ))}
+                                        <Th fontWeight="bold">Total</Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                {/* Row 1: Total Certificates */}
+                                    <Tr>
+                                        <Td fontWeight="medium" textAlign="left">Total # of Certificates</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.ttl_certs || 0}</Td>)}
+                                        <Td fontWeight="bold">{getRowTotal('ttl_certs')}</Td>
+                                        <Td rowSpan={4}></Td> {/* Spans down alongside metric data row fields */}
+                                    </Tr>
+                                    {/* Row 2: Issued */}
+                                    <Tr>
+                                        <Td textAlign="left">Issued</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.issued || 0}</Td>)}
+                                        <Td fontWeight="bold">{getRowTotal('issued')}</Td>
+                                    </Tr>
+                                    {/* Row 4: Unclaimed (Matching your 'unClaimed' interface key) */}
+                                    <Tr>
+                                        <Td textAlign="left">Unclaimed</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.unClaimed || 0}</Td>)}
+                                        <Td fontWeight="bold">{getRowTotal('unClaimed')}</Td>
+                                    </Tr>
+                                    {/* Row 3: Pending / On-Hold */}
+                                    <Tr>
+                                        <Td textAlign="left">Pending/On-Hold</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.pending || 0}</Td>)}
+                                        <Td fontWeight="bold">{getRowTotal('pending')}</Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td minH="24px"></Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}></Td>)}
+                                        <Td></Td>
+                                    </Tr>
+
+                                    {/* 🟢 Row 5: Trainee */}
+                                    <Tr>
+                                        <Td textAlign="left">Trainee</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.trainee || 0}</Td>)}
+                                        <Td fontWeight="bold">{getRowTotal('trainee')}</Td>
+                                    </Tr>
+
+                                    {/* 🟢 Row 6: Company */}
+                                    <Tr>
+                                        <Td textAlign="left">Company</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedReport?.[m.key]?.company || 0}</Td>)}
+                                        <Td fontWeight="bold">{getRowTotal('company')}</Td>
+                                    </Tr>
+                                    {/* Row 5: Global Notes Summary */}
+                                    <Tr>
+                                        <Td fontWeight="semibold" textAlign="left">Note / Remarks</Td>
+                                        {MONTH_MAP.map((m) => (
+                                        <Td key={m.key} fontSize="10px" color="gray.600">
+                                            {selectedReport?.[m.key]?.note || ''}
+                                        </Td>
+                                        ))}
+                                        <Td></Td>
+                                        <Td></Td>
+                                    </Tr>
+                                </Tbody>
+                            </Table>
+                        </TableContainer>
+                        <TableContainer mt='2' border="1px solid" borderColor="black" bg="white">
+                            <Table 
+                                variant="unstyled" 
+                                size="sm" 
+                                sx={{
+                                    'th, td': { border: '1px solid black', textAlign: 'center', fontSize: 'xs', px: 2, py: 1.5 }
+                                }}
+                            >
+                                <Thead>
+                                {/* Top Year Header spanning the entire width */}
+                                    <Tr border='none'>
+                                        <Td colSpan={15} border='none'>
+                                            <Box textAlign='start' mt='2'>
+                                                <Text>OVERVIEW</Text>
+                                                <Text>{`MONTHLY DATED REPORT FOR THE MONTH OF: ${MONTH_MAP[monthSelected]?.label.toUpperCase() || ''} ${yearSelected}`}</Text>
+                                                {(() => {
+                                                    // 1. Get the target month key string (e.g., 'jan', 'feb', 'nov') using the selected index
+                                                    const currentMonthKey = MONTH_MAP[monthSelected]?.key;
+                                                    
+                                                    // 2. Safely look up that month's total certificates from your state, defaulting to 0
+                                                    const currentMonthTtlCerts = selectedDatedReport?.[currentMonthKey]?.ttl_certs || 0;
+
+                                                    return (
+                                                        <Text fontWeight='normal'>
+                                                            {`For the month of ${MONTH_MAP[monthSelected]?.label || ''} a total number of ${currentMonthTtlCerts} certificates has been processed.`}
+                                                        </Text>
+                                                    );
+                                                })()}
+                                            </Box>
+                                        </Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Th rowSpan={2} fontWeight="bold" minW="150px">Particulars</Th>
+                                        <Th colSpan={13} fontWeight="bold">{selectedDatedReport?.year || '2026'}</Th>
+                                        <Th rowSpan={2} fontWeight="bold" minW="100px">Remarks</Th>
+                                    </Tr>
+                                    {/* Sub-header MONTH_MAP list columns */}
+                                    <Tr>
+                                        {MONTH_MAP.map((m) => (
+                                            <Th key={m.key} fontWeight="semibold" textTransform="capitalize">{m.key}</Th>
+                                        ))}
+                                        <Th fontWeight="bold">Total</Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                {/* Row 1: Total Certificates */}
+                                    <Tr>
+                                        <Td fontWeight="medium" textAlign="left">Total # of Certificates</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedDatedReport?.[m.key]?.ttl_certs || 0}</Td>)}
+                                        <Td fontWeight="bold">{getDatedRowTotal('ttl_certs')}</Td>
+                                        <Td rowSpan={4}></Td> {/* Spans down alongside metric data row fields */}
+                                    </Tr>
+                                    {/* Row 2: Issued */}
+                                    <Tr>
+                                        <Td textAlign="left">Issued</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedDatedReport?.[m.key]?.issued || 0}</Td>)}
+                                        <Td fontWeight="bold">{getDatedRowTotal('issued')}</Td>
+                                    </Tr>
+                                    {/* Row 4: Unclaimed (Matching your 'unClaimed' interface key) */}
+                                    <Tr>
+                                        <Td textAlign="left">Unclaimed</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedDatedReport?.[m.key]?.unClaimed || 0}</Td>)}
+                                        <Td fontWeight="bold">{getDatedRowTotal('unClaimed')}</Td>
+                                    </Tr>
+                                    {/* Row 3: Pending / On-Hold */}
+                                    <Tr>
+                                        <Td textAlign="left">Pending/On-Hold</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedDatedReport?.[m.key]?.pending || 0}</Td>)}
+                                        <Td fontWeight="bold">{getDatedRowTotal('pending')}</Td>
+                                    </Tr>
+                                    <Tr>
+                                        <Td minH="24px"></Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}></Td>)}
+                                        <Td></Td>
+                                    </Tr>
+
+                                    {/* 🟢 Row 5: Trainee */}
+                                    <Tr>
+                                        <Td textAlign="left">Trainee</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedDatedReport?.[m.key]?.trainee || 0}</Td>)}
+                                        <Td fontWeight="bold">{getDatedRowTotal('trainee')}</Td>
+                                    </Tr>
+
+                                    {/* 🟢 Row 6: Company */}
+                                    <Tr>
+                                        <Td textAlign="left">Company</Td>
+                                        {MONTH_MAP.map((m) => <Td key={m.key}>{selectedDatedReport?.[m.key]?.company || 0}</Td>)}
+                                        <Td fontWeight="bold">{getDatedRowTotal('company')}</Td>
+                                    </Tr>
+                                    {/* Row 5: Global Notes Summary */}
+                                    <Tr>
+                                        <Td fontWeight="semibold" textAlign="left">Note / Remarks</Td>
+                                        {MONTH_MAP.map((m) => (
+                                        <Td key={m.key} fontSize="10px" color="gray.600">
+                                            {selectedDatedReport?.[m.key]?.note || ''}
+                                        </Td>
+                                        ))}
+                                        <Td></Td>
+                                        <Td></Td>
+                                    </Tr>
+                                </Tbody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
         {/** Modal for editing released dates */}
         <Modal size='xs' isOpen={isOpenEdit} onClose={() => {onCloseEdit(); setID(''); setTDate(undefined);}}>
             <ModalOverlay />

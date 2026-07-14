@@ -52,6 +52,7 @@ export interface CERTIFICATION_REPORT_BY_ID extends CERTIFICATION_REPORT {
 export interface CERTIFICATION_REPORT {
     year: number;
     type: 'dated' | 'bd';
+    remarks: string;
     jan: MonthlyData;
     feb: MonthlyData;
     mar: MonthlyData;
