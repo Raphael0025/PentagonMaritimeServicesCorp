@@ -558,8 +558,7 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
             <Text fontSize="sm" fontWeight="bold" color="gray.800" alignSelf="start" px="8">
                 📜 UPLOADED ATTACHMENTS:
             </Text>
-            { // break point
-            Array.isArray((batch as any)?.attendance) && (batch as any)?.attendance && (batch as any).attendance.length > 0 ? (
+            { Array.isArray((batch as any)?.attendance) && (batch as any)?.attendance && (batch as any).attendance.length > 0 ? (
                 (batch as any).attendance.map((item: any, idx: number) => (
                     <Box key={idx} w="100%" display="flex" flexDir="column" alignItems="center" gap="2">
                         <ChakraImage src={item.url} width='70%' height='50%' alt={item.name} borderRadius="md" shadow="md" />
@@ -567,13 +566,8 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                     </Box>
                 ))
             ) : (
-                batch?.attendance && batch?.attendance !== '' ? (
-                    <ChakraImage src={batch.attendance} width='80%' height='auto' alt='legacy attachment' />
-                ) : (
-                    <Box py="6" color="gray.400" fontSize="sm">No existing files saved for this batch.</Box>
-                )
-            )
-            }
+                <Box py="6" color="gray.400" fontSize="sm">No existing files saved for this batch.</Box>
+            )}
             {/* Single Global Remarks Display */}
             <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='4' gap='2'>
                 <Text fontWeight="bold">REMARKS:</Text>
@@ -624,9 +618,7 @@ export default function PreviewAF({ onClose, batch, batch_no, batchID, courseID,
                         </Box>
                     ))
                 ) : (
-                    batchData?.attendance && batchData?.attendance !== '' && (
-                        <ChakraImage src={batchData.attendance} width='50%' height='auto' alt='legacy attachment' />
-                    )
+                    <Box py="6" color="gray.400" fontSize="sm">No existing files saved for this batch.</Box>
                 )}
                 <Box w='100%' display='flex' flexDir='column' px='8' justifyContent='start' pt='4' gap='3'>
                     <Text fontWeight="bold">REMARKS:</Text>
