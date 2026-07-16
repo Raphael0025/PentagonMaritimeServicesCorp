@@ -3,20 +3,21 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link'
 import { Box, Button, Image, Text, Input, FormControl, Textarea, FormLabel, useDisclosure, List, ListItem, Tooltip, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
-import 'animate.css';
 import { ElementView, MapComponent, BannerView, BannerComponent } from '@/Components/SiteComponents'
 
 export default function ContactUs() {
 
     return (
         <main className='pb-10'>
-            <BannerView 
-                initial={{opacity: 0, x: 100}}
-                animate={{opacity: 1, x: 0}}
-                transition={{ duration: 0.3, delay: 1, ease: 'linear' }}
-            >
-                <BannerComponent title='Talk to Us' content='Feel Free to contact us and send your inquiries!' image='./Images/ContactUs.jpg' />
-            </BannerView>
+            <Box mt='-90px'>
+                <BannerView 
+                    initial={{opacity: 0, x: 100}}
+                    animate={{opacity: 1, x: 0}}
+                    transition={{ duration: 0.3, delay: 1, ease: 'linear' }}
+                >
+                    <BannerComponent title='Talk to Us' content='Feel Free to contact us and send your inquiries!' image='./Images/ContactUs.jpg' />
+                </BannerView>
+            </Box>
             {/** Main Form */}
             <Box px={{base: '0%', lg: '20%'}} bgColor='#fbffff'>
                 <BannerView
@@ -26,7 +27,7 @@ export default function ContactUs() {
                 >
                     <Box display='flex' p='5' flexDir={{base: 'column', md: 'row', lg: 'row'}} >
                         <Box mr={4} w={{base: '100%', md: '50%', lg: '50%'}}>
-                            <Text fontSize='3xl' fontWeight='800' color='#1c437e'>Pentagon Maritime Services Corp.</Text>
+                            <Text fontSize='3xl' fontWeight='800' lineHeight='1.2' color='#1c437e'>Pentagon Maritime Services Corp.</Text>
                             <Box mt='4'>
                                 <Text fontSize='xl' color='gray.600' fontWeight='700' >Our Office</Text>
                                 <Text fontSize='md' color='gray.500' >2/F 801, Building United Nations Ave. 1000 Ermita NCR, City of Manila, First District Philippines</Text>

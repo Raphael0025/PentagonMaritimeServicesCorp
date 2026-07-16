@@ -10,9 +10,11 @@ export default function Page(){
     return(
     <>
         <Box bgColor='#fbffff'>
-            <BannerView initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0,}} transition={{duration: 0.3, delay: 1, ease: 'linear'}}>
-                <BannerComponent title='Admissions' image='./Images/ContactUs.jpg' content={`Welcome! Here you'll find all the information you need to enroll in your desired course.`} />
-            </BannerView>
+            <Box mt='-90px'>
+                <BannerView initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0,}} transition={{duration: 0.3, delay: 1, ease: 'linear'}}>
+                    <BannerComponent title='Admissions' image='./Images/ContactUs.jpg' content={`Welcome! Here you'll find all the information you need to enroll in your desired course.`} />
+                </BannerView>
+            </Box>
             <BannerView initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0,}} transition={{duration: 0.4, delay: 1.5, ease: 'linear'}}>
                 <Box px={{base: '5%', md: '5%', lg: '20%'}} pt='4'>
                     <Text fontSize='2xl' py={3} color='blue.700' fontWeight='700'>Modes of Enrollment</Text>
@@ -212,7 +214,7 @@ export default function Page(){
                     </Tabs>
                 </Box>
             </BannerView>
-            <Box px={{base: '5%', md: '5%', lg: '20%'}} pb='10'>
+            <Box px={{base: '5%', md: '5%', lg: '20%'}} pt='0' pb='10'>
                 <ElementView addView='animate__fadeInRight' removeView='animate__fadeOut' >
                     <Text fontSize='2xl' color='blue.700' fontWeight='700'>Requirements</Text>
                     <Text fontSize='lg' color='gray.500' fontWeight='400'>The following requirements must be submitted or shown to the Registrations before admission to any training program.</Text>

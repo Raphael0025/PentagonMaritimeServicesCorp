@@ -12,7 +12,7 @@ interface BannerProps{
 export default function BannerComponent({title, content, image}: BannerProps) {
     return(
     <>
-        <Box position='relative'>
+        <Box position='relative' >
             <Box pos='relative'>
                 <Box pos='absolute' top='0' left='0' pointerEvents='none' w='100%' h='100%' bgGradient='linear(126deg, rgba(5,5,5,0.8547794117647058) 40%, rgba(0,40,129,0) 100%)' />
                 <Image src={`${image}`} w='100%' h='400px' objectFit='cover' objectPosition='center' alt='banner'/>

@@ -254,7 +254,7 @@ export default function Page({params}: PageProps){
                             <Text w='100%'>Date of Enrollment</Text>
                             <Text w='100%'>Registration No.</Text>
                         </Box>
-                        {allTrainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
+                        {allTrainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch === batchID)
                         .slice() // Create a shallow copy to avoid mutating the original array
                         .sort((a, b) => {
                             const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';

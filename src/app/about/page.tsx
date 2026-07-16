@@ -7,18 +7,22 @@ import { ElementView, BannerView } from '@/Components/SiteComponents'
 import { BullsEyeIcon, LightBulbIcon } from '@/Components/Icons'
 export default function About() {
 
-
     return (
         <Box bgColor='#fbffff'>
             <Box pos='relative'>
-                <Box pos='relative'>
+                <Box pos='relative' mt='-85px'>
                     <BannerView
                         initial={{opacity: 0, y: -100}}
                         animate={{opacity: 1, y: 0}}
                         transition={{ duration: 0.3, delay: 1, ease: 'linear' }}
                     >
                         <Box pos='absolute' top='0' left='0' pointerEvents='none' w='100%' h='100%' bgGradient='linear(0deg, rgba(14,14,14,1) 10%, rgba(255,255,255,0) 100%)' />
-                        <Image src={'pentagon_banner.jpg'} w='100%' height={{base: '100%', lg: '500px'}} objectFit='cover' objectPosition='center' alt='company banner' />
+                        <Box display={{base: 'block', lg: 'none'}}>
+                            <Image src={'pentagon_banner2.jpg'} w='100%' height='100%' objectFit='cover' objectPosition='center' alt='company banner' />
+                        </Box>
+                        <Box display={{base: 'none', lg: 'block'}}>
+                            <Image src={'pentagon_banner.jpg'} w='100%' height='600px' objectFit='cover' objectPosition='center' alt='company banner' />
+                        </Box>
                     </BannerView>
                 </Box>
                 <Box pos='absolute' w='100%' bottom='0' display='flex' justifyContent='center' alignItems='center'>
@@ -28,7 +32,7 @@ export default function About() {
                         transition={{ duration: 0.5, delay: 1, ease: 'linear' }}
                     >
                         <Text display={{base: 'none', md: 'block', lg: 'block'}} className='outline-text' fontSize={{base: '6xl', lg: '8xl'}} textAlign='center' fontWeight='800' textTransform='uppercase'>about the Company</Text>
-                        <Text display={{base: 'block', md: 'none', lg: 'none'}} className='outline-text-2' fontSize={{base: '3xl', lg: '8xl'}} textAlign='center' fontWeight='800' textTransform='uppercase'>about the Company</Text>
+                        <Text display={{base: 'block', md: 'none', lg: 'none'}} color='white' fontSize={{base: '2rem', lg: '8xl'}} textAlign='center' fontWeight='800' textTransform='uppercase'>about the Company</Text>
                     </BannerView>
                 </Box>
             </Box>
@@ -55,7 +59,7 @@ export default function About() {
                         animate={{opacity: 1, x: 0, y: 0}}
                         transition={{ duration: 0.5, delay: 1, ease: 'linear' }}
                     >
-                        <Box color='gray.600' fontWeight='300' lineHeight='2.5rem' fontSize='1.3rem' >
+                        <Box color='gray.600' fontWeight='300' lineHeight={{base: '1.8rem', lg: '2.5rem'}} fontSize={{base: '1.01rem', lg: '1.3rem'}} >
                             <Text>{`Pentagon Maritime Services Corp. is an upgrading institution that offers courses that meet the established standards for maritime training.`}</Text>
                             <Text>{`We look back with admiration at the organizations that shaped our minds and appreciation of the industry. Our team brings over 15 years of experience in this industry to fulfill our envisioned new brand of maritime training. A brand that capitalizes on course development, account management, customer relationship, business operation and quality management resembling a strong foundation and stable structure that withstands wave of adversity and challenges.`}</Text>
                             <Text>{`PENTAGON, relentlessly keeps itself updated on the recent developments in the maritime industry to keep pace with the changing customer needs and expectations brought about by the industry developments.`}</Text>
@@ -138,9 +142,9 @@ export default function About() {
                     {quality_policy.map((value, index) => (
                         <Box key={index}>
                             <ElementView addView={value.animate} removeView='animate__fadeOut' >
-                                <Box _hover={{'& .hover-card': {transform: 'scale(1.15)'}}} mb='4'>
+                                <Box _hover={{'& .hover-card': {transform: 'scale(1.10)'}}} mb='4'>
                                     <Box display='flex' justifyContent='space-between' alignItems='center' flexDir={value.direction === 1 ? 'row' : 'row-reverse'} className='hover-card' transition='transform 0.4s ease-in-out' shadow='md' borderRadius='10px' p='7' overflow='hidden' bgGradient={`linear(${value.gradient})`}>
-                                        <Box fontSize={{base: 'lg', lg: '2xl'}} display='flex' flexDir='column' alignItems={value.align} color='white' lineHeight={{base: '1.4rem', lg: '2.4rem'}} fontWeight='300'>
+                                        <Box fontSize={{base: 'md', lg: '2xl'}} display='flex' flexDir='column' alignItems={value.align} color='white' lineHeight={{base: '1.4rem', lg: '2.4rem'}} fontWeight='300'>
                                             <Text textAlign={value.align === 'start' ? 'left' : 'right'}>{value.content}</Text>
                                         </Box>
                                         <Image height='100%' src={`./${value.icon}.png`} alt='logo' />

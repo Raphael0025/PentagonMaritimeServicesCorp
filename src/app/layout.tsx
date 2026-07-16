@@ -4,7 +4,7 @@ import "./globals.css";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import 'react-datepicker/dist/react-datepicker.css';
 import { Providers } from './providers'
-import { NavBar, Footer } from '@/Components/SiteComponents'
+import { NavBar, NavBarV2, Footer } from '@/Components/SiteComponents'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children, }: { children: React.ReactNode }) {
   return (
     <html lang="en" >
-      <body className={inter.className} style={{height: '100vh'}}>
+      <body className={inter.className} >
         <Providers>
-            <NavBar />
+            <NavBarV2 />
             {children}
             <Footer />
         </Providers>

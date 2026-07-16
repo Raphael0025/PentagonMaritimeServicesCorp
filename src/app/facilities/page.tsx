@@ -1,18 +1,19 @@
 'use client'
 
 import { Box, Image, Text, Grid, GridItem } from '@chakra-ui/react'
-import 'animate.css';
 import { BannerView, ElementView, CardOverlay, BannerComponent } from '@/Components/SiteComponents'
 
 export default function Home() {
 
     return (
         <main className='pb-10'>
-            <BannerView initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0,}} transition={{duration: 0.3, delay: 1, ease: 'linear'}}>
-                <BannerComponent title='Our Facilities' image='./Images/ContactUs.jpg' content={`Train with confidence in our advanced simulator facilities, featuring cutting-edge technology for realistic, hands-on experiences in navigation, ship handling, and emergency response.`} />
-            </BannerView>
+            <Box mt='-90px'>
+                <BannerView initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0,}} transition={{duration: 0.3, delay: 1, ease: 'linear'}}>
+                    <BannerComponent title='Our Facilities' image='./Images/ContactUs.jpg' content={`Train with confidence in our advanced simulator facilities, featuring cutting-edge technology for realistic, hands-on experiences in navigation, ship handling, and emergency response.`} />
+                </BannerView>
+            </Box>
             <Box px={{base: '5%', md: '20%', lg: '15%'}} py='8' bgColor='#fbffff'>
-                <Grid w='100%' templateRows='repeat(2, 1fr)' templateColumns={{base: '1fr', md: 'repeat(4, 1fr)', lg: 'repeat(4, 1fr)'}} gap={4}>
+                <Grid w='100%' templateRows='repeat(3, 1fr)' templateColumns={{base: '1fr', md: 'repeat(4, 1fr)', lg: 'repeat(4, 1fr)'}} gap={3}>
                     <GridItem colSpan={2}>
                         <BannerView initial={{opacity: 0, x: -50, y: 50}} animate={{opacity: 1, x: 0, y: 0}} transition={{duration: 0.3, delay: 1, ease: 'linear'}}>
                             <CardOverlay title='Full Mission Bridge Simulation' redirect={'/'}
@@ -29,7 +30,7 @@ export default function Home() {
                             />
                         </BannerView>
                     </GridItem>
-                    <GridItem colSpan={2}>
+                    <GridItem colSpan={2} rowSpan={2}>
                         <ElementView addView='animate__fadeInLeft' removeView='animate__fadeOut'>
                             <CardOverlay title='Engine Room Simulation' redirect={'/'}
                                     content={`The Engine Room Simulator provides an in-depth, realistic environment for training personnel in the operation and management of a ship's engine room. This simulation includes various engine systems, and control systems, allowing trainees to understand the intricacies of...`} 
@@ -42,6 +43,14 @@ export default function Home() {
                             <CardOverlay title='Liquid Cargo Handling Simulation' redirect={'/'}
                                     content={`The Liquid Cargo Handling Simulation offers a comprehensive training module focused on the safe and efficient management of liquid cargo operations on board vessels. The simulation covers various aspects such as the loading, unloading, and transfer of liquid cargo, as well as...`} 
                                     image='./Images/FMB/WideScreen.jpg'
+                            />
+                        </ElementView>
+                    </GridItem>
+                    <GridItem colSpan={4} rowSpan={1}>
+                        <ElementView addView='animate__fadeInRight' removeView='animate__fadeOut'>
+                            <CardOverlay title='Liquid Cargo Handling Simulation' redirect={'/'}
+                                    content={`The Liquid Cargo Handling Simulation offers a comprehensive training module focused on the safe and efficient management of liquid cargo operations on board vessels. The simulation covers various aspects such as the loading, unloading, and transfer of liquid cargo, as well as...`} 
+                                    image='./Images/ERS/WideScreen.jpg'
                             />
                         </ElementView>
                     </GridItem>
