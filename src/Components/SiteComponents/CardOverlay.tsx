@@ -90,6 +90,7 @@ export default function CardOverlay({image, title, content, imgArr}: CardProps) 
                     <Text fontSize="md" fontWeight="300" mb={2}>
                         {content}
                     </Text>
+                    <Text fontSize='xs'>Click to preview</Text>
                 </Box>
             </Box>
         </Box>

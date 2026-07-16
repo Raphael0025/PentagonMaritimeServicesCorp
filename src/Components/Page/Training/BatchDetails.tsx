@@ -108,7 +108,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
         }
     }
 
-    const trainingDataArr = trainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
+    const trainingDataArr = trainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch === batchID)
     .slice() // Create a shallow copy to avoid mutating the original array
     .sort((a, b) => {
         const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';

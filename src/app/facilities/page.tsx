@@ -10,7 +10,7 @@ export default function Home() {
     const fmbArr = ['FMB/img1.jpg', 'FMB/img2.jpg', 'FMB/img3.jpg', 'FMB/img4.jpg']
     const mbArr = ['MB/img1.jpg', 'MB/img2.jpg', 'MB/img3.jpg', 'MB/img4.jpg', 'MB/img5.jpg', 'MB/img6.jpg', 'MB/img7.jpg']
     const ersArr = ['ERS/img1.jpg', 'ERS/img2.jpg', 'ERS/img3.jpg', 'ERS/img4.jpg', 'ERS/img5.jpg', 'ERS/img6.jpg', 'ERS/img7.jpg']
-    const siteArr = ['PRACTICAL-SITE/img1.jpg', 'PRACTICAL-SITE/img2.jpg', 'PRACTICAL-SITE/img3.jpg', 'PRACTICAL-SITE/img4.jpg', 'PRACTICAL-SITE/img5.jpg', 'PRACTICAL-SITE/img6.jpg', 'PRACTICAL-SITE/img7.jpg', 'PRACTICAL-SITE/img8.jpg']
+    const siteArr = ['PRACTICAL-SITE/img1.png', 'PRACTICAL-SITE/img2.png', 'PRACTICAL-SITE/img3.png', 'PRACTICAL-SITE/img4.png', 'PRACTICAL-SITE/img5.jpg', 'PRACTICAL-SITE/img6.jpg', 'PRACTICAL-SITE/img7.jpg', 'PRACTICAL-SITE/img8.jpg']
 
     return (
         <main className='pb-10'>

@@ -22,7 +22,7 @@ export interface CourseBatchByID extends CourseBatch{
     attendance_remarks: string;
     ccr_remarks: string;
     remarks: string;
-    attendance: string;
+    attendance: fileArr[];
     ccr: string;
     createdAt: Timestamp;
     updateAt: Timestamp;
@@ -38,10 +38,15 @@ export interface BDCourseBatch {
     course: string;
 }
 
+interface fileArr {
+    name: string;
+    url: string;
+}
+
 export const initCourseBatch = {
     id: '',
     course: '',
-    attendance: '',
+    attendance: [],
     ccr: '',
     batch_no: '',
     start_date: '',
