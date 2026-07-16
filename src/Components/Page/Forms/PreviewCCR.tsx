@@ -63,10 +63,9 @@ export default function PreviewCCR({ onClose, batch, batch_no, batchID, courseID
         const fetchData = () => {
             const tempTrainingsArr = allTrainingData?.filter((training) => 
                 (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) 
-                    && training.batch.toString() === batchID
+                    && training === batchID
                 )
             setTrainingsArr(tempTrainingsArr || [])
-            console.log("TRAININGS ARR: ", tempTrainingsArr)
         }
         fetchData()
     }, [])

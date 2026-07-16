@@ -23,7 +23,7 @@ export default function BannerComponent({title, content, image}: BannerProps) {
                 </Box>
                 <Box display={{base:'none', md: 'block', lg: 'block'}} bgColor='#fbffff' pos='absolute' top='0' right='18%' height='100%' width='15%' clipPath={'polygon(56% 0%, 74% 0%, 20% 100%, 0% 100%)'} />
                 <Text fontSize='5xl' fontWeight='800' color='#fbffff'>{title}</Text>
-                <Text fontSize='xl' fontWeight='400' w={{base: '100%', lg: '50%'}} color='#fdfdfdaa'>{content}</Text>
+                <Text fontSize='md' fontWeight='400' w={{base: '100%', lg: '50%'}} color='#fdfdfdaa'>{content}</Text>
             </Box>
         </Box>
     </>

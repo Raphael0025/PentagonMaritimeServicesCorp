@@ -1,18 +1,21 @@
 'use client'
 
 import React from 'react'
-import { Box, Image, Link, Text } from '@chakra-ui/react'
+import { Box, Image, Link, Text, Modal, ModalOverlay, useDisclosure, ModalContent, ModalCloseButton, ModalHeader, ModalBody, } from '@chakra-ui/react'
 
 interface CardProps{
     image: string;
     title: string;
     content: string;
-    redirect: string;
+    imgArr: string[];
 }
 
-export default function CardOverlay({image, title, redirect, content}: CardProps) {
+export default function CardOverlay({image, title, content, imgArr}: CardProps) {
+    const { isOpen: isOpenImg, onOpen: onOpenImg, onClose: onCloseImg } = useDisclosure()
+
     return(
-        <Box w={{ base: '100%', md: '550px', lg: '100%' }} 
+    <>
+        <Box onClick={onOpenImg} w={{ base: '100%', md: '550px', lg: '100%' }} 
             h={{ base: '350px', md: '100%', lg: '100%' }}
             bgColor="#adadad90"
             pos="relative"
@@ -44,7 +47,7 @@ export default function CardOverlay({image, title, redirect, content}: CardProps
                 <Box className="test"
                     pos="absolute"
                     bottom="5%"
-                    w={{ base: '100%', lg: '50%' }}
+                    w={{ base: '90%', lg: '50%' }}
                     left="5%"
                     zIndex="2"
                     color="white"
@@ -87,11 +90,23 @@ export default function CardOverlay({image, title, redirect, content}: CardProps
                     <Text fontSize="md" fontWeight="300" mb={2}>
                         {content}
                     </Text>
-                    <Link href={redirect} size="sm" variant="ghost" colorScheme="black">
-                        Read More...
-                    </Link>
                 </Box>
             </Box>
         </Box>
+        <Modal isOpen={isOpenImg} onClose={onCloseImg} scrollBehavior='inside' size='3xl' >
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>{title}</ModalHeader>
+                <ModalCloseButton/>
+                <ModalBody>
+                {imgArr.map((img, indx) => (
+                    <Box key={indx} mb='4'>
+                        <Image src={`./Images/${img}`} w='100%' h='500px' objectFit='cover' alt={`image-${indx}`} />
+                    </Box>
+                ))}
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
     )
 }
