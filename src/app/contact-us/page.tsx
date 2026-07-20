@@ -60,6 +60,18 @@ export default function ContactUs() {
                             </Box>
                         </Box>
                         <MapComponent />
+                        {/* <Box>
+                            <Box 
+                                width="100%" 
+                                height="400px" 
+                                overflow="hidden" 
+                                border="1px solid" 
+                                borderColor="gray.200" 
+                                borderRadius="md"
+                                >
+                                <iframe src="https://www.google.com/maps/d/embed?mid=186zWqJtSYNeQhIOCPQ-vqcjfi1TmPaI&ehbc=2E312F" width="640" height="480"></iframe>
+                            </Box>
+                        </Box> */}
                     </Box>
                 </BannerView>
                 {/** Contact Form */}

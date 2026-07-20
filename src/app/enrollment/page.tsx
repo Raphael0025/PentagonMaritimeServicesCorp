@@ -236,6 +236,14 @@ export default function Page(){
                             </Box>
                         </ListItem>
                     </ElementView>
+                    <ElementView addView='animate__fadeInLeft' removeView='animate__fadeOut' >
+                        <ListItem>
+                            <Box fontSize='lg' display='block' fontWeight='400' color='gray.600'>
+                                <Text fontWeight='700'>Mismo Profile Screenshot</Text>
+                                <Text fontSize='base' px='3'>{`A screenshot of your MISMO profile account.`}</Text>
+                            </Box>
+                        </ListItem>
+                    </ElementView>
                 </List>
             </Box>
         </Box>
