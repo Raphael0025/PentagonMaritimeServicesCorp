@@ -14,7 +14,7 @@ export default function Home() {
 
     return (
         <main className='pb-10'>
-            <Box mt='-90px'>
+            <Box mt='-105px'>
                 <BannerView initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0,}} transition={{duration: 0.3, delay: 1, ease: 'linear'}}>
                     <BannerComponent title='Our Facilities' image='./Images/ContactUs.jpg' content={`Train with confidence in our advanced simulator facilities, featuring cutting-edge technology for realistic, hands-on experiences in navigation, ship handling, and emergency response.`} />
                 </BannerView>

@@ -10,7 +10,7 @@ export default function Page(){
     return(
     <>
         <Box bgColor='#fbffff'>
-            <Box mt='-90px'>
+            <Box mt='-105px'>
                 <BannerView initial={{opacity: 0, x: -20}} animate={{opacity: 1, x: 0,}} transition={{duration: 0.3, delay: 1, ease: 'linear'}}>
                     <BannerComponent title='Admissions' image='./Images/ContactUs.jpg' content={`Welcome! Here you'll find all the information you need to enroll in your desired course.`} />
                 </BannerView>

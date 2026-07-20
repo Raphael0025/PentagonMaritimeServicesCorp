@@ -51,7 +51,7 @@ export default function CoursesOffered() {
 
     return (
         <Box as='main' className='pb-10'>
-            <Box mt='-90px'>
+            <Box mt='-105px'>
                 <BannerView 
                     initial={{opacity: 0, x: 100}}
                     animate={{opacity: 1, x: 0}}

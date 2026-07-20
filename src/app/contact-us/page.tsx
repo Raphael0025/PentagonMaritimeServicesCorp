@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link'
-import { Box, Button, Image, Text, Input, FormControl, Textarea, FormLabel, useDisclosure, List, ListItem, Tooltip, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
+import { Box, Button, Image, Text, Select, Input, FormControl, Textarea, FormLabel, useDisclosure, List, ListItem, Tooltip, Menu, MenuButton, MenuList, IconButton, MenuItem, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverBody, PopoverFooter, PopoverArrow,Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import { ElementView, MapComponent, BannerView, BannerComponent } from '@/Components/SiteComponents'
 
 export default function ContactUs() {
 
     return (
         <main className='pb-10'>
-            <Box mt='-90px'>
+            <Box mt='-105px'>
                 <BannerView 
                     initial={{opacity: 0, x: 100}}
                     animate={{opacity: 1, x: 0}}
@@ -29,38 +29,42 @@ export default function ContactUs() {
                         <Box mr={4} w={{base: '100%', md: '50%', lg: '50%'}}>
                             <Text fontSize='3xl' fontWeight='800' lineHeight='1.2' color='#1c437e'>Pentagon Maritime Services Corp.</Text>
                             <Box mt='4'>
-                                <Text fontSize='xl' color='gray.600' fontWeight='700' >Our Office</Text>
-                                <Text fontSize='md' color='gray.500' >2/F 801, Building United Nations Ave. 1000 Ermita NCR, City of Manila, First District Philippines</Text>
+                                <Text fontSize='1.1rem' color='gray.600' fontWeight='700' >Manila Office</Text>
+                                <Text fontSize='0.9rem' color='gray.500' >2/F 801, Building United Nations Ave. 1000 Ermita NCR, City of Manila, First District Philippines</Text>
                             </Box>
                             <Box mt='4'>
-                                <Text fontSize='xl' color='gray.600' fontWeight='700' >Operating Hours</Text>
-                                <Text fontSize='md' color='gray.500'>{`Mon-Fri 8:00AM - 5:00PM`}</Text>
-                                <Text fontSize='md' color='gray.500'>{`Sat 8:00AM - 2:00PM`}</Text>
+                                <Text fontSize='1.1rem' color='gray.600' fontWeight='700' >Practical Training Site</Text>
+                                <Text fontSize='0.9rem' color='gray.500' >Brgy. 1 Purok Anilao, Lipa City, Batangas, Philippines</Text>
+                            </Box>
+                            <Box mt='4'>
+                                <Text fontSize='1.1rem' color='gray.600' fontWeight='700' >Operating Hours</Text>
+                                <Text fontSize='0.9rem' color='gray.500'>{`Mon-Fri 8:00AM - 5:00PM`}</Text>
+                                <Text fontSize='0.9rem' color='gray.500'>{`Sat 8:00AM - 2:00PM`}</Text>
                             </Box>
                             <Box mt='4'>
                                 <Text fontSize='xl' color='gray.600' fontWeight='700' >Contacts</Text>
-                                <Box display='flex' flexDir='column' className='space-y-3'>
+                                <Box ms='4' display='flex' flexDir='column' className='space-y-3'>
                                     <Box>
-                                        <Text fontSize='md' color='gray.600'>{`Landline:`}</Text>
-                                        <Text fontSize='md' color='gray.500'>{`(02) 8 281- 8155`}</Text>
+                                        <Text fontSize='1.1rem' color='gray.600'>{`Landline:`}</Text>
+                                        <Text fontSize='0.9rem' fontWeight='500' color='gray.500'>{`(02) 8 281- 8155`}</Text>
                                     </Box>
                                     <Box>
-                                        <Text fontSize='md' color='gray.600'>{`Registration:`}</Text>
-                                        <Text fontSize='md' color='gray.500'>{`0999-190-9273`}</Text>
+                                        <Text fontSize='1.1rem' color='gray.600'>{`Registration:`}</Text>
+                                        <Text fontSize='0.9rem' fontWeight='500' color='gray.500'>{`0999-190-9273`}</Text>
                                     </Box>
                                     <Box>
-                                        <Text fontSize='md' color='gray.600'>{`Marketing:`}</Text>
-                                        <Text fontSize='md' color='gray.500'>{`0999-513-5916`}</Text>
+                                        <Text fontSize='1.1rem' color='gray.600'>{`Marketing:`}</Text>
+                                        <Text fontSize='0.9rem' fontWeight='500' color='gray.500'>{`0999-513-5916`}</Text>
                                     </Box>
                                 </Box>
                             </Box>
                             <Box my='4'>
-                                <Text fontSize='xl' color='gray.600' fontWeight='700' >Email</Text>
-                                <Text fontSize='md' color='gray.500' >pentagonmaritimecorp@gmail.com | pentagonmaritimeservices@gmail.com</Text>
+                                <Text fontSize='1.1rem' color='gray.600' fontWeight='700' >Email</Text>
+                                <Text fontSize='0.9rem' fontWeight='600' color='gray.500' >pentagonmaritimecorp@gmail.com | pentagonmaritimeservices@gmail.com | pentagonmaritimemarketing@gmail.com</Text>
                             </Box>
                         </Box>
-                        <MapComponent />
-                        {/* <Box>
+                        {/* <MapComponent /> */}
+                        <Box display='flex' flexDir='column' gap='3'>
                             <Box 
                                 width="100%" 
                                 height="400px" 
@@ -68,10 +72,20 @@ export default function ContactUs() {
                                 border="1px solid" 
                                 borderColor="gray.200" 
                                 borderRadius="md"
-                                >
+                            >
                                 <iframe src="https://www.google.com/maps/d/embed?mid=186zWqJtSYNeQhIOCPQ-vqcjfi1TmPaI&ehbc=2E312F" width="640" height="480"></iframe>
                             </Box>
-                        </Box> */}
+                            <Box 
+                                width="100%" 
+                                height="400px" 
+                                overflow="hidden" 
+                                border="1px solid" 
+                                borderColor="gray.200" 
+                                borderRadius="md"
+                            >
+                                <iframe src="https://www.google.com/maps/d/u/1/embed?mid=1xC-iHAOzaeSMqGMZhJ14hTvr1X2vEvs&ehbc=2E312F" width="640" height="480"></iframe>
+                            </Box>
+                        </Box>
                     </Box>
                 </BannerView>
                 {/** Contact Form */}
@@ -97,8 +111,13 @@ export default function ContactUs() {
                         </Box>
                         <Box mt='3'>
                             <FormControl>
-                                <FormLabel color='gray.500'>Contact No.</FormLabel>
-                                <Input placeholder='Your mobile number' shadow='md' size='lg' type='tel' />
+                                <FormLabel color='gray.500'>Where to contact you?</FormLabel>
+                                <Select>
+                                    <option hidden>Select preferred channel</option>
+                                    <option>Email</option>
+                                    <option>Messenger</option>
+                                    <option>Contact Number</option>
+                                </Select>
                             </FormControl>
                         </Box>
                         <Box mt='3'>

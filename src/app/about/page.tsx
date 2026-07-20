@@ -10,7 +10,7 @@ export default function About() {
     return (
         <Box bgColor='#fbffff'>
             <Box pos='relative'>
-                <Box pos='relative' mt='-85px'>
+                <Box pos='relative' mt='-105px'>
                     <BannerView
                         initial={{opacity: 0, y: -100}}
                         animate={{opacity: 1, y: 0}}
