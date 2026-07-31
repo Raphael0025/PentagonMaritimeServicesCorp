@@ -13,6 +13,7 @@ import CCMD_CERT from "./Certificate_Template/CCMD_Cert.template"
 import RFPEW_CERT from "./Certificate_Template/RFPEW_Cert.template"
 import RFPNW_CERT from "./Certificate_Template/RFPNW_Cert.template"
 import BT_Cert from "./Certificate_Template/BT_Cert.template"
+import RBT_Cert from "./Certificate_Template/RBT_Cert.template"
 
 export {
     SDSDCertTemplate,
@@ -22,6 +23,7 @@ export {
     InHouseCert,
     UBT_PssrCert,
     BT_Cert,
+    RBT_Cert,
     BatchedDated,
     BDTracker,
     ReleaseLog,
