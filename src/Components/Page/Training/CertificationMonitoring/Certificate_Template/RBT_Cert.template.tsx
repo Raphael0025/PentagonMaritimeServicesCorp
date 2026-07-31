@@ -119,7 +119,7 @@ export default function RBT_Cert({selectedTrainings, trainingID, searchTerm}: Co
 
     return(
         <Box w='100%' placeItems='center' p='0' fontFamily='Arial'
-            //sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
         >
         {selectedTrainings?.filter((t) => {
             if(trainingID.length === 0) return true; 
