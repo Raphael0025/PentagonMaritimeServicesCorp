@@ -33,7 +33,7 @@ import { useReactToPrint } from 'react-to-print'
 import { deployYDate } from '@/types/utils' 
 import { fullMonth } from '@/handlers/util_handler'
 
-import { initTRAINEE_BY_ID, TRAINEE_BY_ID } from '@/types/trainees'
+import { initTRAINEE_BY_ID, TRAINEE_BY_ID, TRAINING_BY_ID } from '@/types/trainees'
 
 export default function Page(){
     const toast = useToast()
