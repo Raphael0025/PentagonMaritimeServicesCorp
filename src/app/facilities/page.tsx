@@ -5,7 +5,7 @@ import { BannerView, ElementView, CardOverlay, BannerComponent } from '@/Compone
 
 export default function Home() {
     const trainingRM = ['TRAINING-ROOM/rm1.png', 'TRAINING-ROOM/rm3.png', 'TRAINING-ROOM/rm6.jpg']
-    const regArr = ['RECEPTION/rec1.jpg', 'RECEPTION/rec2.jpg', 'RECEPTION/rec2.jpg', 'RECEPTION/rec3.jpg', 'RECEPTION/rec4.jpg', 'RECEPTION/miniBar.png',]
+    const regArr = ['RECEPTION/rec1.jpg', 'RECEPTION/rec2.jpg', 'RECEPTION/rec3.jpg', 'RECEPTION/rec4.jpg', 'RECEPTION/miniBar.png',]
     const lchsArr = ['LCHS/img1.jpg', 'LCHS/img2.jpg', 'LCHS/img3.jpg', 'LCHS/img4.jpg']
     const fmbArr = ['FMB/img1.jpg', 'FMB/img2.jpg', 'FMB/img3.jpg', 'FMB/img4.jpg']
     const mbArr = ['MB/img1.jpg', 'MB/img2.jpg', 'MB/img3.jpg', 'MB/img4.jpg', 'MB/img5.jpg', 'MB/img6.jpg', 'MB/img7.jpg']
@@ -61,7 +61,7 @@ export default function Home() {
                         <ElementView addView='animate__fadeInLeft' removeView='animate__fadeOut'>
                             <CardOverlay title='Registration & Reception'  
                                     content={`Our dedicated Registration and Reception Area is designed to make your enrollment, document submission, and inquiries as smooth, welcoming, and efficient as possible....`} 
-                                    image='./Images/RECEPTION/Front.jpg'
+                                    image='./Images/RECEPTION/FRONT.jpg'
                                     imgArr={regArr}
                             />
                         </ElementView>

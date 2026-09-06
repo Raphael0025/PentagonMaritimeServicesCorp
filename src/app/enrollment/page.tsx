@@ -2,7 +2,6 @@
 
 import { Box, Image, Text, Modal, ModalOverlay, Link, Tabs, TabList, TabPanels, Tab, TabPanel, OrderedList, List, ListItem, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton} from '@chakra-ui/react'
 import { BannerView, ElementView, BannerComponent } from '@/Components/SiteComponents'
-
 import React from "react"
 
 export default function Page(){
@@ -224,7 +223,7 @@ export default function Page(){
                         <ListItem>
                             <Box fontSize='lg' display='block' fontWeight='400' color='gray.600'>
                                 <Text fontWeight='700'>Valid ID</Text>
-                                <Text fontSize='base' px='3'>{`Preferrable: Philippine Passport or Seaman's Book.`}</Text>
+                                <Text fontSize='base' px='3'>{`Preferable: Philippine Passport or Seaman's Book.`}</Text>
                             </Box>
                         </ListItem>
                     </ElementView>

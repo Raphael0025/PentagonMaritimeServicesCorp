@@ -41,7 +41,7 @@ export default function CardOverlay({image, title, content, imgArr}: CardProps) 
             }}
         >
             {/* Background Image */}
-            <Image h="100%" w="100%" src={image} transition='transform 0.4s ease-in-out' className='card-image' alt="ERS-widescreen" objectFit="cover" />
+            <Image h="100%" w="100%" src={image} transition='transform 0.4s ease-in-out' className='card-image' alt={title} objectFit="cover" />
             {/* Title (Always Visible) */}
             <Box pos='absolute' bottom='0%' background="linear-gradient(to top, rgba(27, 28, 37) 0%, rgba(27, 28, 37, 0) 50%)" p='4' w='100%' h='100%'>
                 <Box className="test"

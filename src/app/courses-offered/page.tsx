@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Box, Button, Image, Text, Input, FormControl, InputLeftAddon, InputGroup, useDisclosure, Skeleton, Stack, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import { ElementView, MapComponent, BannerView, BannerComponent } from '@/Components/SiteComponents'
 import { Search2Icon } from '@chakra-ui/icons'
@@ -23,7 +22,7 @@ export default function CoursesOffered() {
             course.course_code.toUpperCase().includes(search.toUpperCase()) || 
             course.course_name.toUpperCase().includes(search.toUpperCase())
         )
-        .sort((a, b) => a.course_code.toLowerCase().localeCompare(b.course_code.toLowerCase()));
+        .sort((a, b) => a.course_name.toLowerCase().localeCompare(b.course_name.toLowerCase()));
 
     const filteredMdsCourses = (allCourses || [])
         .filter(c => c.courseType === 0)
@@ -31,7 +30,7 @@ export default function CoursesOffered() {
             course.course_code.toUpperCase().includes(search.toUpperCase()) || 
             course.course_name.toUpperCase().includes(search.toUpperCase())
         )
-        .sort((a, b) => a.course_code.toLowerCase().localeCompare(b.course_code.toLowerCase()));
+        .sort((a, b) => a.course_name.toLowerCase().localeCompare(b.course_name.toLowerCase()));
 
     const filteredSafetyCourses = (allCourses || [])
         .filter(c => c.courseType === 3)
@@ -39,7 +38,7 @@ export default function CoursesOffered() {
             course.course_code.toUpperCase().includes(search.toUpperCase()) || 
             course.course_name.toUpperCase().includes(search.toUpperCase())
         )
-        .sort((a, b) => a.course_code.toLowerCase().localeCompare(b.course_code.toLowerCase()));
+        .sort((a, b) => a.course_name.toLowerCase().localeCompare(b.course_name.toLowerCase()));
 
     const filteredStcwCourses = (allCourses || [])
         .filter(c => c.courseType === 2)
@@ -47,7 +46,7 @@ export default function CoursesOffered() {
             course.course_code.toUpperCase().includes(search.toUpperCase()) || 
             course.course_name.toUpperCase().includes(search.toUpperCase())
         )
-        .sort((a, b) => a.course_code.toLowerCase().localeCompare(b.course_code.toLowerCase()));
+        .sort((a, b) => a.course_name.toLowerCase().localeCompare(b.course_name.toLowerCase()));
 
     return (
         <Box as='main' className='pb-10'>
