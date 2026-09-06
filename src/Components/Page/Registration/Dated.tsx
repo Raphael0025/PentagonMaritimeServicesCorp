@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react';
-import { Box, Text, Input, Textarea, Button, InputLeftAddon, Image, Grid, GridItem, FormControl, Select, Switch, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, Checkbox } from '@chakra-ui/react';
+import { Box, Text, Input, Textarea, Button, IconButton, InputLeftAddon, Image, Grid, GridItem, FormControl, Select, Switch, FormLabel, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, Checkbox } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
-import { ChevronDownIcon, EditIcon, DownloadIcon, CheckCircleIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, EditIcon, DownloadIcon, CopyIcon, } from '@chakra-ui/icons'
 import { Timestamp } from 'firebase/firestore'
 
 import { useRegistrations } from '@/context/RegistrationContext'
@@ -33,7 +33,7 @@ import { useReactToPrint } from 'react-to-print'
 import { fullMonth } from '@/handlers/util_handler'
 import { deployYDate } from '@/types/utils' 
 
-import { initTRAINEE_BY_ID, TRAINEE_BY_ID } from '@/types/trainees'
+import { initTRAINEE_BY_ID, TRAINEE_BY_ID, TRAINING_BY_ID } from '@/types/trainees'
 
 export default function Page(){
     const toast = useToast()
@@ -354,6 +354,44 @@ export default function Page(){
         }
     }
 
+    const handleCopy = async (trainee: TRAINEE_BY_ID, training: TRAINING_BY_ID) => {
+        // company, rank, Name, phone, email
+        //training.accountType === 0 ? 'crew' : 'company'
+
+        const accountType = training.accountType === 0 ? 'CREW' : 'COMPANY'
+        const rank = allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank
+        const company = allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
+        const rankAndName = `${rank.toUpperCase()} ${trainee.last_name.toUpperCase()}, ${trainee.first_name.toUpperCase()} ${trainee.middle_name.toUpperCase()}`
+
+        const selectedFields = [
+            company,
+            rankAndName,
+            trainee.contact_no,
+            trainee.email,
+            accountType
+        ]
+
+        const tsvData = selectedFields.join('\t');
+
+        navigator.clipboard.writeText(tsvData)
+        .then(() => {
+            toast({
+                title: 'Row Copied!',
+                description: 'You can now paste (Ctrl+V) directly into Google Sheets.',
+                status: 'success',
+                duration: 2000,
+                isClosable: true,
+            });
+        })
+        .catch(() => {
+            toast({
+                title: 'Failed to copy',
+                status: 'error',
+                duration: 2000,
+            });
+        })
+    }
+
     return(
         <>
             <main className="w-full space-y-3">
@@ -411,17 +449,8 @@ export default function Page(){
                             <Box position='sticky' top='0' zIndex='1' w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Box className="space-x-3 flex w-full" justifyContent='center' alignItems='center'>
-                                        {/* {filterCourse && filterCourse !== '' && (
-                                            <Box w='30px' display='flex' justifyContent='center' alignItems='center' pl='2'>
-                                                <Checkbox 
-                                                    isChecked={getFilteredTrainings().length > 0 && selectedTrainingIds.length === getFilteredTrainings().length}
-                                                    isIndeterminate={selectedTrainingIds.length > 0 && selectedTrainingIds.length < getFilteredTrainings().length}
-                                                    onChange={(e) => handleSelectAllToggle(e.target.checked)}
-                                                    colorScheme="blue"
-                                                />
-                                            </Box>
-                                        )} */}
-                                        <Text w="80px" whiteSpace='normal' className="text-center">Enrolled Date</Text>
+                                        
+                                        <Text w="130px" whiteSpace='normal' className="text-center">Enrolled Date</Text>
                                         <Text w="80px" whiteSpace='normal' className="text-center">Enrolled By</Text>
                                         {/* <Text w="150px" className="text-center">Trainee Type</Text> */}
                                         <Text w="150px" className="text-center">Registration No.</Text>
@@ -534,6 +563,13 @@ export default function Page(){
                                                             />
                                                         </Box>
                                                     )} */}
+                                                    <IconButton
+                                                        aria-label="Copy row data"
+                                                        icon={<CopyIcon />}
+                                                        colorScheme={'blue'}
+                                                        size="xs"
+                                                        onClick={() => handleCopy(trainee, training)}
+                                                    />
                                                     <Text w="50px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
                                                     <Text w="120px">{training.enrolledBy}</Text>                                                                             
                                                     {/* <Text w="150px">

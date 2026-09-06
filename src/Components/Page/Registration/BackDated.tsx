@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
-import { Box, Text, Image, Input, Textarea, Button, InputLeftAddon, Grid, GridItem, FormControl, Select, FormLabel, Switch, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Image, Input, IconButton, Textarea, Button, InputLeftAddon, Grid, GridItem, FormControl, Select, FormLabel, Switch, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
-import { ChevronDownIcon, EditIcon, DownloadIcon, } from '@chakra-ui/icons'
+import { ChevronDownIcon, EditIcon, DownloadIcon, CopyIcon, } from '@chakra-ui/icons'
 import { Timestamp } from 'firebase/firestore'
 
 import { useTrainees } from '@/context/TraineeContext'
@@ -293,6 +293,44 @@ export default function Page(){
         onCloseRank()
     }
     
+    const handleCopy = async (trainee: TRAINEE_BY_ID, training: TRAINING_BY_ID) => {
+        // company, rank, Name, phone, email
+        //training.accountType === 0 ? 'crew' : 'company'
+
+        const accountType = training.accountType === 0 ? 'CREW' : 'COMPANY'
+        const rank = allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank
+        const company = allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
+        const rankAndName = `${rank.toUpperCase()} ${trainee.last_name.toUpperCase()}, ${trainee.first_name.toUpperCase()} ${trainee.middle_name.toUpperCase()}`
+
+        const selectedFields = [
+            company,
+            rankAndName,
+            trainee.contact_no,
+            trainee.email,
+            accountType
+        ]
+
+        const tsvData = selectedFields.join('\t');
+
+        navigator.clipboard.writeText(tsvData)
+        .then(() => {
+            toast({
+                title: 'Row Copied!',
+                description: 'You can now paste (Ctrl+V) directly into Google Sheets.',
+                status: 'success',
+                duration: 2000,
+                isClosable: true,
+            });
+        })
+        .catch(() => {
+            toast({
+                title: 'Failed to copy',
+                status: 'error',
+                duration: 2000,
+            });
+        })
+    }
+
     return(
         <>
             <main className="w-full space-y-3">
@@ -350,7 +388,7 @@ export default function Page(){
                             <Box position='sticky' top='0' zIndex='1' w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap',  }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Box className="space-x-3 flex w-full" justifyContent='center' alignItems='center'>
-                                        <Text w="150px" className="text-center">Enrolled Date</Text>
+                                        <Text w="130px" className="text-center">Enrolled Date</Text>
                                         <Text w="100px" className="text-center">Enrolled By</Text>
                                         {/* <Text w="150px" className="text-center">Trainee Type</Text> */}
                                         <Text w="150px" className="text-center">Registration No.</Text>
@@ -453,7 +491,14 @@ export default function Page(){
                                         <Box key={training.id} _hover={{bgColor: 'blue.100', borderBottomWidth: '1px', borderColor: 'blue.700'}} w='4150px' className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
                                                 <Box className='w-full flex space-x-3'>
-                                                    <Text w="150px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
+                                                    <IconButton
+                                                        aria-label="Copy row data"
+                                                        icon={<CopyIcon />}
+                                                        colorScheme={'blue'}
+                                                        size="xs"
+                                                        onClick={() => handleCopy(trainee, training)}
+                                                    />
+                                                    <Text w="80px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
                                                     <Text w="100px">{training.enrolledBy}</Text>                                                                             
                                                     {/* <Text w="150px">
                                                         {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}

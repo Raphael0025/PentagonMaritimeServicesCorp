@@ -1,11 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation';
-import Image from 'next/image'
 import 'animate.css';
-import { useEffect, useState, useRef } from 'react';
-import { Collapse, FormControl, useDisclosure, FormErrorMessage, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Input, Box, Button, Heading, Text, Container, Radio, RadioGroup, HStack, VStack } from '@chakra-ui/react'
-import Swal from 'sweetalert2'
+import { useState } from 'react';
+import { Collapse,  Box, Button, Heading, Text, Container, Radio, RadioGroup, VStack } from '@chakra-ui/react'
 import Stepper from '@/Components/NavStepper'
 import {NextIcon} from '@/Components/SideIcons' 
 
