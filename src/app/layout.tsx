@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import 'react-datepicker/dist/react-datepicker.css';
 import { Inter } from "next/font/google";
 import { Providers } from './providers'
 import { NavBar, NavBarV2, Footer } from '@/Components/SiteComponents'
