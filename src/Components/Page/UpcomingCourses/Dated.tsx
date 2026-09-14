@@ -335,7 +335,7 @@ export default function Page() {
           <Thead bg="blue.900">
             <Tr>
               <Th color="white" w="18%">TYPE / COMPANY</Th>
-              <Th color="white" w="25%">TRAINEE'S NAME</Th>
+              <Th color="white" w="25%">{`TRAINEE'S NAME`}</Th>
               <Th color="white" w="15%">CONTACT NO.</Th>
               <Th color="white" w="20%">EMAIL</Th>
               <Th color="white" w="10%">STATUS</Th>
