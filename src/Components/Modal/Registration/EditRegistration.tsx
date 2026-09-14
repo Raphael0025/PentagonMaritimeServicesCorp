@@ -171,10 +171,10 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                 try{
                     const actor = localStorage.getItem('customToken')
 
-                    const { id: regID, reg_no: regNo, regType, ...cleanData} = fetchedReg
                     if (!fetchedReg) {
                         throw new Error("Registration record not found.");
                     }
+                    const { id: regID, reg_no: regNo, regType, ...cleanData} = fetchedReg
                     const newData = {...cleanData, reg_no: '', regType: 2}
                     
                     const newRegID = await duplicateRegRecord(newData)
