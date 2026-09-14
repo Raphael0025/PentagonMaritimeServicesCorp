@@ -121,24 +121,40 @@ export const addAttachments = async (id: string, traineeDetails: any, files: any
 
 export const addRegistrationDetails = async (ref_id: string, payment_fee: number, registrationType: number, traineeType: number, account_type: number, marketing: string) => {
     try{
-            const newRegistration: REGISTRATION = {
-                trainee_ref_id: ref_id,
-                reg_no: '',
-                regApproach: registrationType,
-                traineeType,
-                payment_balance: payment_fee,
-                payment_status: 2,
-                payment_mode: 3,
-                date_registered: Timestamp.now(),
-                reg_remarks: '',
-                regType: 2,
-                marketing: marketing,
-                otherMarketing: '',
-                reg_accountType: account_type,
-            }  
-            const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
-            return idRef.id
-        
+        const newRegistration: REGISTRATION = {
+            trainee_ref_id: ref_id,
+            reg_no: '',
+            regApproach: registrationType,
+            traineeType,
+            payment_balance: payment_fee,
+            payment_status: 2,
+            payment_mode: 3,
+            date_registered: Timestamp.now(),
+            reg_remarks: '',
+            regType: 2,
+            marketing: marketing,
+            otherMarketing: '',
+            reg_accountType: account_type,
+        }  
+        const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
+        return idRef.id
+    }catch(error){
+        console.error('Error: ', error)
+    }
+}
+
+export const duplicateRegRecord = async(newRegData: any) => {
+    try{
+        const regRefId: DocumentReference = await addDoc(registration, {...newRegData})
+        return regRefId.id
+    }catch(error){
+        console.error('Error: ', error)
+    }
+}
+
+export const duplicateTrainRec = async(newTrainData: any) => {
+    try{
+        await addDoc(training, {...newTrainData})
     }catch(error){
         console.error('Error: ', error)
     }

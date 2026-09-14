@@ -45,7 +45,7 @@ export default function TabRegistration() {
                 {canAccess("Inquiries") && (
                     <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'inquiries' ? 'border-tab-active font-semibold text-sky-700' : 'border-tab-inactive font-normal text-gray-600'} `} href='/enterprise-portal/registration/inquiry' onClick={() => {handleClick('inquiries')}}>Inquiries</Link>
                 )}
-                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'upcoming' ? 'border-tab-active font-semibold text-sky-700' : 'border-tab-inactive font-normal text-gray-600'} `} href='/enterprise-portal/registration/upcoming-courses' onClick={() => {handleClick('upcoming')}}>Upcoming Courses</Link>
+                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'traineeSched' ? 'border-tab-active font-semibold text-sky-700' : 'border-tab-inactive font-normal text-gray-600'} `} href='/enterprise-portal/registration/trainee-schedules' onClick={() => {handleClick('traineeSched')}}>Trainee Schedule</Link>
                 {canAccess("Registrations") && (
                     <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'registrations' ? 'border-tab-active font-semibold text-sky-700' : 'border-tab-inactive font-normal text-gray-600'} `} href='/enterprise-portal/registration/registrations' onClick={() => {handleClick('registrations')}}>Registrations</Link>
                 )}

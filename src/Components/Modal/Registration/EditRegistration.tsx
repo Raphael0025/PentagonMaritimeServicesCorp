@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Button, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Button, useDisclosure, Checkbox, MenuList, Menu, MenuItem, MenuButton, IconButton, Modal, ModalOverlay, HStack, VStack, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { SettingsIcon } from '@chakra-ui/icons';
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
@@ -14,7 +15,7 @@ import { Course, CourseFee, TrainingDate, AccountType } from './EditTraining'
 import { TRAINING_BY_ID, initTraining } from '@/types/trainees'
 import { InsertTraining } from '@/Components/Modal/Pending'
 
-import { UPDATE_TRAINING, UPDATE_REGISTRATION } from '@/lib/trainee_controller'
+import { UPDATE_TRAINING, UPDATE_REGISTRATION, duplicateRegRecord, duplicateTrainRec } from '@/lib/trainee_controller'
 
 interface PageProps {
     onClose: () => void;
@@ -49,6 +50,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     const [at, setAT] = useState<number>(0)
     const [loading, setLoading] = useState<boolean>(false)
     const [trainingDoc, setTraining] = useState<TRAINING_BY_ID>(initTraining)
+    const [selectedTrainIDs, setSelectedTrainIDs] = useState<string[]>([]);
     const [permittedTo, setPermittedTo] = useState<string>('')
     
     const fetchedReg = allRegistrations?.find((reg) => reg.id === reg_id)
@@ -86,6 +88,119 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
         }).finally(() => {
             setLoading(false)
             onCloseRB()
+        })
+    }
+
+    const handleToggleSelect = (trainID: string) => {
+        setSelectedTrainIDs((prev) =>
+            prev.includes(trainID)
+                ? prev.filter((id) => id !== trainID)
+                : [...prev, trainID]
+        )
+    }
+
+    const handleBatchCancelAndDuplicate = async () => {
+        if (selectedTrainIDs.length === 0) return;
+        setLoading(true);
+    
+        try {
+            const actor = localStorage.getItem('customToken');
+    
+            // 1. Create ONE single duplicate registration record for this batch
+            if (!fetchedReg) {
+                throw new Error("Registration record not found.");
+            }
+            const { id: regID, reg_no: regNo, regType, ...cleanRegData } = fetchedReg;
+            const newRegData = { ...cleanRegData, reg_no: '', regType: 2 };
+    
+            const newRegID = await duplicateRegRecord(newRegData);
+    
+            // 2. Loop through each selected training ID
+            for (const trainID of selectedTrainIDs) {
+                const fetchedTrainRec = allTraining?.find((t) => t.id === trainID);
+                
+                if (fetchedTrainRec) {
+                    const { 
+                        id, 
+                        batch, 
+                        enrolledBy, 
+                        reg_ref_id, 
+                        regType: trainRegType, 
+                        reg_status, 
+                        ...cleanTrainData 
+                    } = fetchedTrainRec;
+    
+                    // Payload for new Pending record
+                    const newTrainRec = {
+                        ...cleanTrainData,
+                        batch: '1',
+                        enrolledBy: 0,
+                        reg_ref_id: newRegID, // Points to the new shared registration ID
+                        regType: 2,
+                        reg_status: 2,        // Sets status to Pending
+                    };
+    
+                    // Create duplicate training record
+                    await duplicateTrainRec(newTrainRec);
+    
+                    // Cancel the original training record
+                    await UPDATE_TRAINING(trainID, { reg_status: 7 }, actor);
+                }
+            }
+    
+            // Clear selection state on completion
+            setSelectedTrainIDs([]);
+            setLoading(false)
+            onClose()
+            onCloseNA()
+            onCloseCancelT()
+            setRegID('')
+            setTID('')
+    
+        } catch (error) {
+            console.error("ERROR IN BATCH CANCEL & DUPLICATE: ", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleCancelAndDuplicate = async () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const actor = localStorage.getItem('customToken')
+
+                    const { id: regID, reg_no: regNo, regType, ...cleanData} = fetchedReg
+                    if (!fetchedReg) {
+                        throw new Error("Registration record not found.");
+                    }
+                    const newData = {...cleanData, reg_no: '', regType: 2}
+                    
+                    const newRegID = await duplicateRegRecord(newData)
+
+                    const fetchedTrainRec = allTraining && allTraining.find((t) => t.id === trainingID)
+                    if (!fetchedTrainRec) {
+                        throw new Error(`Training record with ID ${trainingID} not found.`);
+                    }
+                    const { id: trainID, batch, enrolledBy, reg_ref_id, regType: trainRegType, reg_status, ...cleanTrainData } = fetchedTrainRec
+                    
+                    const newTrainRec = {...cleanTrainData, batch: '1', enrolledBy: 0, reg_ref_id: newRegID, regType: 2, reg_status: 2 }
+                    
+                    await duplicateTrainRec(newTrainRec)
+                    await UPDATE_TRAINING(trainingID, { reg_status: 7 }, actor)
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            })
+        }).finally(() => {
+            setLoading(false)
+            onClose()
+            onCloseNA()
+            onCloseCancelT()
+            setRegID('')
+            setTID('')
         })
     }
 
@@ -156,9 +271,32 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                     <Text color='blue.700'>{`REG-${fetchedReg?.reg_no}`}</Text>
                 </Box>
             </Box>
-            <Box display='flex' justifyContent='end' py='3'>
+            <Box display='flex' justifyContent='end' py='1'>
                 {canDo("create") && (
-                    <Button size='xs' onClick={() => {onOpenTraining(); setAccType(fetchedReg?.reg_accountType ?? 0); setCID(companyID); setRegID(fetchedReg?.id ?? '');}} colorScheme='blue' bgColor='blue.700' shadow='md'>Add Training</Button>
+                    <Menu>
+                        <MenuButton
+                            as={IconButton}
+                            aria-label='Options'
+                            icon={<SettingsIcon />}
+                            size='sm'
+                            colorScheme='gray'
+                            shadow='md'
+                        />
+                        <MenuList minW='120px'>
+                            <MenuItem 
+                                fontSize='xs'
+                                onClick={() => {
+                                    onOpenTraining(); 
+                                    setAccType(fetchedReg?.reg_accountType ?? 0); 
+                                    setCID(companyID); 
+                                    setRegID(fetchedReg?.id ?? '');
+                                }}
+                            >
+                                Add Training
+                            </MenuItem>
+                            <MenuItem  onClick={() => {onOpenRB(); setRegID(reg_id); }}fontSize='xs'>Manage Record Status</MenuItem>
+                        </MenuList>
+                    </Menu>
                 )}
             </Box>
             <Box mt='2'>
@@ -177,6 +315,12 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
 
                     return(
                         <Box key={train.id} p='2' borderBottom='1px' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
+                            <Checkbox 
+                                isChecked={selectedTrainIDs.includes(train.id)} 
+                                onChange={() => handleToggleSelect(train.id)} 
+                                mr='3' 
+                                colorScheme='blue'
+                            />
                             {canDo("update") ? (
                                 <>
                                     <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
@@ -197,7 +341,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         {/* {(['dated', 'both'].some(p => permittedTo.includes(p)) && canDo('delete')) && (
                                             <Button fontWeight='normal' colorScheme='teal' onClick={() => {onOpenMBD(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Move to BD</Button>
                                         )} */}
-                                        <Button fontWeight='normal' colorScheme='blue' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Rollback</Button>
+                                        {/* <Button fontWeight='normal' colorScheme='blue' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Other Options</Button> */}
                                         <Button fontWeight='normal' colorScheme='red' onClick={() => {onOpenCancelT(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Cancel Training</Button>
                                     </Box>
                                 </>
@@ -249,16 +393,90 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     <Modal isOpen={isOpenRB} onClose={onCloseRB}>
         <ModalOverlay />
         <ModalContent>
-            <ModalHeader >Rollback to Pending</ModalHeader>
-            <ModalBody display={'flex'} flexDir='column' justifyContent={'center'} alignItems='center'>
-                <Text fontSize={'base'} textAlign='center'>
-                    Are you sure to transfer this training back to Pending? You cannot undo This action for it is permanent.
-                </Text>
-            </ModalBody>
-            <ModalFooter display='flex' justifyContent={'center'}>
-                <Button onClick={onCloseRB} mr='3' variant='outline' colorScheme='red' shadow='md'>Cancel</Button>
-                <Button onClick={handleRollback} isLoading={loading} loadingText='Rolling Back...' colorScheme='blue' bgColor='blue.700' shadow='md'>Proceed</Button>
-            </ModalFooter>
+            {loading ? (
+                <ModalBody py={10} display="flex" justifyContent="center">
+                    <Button color="blue.700" variant="link" isLoading={loading} loadingText="Processing..." />
+                </ModalBody>
+            ) : (
+                <>
+                    <ModalHeader textAlign="center">Manage Training Status</ModalHeader>
+                    <ModalBody display="flex" flexDir="column" alignItems="center" py={4} gap={3}>
+                        <Text fontSize="sm" textAlign="center" color="gray.700">
+                            Select an action for the following <strong>{selectedTrainIDs?.length || 1}</strong> selected course(s):
+                        </Text>
+                        {/* Display List of Selected Courses mapped from Document IDs to Course Codes */}
+                        <VStack align="stretch" spacing={2} w="full" maxH="150px" overflowY="auto" bg="gray.100" p={3} borderRadius="md" border="1px solid" borderColor="gray.300">
+                            {selectedTrainIDs && selectedTrainIDs.length > 0 ? (
+                                selectedTrainIDs.map((tID) => {
+                                    const trainRec = allTraining?.find((t) => t.id === tID);
+                                    const courseCode = allCourses?.find((c) => c.id === trainRec?.course)?.course_code || 
+                                                    courseCodes?.find((c) => c.id === trainRec?.course)?.company_course_code || 
+                                                    'Unknown Course';
+                                    return (
+                                        <HStack key={tID} justify="space-between" fontSize="xs" py={1} borderBottom="1px dashed" borderColor="gray.300">
+                                            <Text fontWeight="bold" color="blue.900" textTransform="uppercase">
+                                                {courseCode}
+                                            </Text>
+                                            <Text color="gray.600">
+                                                {trainRec?.start_date} {trainRec?.end_date ? `to ${trainRec.end_date}` : ''}
+                                            </Text>
+                                        </HStack>
+                                    );
+                                })
+                            ) : (
+                                // Fallback for single record selection via active training ID
+                                (() => {
+                                    const trainRec = allTraining?.find((t) => t.id === trainingID);
+                                    const courseCode = allCourses?.find((c) => c.id === trainRec?.course)?.course_code || 
+                                                    courseCodes?.find((c) => c.id === trainRec?.course)?.company_course_code || 
+                                                    'Unknown Course';
+                                    return (
+                                        <HStack justify="space-between" fontSize="xs" py={1}>
+                                            <Text fontWeight="bold" color="blue.900" textTransform="uppercase">
+                                                {courseCode}
+                                            </Text>
+                                            <Text color="gray.600">
+                                                {trainRec?.start_date} {trainRec?.end_date ? `to ${trainRec.end_date}` : ''}
+                                            </Text>
+                                        </HStack>
+                                    );
+                                })()
+                            )}
+                        </VStack>
+                        {/* Updated Descriptions & Options */}
+                        <Box w="full" bg="blue.50" p={3} borderRadius="md" border="1px solid" borderColor="blue.200">
+                            <Text fontSize="sm" fontWeight="bold" color="blue.800">
+                                Option 1: Cancel & Duplicate to Pending
+                            </Text>
+                            <Text fontSize="xs" color="gray.600">
+                                Cancels the active training record(s) and creates duplicate record(s) set to Pending Status under a fresh registration.
+                            </Text>
+                        </Box>
+                        <Box w="full" bg="orange.50" p={3} borderRadius="md" border="1px solid" borderColor="orange.200">
+                            <Text fontSize="sm" fontWeight="bold" color="orange.800">
+                                Option 2: Direct Rollback to Pending
+                            </Text>
+                            <Text fontSize="xs" color="gray.600">
+                                Modifies the existing active record(s) directly back to Pending status without cancelling or creating a new copy.
+                            </Text>
+                        </Box>
+                    </ModalBody>
+                    <ModalFooter display="flex" flexDir="column" gap={2} w="full">
+                        {/* Action 1: Duplicate & Reopen */}
+                        <Button onClick={selectedTrainIDs?.length > 1 ? handleBatchCancelAndDuplicate : handleCancelAndDuplicate} colorScheme="blue" bgColor="blue.700" w="full"shadow="sm">
+                            Cancel Existing & Create Duplicate
+                        </Button>
+                        {/* Action 2: Direct Rollback */}
+                        <Button onClick={handleRollback} colorScheme="orange" variant="outline"w="full">
+                            Direct Rollback (Modify Existing to Pending)
+                        </Button>
+                        {/* Dismiss: Close Modal */}
+                        <Button onClick={onCloseRB} variant="ghost" colorScheme="gray" w="full"isDisabled={loading}mt={1}>
+                            Close / Go Back
+                        </Button>
+                    </ModalFooter>
+                </>
+            )}
         </ModalContent>
     </Modal>
     <Modal isOpen={isOpenNA} onClose={onCloseNA}>

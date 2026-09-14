@@ -35,10 +35,10 @@ export default function Page(){
     },[])
 
     if(rank !== null){
-        if(rank < 3){
+        //if(rank < 3){
             return <Dated />
-        }
-        return <BackDated />
+        //}
+        // return <BackDated />
     }
     
 }

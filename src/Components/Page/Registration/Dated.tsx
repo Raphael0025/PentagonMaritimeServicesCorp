@@ -48,6 +48,7 @@ export default function Page(){
     const { data: allCategories } = useCategory()
     const { area: allAreas, subArea: allSubArea } = useTypes()
 
+    const [filterDate, setFilterDate] = useState<string>('')
     const [filterCompany, setCompanyFilter] = useState<string>('')
     const [trainingRef, setTrainingRef] = useState<string>('')
     const [filterCourse, setCFilter] = useState<string>('')
@@ -354,61 +355,24 @@ export default function Page(){
         }
     }
 
-    const handleCopy = async (trainee: TRAINEE_BY_ID, training: TRAINING_BY_ID) => {
-        // company, rank, Name, phone, email
-        //training.accountType === 0 ? 'crew' : 'company'
-
-        const accountType = training.accountType === 0 ? 'CREW' : 'COMPANY'
-        const rank = allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank
-        const company = allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
-        const rankAndName = `${rank.toUpperCase()} ${trainee.last_name.toUpperCase()}, ${trainee.first_name.toUpperCase()} ${trainee.middle_name.toUpperCase()}`
-
-        const selectedFields = [
-            company,
-            rankAndName,
-            trainee.contact_no,
-            trainee.email,
-            accountType
-        ]
-
-        const tsvData = selectedFields.join('\t');
-
-        navigator.clipboard.writeText(tsvData)
-        .then(() => {
-            toast({
-                title: 'Row Copied!',
-                description: 'You can now paste (Ctrl+V) directly into Google Sheets.',
-                status: 'success',
-                duration: 2000,
-                isClosable: true,
-            });
-        })
-        .catch(() => {
-            toast({
-                title: 'Failed to copy',
-                status: 'error',
-                duration: 2000,
-            });
-        })
-    }
-
     return(
         <>
             <main className="w-full space-y-3">
-                <Box className="w-full flex justify-between">
-                    <Box className="w-full flex">
-                        <InputGroup w="40%" className="shadow-md rounded-lg">
-                        <InputLeftAddon>
-                            <SearchIcon color="#a1a1a1" size="18" />
-                        </InputLeftAddon>
-                        <Input
-                            placeholder="Name, Enrolled Date, Registration No..."
-                            value={searchTerm}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                <Box className="w-full flex justify-between items-center">
+                    <Box className="flex" w='500px'>
+                        <InputGroup w="100%" className="shadow-md rounded-lg">
+                            <InputLeftAddon>
+                                <SearchIcon color="#a1a1a1" size="18" />
+                            </InputLeftAddon>
+                            <Input
+                                placeholder="Name, Enrolled Date, Registration No..."
+                                value={searchTerm}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
                         </InputGroup>
                     </Box>
-                    <Box w='80%' display='flex' >
+                    <Box w='auto' display='flex' >
+                        <Input type='date' value={filterDate} onChange={(e) => {setFilterDate(e.target.value);}} size='sm' mr='4' shadow='md' />
                         <Select size='sm' mr='4' value={filterCourse} onChange={(e) => {setCFilter(e.target.value);}} shadow='md'>
                             <option hidden>Filter Course</option>
                             {allCourses && [...allCourses]
@@ -437,7 +401,7 @@ export default function Page(){
                         {(filterMarket !== '' || filterCourse !== '')&& (
                             <Button w='50%' mr={4} onClick={() => {setFilter(''); setCompanyFilter(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                         )}
-                        <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
+                        <Button w='80%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>{`Month of ${new Date(2026, monthSelected).toLocaleDateString('en-US', { month: 'short' })}`}</Button>
                         {canDo("print") && (
                             <Button w='60%' bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm' shadow='md'>Print Forms</Button>
                         )}
@@ -446,17 +410,16 @@ export default function Page(){
                 <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto'}}>
                     <Box w='100%' h='700px' >
                         <Box w="100%" h='100%' className="custom-scrollbar rounded space-y-3" style={{  overflowX: 'auto', boxSizing: 'border-box', scrollbarWidth: 'thin', msOverflowStyle: 'none'}}>
-                            <Box position='sticky' top='0' zIndex='1' w="4150px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
+                            <Box position='sticky' top='0' zIndex='1' w="2800px" h='60px' className="flex bg-sky-700 rounded justify-between space-x-4 items-center uppercase text-white" style={{ whiteSpace: 'nowrap' }} >
                                 <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" >
                                     <Box className="space-x-3 flex w-full" justifyContent='center' alignItems='center'>
-                                        
-                                        <Text w="130px" whiteSpace='normal' className="text-center">Enrolled Date</Text>
-                                        <Text w="80px" whiteSpace='normal' className="text-center">Enrolled By</Text>
+                                        <Text w="80px" whiteSpace='normal' className="text-center">Enrolled Date</Text>
+                                        <Text w="100px" whiteSpace='normal' className="text-center">Enrolled By</Text>
                                         {/* <Text w="150px" className="text-center">Trainee Type</Text> */}
                                         <Text w="150px" className="text-center">Registration No.</Text>
                                         <Text w="130px" className="text-center">Batch</Text>
                                         <Text w="130px" className="text-center">Course</Text>
-                                        <Text w="100px" className="text-center">status</Text>
+                                        {/* <Text w="100px" className="text-center">status</Text> */}
                                         <Box width='580px' display='flex' alignItems='center' flexDir='column'>
                                             <Text className='pb-2'>{`Trainee's Info.`}</Text>
                                             <Box w='100%' display='flex' alignItems='center' justifyContent="space-between">
@@ -469,40 +432,22 @@ export default function Page(){
                                         <Text w="80px" className="text-center">Rank</Text>
                                         <Text w="100px" className="text-center">SRN</Text>
                                         <Text w="100px" className="text-center">Attachments</Text>
-                                        <Text w="150px" className="text-center">Date of Birth</Text>
-                                        <Text w="200px" className="text-center">Place of Birth</Text>
-                                        <Text w="250px" className="text-center">Address</Text>
+                                        <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
+                                            <Text className='pb-3'>{`Training Schedule`}</Text>
+                                            <Box className='flex w-full space-x-3'>
+                                                <Text w="100px" className="text-center">From</Text>
+                                                <Text w="100px" className="text-center">To</Text>
+                                            </Box>
+                                        </Box>
                                     </Box>
                                 </Box>
-                                <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                    <Text className='pb-3'>{`Contact Details`}</Text>
-                                    <Box className='flex w-full space-x-3'>
-                                        <Text w="100px" className="text-center">Contact No.</Text>
-                                        <Text w="180px" className="text-center">Email Add.</Text>
-                                    </Box>
-                                </Box>
-                                <Text w="200px" className="text-center">Company</Text>
-                                <Text w="150px" className="text-center">Endorser</Text>
-                                <Text w="150px" className="text-center">Marketing</Text>
-                                <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                    <Text className='pb-3'>{`Training Schedule`}</Text>
-                                    <Box className='flex w-full space-x-3'>
-                                        <Text w="100px" className="text-center">From</Text>
-                                        <Text w="100px" className="text-center">To</Text>
-                                    </Box>
-                                </Box>
-                                <Text w="100px" className="text-center">Payment Mode</Text>
-                                <Text w="100px" className="text-center">Course Fee</Text>
-                                <Text w="100px" className="text-center">Vessel</Text>
-                                <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                    <Text className='pb-3'>{`In case of Emergency`}</Text>
-                                    <Box className='flex w-full space-x-3'>
-                                        <Text w="150px" className="text-center">Name</Text>
-                                        <Text w="80px" className="text-center">Contact No</Text>
-                                        <Text w="100px" className="text-center">Relationship</Text>
-                                    </Box>
-                                </Box>
-                                <Text w="300px" className="text-center pr-5">Remarks</Text>
+                                <Text w="250px" className="text-center">Company</Text>
+                                <Text w="250px" className="text-center">Endorser</Text>
+                                <Text w="80px" className="text-center">Marketing</Text>
+                                <Text w="80px" className="text-center">Payment</Text>
+                                <Text w="80px" className="text-center">Course Fee</Text>
+                                <Text w="80px" className="text-center">Vessel</Text>
+                                <Text w="200px" className="text-center pr-5">Remarks</Text>
                             </Box>
                             {allTraining && allTraining.sort((a, b) => {
                                     return b.date_enrolled.toMillis() - a.date_enrolled.toMillis();
@@ -523,6 +468,27 @@ export default function Page(){
                                         allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
                                         courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
                                     )
+                                })
+                                .filter((t) => {
+                                    if (!filterDate) return true; // Assuming 'filterDate' state holds your YYYY-MM-DD input string
+                                    
+                                    const selectedDate = new Date(filterDate);
+                                    selectedDate.setHours(0, 0, 0, 0);
+                                    const activeYear = selectedDate.getFullYear();
+
+                                    const rawStart = t.start_date ? `${t.start_date} ${activeYear}` : null;
+                                    const startDate = rawStart ? new Date(rawStart) : null;
+                                    
+                                    const rawEnd = (t.end_date && t.end_date !== '--') ? `${t.end_date} ${activeYear}` : rawStart;
+                                    const endDate = rawEnd ? new Date(rawEnd) : null;
+                                    
+                                    if (!startDate || isNaN(startDate.getTime())) return false;
+                                    if (!endDate || isNaN(endDate.getTime())) return false;
+                                    
+                                    startDate.setHours(0, 0, 0, 0);
+                                    endDate.setHours(0, 0, 0, 0);
+                                    
+                                    return selectedDate >= startDate && selectedDate <= endDate;
                                 })
                                 .filter((t) => {
                                     const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
@@ -551,30 +517,11 @@ export default function Page(){
                                 )
                                 ){
                                     return(
-                                        <Box key={training.id} w='4150px' _hover={{bgColor: 'blue.100', borderBottomWidth: '1px', borderColor: 'blue.700'}} className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" px='3' whiteSpace='nowrap' >
-                                            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                                <Box className='w-full flex space-x-3'>
-                                                    {/* {filterCourse && filterCourse !== '' && (
-                                                        <Box w='20px' placeItems='center' >
-                                                            <Checkbox 
-                                                                shadow='md' 
-                                                                isChecked={selectedTrainingIds.includes(training.id)}
-                                                                onChange={(e) => handleRowSelectToggle(training.id, e.target.checked)}
-                                                            />
-                                                        </Box>
-                                                    )} */}
-                                                    <IconButton
-                                                        aria-label="Copy row data"
-                                                        icon={<CopyIcon />}
-                                                        colorScheme={'blue'}
-                                                        size="xs"
-                                                        onClick={() => handleCopy(trainee, training)}
-                                                    />
-                                                    <Text w="50px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
-                                                    <Text w="120px">{training.enrolledBy}</Text>                                                                             
-                                                    {/* <Text w="150px">
-                                                        {allRegistrations?.find((reg) => reg.id === training.reg_ref_id)?.traineeType === 0 ? 'new' : 'old'}
-                                                    </Text>                                         */}
+                                        <Box key={training.id} w='2800px' _hover={{bgColor: 'blue.100', borderBottomWidth: '1px', borderColor: 'blue.700'}} className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" px='3' whiteSpace='nowrap' >
+                                            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center' borderBottom='10px solid' borderRadius='5px' borderColor={`${training.reg_status === 3 ? 'green.100' : training.reg_status === 9 ? 'yellow.100' : training.reg_status === 7 ? 'red.200' : training.reg_status === 6 ? 'green.500' : training.reg_status === 8 ? 'red.100' : ''}`}>
+                                                <Box className='w-full flex space-x-3' py='1' >
+                                                    <Text w="80px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
+                                                    <Text w="100px">{training.enrolledBy}</Text>                                                                             
                                                     <Text w="150px" _hover={{color: 'blue.700'}} onClick={() => {setRegNum(reg_id); setTraineeInfo(trainee); onOpenReg();}} className='hover:cursor-pointer'>
                                                         {`Reg-${reg_num}`}
                                                     </Text>                                        
@@ -584,7 +531,11 @@ export default function Page(){
                                                     <Text w="130px">
                                                         {allCourses?.find((course) => course.id === training.course)?.course_code || courseCodes?.find((course) => course.id === training.course)?.company_course_code || ''}
                                                     </Text>                                        
-                                                    <Text w='100px' borderRadius='5px' bgColor={`${training.reg_status === 6 ? 'green.500' : ''}`} className={`${training.reg_status === 3 ? 'text-green-500 font-bolder' : training.reg_status === 9 ? 'text-yellow-500' : training.reg_status === 7 ? 'text-red-700' : training.reg_status === 6 ? 'text-white' : ''} text-xs uppercase`}>{handleRegStatus(training.reg_status)}</Text>
+                                                    {/* <Text w='100px' borderRadius='5px' 
+                                                        bgColor={`${training.reg_status === 6 ? 'green.500' : ''}`} 
+                                                        className={`${training.reg_status === 3 ? 'text-green-500 font-bolder' : training.reg_status === 9 ? 'text-yellow-500' : training.reg_status === 7 ? 'text-red-700' : training.reg_status === 6 ? 'text-white' : ''} text-xs uppercase`}>
+                                                            {handleRegStatus(training.reg_status)}
+                                                    </Text> */}
                                                     <Text w="150px">{`${trainee.last_name}`}</Text>                                        
                                                     <Text w="150px">{`${trainee.first_name}`}</Text>                                        
                                                     <Text w="150px">{trainee.middle_name !== '' || trainee.middle_name.toLowerCase() !== 'n/a' ? trainee.middle_name : ''}</Text>                                        
@@ -593,69 +544,40 @@ export default function Page(){
                                                         {allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank}
                                                     </Text>                                        
                                                     <Text w="100px">{trainee.srn}</Text>                                        
-                                                    <Text w="100px" onClick={() => {setTraineeInfo(trainee); onOpenAttach();}} _hover={{cursor:'pointer', textDecoration: 'underline', color: 'blue.600'}}>{`View`}</Text>                                        
-                                                    <Text w='150px' >{parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</Text>
-                                                    <Tooltip w='200px' textTransform='uppercase' textAlign='center' label={trainee.birthPlace}>
-                                                        <Text noOfLines={1} w="180px">{trainee.birthPlace}</Text>
-                                                    </Tooltip>
-                                                    <Tooltip w='250px' textTransform='uppercase' textAlign='center' label={trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}>
-                                                        <Text noOfLines={1} w='260px'>
-                                                            {trainee.otherAddress === '' ? `${trainee.house_no} ${trainee.street} Brgy. ${trainee.brgy}, ${trainee.city} City` : trainee.otherAddress}
-                                                        </Text>                                        
-                                                    </Tooltip>
-                                                </Box>
-                                            </Box>
-                                            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                                <Box className='w-full flex space-x-3'>
-                                                    <Text w="100px">{trainee.contact_no}</Text>    
-                                                    <Tooltip textAlign='center' w='300px' label={trainee.email} >
-                                                        <Text noOfLines={1} w="180px" className='lowercase'>{trainee.email}</Text>    
-                                                    </Tooltip>
+                                                    <Text w="100px" onClick={() => {setTraineeInfo(trainee); onOpenAttach();}} _hover={{cursor:'pointer', textDecoration: 'underline', color: 'blue.600'}}>{`View`}</Text>
+                                                    <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
+                                                        <Box className='w-full flex uppercase space-x-3'>
+                                                            <Text w="100px">{training.start_date}</Text>    
+                                                            <Text w="100px">{training.end_date === '' ? '--' : training.end_date}</Text>    
+                                                        </Box>
+                                                    </Box>
                                                 </Box>
                                             </Box>
                                             <Tooltip className='text-center' aria-label='tooltip' label={allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}>
-                                                <Text w="200px" noOfLines={1} className='text-wrap'>
+                                                <Text w="250px" noOfLines={1} className='text-wrap'>
                                                     {allClients?.find((client) => client.id === trainee.company)?.company || trainee.company}
                                                 </Text>    
                                             </Tooltip>    
                                             <Tooltip className='text-center uppercase' aria-label='tooltip' label={trainee.endorser}>
-                                                <Text w="150px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
+                                                <Text w="250px" noOfLines={1} className='text-wrap uppercase' >{trainee.endorser}</Text>    
                                             </Tooltip>     
-                                            <Text w="150px" color={marketFontColor(trainee.marketing)} bgColor={marketBGColor(trainee.marketing)} borderRadius='5px' _hover={{fontWeight: '700'}} onClick={() => {
+                                            <Text w="80px" color={marketFontColor(trainee.marketing)} bgColor={marketBGColor(trainee.marketing)} borderRadius='5px' _hover={{fontWeight: '700'}} onClick={() => {
                                                     if(canDo("update")){
                                                         setTraineeRef(trainee); setTrainingRef(training.id); setRegRef(registration.id); onOpenMarketing();
                                                     }
                                                 }} className='hover:cursor-pointer'>
                                                 {trainee?.marketing === 'OTHERS' ?  trainee?.otherMarketing : trainee?.marketing === '' ? 'N/A' : trainee?.marketing}
                                             </Text>      
-                                            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                                <Box className='w-full flex uppercase space-x-3'>
-                                                    <Text w="100px">{training.start_date}</Text>    
-                                                    <Text w="100px">{training.end_date === '' ? '--' : training.end_date}</Text>    
-                                                </Box>
-                                            </Box>
-                                            <Text w="100px" bgColor={training.accountType === 0 ? 'blue.300' : 'green.400'} borderRadius='5px' _hover={{fontWeight: '700'}} >{training.accountType === 0 ? 'crew' : 'company'}</Text>    
-                                            <Text w="100px" >{`₱ ${training.course_fee}`}</Text>    
-                                            <Tooltip w='250px' label={trainee.vessel.toUpperCase() }>
+                                            <Text w="80px" bgColor={training.accountType === 0 ? 'blue.300' : 'green.400'} borderRadius='5px' _hover={{fontWeight: '700'}} >{training.accountType === 0 ? 'crew' : 'company'}</Text>    
+                                            <Text w="80px" >{`₱ ${training.course_fee}`}</Text>    
+                                            <Tooltip w='80px' label={trainee.vessel.toUpperCase() }>
                                                 <Text noOfLines={1} w='100px'>
                                                     {trainee.vessel.toUpperCase()}
                                                 </Text>                                        
-                                            </Tooltip>  
-                                            <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
-                                                <Box className='flex w-full space-x-3'>
-                                                    {/* <Text w="150px" className="text-center">{trainee.e_contact_person}</Text> */}
-                                                    <Tooltip w='250px' label={trainee.e_contact_person}>
-                                                        <Text noOfLines={1} w='150px'>
-                                                            {trainee.e_contact_person}
-                                                        </Text>                                        
-                                                    </Tooltip>
-                                                    <Text w="80px" className="text-center">{trainee.e_contact}</Text>
-                                                    <Text w="100px" className="text-center">{trainee.relationship}</Text>
-                                                </Box>
-                                            </Box>
-                                            <Button onClick={() => {setID(training.id); setRemarks(training.train_remarks); onOpenRm();}} size='sm' p={0} variant='link' w='300px'>
-                                                <Text className={`${training.train_remarks === '' ? 'text-gray-400' : 'text-cyan-600'}`}>
-                                                    {training.train_remarks === '' ? 'None' : 'View'}
+                                            </Tooltip>
+                                            <Button onClick={() => {setID(training.id); setRemarks(training.train_remarks); onOpenRm();}} size='sm' p={0} variant='link' w='200px'>
+                                                <Text noOfLines={1} w='200px' fontWeight='normal' className={`${training.train_remarks === '' ? 'text-gray-500' : 'text-blue-600'}`}>
+                                                    {training.train_remarks === '' ? 'Add Remarks' : training.train_remarks}
                                                 </Text>
                                             </Button>                                     
                                         </Box>
