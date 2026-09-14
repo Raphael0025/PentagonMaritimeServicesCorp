@@ -188,12 +188,12 @@ export default function Page() {
       if (rawTimestamp !== undefined && rawTimestamp !== null) {
         let enrolledDate: Date | null = null
 
-        if (typeof rawTimestamp === 'object' && typeof rawTimestamp.toDate === 'function') {
-          enrolledDate = rawTimestamp.toDate()
+        if (typeof rawTimestamp === 'object' && rawTimestamp !== null && 'toDate' in rawTimestamp && typeof (rawTimestamp as any).toDate === 'function') {
+          enrolledDate = (rawTimestamp as any).toDate()
         } else if (!isNaN(Number(rawTimestamp))) {
           const num = Number(rawTimestamp)
           enrolledDate = new Date(num < 10000000000 ? num * 1000 : num)
-        } else {
+        } else if (typeof rawTimestamp === 'string' || typeof rawTimestamp === 'number' || rawTimestamp instanceof Date) {
           enrolledDate = new Date(rawTimestamp)
         }
 
