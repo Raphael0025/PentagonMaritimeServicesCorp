@@ -665,7 +665,7 @@ export const updateTraineeAttachments = async(id: string, trainee: any, files: a
                 const snapshot = await uploadBytes(storageRef, item.data[0])
                 updates[item.key] = await getDownloadURL(snapshot.ref)
             }
-        }))
+        })) 
 
         if(Object.keys(updates).length > 0){
             const traineeRef = doc(firestore, 'TRAINEES', id)

@@ -164,46 +164,6 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
         }
     }
 
-    const handleCancelAndDuplicate = async () => {
-        setLoading(true)
-        new Promise<void>((res, rej) => {
-            setTimeout(async () => {
-                try{
-                    const actor = localStorage.getItem('customToken')
-
-                    if (!fetchedReg) {
-                        throw new Error("Registration record not found.");
-                    }
-                    const { id: regID, reg_no: regNo, regType, ...cleanData} = fetchedReg
-                    const newData = {...cleanData, reg_no: '', regType: 2}
-                    
-                    const newRegID = await duplicateRegRecord(newData)
-
-                    const fetchedTrainRec = allTraining && allTraining.find((t) => t.id === trainingID)
-                    if (!fetchedTrainRec) {
-                        throw new Error(`Training record with ID ${trainingID} not found.`);
-                    }
-                    const { id: trainID, batch, enrolledBy, reg_ref_id, regType: trainRegType, reg_status, ...cleanTrainData } = fetchedTrainRec
-                    
-                    const newTrainRec = {...cleanTrainData, batch: '1', enrolledBy: 0, reg_ref_id: newRegID, regType: 2, reg_status: 2 }
-                    
-                    await duplicateTrainRec(newTrainRec)
-                    await UPDATE_TRAINING(trainingID, { reg_status: 7 }, actor)
-                    res()
-                }catch(error){
-                    rej(error)
-                }
-            })
-        }).finally(() => {
-            setLoading(false)
-            onClose()
-            onCloseNA()
-            onCloseCancelT()
-            setRegID('')
-            setTID('')
-        })
-    }
-
     const handlTrainingStatus = async (newStatus: number) => {
         setLoading(true)
         new Promise<void>((res, rej) => {
@@ -463,7 +423,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                     </ModalBody>
                     <ModalFooter display="flex" flexDir="column" gap={2} w="full">
                         {/* Action 1: Duplicate & Reopen */}
-                        <Button onClick={selectedTrainIDs?.length > 1 ? handleBatchCancelAndDuplicate : handleCancelAndDuplicate} colorScheme="blue" bgColor="blue.700" w="full"shadow="sm">
+                        <Button onClick={handleBatchCancelAndDuplicate} colorScheme="blue" bgColor="blue.700" w="full"shadow="sm">
                             Cancel Existing & Create Duplicate
                         </Button>
                         {/* Action 2: Direct Rollback */}
