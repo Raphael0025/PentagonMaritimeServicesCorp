@@ -58,37 +58,31 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
 
     const handleRollback = async () => {
         setLoading(true)
-        new Promise<void>((res, rej) => {
-            setTimeout(async () => {
-                try{
-                    const actor = localStorage.getItem('customToken')
-                    const rollbackTraining = {
-                        reg_status: 2,
-                        regType: 2,
-                    }
-                    const rollbackReg = {
-                        reg_no: '',
-                        regType: 2,
-                    }
-                    const totalTrainings = allTraining && allTraining.filter((train) => train.reg_status === 3 && train.regType === reg_Type && train.reg_ref_id === reg_id).length || 0
-                    if(totalTrainings > 1){
-                        await UPDATE_TRAINING(trainingID, rollbackTraining, actor)
-                    } else {
-                        await UPDATE_TRAINING(trainingID, rollbackTraining, actor)
-                        await UPDATE_REGISTRATION(regID, rollbackReg, actor)
-                        onClose()
-                    }
-                    res()
-                }catch(error){
-                    rej(error)
-                }
-            }, 500)
-        }).catch((error) => {
+        try {
+            const actor = localStorage.getItem('customToken')
+            const rollbackTraining = { reg_status: 2, regType: 2 }
+            const rollbackReg = { reg_no: '', regType: 2 }
+
+            const totalTrainings = allTraining?.filter(
+                (train) => train.reg_status === 3 && train.regType === reg_Type && train.reg_ref_id === reg_id
+            ).length || 0
+
+            // Update all selected training records
+            await Promise.all(
+                selectedTrainIDs.map((tID) => UPDATE_TRAINING(tID, rollbackTraining, actor))
+            )
+
+            // If not multiple trainings, update registration record as well
+            if (totalTrainings <= 1 && regID) {
+                await UPDATE_REGISTRATION(regID, rollbackReg, actor)
+                onClose()
+            }
+        } catch (error) {
             console.error("ERROR DETECTED: ", error)
-        }).finally(() => {
+        } finally {
             setLoading(false)
             onCloseRB()
-        })
+        }
     }
 
     const handleToggleSelect = (trainID: string) => {
