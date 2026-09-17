@@ -31,7 +31,8 @@ import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
-import { SAVE_REMARKS } from '@/lib/trainee_controller'
+import { useRank } from '@/context/RankContext'
+import { SAVE_REMARKS, UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 const getStatusBgColor = (status: number) => {
   switch (status) {
@@ -111,6 +112,7 @@ export default function Page() {
   const { data: allTrainee } = useTrainees()
   const { allData: allTraining } = useTraining()
   const { data: allCourses } = useCourses()
+  const { data: allRanks } = useRank()
   const { allData: allRegistrations } = useRegistrations()
   const { data: allClients, courseCodes } = useClients()
 
@@ -129,14 +131,12 @@ export default function Page() {
   const handleToast = (
     title: string,
     description: string,
-    duration: number,
     status: 'success' | 'error' | 'warning' | 'info'
   ) => {
     toast({
       title,
       description,
       status,
-      duration,
       isClosable: true,
       position: 'top-right',
     })
@@ -151,12 +151,11 @@ export default function Page() {
       handleToast(
         'Remarks Saved Successfully!',
         'Your Remarks on this registration has been saved successfully.',
-        5000,
         'success'
       )
     } catch (error) {
       console.error('Error saving remarks: ', error)
-      handleToast('Error', 'Failed to save remarks. Please try again.', 5000, 'error')
+      handleToast('Error', 'Failed to save remarks. Please try again.', 'error')
     } finally {
       setIsSaving(false)
       onCloseRm()
@@ -231,8 +230,10 @@ export default function Page() {
         startDate,
         endDate,
         isSingleDay,
+        isEmailed: t.isEmailed || false,
+        attendance: t.attendance || false,
         traineeName: trainee
-          ? `${trainee.last_name}, ${trainee.first_name} ${
+          ? `${allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank}${trainee.last_name}, ${trainee.first_name} ${
               trainee.middle_name ? trainee.middle_name.charAt(0) + '.' : ''
             }`
           : 'Unknown Trainee',
@@ -240,6 +241,7 @@ export default function Page() {
         contactNo: trainee?.contact_no || 'N/A',
         email: trainee?.email || 'N/A',
         company: t.accountType === 1 ? 'COMPANY' : 'CREW',
+        companyName: allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company
       })
     }
 
@@ -297,8 +299,29 @@ export default function Page() {
     }))
   }, [allTraining, allCourses, courseCodes, allRegistrations, allTrainee, selectedMonth, currentYear, sortOrder])
 
+  const handleToggleAttendance = async(id: string, val: boolean)=> {
+    const actor: string | null = localStorage.getItem('customToken')
+    try{
+      await UPDATE_TRAINING(id, { attendance: !val }, actor)
+      handleToast(
+        'Update Successful!',
+        'Attendance marked successfully!',
+        'success'
+      )
+    }catch(error){
+      console.error('Error toggling attendance: ', error)
+      handleToast(
+        'Update Failed!',
+        'Contact your system administrator to resolve this issue.',
+        'error'
+      )
+      throw new Error('Error toggling attendance: ' + error)
+    }
+  }
+
   return (
     <main className="p-4 w-full">
+      <Box>COMBINED WITH BACKDATED</Box>
       <HStack mb={4} spacing={6} align="center">
         <HStack spacing={2}>
           <Text fontWeight="bold" fontSize="sm">Select Month:</Text>
@@ -339,7 +362,7 @@ export default function Page() {
               <Th color="white" w="25%">{`TRAINEE'S NAME`}</Th>
               <Th color="white" w="15%">CONTACT NO.</Th>
               <Th color="white" w="20%">EMAIL</Th>
-              <Th color="white" w="10%">STATUS</Th>
+              <Th color="white" w="20%">STATUS</Th>
               <Th color="white" w="10%">REMARKS</Th>
             </Tr>
           </Thead>
@@ -390,8 +413,11 @@ export default function Page() {
                           borderColor="gray.200"
                           color={item.reg_status === 2 ? 'cyan.700' : item.reg_type === 1 ? 'purple.600' : 'black'}
                         >
-                          <Td fontSize="xs" textTransform="uppercase">{item.company}</Td>
-                          <Td fontSize="xs" fontWeight="bold" textTransform="uppercase">{item.traineeName}</Td>
+                          <Td fontSize="xs" textTransform="uppercase">{`${item.company}/ ${item.companyName}`}</Td>
+                          <Td fontSize="xs" fontWeight="bold" cursor='pointer' textTransform="uppercase"
+                            textDecoration={`${item.attendance && 'line-through'}`}
+                            onClick={(e) => {handleToggleAttendance(item.id, item.attendance)}}
+                          >{item.traineeName}</Td>
                           <Td fontSize="xs">{item.contactNo}</Td>
                           <Td fontSize="xs" color="blue.700" textDecoration="underline">{item.email}</Td>
                           <Td fontSize="xs">
@@ -401,6 +427,14 @@ export default function Page() {
                             >
                               {getStatus(item.reg_status)}
                             </Badge>
+                            {item.isEmailed && (
+                              <Badge
+                                colorScheme={'green'}
+                                fontSize="10px"
+                              >
+                                {'Emailed'}
+                              </Badge>
+                            )}
                           </Td>
                           <Td px={2}>
                             <Button
