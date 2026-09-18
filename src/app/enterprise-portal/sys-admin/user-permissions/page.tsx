@@ -35,7 +35,7 @@ export default function Tickets(){
         },
         {
             dept_name: "Marketing",
-            features: ["Clients"]
+            features: ["Clients", "Trainee Registry"]
         },
         {
             dept_name: "Accounting",

@@ -40,6 +40,9 @@ export default function TabMarketing() {
 {/*             
             <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'marketing' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing' onClick={() => {handleClick('marketing')}}>Analytics</Link>
              */}
+            {canAccess("Trainee Registry") && (
+                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'registry' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing/registry' onClick={() => {handleClick('registry')}}>Trainee Registry</Link>
+            )}
             {canAccess("Clients") && (
                 <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'clients' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing/clients' onClick={() => {handleClick('clients')}}>Clients</Link>
             )}

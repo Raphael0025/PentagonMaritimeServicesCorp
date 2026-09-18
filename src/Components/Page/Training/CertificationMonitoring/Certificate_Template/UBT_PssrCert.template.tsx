@@ -92,12 +92,12 @@ export default function UBT_PssrCert({selectedTrainings, trainingID, searchTerm}
         let date = new Date(year, monthIndex, dayNum);
     
         // 4. Move to the next day
-        date.setDate(date.getDate() + 1);
+        date.setDate(date.getDate());
     
         // 5. Check if the NEW date is a Sunday (0 = Sunday)
         // If it is, add one more day to get Monday
         if (date.getDay() === 0) {
-            date.setDate(date.getDate() + 1);
+            date.setDate(date.getDate());
         }
     
         // 6. Format the output
