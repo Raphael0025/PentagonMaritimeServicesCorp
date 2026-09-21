@@ -1,8 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import React, { useState, useRef } from 'react'
-import { Box, Text, Input, useToast, Button, FormControl, FormHelperText, FormLabel, Modal, ModalHeader,ModalContent, ModalOverlay, ModalCloseButton, ModalBody, ModalFooter, useDisclosure } from '@chakra-ui/react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Box, Text, Input, Tooltip, useToast, Button, FormControl, IconButton, HStack, VStack, FormHelperText, Tab, Tabs, TabList, TabPanels, TabPanel, Textarea, FormLabel, Modal, ModalHeader,ModalContent, ModalOverlay, ModalCloseButton, ModalBody, ModalFooter, useDisclosure } from '@chakra-ui/react'
+import { FiBold, FiItalic, FiList, FiLink } from "react-icons/fi";
+import { MdOutlineFormatListNumbered } from "react-icons/md";
+
+import { AttachmentIcon, CloseIcon } from '@chakra-ui/icons'
 
 import { Instructor, initInstructor } from '@/types/instructor'
 import { useInstructors } from '@/context/InstructorContext'
@@ -18,20 +22,114 @@ export default function Page() {
 
     const [loading, setLoading] = useState<boolean>(false)
     const [loadingModal, setLoadingModal] = useState<boolean>(false)
+    const [toggle, setToggle] = useState<boolean>(false)
     const [instructor, setInstructor] = useState<Instructor>(initInstructor)
     const [e_sign, setESign] = useState<File[]>([])
     const [preview, setPreview] = useState<string | null>(null)
     const [fileName, setFilename] = useState<string>('No file chosen yet...')
     const [insID, setIDIns] = useState<string>('')
     const [attachmentFile, setAttachment] = useState<string>('')
+    const [email, setEmail] = useState<string>('')
 
     const attachment = useRef<HTMLButtonElement>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+    const editorRef = useRef<HTMLDivElement>(null)
+    const fileRef = useRef<HTMLInputElement>(null)
+
+    const [subject, setSubject] = useState<string>('')
+    const [files, setFiles] = useState<File[]>([])
 
     const { isOpen: isOpenIns, onOpen: onOpenIns, onClose: onCloseIns } = useDisclosure()
     const { isOpen: isOpenModal, onOpen: onOpenModal, onClose: onCloseModal } = useDisclosure()
     const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
     const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure()
+    const { isOpen: isOpenEmail, onOpen: onOpenEmail, onClose: onCloseEmail } = useDisclosure()
+
+    const [emails, setEmails] = useState<any[]>([])
+
+    useEffect(() => {
+        const fetchEmails = async () => {
+            const res = await fetch("/api/gmail/sent")
+            const data = await res.json()
+
+            if (Array.isArray(data)) {
+            setEmails(data)
+            } else {
+            setEmails([]) // fallback safety
+            }
+        }
+
+        fetchEmails()
+    }, [])
+
+    const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return
+        setFiles(Array.from(e.target.files))
+    }
+
+    // Remove a file from the list
+    const removeFile = (index: number) => {
+        setFiles((prev) => prev.filter((_, i) => i !== index));
+    }
+
+    // Helper: format file size
+    const formatBytes = (bytes: number) => {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    // Apply link to selected text
+    const insertLink = () => {
+        const url = prompt('Enter URL (include https://)')
+        if (!url) return
+
+        const selection = window.getSelection()
+        if (!selection || selection.rangeCount === 0) return
+
+        const range = selection.getRangeAt(0)
+        const text = range.toString() || url
+
+        const a = document.createElement('a')
+        a.href = url
+        a.target = '_blank'
+        a.rel = 'noopener noreferrer'
+        a.textContent = text
+
+        range.deleteContents()
+        range.insertNode(a)
+        selection.removeAllRanges()
+    }
+
+    const sendEmail = async () => {
+        setLoading(true)
+        const htmlBody = editorRef.current?.innerHTML || ''
+        
+        const formData = new FormData()
+        formData.append('subject', subject)
+        formData.append('to', email)
+        formData.append('bodyHtml', htmlBody)
+
+        files.forEach((file) => {
+            formData.append('attachments', file)
+        })
+
+        const res = await fetch('/api/email-instructor', {
+            method: 'POST',
+            body: formData
+        })
+
+        if (res.ok) {
+            alert('Email sent!')
+            setFiles([])
+            setSubject('')
+            setLoading(false)
+            if (editorRef.current) editorRef.current.innerHTML = ''
+        } else {
+            alert('Failed to send email')
+        }
+    }
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
         toast({
@@ -180,6 +278,10 @@ export default function Page() {
         })
     }
 
+    const handleSubmitEmail = () => {
+
+    }
+
     return(
     <>
         <Box >
@@ -193,26 +295,166 @@ export default function Page() {
                     <Text w='250px' textAlign='center' >Name</Text>
                     <Text w='100px' textAlign='center' >Rank/Position</Text>
                     <Text w='100px' textAlign='center' >Attachments</Text>
-                    <Text w='150px' textAlign='center' >Action</Text>
+                    <Text w='300px' textAlign='center' >Action</Text>
                 </Box>
                 <Box>
                     {allInstructors && allInstructors.map((ins) => (
-                        <Box key={ins.id} p='2' fontWeight='normal' display='flex' alignItems='center' justifyContent='space-between' borderBottom='1px solid black'>
+                        <Box key={ins.id} p='1' fontWeight='normal' display='flex' alignItems='center' justifyContent='space-between' borderBottom='1px solid black'>
                             <Text w='100px' textAlign='center' >{parsingTimestamp(ins?.date_added).toLocaleDateString('en-US', {  year: 'numeric', month: 'numeric',  day: 'numeric',})}</Text>
                             <Text w='250px' textAlign='center' >{ins.name}</Text>
                             <Text w='100px' textAlign='center' >{ins.rank}</Text>
                             <Button w='100px' className={`rounded p-0 ${ins.e_sign === '' ? `border-2 border-red-200` : ''}`} ref={attachment} onClick={() => { setInstructor(ins); setAttachment(ins.e_sign); onOpenModal();}}>
                                 <ViewDocIcon color={'#0D70AB'} size={'32'}/>
                             </Button>
-                            <Box w='150px' display='flex'>
-                                <Button onClick={() => {setIDIns(ins.id); setInstructor(ins); onOpenEdit();}} mr={3} size='sm' shadow='md' colorScheme='blue' >Edit</Button>
-                                <Button onClick={() => {setIDIns(ins.id); onOpenDelete();}} size='sm' shadow='md' colorScheme='red' >Delete</Button>
+                            <Box w='300px' justifyContent={'center'} alignItems='center' display='flex' gap='2'>
+                                <Button w='50%' onClick={() => {setIDIns(ins.id); setInstructor(ins); onOpenEdit();}} size='xs' shadow='md' mb='1' colorScheme='blue' >Edit</Button>
+                                <Button w='50%' onClick={() => {setIDIns(ins.id); onOpenDelete();}} size='xs' shadow='md' mb='1' colorScheme='red' >Delete</Button>
+                                <Button w='50%' onClick={() => {setIDIns(ins.id); onOpenEmail();}} size='xs' shadow='md' mb='1' colorScheme='teal' >Send Email</Button>
                             </Box>
                         </Box>
                     ))}
                 </Box>
             </Box>
         </Box>
+        <Modal isOpen={isOpenEmail} onClose={onCloseEmail} size='xl' scrollBehavior='inside'>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Tabs mt='6' variant='enclosed' colorScheme='blue'>
+                        <TabList>
+                            <Tab onClick={() => setToggle(!toggle)}>Compose Email</Tab>
+                            <Tab onClick={() => setToggle(!toggle)}>Training Details</Tab>
+                            <Tab >test</Tab>
+                        </TabList>
+                        <TabPanels>
+                            <TabPanel>
+                                <Box gap="4" display="flex" flexDirection="column">
+                                    <Text fontWeight="bold">Compose Message</Text>
+                                    <FormControl isRequired>
+                                        <FormLabel>To</FormLabel>
+                                        <Input placeholder='Input email here...' onChange={(e) => setEmail(e.target.value)} />
+                                    </FormControl>
+                                    <FormControl isRequired>
+                                        <FormLabel>Subject</FormLabel>
+                                        <Input onChange={(e) => setSubject(e.target.value)} />
+                                    </FormControl>
+                                    {/* Toolbar */}
+                                    <Box display="flex" gap={2} mb={2}>
+                                        <Button size="sm" onClick={() => document.execCommand('bold')}><FiBold /></Button>
+                                        <Button size="sm" onClick={() => document.execCommand('italic')}><FiItalic /></Button>
+                                        <Button size="sm" onClick={() => document.execCommand('insertUnorderedList')}><FiList /></Button>
+                                        <Button size="sm" onClick={() => document.execCommand('insertOrderedList')}><MdOutlineFormatListNumbered /></Button>
+                                        <Tooltip
+                                            label="Insert Link"
+                                            hasArrow
+                                            placement="right"
+                                            // sx={{
+                                            //     '.chakra-tooltip__content': {
+                                            //     animation: 'slideIn 0.3s ease-in-out',
+                                            //     },
+                                            //     '@keyframes slideIn': {
+                                            //     from: { transform: 'translateX(-10px)', opacity: 0 },
+                                            //     to: { transform: 'translateX(0)', opacity: 1 },
+                                            //     },
+                                            // }}
+                                        >
+                                            <Button size="sm" onClick={insertLink}><FiLink /></Button>
+                                        </Tooltip>
+                                        <Button leftIcon={<AttachmentIcon />} size="sm" onClick={() => fileRef.current?.click()}>Attach Files</Button>
+                                    </Box>
+                                    <Box ref={editorRef} contentEditable minH="200px" border="1px solid #ccc" borderRadius="md" p="3" shadow="md" suppressContentEditableWarning sx={{
+                                        '& ul': {
+                                        listStyleType: 'disc',
+                                        paddingLeft: '1.5rem',
+                                        },
+                                        '& ol': {
+                                        listStyleType: 'decimal',
+                                        paddingLeft: '1.5rem',
+                                        },
+                                        '& li': {
+                                        marginBottom: '0.25rem',
+                                        },
+                                    }} />
+                                    {/* Hidden file input */}
+                                    <input ref={fileRef} type="file" multiple hidden onChange={handleFiles} />
+                                    {/* Attachment preview */}
+                                    {files.length > 0 && (
+                                        <Box border="1px dashed gray" borderRadius="md" p={2}>
+                                            {files.map((file, index) => (
+                                            <HStack key={index} justifyContent="space-between" mb={1}>
+                                                <Text fontWeight='normal' fontSize="sm">
+                                                📎 {file.name} ({formatBytes(file.size)})
+                                                </Text>
+                                                <IconButton aria-label="Remove file" icon={<CloseIcon />} size="xs" variant="ghost" onClick={() => removeFile(index)} />
+                                            </HStack>
+                                            ))}
+                                        </Box>
+                                    )}
+                                </Box>
+                            </TabPanel>
+                            <TabPanel>
+                                <Box gap='4' display='flex' flexDirection='column'>
+                                    <Box display='flex'>
+                                        <Text mr='3' color='gray.500'  fontWeight='bold'>To:</Text>
+                                        <Text fontWeight='normal'>{allInstructors && allInstructors.find((f) => f.id === insID)?.name}</Text>
+                                    </Box>
+                                    <Box display='flex'>
+                                        <Text mr='3' color='gray.500'  fontWeight='bold'>Email:</Text>
+                                        <Text fontWeight='normal'>{allInstructors && allInstructors.find((f) => f.id === insID)?.name}</Text>
+                                    </Box>
+                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Code' 
+                                        // onChange={(e) => setGMeet_Code(e.target.value)} mb='2' 
+                                    />
+                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Link' 
+                                        // onChange={(e) => setGMeet_Link(e.target.value)} mb='2' 
+                                    />
+                                    <Input size='sm' fontWeight='normal' placeholder='Course Presentation Link' 
+                                        // onChange={(e) => setPresentationLink(e.target.value)} mb='2' 
+                                    />
+                                    <Textarea fontWeight='normal' placeholder='Place your notes here...' mt='4' 
+                                        //value={note2} 
+                                        // onChange={handleNotes} 
+                                    />
+                                </Box>
+                            </TabPanel>
+                            <TabPanel>
+                                <Box>
+                                    <VStack align="stretch" spacing={3}>
+                                    {Array.isArray(emails) && emails.length === 0 && (
+                                        <Text color="gray.500">No emails found.</Text>
+                                    )}
+
+                                    {Array.isArray(emails) &&
+                                        emails.map((mail) => (
+                                        <Box
+                                            key={mail.id}
+                                            p={3}
+                                            border="1px solid #ddd"
+                                            borderRadius="md"
+                                        >
+                                            <Text fontWeight="bold">{mail.subject}</Text>
+                                            <Text fontSize="sm">From: {mail.from}</Text>
+                                            <Text fontSize="xs" color="gray.500">
+                                            {mail.date}
+                                            </Text>
+                                        </Box>
+                                        ))}
+                                    </VStack>
+                                </Box>
+                            </TabPanel>
+                        </TabPanels>
+                    </Tabs>
+                </ModalBody>
+                <ModalFooter>
+                    {!toggle ? (
+                        <Button onClick={sendEmail} isLoading={loading} size='sm' shadow='md' loadingText='Sending...' bgColor='blue.700' colorScheme='blue'>Send Email</Button>
+                    ) : (
+                        <Button onClick={handleSubmitEmail} isLoading={loading} size='sm' shadow='md' loadingText='Sending...' bgColor='blue.700' colorScheme='blue'>Send Training Details</Button>
+                    )}
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
         <Modal isOpen={isOpenIns} onClose={onCloseIns} size='xl' scrollBehavior='inside'>
             <ModalOverlay />
             <ModalContent>
@@ -258,6 +500,10 @@ export default function Page() {
                         <FormControl isRequired>
                             <FormLabel>Rank</FormLabel>
                             <Input id='rank' shadow='md' value={instructor.rank} onChange={handleOnChange} type='text' />
+                        </FormControl>
+                        <FormControl isRequired>
+                            <FormLabel>Email</FormLabel>
+                            <Input id='email' shadow='md' value={''} onChange={handleOnChange} type='text' />
                         </FormControl>
                     </Box>
                 </ModalBody>

@@ -1,17 +1,17 @@
 'use client'
 
 import React,{createContext, useContext, useEffect, useState, ReactNode} from 'react'
-import { CourseBatchByID } from '@/types/course-batches'
-import { BATCH_BY_ID } from '@/types/training'
+import { CourseBatchByID, BDCourseBatchByID } from '@/types/course-batches'
 import {collection, query, onSnapshot} from 'firebase/firestore'
-import { firestore, FETCH_BATCHES, } from '@/lib/course_batches_controller'
+import { firestore, FETCH_BATCHES, FETCH_BD_BATCHES } from '@/lib/course_batches_controller'
 
 interface CourseBatchContextType{
     data: CourseBatchByID[] | null;
+    bdData: BDCourseBatchByID[] | null;
     setCourseBatch: React.Dispatch<React.SetStateAction<CourseBatchByID[] | null>>;
 }
 
-const CourseBatchContext = createContext<CourseBatchContextType>({data: null, setCourseBatch: () => {},})
+const CourseBatchContext = createContext<CourseBatchContextType>({data: null, bdData: null, setCourseBatch: () => {},})
 
 interface CourseBatchProviderProps{
     children: ReactNode
@@ -19,6 +19,8 @@ interface CourseBatchProviderProps{
 
 export const CourseBatchProvider: React.FC<CourseBatchProviderProps>  = ({children}) => {
     const [data, setData] = useState<CourseBatchByID[] | null>(null)
+    const [bdData, setBDData] = useState<BDCourseBatchByID[] | null>(null)
+
     useEffect(() => {
         const fetchData = async () => {
             try{
@@ -30,8 +32,18 @@ export const CourseBatchProvider: React.FC<CourseBatchProviderProps>  = ({childr
                     const updateData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data() })) as CourseBatchByID[]
                     setData(updateData)
                 })
+                
+                const initBdData = await FETCH_BD_BATCHES()
+                setBDData(initBdData)
+                const bd_batches = collection(firestore, 'BD_BATCH_RECORDS')
+                const order_query2 = query(bd_batches)
+                const unsubscribe2 = onSnapshot(order_query2, (snapshot) => {
+                    const updateData2 = snapshot.docs.map(doc => ({id: doc.id, ...doc.data() })) as BDCourseBatchByID[]
+                    setBDData(updateData2)
+                })
                 return () => {
                     unsubscribe()
+                    unsubscribe2()
                 }
             }catch(error){
                 throw error
@@ -40,7 +52,7 @@ export const CourseBatchProvider: React.FC<CourseBatchProviderProps>  = ({childr
         fetchData()
     }, [])
     return(
-        <CourseBatchContext.Provider value={{data, setCourseBatch: setData}}>
+        <CourseBatchContext.Provider value={{data, bdData, setCourseBatch: setData}}>
             {children}
         </CourseBatchContext.Provider>
     )

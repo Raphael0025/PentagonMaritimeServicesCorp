@@ -24,6 +24,7 @@ export interface NewStaffValues{
     work_exp: Record<string, WorkExperience>;
     training_history: Record<string, TrainingHistory>;
     roles: Record<string, Role>;
+    user_role: string;
 }
 
 export interface WorkExperience{
@@ -55,6 +56,38 @@ export interface Role{
     department: string;
     rank: number;
 }   
+
+export type Action = "create" | "update" | "delete" | "read" | "print";
+export type Scope = "dated" | "bd" | "both";
+
+export interface FeaturePermission {
+    feature: string;
+    department: string;
+    allowed: Action[];
+    scope?: string;
+}
+
+export interface UserRole{
+    role_name: string;
+    permissions: FeaturePermission[];
+}
+
+export const initUserRole: UserRole = {
+    role_name: '',
+    permissions: [],
+}
+
+export const initUserRoleWithID: RoleWithID = {
+    id: '',
+    createdAt: Timestamp.now(),
+    role_name: '',
+    permissions: [],
+}
+
+export interface RoleWithID extends UserRole{
+    id: string;
+    createdAt: Timestamp;
+}
 
 export interface ImmediateDependents{
     name: string,
@@ -178,6 +211,7 @@ export const initStaffValues : NewStaffValues = {
     work_exp: {},
     training_history: {},
     roles: {},
+    user_role: '',
 }
 
 export interface GetCompanyUserSpecificData{
@@ -189,6 +223,7 @@ export interface GetCompanyUserSpecificData{
     application_type: string;
     department: string; // Add department property
     job_position: string; // Add job_position property
+    user_role: string;
 }
 
 export const initGetCompanyUserSpecificData: GetCompanyUserSpecificData = {
@@ -200,6 +235,7 @@ export const initGetCompanyUserSpecificData: GetCompanyUserSpecificData = {
     application_type: '',
     department: '', // Add department property
     job_position: '', // Add job_position property
+    user_role: ''
 }
 
 export interface GetAllCompanyUsers {
@@ -235,6 +271,7 @@ export interface GetAllCompanyUsers {
     work_exp: Record<string, WorkExperience>;
     training_history: Record<string, TrainingHistory>;
     roles: Record<string, Role>;
+    user_role: string;
 }
 
 export const initGetAllCompanyUsers : GetAllCompanyUsers = {
@@ -270,6 +307,7 @@ export const initGetAllCompanyUsers : GetAllCompanyUsers = {
     work_exp: {},
     training_history: {},
     roles: {},
+    user_role: '',
 }
 
 export interface prioFields {

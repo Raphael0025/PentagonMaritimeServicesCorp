@@ -14,6 +14,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useCourseBatch } from '@/context/BatchContext'
 import { useInstructors } from '@/context/InstructorContext'
 import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
+import { useRoles } from '@/context/UserRolesContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
@@ -43,8 +44,9 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const { allData: allRegistrations } = useRegistrations()
     const { data: allRanks } = useRank()
     const { data: allTrainee } = useTrainees()
-    const { courseCodes } = useClients()
+    const { data: allClients, courseCodes } = useClients()
     const { data: courseBatch } = useCourseBatch()
+    const { data: allRoles } = useRoles()
     
     const [year, setYear] = useState<string>('')
     const [room, setRoom] = useState<string>('')
@@ -54,6 +56,7 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
     const [practicumDate, setDate] = useState<string>('')
     const [classNo, setClassNo] = useState<string>('')
     const [batch, setBatch] = useState<CourseBatchByID>(initCourseBatch)
+    const [remarksValues, setRemarksValues] = useState<Record<string, string>>({});
 
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -67,17 +70,52 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
         fetchData()
     }, [batchID])
 
+    const [permissions, setPermissions] = useState<any[]>([])
+    
+    useEffect(() => {
+        const fetchData = () => {
+            const role = localStorage.getItem('roleToken');
+            if (!role) return;
+
+            const userRole = allRoles?.find(r => r.id === role)
+            if (!userRole) return;
+
+            // Check whether the found role belongs to the training department
+            const permissions = userRole.permissions.filter(
+                (p: any) => p.department === "Registration" && p.feature === "Batch Records"
+            )
+            setPermissions(permissions)
+        }
+        fetchData()
+    }, [])
+
+    const canDo = (feature: string) => {
+        return permissions.some(p => p.allowed.includes(feature));
+    }
 
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
-    const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
-    const formattedDate = end_date === '' ? formatDateToShort(start_date) :getFormatDate(`${start_date} - ${end_date}`)
+    const trainingsArr = allTrainingData?.filter((training) => (training.course === courseID || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch === batchID)
+    const formattedDate = end_date === '' ? formatDateToShort(start_date) : getFormatDate(`${start_date} - ${end_date}`)
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `ENROLLMENT_REPORT B${batch_no}.pdf`,
         onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
-        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); onClose()},
+        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); 
+            //onClose()
+            handlePrintAttachment();
+        },
+    })
+    
+    const componentRef2 = useRef<HTMLDivElement | null>(null);
+    const handlePrintAttachment = useReactToPrint({
+        content: () => componentRef2.current,
+        documentTitle: `ER_Attachment B${batch_no}.pdf`,
+        onBeforePrint: () => handleToast('Preparing to print...', ``, 3000, 'info'),
+        onAfterPrint: () => {handleToast('Print Completed!', ``, 3000, 'success'); 
+            //onClose()
+        },
     })
 
     const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
@@ -147,20 +185,66 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                 </Text>
                 <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
                     {e_report === 'MDS' ? (
-                    <>
-                        <Text w='50%' fontSize='15px' display='flex' justifyContent='start'>
-                            <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
-                            <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
-                        </Text>
-                        <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
-                            <Text w='25%' as='span' color='gray.600'>Training Year:</Text>
-                            <Input w='25%' shadow='md' onChange={(e) => setYear(e.target.value)} />
+                    <Box>
+                        <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+                            <Text w='50%' fontSize='15px' display='flex' justifyContent='start'>
+                                <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
+                                <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
+                            </Text>
+                            {/* <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Training Year:</Text>
+                                <Input w='30%' shadow='md' onChange={(e) => setYear(e.target.value)} />
+                            </Box> */}
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Class No:</Text>
+                                <Text w='30%'>{batch_no}</Text>
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='40%' as='span' color='gray.600'>Room No:</Text>
+                                <Input w='30%' isDisabled={!canDo('update')} value={batch?.room} shadow='md' id='room' onChange={handleBatchOnChange} />
+                            </Box>
                         </Box>
-                        <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
-                            <Text w='20%' as='span' color='gray.600'>Room No:</Text>
-                            <Input w='25%' shadow='md' onChange={(e) => setRoom(e.target.value)} />
+                        <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
+                                <Input w='100%' isDisabled={!canDo('update')} value={batch?.practicumSite} shadow='md' id='practicumSite' onChange={handleBatchOnChange} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
+                                <Input w='100%' shadow='md' isDisabled={!canDo('update')} value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
+                                {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
+                                <Select id='instructor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.instructor ? (allInstructors?.find((i) => i.id === batch.instructor)?.name || batch.instructor) : 'Select Instructor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                </Select>
+                            </Box>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
+                                    {allInstructors && allInstructors.map((i) => (
+                                        <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                    ))}
+                                    <option value={'N/A'}>N/A</option>
+                                </Select>
+                            </Box>
                         </Box>
-                    </>
+                        <Box display='flex' justifyContent='space-between' alignItems='center' >
+                            <Text>
+                                <Text fontWeight='bold'>Note:</Text>
+                                <Text color='red' fontWeight='normal'>{`Kindly save details above before printing the Enrollment Report (ER).`}</Text>
+                                <Text color='red' fontWeight='normal'>{`Columns ('Fldr and Remarks') will not be included in the actual print copy, it's purpose is only for the attachment.`}</Text>
+                            </Text>
+                            {canDo('update') && (
+                                <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                            )}
+                        </Box>
+                    </Box>
                     ) : e_report === 'STCW' ? (
                     <>
                     </>
@@ -171,45 +255,46 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                 <Text as='span' color='gray.600' mr={3}>Schedule:</Text>
                                 <Text as='span' fontWeight='normal'>{`${formattedDate}`}</Text>
                             </Text>
-                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                            {/* <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Training Year:</Text>
                                 <Input w='30%' shadow='md' onChange={(e) => setYear(e.target.value)} />
-                            </Box>
+                            </Box> */}
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Class No:</Text>
                                 <Text w='30%'>{batch_no}</Text>
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
                                 <Text w='40%' as='span' color='gray.600'>Room No:</Text>
-                                <Input w='30%' value={batch?.room} shadow='md' id='room' onChange={handleBatchOnChange} />
+                                <Input w='30%' isDisabled={!canDo('update')} value={batch?.room} shadow='md' id='room' onChange={handleBatchOnChange} />
                             </Box>
                         </Box>
                         <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Practicum Site/Vessel:</Text>
-                                <Input w='100%' value={batch?.practicumSite} shadow='md' id='practicumSite' onChange={handleBatchOnChange} />
+                                <Input w='100%' isDisabled={!canDo('update')} value={batch?.practicumSite} shadow='md' id='practicumSite' onChange={handleBatchOnChange} />
                             </Box>
                             <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
                                 <Text w='50%' as='span' color='gray.600'>Practicum Date:</Text>
-                                <Input w='100%' shadow='md' value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
+                                <Input w='100%' shadow='md' isDisabled={!canDo('update')} value={batch?.practicumDate} id='practicumDate' onChange={handleBatchOnChange} />
                             </Box>
-                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
-                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
-                                <Select id='assessor' shadow='md' onChange={handleBatchOnChangeSelect} >
-                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
+                                <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
+                                {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
+                                <Select id='instructor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.instructor ? (allInstructors?.find((i) => i.id === batch.instructor)?.name || batch.instructor) : 'Select Instructor'}`}</option>
                                     {allInstructors && allInstructors.map((i) => (
                                         <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
                                     ))}
                                 </Select>
                             </Box>
-                            <Box w='50%' fontSize='15px' display='flex' alignItems='center'>
-                                <Text w='50%' as='span' color='gray.600'>Instructor:</Text>
-                                {/* <Input w='100%' shadow='md' onChange={(e) => setInstructor(e.target.value)} /> */}
-                                <Select id='instructor' shadow='md' onChange={handleBatchOnChangeSelect} >
-                                    <option hidden>{`${batch.instructor ? (allInstructors?.find((i) => i.id === batch.instructor)?.name || batch.instructor) : 'Select Instructor'}`}</option>
+                            <Box w='50%' fontSize='15px' display='flex' alignItems='center' mr='2'>
+                                <Text w='50%' as='span' color='gray.600'>Assessor:</Text>
+                                <Select id='assessor' isDisabled={!canDo('update')} shadow='md' onChange={handleBatchOnChangeSelect} >
+                                    <option hidden>{`${batch.assessor ? (allInstructors?.find((i) => i.id === batch.assessor)?.name || batch.assessor) : 'Select Assessor'}`}</option>
                                     {allInstructors && allInstructors.map((i) => (
                                         <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
                                     ))}
+                                    <option value={'N/A'}>N/A</option>
                                 </Select>
                             </Box>
                         </Box>
@@ -217,8 +302,11 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                             <Text>
                                 <Text fontWeight='bold'>Note:</Text>
                                 <Text color='red' fontWeight='normal'>{`Kindly save details above before printing the Enrollment Report (ER).`}</Text>
+                                <Text color='red' fontWeight='normal'>{`Columns ('Fldr and Remarks') will not be included in the actual print copy, it's purpose is only for the attachment.`}</Text>
                             </Text>
-                            <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                            {canDo('update') && (
+                                <Button isLoading={loading} loadingText='Saving...' onClick={handleBatchDetails} size='sm' colorScheme='blue' bgColor='blue.700'>Save Details</Button>
+                            )}
                         </Box>
                     </Box>
                     )}
@@ -227,14 +315,16 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             <Box display='flex' justifyContent='center' alignItems='center'>
                 <Box>
                     {/** Table header */}
-                    <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" gap={0} fontSize='9pt' h='0.63in' fontWeight='normal' textAlign='center' fontFamily='Calibri' >
+                    <Grid templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" gap={0} fontSize='9pt' h='0.63in' fontWeight='normal' textAlign='center' fontFamily='Calibri' >
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>NO.</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Name of Trainee</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Date of Birth</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Place of Birth</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Rank/ Position</GridItem>
                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Date of Enrollment</GridItem>
-                        <GridItem display='flex' border="0.5pt solid black" justifyContent='center' alignItems='center'>Registration No.</GridItem>
+                        <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Registration No.</GridItem>
+                        <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>Fldr</GridItem>
+                        <GridItem display='flex' border="0.5pt solid black" justifyContent='center' alignItems='center'>Remarks</GridItem>
                     </Grid>
                     {/** Table Body */}
                     {trainingsArr// Create a shallow copy to avoid mutating the original array
@@ -244,19 +334,28 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                         const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                 
                         // Extract numeric parts of the registration number
-                        const [yearA, numberA] = regNoA.split('-').map(Number);
-                        const [yearB, numberB] = regNoB.split('-').map(Number);
+                        const [yearA, monthA, numA] = regNoA.split('-').map(Number);
+                        const [yearB, monthB, numB] = regNoB.split('-').map(Number);
                 
-                        // Compare by year first, then by number
-                        if (yearA !== yearB) {
-                            return yearA - yearB;
-                        }
-                        return numberA - numberB;
-                    }).map((training, index) => {
+                        // Handle invalid or missing values gracefully
+                        if (isNaN(yearA) || isNaN(monthA) || isNaN(numA)) return 1; // Place invalid `a` after valid `b`
+                        if (isNaN(yearB) || isNaN(monthB) || isNaN(numB)) return -1; // Place invalid `b` after valid `a`
+
+                        // Compare by year first
+                        if (yearA !== yearB) return yearB - yearA;
+
+                        // Compare by month next
+                        if (monthA !== monthB) return monthB - monthA;
+
+                        // Finally, compare by the number part
+                        return numA - numB;
+                    })
+                    .sort((a, b) => parsingTimestamp(a.date_enrolled).getTime() - parsingTimestamp(b.date_enrolled).getTime())
+                    .map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
-                            <Grid key={training.id} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform='uppercase' fontSize='8pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
+                            <Grid key={training.id} templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" h='0.25in' textTransform='uppercase' fontSize='8pt' gap={0} fontWeight={'normal'} fontFamily='Calibri'>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {(index + 1)}
                                 </GridItem>
@@ -267,28 +366,44 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                                     {trainee?.birthDate ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: '2-digit', }).replace(/[\s,\/]+/g, '-') : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' fontSize='7pt' borderRight="none" justifyContent='center' textAlign='center' alignItems='center'>
-                                    {trainee?.birthPlace}
+                                    <Text noOfLines={1}>
+                                        {trainee?.birthPlace}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    <Text noOfLines={1}>
+                                        {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: 'short',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
                                 </GridItem>
-                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
+                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {`Reg-${registrations?.reg_no}`}
+                                </GridItem>
+                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
+                                    {trainee?.srn ? trainee?.srn : ''}
+                                </GridItem>
+                                <GridItem display='flex' border="0.5pt solid black" borderTop='none' justifyContent='center' alignItems='center'>
+                                    <Input size='xs' placeholder='Type here...' textAlign='center' onChange={(e) => setRemarksValues({...remarksValues, [training.id]: e.target.value})} variant='flushed' />
                                 </GridItem>
                             </Grid>
                         )
                     })}
                     {/** Add the *NOTHING FOLLOWS* row immediately after the last data row */}
                     {(trainingsArr ?? []).length > 0 && (
-                        <Grid templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                        <Grid templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {(trainingsArr?.length || 0) + 1}
                             </GridItem>
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 <Text>*NOTHING FOLLOWS*</Text>
+                            </GridItem>
+                            <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                {/* Empty cell */}
+                            </GridItem>
+                            <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                {/* Empty cell */}
                             </GridItem>
                             <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                 {/* Empty cell */}
@@ -312,9 +427,15 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
                         [...Array(24 - (trainingsArr ?? []).length - 1)].map((_, index) => {
                         const startingIndex = (trainingsArr?.length || 0) + 1 // Start numbering after the last data row
                         return (
-                            <Grid key={index} templateColumns="0.34in 1.93in 0.76in 1.05in 0.66in 0.83in 1.27in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
+                            <Grid key={index} templateColumns="0.34in 2.73in 0.76in 1.05in 0.66in 0.83in 1.27in 1in 1.5in" h='0.25in' textTransform="uppercase" fontSize="8pt" gap={0} fontWeight="normal" fontFamily="Calibri">
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {startingIndex + index + 1}
+                                </GridItem>
+                                <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                    {/* Empty cell */}
+                                </GridItem>
+                                <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
+                                    {/* Empty cell */}
                                 </GridItem>
                                 <GridItem display="flex" border="0.5pt solid black" borderTop="none" borderRight="none" justifyContent="center" alignItems="center">
                                     {/* Empty cell */}
@@ -341,20 +462,133 @@ export default function PreviewER({ onClose, batch_no, e_report, batchID, course
             </Box>
         </Box>
         <Box w='100%' 
-        ref={componentRef} 
-        className="printable-content"
+            ref={componentRef} 
+            className='printable-content'
         >
             {e_report === 'STANDARD' ? (
                 <StandardER courseCode={courseCode} batchNo={batch_no} assessor={batch.assessor} instructor={batch.instructor} practicumDate={batch.practicumDate} site={batch.practicumSite} course={course} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={batch.room}/>
             ) : e_report === 'STCW' ? (
                 <STCW_ER e_report={e_report} course={courseCode} schedule={formattedDate} year={year} room={room}/>
             ) : e_report === 'MDS' && (
-                <MDS_ER e_report={e_report} course={courseCode} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={room} assessor={assessor} instructor={instructor} practicumDate={practicumDate} practicumSite={practicumSite} class_no={classNo}/>
+                <MDS_ER e_report={e_report} course={courseCode} trainingArray={trainingsArr} schedule={formattedDate} year={year} room={batch.room} assessor={batch.assessor} instructor={batch.instructor} practicumDate={batch.practicumDate} practicumSite={batch.practicumSite} class_no={batch_no}/>
             )}
+        </Box>
+        <Box ref={componentRef2} className='printable-content'>
+            <Box w='3000px' display='flex' alignItems='center' justifyContent='center'>
+                <Box w='1500px' p='2' />
+                <Box w='100%' display='flex' alignItems='center' justifyContent='center'>
+                    <Box mt='5' transform='rotate(90deg)' transformOrigin='0 0' whiteSpace='nowrap'>
+                        <Box display='flex' gap='3' fontSize='13pt' fontWeight='normal' >
+                            <Text>
+                                <Text as='span' fontWeight='bold' mr='3'>Course:</Text>
+                                <Text as='span'>{courseCode}</Text>
+                            </Text>
+                            <Text>
+                                <Text as='span' fontWeight='bold' mr='3'>Training Date:</Text>
+                                <Text as='span'>{formattedDate}</Text>
+                            </Text>
+                        </Box>
+                        <Box mt='3' textTransform='uppercase' w='100%' fontSize='12pt' fontWeight='bold' border='1px solid' borderColor='gray.400' display='flex'>
+                            <Text w='100px' textAlign='center'>DOE</Text>
+                            <Text w='80px' textAlign='center'>Rank</Text>
+                            <Text w='300px'>TRAINEE NAME</Text>
+                            <Text w='150px' textAlign='center' >Reg. No.</Text>
+                            <Text w='150px' textAlign='center' >Birth Date</Text>
+                            <Text w='150px' textAlign='center' >Birth Place</Text>
+                            <Text w='220px' textAlign='center'>Company</Text>
+                            <Text w='150px' textAlign='center'>Crewing</Text>
+                            <Text w='100px' textAlign='center'>Vessel</Text>
+                            <Text w='50px' textAlign='center'>FEE</Text>
+                            <Text w='80px' textAlign='center'>MOP</Text>
+                            <Text w='50px' textAlign='center'>SRN</Text>
+                            <Text w='120px' textAlign='center'>Remarks</Text>
+                        </Box>
+                        <Box>
+                            {trainingsArr // Create a shallow copy to avoid mutating the original array
+                            ?.slice() // Create a shallow copy to avoid mutating the original array
+                            .sort((a, b) => {
+                                const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
+                                const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
+                        
+                                // Extract numeric parts of the registration number
+                                const [yearA, monthA, numA] = regNoA.split('-').map(Number);
+                                const [yearB, monthB, numB] = regNoB.split('-').map(Number);
+                        
+                                // Handle invalid or missing values gracefully
+                                if (isNaN(yearA) || isNaN(monthA) || isNaN(numA)) return 1; // Place invalid `a` after valid `b`
+                                if (isNaN(yearB) || isNaN(monthB) || isNaN(numB)) return -1; // Place invalid `b` after valid `a`
+        
+                                // Compare by year first
+                                if (yearA !== yearB) return yearB - yearA;
+        
+                                // Compare by month next
+                                if (monthA !== monthB) return monthB - monthA;
+        
+                                // Finally, compare by the number part
+                                return numA - numB;
+                            })
+                            .sort((a, b) => parsingTimestamp(a.date_enrolled).getTime() - parsingTimestamp(b.date_enrolled).getTime())
+                            .map((training, index) => {
+                                const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
+                                const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
+                                return(
+                                    <Box key={training.id} w='100%' display='flex' borderBottom='1px solid' borderColor='gray.400' textTransform='uppercase' fontSize='10pt' fontWeight={'normal'} fontFamily='Calibri'>
+                                        <Text w='100px' display='flex' justifyContent='center' alignItems='center'>
+                                            {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: '2-digit',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
+                                        </Text>
+                                        <Text w='80px' display='flex' justifyContent='center' alignItems='center'>
+                                            <Text noOfLines={1} textAlign='center'>
+                                                {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                            </Text>
+                                        </Text>
+                                        <Text w='300px' display='flex' justifyContent='start' px='2' alignItems='center'>
+                                            {`${trainee?.last_name}, ${trainee?.first_name} ${trainee?.middle_name.toLowerCase() === 'n/a' || trainee?.middle_name === '' ? '' : `${trainee?.middle_name} ${trainee?.suffix.toLowerCase() === 'n/a' || trainee?.suffix === '' ? '' : `${trainee?.suffix}`}`}`}
+                                        </Text>
+                                        <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
+                                            {`Reg-${registrations?.reg_no}`}
+                                        </Text>
+                                        <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
+                                            {trainee?.birthDate ? `${parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', {year: '2-digit', month: '2-digit', day: 'numeric'})}` : ''}
+                                        </Text>
+                                        <Text w='150px' display='flex' justifyContent='center' alignItems='center'>
+                                            {`${trainee?.birthPlace}`}
+                                        </Text>
+                                        <Text w='220px' display='flex' noOfLines={1} borderRight="none" textAlign='center' justifyContent='center' alignItems='center'>
+                                            {allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company}
+                                        </Text>
+                                        <Text w='150px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {trainee?.endorser}
+                                        </Text>
+                                        <Text w='100px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {trainee?.vessel}
+                                        </Text>
+                                        <Text w='50px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {training?.course_fee}
+                                        </Text>
+                                        <Text w='80px' display='flex' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {training?.accountType === 0 ? 'CREW' : 'COMPANY'}
+                                        </Text>
+                                        <Text w='50px' display='flex' textAlign='center' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {trainee?.srn ? trainee.srn : ''}
+                                        </Text>
+                                        <Text w='120px' display='flex' textAlign='center' borderRight="none" justifyContent='center' alignItems='center'>
+                                            {remarksValues[training.id] || ''}
+                                        </Text>
+                                    </Box>
+                                )
+                            })}
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
         </Box>
         <Box mt='4' w='100%' py='2' borderTopWidth='1px' borderColor='gray.500' display='flex' justifyContent='center'>
             <Button onClick={() => {onClose();}} mr={3} shadow='md'>Close Preview</Button>
-            <Button isDisabled={year === '' || batch.room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Saving...' shadow='md'>Print Report</Button>
+            {canDo('print') && (
+                <>
+                    <Button isDisabled={batch.room === '' && room === ''} onClick={handlePrint} bgColor='#1C437E' colorScheme='blue' loadingText='Printing...' shadow='md' mr='3' >Print Report</Button>
+                </>
+            )}
         </Box>
         </>
     );

@@ -4,7 +4,71 @@
 
 This document outlines the tasks and improvements planned for the project. Each task is categorized by its status and priority.
 
+### IMPORTANT NOTES
+- Sample RAM and AIIRCA courses, MOJICA and Lato and a different Cert date but still a dated registration. reason for this instance is
+- that it is a dated registration, this is a combined training. Also on this instance, email advise was executed first before the enrollment
+
 ## Tasks
+- [] **Certification**
+    -[*] MULTIPLE PRINT FOR TRANSMITTAL BD/DATED
+    -[] add attachments on CCR and Attendance
+    -[] add email sending 
+    -[] MAKE IT SAMPLE CERT ON CERT TEMPLATE MANAGEMENT and make it printable
+    -[] fix filter date on release logs and transmittals
+    -[] AUTO GENERATE BD CERT NO
+    -[] FIX RELEASE LOGS IN BD
+    -[] EDITABLE RECORDS FOR TRANSMITTAL BD/DATED
+    -[] ADD BUTTON FOR CERT RELEASING PAGE
+    -[] ADD SOTC IN FILTER COURSE
+    -[] ADD URGENT STATUS ON BD
+    -[] ADD NA STAT ON BD
+    -[] 
+
+- [] **Registration**
+    - [] Include Payments for Registration 
+    - [] include bd when creating batches / think about this one
+    - [] Trainee Tab, Include previous trainings of Crew
+    - [*] Buttons ( [*]Rollback | []Cancel and Move to BD | [*]Just Cancel )
+        - [] functionalities for Move to BD
+    - [*] Online Enrollment Form, Number type for birthdates
+    - [*] modify status look in registrations tab
+    - [*] remove permissions of same date in batch records
+    - [*] update code for when status of trainee is greater than 3 (Enrolled) it is still editable in the registrations
+
+- [] **Training**
+-  REMEMBER THIS: CREATE MAIL FEATURE FIRST WITHOUT FIRST GETTING APPROVAL TO USE GMAIL API JUST FOR AWARENESS
+- THEN REMEMBER THIS: AFTER THAT MAIL FEATURE, CREATE THE ACTUAL SCHEDS FOR BD AND THEN CERTIFICATION DO IT NOW BEFORE 12 OR 1 PM
+    - [] SELF-PROJECT ON SUNDAY: ACCOMPLISH THIS BUILT-IN SYSTEM MAIL
+    - [] Analytics and Statistics for Scheduling and Planning Get muna Top Courses for the whole year, month and weekly
+    - [] Implement Send Training Details to instructor in advance on Instructors Tab
+        - [] if certain field is empty, it will send only the course presentation link for review
+        - [] if certain field is not empty, it will send the whole training details
+    - [*] Implement Send Training Details even if not enrolled, separate tab or create a modal inside either scheduling or tracker
+    - [*] Implement Send Training Details for dated on this case, dated included already in a batch and suddenly training mode is modular
+    - [] Implement Send Training Details on this case
+    - [*] For BD tracker, include Actual training dates
+    - [-] Certification Module
+        - [*] Batch Certificates
+        - [*] Transmittals
+        - [*] Monitoring
+        - [*] Auto-Generate Cert No. once Graduated
+        - [*] Once Graduated Update Certification
+    - [] Re-Create Instructors and assessors Tab with categorize feature
+    - [] Re-think how to duplicate if a training is cancelled and used in a later batch
+    - [] Course Materials
+    - [*] Update Instructor for both dated and bd tracker via Tracker tab
+    - [] Implement Scheduling and Planning
+        - **Details**:
+            Get top delivered courses (Annual, monthly, weekly) then RUP, Mode of training, Instructors, Training Dates
+    - [*] Create button for training mode inside tracker for easy update
+    - [*] CHANGE OR ADD INSTRUCTOR inside tracker for BD for easy update
+
+- [] **Inventory**
+    - [] Do this inventory
+
+- [] **Misc.**
+    - [] Include Leave Form Digital
+    - [] Include Purchase Request Form Digital
 
 ### High Priority
 
@@ -14,23 +78,10 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Fixed scroll issue on second page
         - [-] Revised the UI/UX of Online Enrollment Form
         - [ ] Conditional Process for In-house/STCW Courses
-- [] **Training Tab**: Features in Training Tab
-    - **Details**:
-        - [-] Overview Tab
-            - Implemented Email advise for both trainee and instructor
 - [] **Registration Tab**: Features in Registration Tab
     - **Details**:
-        - [-] Fixed Registration Series, reached 10000+ series
-        - [-] Change Training Date
-        - [-] Edit Course Fee
-        - [-] Edit Course Name/Company Course Code
-        - [-] Edit Account Type
-        - [-] Implement Add New Training using current registration doc
-        - [-] Rollback training doc and reg doc  to Pending
-        - [-] Create Transfer from BD to Dated or vice versa
         - [] Implement Number of days in Edit training schedule
         - [] Refactor edit enrolled date
-        - [] implement new feature when rollbacked reg doesn't change its reg_no value
 
 - [] **Pending Tab**: Features in Registration Tab
     - **Details**:
@@ -41,13 +92,6 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [-] Implement Add New Trainee or Old Trainee, Registration & Training Doc Modal for Email Advise trainings
         - [] Implement New Collection for Prev. companies of crew
 
-- [] **Batch Records**: Enrollment Reports
-    - **Details**:
-        - [-] Create ER Report for (Standard | MDS)
-        - [-] Create function for batch record
-        - [-] Remove function 
-        - [-] Update function 
-        - [-] Print function
         **CAUTION**: It might use a lot of data reads that may lead to increase of cost.
 
 - [] **Attachment**: Implement this feature
@@ -67,11 +111,6 @@ This document outlines the tasks and improvements planned for the project. Each 
         - [*] Delete Reg, If training doc is the last one child of the reg and decided to change AT
             Note: If this happens, old reg cannot be rollback, it will only create a new One
             Note: Tell Reg Dept. to refrain from making mistakes before enrolling
-
-### Medium Priority
-
-- [] **Continuation of Certification**: Certification Development continuation
-    - **Details**: When Urgent Tasks are completed, proceed in finishing the certification 
 
 ### Low Priority
 

@@ -18,8 +18,9 @@ export const handleRegStatus = (status: number) => {
         case 0:
             return 'Acknowledge';
         case 1:
-        case 2:
             return 'Acknowledged';
+        case 2:
+            return 'To Enroll';
         case 3:
             return 'Enrolled';
         case 4:
@@ -28,6 +29,25 @@ export const handleRegStatus = (status: number) => {
             return 'Pending';
         case 6:
             return 'Graduated';
+        case 7:
+            return 'Cancelled';
+        case 8:
+            return 'Absent';
+        case 9:
+            return 'Non-Appearance';
+        default:
+            return 'null';
+    }
+}
+
+export const handleCertStatus = (status: number) => {
+    switch(status){
+        case 0:
+            return 'PENDING';
+        case 1:
+            return 'UNCLAIMED';
+        case 2:
+            return 'RELEASED';
         default:
             return 'null';
     }
@@ -59,8 +79,12 @@ export const formatDateToShort = (dateString: string): string => {
         throw new Error("Invalid date string");
     }
 
+    // Force the year to the current year
+    const currentYear = new Date().getFullYear();
+    date.setFullYear(currentYear);
+    
     // Format the date to "MMM DD" (e.g., "Apr 21")
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
     return date.toLocaleDateString('en-US', options);
 }
 

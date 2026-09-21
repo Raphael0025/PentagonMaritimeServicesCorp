@@ -111,8 +111,11 @@ export default function EventCalendar({ events, setCourseID, setBatchID, onOpen 
                 {days.map((day, index) => {
                     const formattedDate = day ? formatDate(currentDate.getFullYear(), currentDate.getMonth(), day) : '';
                     const dayEvents = day
-                        ? events.filter((event) => event.date === formattedDate)
-                        : [];
+                    ? events.filter(event => {
+                        const match = `${event.date}` === formattedDate;
+                        return match;
+                        })
+                    : [];
                     return (
                         <GridItem shadow='md' key={index} h="auto" minH="80px" display="flex" flexDirection="column" justifyContent="flex-start" bg="gray.200" borderRadius="md" border="1px solid" borderColor="gray.300" position="relative" p={2}>
                             {day && (
@@ -131,7 +134,7 @@ export default function EventCalendar({ events, setCourseID, setBatchID, onOpen 
                                             setBatchID(event.id); onOpen(); }} textAlign="left" w="100%">
                                             <Text as='span' textTransform='uppercase' display='flex' className='hover:underline underline-offset-2' fontSize="xs" color="blue.600" fontWeight="medium" mb={1}>
                                                 {` ${courseObj?.course_code ?? ''}
-                                                ${event.event}`}
+                                                ${event.event}`} {/** Displayed here Batch No field value */}
                                             </Text>
                                         </Box>
                                     )

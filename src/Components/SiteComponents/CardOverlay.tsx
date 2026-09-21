@@ -1,18 +1,21 @@
 'use client'
 
 import React from 'react'
-import { Box, Image, Link, Text } from '@chakra-ui/react'
+import { Box, Image, Link, Text, Modal, ModalOverlay, useDisclosure, ModalContent, ModalCloseButton, ModalHeader, ModalBody, } from '@chakra-ui/react'
 
 interface CardProps{
     image: string;
     title: string;
     content: string;
-    redirect: string;
+    imgArr: string[];
 }
 
-export default function CardOverlay({image, title, redirect, content}: CardProps) {
+export default function CardOverlay({image, title, content, imgArr}: CardProps) {
+    const { isOpen: isOpenImg, onOpen: onOpenImg, onClose: onCloseImg } = useDisclosure()
+
     return(
-        <Box w={{ base: '100%', md: '550px', lg: '100%' }} 
+    <>
+        <Box onClick={onOpenImg} w={{ base: '100%', md: '550px', lg: '100%' }} 
             h={{ base: '350px', md: '100%', lg: '100%' }}
             bgColor="#adadad90"
             pos="relative"
@@ -37,61 +40,74 @@ export default function CardOverlay({image, title, redirect, content}: CardProps
                 }
             }}
         >
-        {/* Background Image */}
-        <Image h="100%" w="100%" src={image} transition='transform 0.4s ease-in-out' className='card-image' alt="ERS-widescreen" objectFit="cover" />
-        {/* Title (Always Visible) */}
-        <Box pos='absolute' bottom='0%' background="linear-gradient(to top, rgba(27, 28, 37) 0%, rgba(27, 28, 37, 0) 50%)" p='4' w='100%' h='100%'>
-            <Box className="test"
-                pos="absolute"
-                bottom="5%"
-                w={{ base: '100%', lg: '50%' }}
-                left="5%"
-                zIndex="2"
-                color="white"
-                fontSize="2xl"
-                fontWeight="bold"
-                opacity={1}
-                transform="translateY(0)"
-                transition="opacity 0.4s ease-in-out, transform 0.3s ease-in-out"
-            >
-                {title}
-            </Box>
-        </Box>
-        {/* Content Overlay */}
-        <Box className="overlay"
-            pos="absolute"
-            bottom="0"
-            left="0"
-            w="100%"
-            h="600px"
-            background="linear-gradient(to top, rgba(27, 28, 37) 0%, rgba(27, 28, 37, 0) 50%)"
-            transform="translateY(100%)"
-            transition="transform 0.4s ease-in-out, background 1s ease-in-out" // Smooth gradient transition
-            display="flex"
-            flexDirection="column"
-            justifyContent="flex-end"
-            alignItems="center"
-            color="white"
-            p={4}
-        >
-            {/* Additional Content (Hidden Initially) */}
-            <Box
-                className="content"
-                opacity={0}
-                transform="translateY(50px)"
-                transition="opacity 0.4s ease-in-out, transform 0.4s ease-in-out"
-            >
-                <Text fontSize="3xl" mb={2}>
+            {/* Background Image */}
+            <Image h="100%" w="100%" src={image} transition='transform 0.4s ease-in-out' className='card-image' alt={title} objectFit="cover" />
+            {/* Title (Always Visible) */}
+            <Box pos='absolute' bottom='0%' background="linear-gradient(to top, rgba(27, 28, 37) 0%, rgba(27, 28, 37, 0) 50%)" p='4' w='100%' h='100%'>
+                <Box className="test"
+                    pos="absolute"
+                    bottom="5%"
+                    w={{ base: '90%', lg: '50%' }}
+                    left="5%"
+                    zIndex="2"
+                    color="white"
+                    fontSize="2xl"
+                    fontWeight="bold"
+                    opacity={1}
+                    transform="translateY(0)"
+                    transition="opacity 0.4s ease-in-out, transform 0.3s ease-in-out"
+                >
                     {title}
-                </Text>
-                <Text fontSize="md" fontWeight="300" mb={2}>
-                    {content}
-                </Text>
-                <Link href={redirect} size="sm" variant="ghost" colorScheme="black">
-                    Read More...
-                </Link>
+                </Box>
+            </Box>
+            {/* Content Overlay */}
+            <Box className="overlay"
+                pos="absolute"
+                bottom="0"
+                left="0"
+                w="100%"
+                h="600px"
+                background="linear-gradient(to top, rgba(27, 28, 37) 0%, rgba(27, 28, 37, 0) 50%)"
+                transform="translateY(100%)"
+                transition="transform 0.4s ease-in-out, background 1s ease-in-out" // Smooth gradient transition
+                display="flex"
+                flexDirection="column"
+                justifyContent="flex-end"
+                alignItems="center"
+                color="white"
+                p={4}
+            >
+                {/* Additional Content (Hidden Initially) */}
+                <Box
+                    className="content"
+                    opacity={0}
+                    transform="translateY(50px)"
+                    transition="opacity 0.4s ease-in-out, transform 0.4s ease-in-out"
+                >
+                    <Text fontSize="3xl" mb={2}>
+                        {title}
+                    </Text>
+                    <Text fontSize="md" fontWeight="300" mb={2}>
+                        {content}
+                    </Text>
+                    <Text fontSize='xs'>Click to preview</Text>
+                </Box>
             </Box>
         </Box>
-    </Box>
+        <Modal isOpen={isOpenImg} onClose={onCloseImg} scrollBehavior='inside' size='3xl' >
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>{title}</ModalHeader>
+                <ModalCloseButton/>
+                <ModalBody>
+                {imgArr.map((img, indx) => (
+                    <Box key={indx} mb='4'>
+                        <Image src={`./Images/${img}`} w='100%' h='500px' objectFit='cover' alt={`image-${indx}`} />
+                    </Box>
+                ))}
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
     )
 }

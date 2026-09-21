@@ -7,7 +7,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-}
+} 
 @media print { 
     .printable-content {
         display: block; /* Show during printing */

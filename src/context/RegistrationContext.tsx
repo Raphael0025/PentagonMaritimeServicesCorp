@@ -31,7 +31,7 @@ export const RegistrationProvider: React.FC<RegistrationProvderProps>= ({ childr
     useEffect(() => {
         // const fetchData = async () => {
             try{
-                const startDate = new Date(year, month - 1, -15, 12, 0, 0)
+                const startDate = new Date(year, month - 2, 0, 0, 0, 0)
                 const endDate = new Date(year, month, 0, 23, 59, 59)
                 
                 // const last_month_registrations = await GET_TRAINING_REGISTRAION(month, year)

@@ -4,8 +4,10 @@ import Image from 'next/image'
 import { useState, useEffect, useRef} from 'react';
 import { useRouter } from 'next/navigation'
 
-import { Box, Text, Tooltip, Input, InputLeftAddon, InputGroup, useDisclosure, Select, Button, useToast, Menu, MenuButton, MenuGroup, MenuDivider, MenuList, IconButton, MenuItem, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel, AlertDialog, AlertDialogCloseButton, AlertDialogBody, AlertDialogHeader, AlertDialogOverlay, AlertDialogFooter, AlertDialogContent} from '@chakra-ui/react'
-import 'animate.css'
+import { Box, Text, Tooltip, Input, InputLeftAddon, InputGroup, useDisclosure, Select, Button, useToast, 
+    Menu, MenuButton, MenuGroup, MenuDivider, MenuList, 
+    IconButton, MenuItem, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
+    Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel, } from '@chakra-ui/react'
 import { parse } from 'date-fns'
 import { getDownloadURL, ref, getStorage  } from "firebase/storage";
 

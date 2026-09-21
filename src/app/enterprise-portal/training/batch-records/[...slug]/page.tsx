@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef} from 'react'
 
-import { Box, Text, useToast, Menu, MenuButton, MenuList, MenuItem, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, } from '@chakra-ui/react'
+import { Box, Text, useToast, Menu, MenuButton, MenuList, MenuItem, useDisclosure, Button, Modal, ModalOverlay, ModalHeader, ModalContent, ModalBody, ModalFooter, ModalCloseButton, } from '@chakra-ui/react'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { CourseBatchByID } from '@/types/course-batches'
@@ -18,7 +18,7 @@ import { getFormatDateWithTime } from '@/handlers/util_handler'
 
 import { CreateBatch, EditBatch } from '@/Components/Modal/Batches'
 //import { AttendanceForm, CCR } from '@/Components/Page/Forms/TrainingForms'
-import { PreviewAttendance } from '@/Components/Page/Forms'
+import { PreviewAttendance, PreviewCCR } from '@/Components/Page/Forms'
 
 import { useReactToPrint } from 'react-to-print'
 
@@ -105,17 +105,17 @@ export default function Page({params}: PageProps){
     
     const matchedCourseAndCompanyCourse = courseCodes?.filter((courseCode) => courseCode.id_course_ref === courseID).map((courseCode) => courseCode.id)
     
-    const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
-        toast({
-            title: title,
-            description: desc,
-            position: 'top-right',
-            variant: 'left-accent',
-            status: status,
-            duration: timer,
-            isClosable: true,
-        })
-    }
+    // const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
+    //     toast({
+    //         title: title,
+    //         description: desc,
+    //         position: 'top-right',
+    //         variant: 'left-accent',
+    //         status: status,
+    //         duration: timer,
+    //         isClosable: true,
+    //     })
+    // }
 
     return(
     <>
@@ -187,17 +187,17 @@ export default function Page({params}: PageProps){
                             <Text w='100%'>Date of Enrollment</Text>
                             <Text w='100%'>Registration No.</Text>
                         </Box>
-                        {allTrainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
+                        {allTrainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch === batchID)
                         .slice() // Create a shallow copy to avoid mutating the original array
                         .sort((a, b) => {
                             const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
                             const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                     
                             // Extract numeric parts of the registration number
-                            const [yearA, numberA] = regNoA.split('-').map(Number);
-                            const [yearB, numberB] = regNoB.split('-').map(Number);
-                    
-                            // Compare by year first, then by number
+                            const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
+                            const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
+
+                            // Compare by year first, then by month, then by number
                             if (yearA !== yearB) {
                                 return yearA - yearB;
                             }
@@ -236,13 +236,18 @@ export default function Page({params}: PageProps){
                 </Box>
             </Box>
         </main>
-        {/** Enrollment Reports */}
+        {/** Attendance & CCR */}
         <Modal size='full' isOpen={isOpenER} onClose={onCloseER} >
             <ModalOverlay />
-            <ModalContent px={4}>
+            <ModalContent px={4} pb='28'>
                 <ModalHeader color='blue.700'>{`Preview of ${form}`}</ModalHeader>
+                <ModalCloseButton />
                 <ModalBody display={'flex'} flexDir='column' alignItems='center' >
-                    <PreviewAttendance onClose={onCloseER} batch={batchDetails} batch_no={batch} batchID={batchID} courseID={course?.id ?? ''} start_date={startD} end_date={endD} course={`${course?.course_name === undefined ? '' : `${course?.course_name}`}`} courseCode={`${course?.course_code === undefined ? '' : `${course?.course_code}`}`} />
+                    {form === 'Attendance Form' ? (
+                        <PreviewAttendance onClose={onCloseER} batch={batchDetails} batch_no={batch} batchID={batchID} courseID={course?.id ?? ''} start_date={startD} end_date={endD} course={`${course?.course_name === undefined ? '' : `${course?.course_name}`}`} courseCode={`${course?.course_code === undefined ? '' : `${course?.course_code}`}`} />
+                    ) : form === 'Course Completion Report' && (
+                        <PreviewCCR onClose={onCloseER} batch={batchDetails} batch_no={batch} batchID={batchID} courseID={course?.id ?? ''} start_date={startD} end_date={endD} course={`${course?.course_name === undefined ? '' : `${course?.course_name}`}`} courseCode={`${course?.course_code === undefined ? '' : `${course?.course_code}`}`} />
+                    )}
                 </ModalBody>
             </ModalContent>
         </Modal>

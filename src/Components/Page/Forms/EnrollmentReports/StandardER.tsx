@@ -38,7 +38,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
     // * const [firstLine, secondLine] = splitTextAtWordBoundary(course, 50);
 
     return (
-        <Box w='100%'>
+        <Box w='100%' h='307mm'>
             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
             {/** Header */}
                 <Box display='flex' justifyContent='space-between' alignItems='center' w='90%'>
@@ -75,19 +75,19 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     <Box w='50%'>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Course`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${courseCode.toUpperCase()}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' fontSize='6pt' borderColor='black' w='100%'>{`${course.toUpperCase()}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Schedule`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${schedule}, ${year}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${schedule} ${year}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Practicum Site`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${site}`}</Text>
+                            <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${site}`}</Text>
                         </Box>
                         <Box w='100%' display='flex' alignItems='end'>
                             <Text w='40%'>{`Instructor`}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>
                                 {(() => {
                                     const ins = allInstructors?.find((i) => i.id === instructor);
                                     if (!ins) return instructor || 'No Instructor';
@@ -102,19 +102,19 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     <Box w='50%'>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Class No `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batchNo}`}</Text>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batchNo}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Room No `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${room}`}</Text>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>{`${room}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Practicum Date `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${practicumDate}`}</Text>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>{`${practicumDate}`}</Text>
                         </Box>
                         <Box w='100%' display='flex'  alignItems='end' ms='1'>
                             <Text w='40%'>{`Assessor `}</Text>
-                            <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                            <Text textAlign='center' fontSize='7pt' borderBottomWidth='1px' borderColor='black' w='100%'>
                                 {(() => {
                                     const assessor_name = allInstructors?.find((i) => i.id === assessor);
                                     if (!assessor_name) return assessor || 'No Assessor';
@@ -175,15 +175,24 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                         const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                 
                         // Extract numeric parts of the registration number
-                        const [yearA, numberA] = regNoA.split('-').map(Number);
-                        const [yearB, numberB] = regNoB.split('-').map(Number);
+                        const [yearA, monthA, numA] = regNoA.split('-').map(Number);
+                        const [yearB, monthB, numB] = regNoB.split('-').map(Number);
                 
-                        // Compare by year first, then by number
-                        if (yearA !== yearB) {
-                            return yearA - yearB;
-                        }
-                        return numberA - numberB;
-                    }).map((training, index) => {
+                        // Handle invalid or missing values gracefully
+                        if (isNaN(yearA) || isNaN(monthA) || isNaN(numA)) return 1; // Place invalid `a` after valid `b`
+                        if (isNaN(yearB) || isNaN(monthB) || isNaN(numB)) return -1; // Place invalid `b` after valid `a`
+
+                        // Compare by year first
+                        if (yearA !== yearB) return yearB - yearA;
+
+                        // Compare by month next
+                        if (monthA !== monthB) return monthB - monthA;
+
+                        // Finally, compare by the number part
+                        return numA - numB;
+                    })
+                    .sort((a, b) => parsingTimestamp(a.date_enrolled).getTime() - parsingTimestamp(b.date_enrolled).getTime())
+                    .map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
@@ -198,10 +207,14 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                                     {trainee?.birthDate ? parsingTimestamp(trainee.birthDate).toLocaleDateString('en-US', { year: '2-digit', month: 'short', day: '2-digit', }).replace(/[\s,\/]+/g, '-') : ''}
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" fontSize='7pt' borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {trainee?.birthPlace}
+                                    <Text noOfLines={1}>
+                                        {trainee?.birthPlace}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
-                                    {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    <Text noOfLines={1}>
+                                        {allRanks?.find((rank) => rank.code === trainee?.rank)?.rank || trainee?.rank}
+                                    </Text>
                                 </GridItem>
                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent='center' alignItems='center'>
                                     {parsingTimestamp(training?.date_enrolled).toLocaleDateString('en-US', {  year: '2-digit', month: 'short',  day: '2-digit',}).replace(/[\s,\/]+/g, '-')}
@@ -270,7 +283,7 @@ export default function StandardER({ courseCode, site, practicumDate, course, sc
                     })}
                 </Box>
                 {/** Footer */}
-                <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' mt='8'>
+                <Box w='100%' display='flex' justifyContent='space-around' alignItems={'center'} fontFamily='Arial, sans-serif' fontWeight='normal' fontSize='11pt' pt='4' mt='16' mb='10'>
                     <Box w='25%'>
                         <Text>Prepared by:</Text>
                         <Text mt='8' w='100%' borderBottomWidth='1px' borderColor='black'/>

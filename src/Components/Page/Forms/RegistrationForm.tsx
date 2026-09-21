@@ -12,7 +12,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import {useRank} from '@/context/RankContext'
 
 import { parsingTimestamp, } from '@/types/handling'
-import './reg_admission.css'
+//import './reg_admission.css'
 
 import { reformatTrainingSched, validateEnrolledDates } from '@/handlers/trainee_handler'
 
@@ -40,7 +40,7 @@ export default function Page({regNum, tab}: UIProps){
         return <Text>No trainee information found.</Text>;
     }
 
-    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status === 3 : t.reg_status === 2));
+    const trainings = allTraining?.filter((t) => t.reg_ref_id === regNum && (tab === 'enrolled' ? t.reg_status >= 3 : t.reg_status === 2 ));
     if (!trainings || trainings.length === 0) {
         return <Text>No trainings found.</Text>;
     }
@@ -87,14 +87,14 @@ export default function Page({regNum, tab}: UIProps){
                 <Box display='flex' flexDir='column' w='95%' >
                     <Box className='flex w-full justify-between'>
                         <Text fontSize='16pt' fontWeight='bold' color='#002060' textTransform='uppercase' fontFamily='Arial, sans-serif'>Registration Form</Text>
-                        <Box w='2.26in' fontFamily='Arial, sans-serif' lineHeight={'none'} px='4' py='2' h='0.48in' borderColor='black' borderWidth='0.75pt'>
+                        <Box w='2.35in' fontFamily='Arial, sans-serif' lineHeight={'none'} px='4' py='2' h='0.48in' borderColor='black' borderWidth='0.75pt'>
                             <Text mb='0' fontSize='10pt' sx={{fontVariant: 'small-caps'}} textTransform='uppercase' fontWeight='bold' >Registration No:</Text>
                             <Text mt='0' fontSize='12pt' px='5' textTransform='uppercase' fontWeight='bold' color='#ff0000'>{`REG-${reg.reg_no}`}</Text>
                         </Box>
                     </Box> 
                     <Box>
                         <Box display='flex' flexDir='column'  className='content-one p-1'>
-                            <Text fontWeight='bold' as='i' fontFamily='Calibri' fontSize='7pt' w='100%' textAlign='end'>{`FM-02-10-01 REV.03  Issued Date: 05/01/2025`}</Text>
+                            <Text fontWeight='bold' as='i' fontFamily='Calibri' fontSize='7pt' w='100%' textAlign='end'>{`FM-03-10-01 REV.03`}</Text>
                         </Box>
                         <Grid h='0.22in' pt='0.1px' pb='4' sx={{ textIndent: '0.08in' }} fontSize='9pt' bgColor='#002060' color='white' fontWeight='bold' fontFamily='Arial'>
                             <GridItem display='flex' border="0.5pt solid black" borderBottom='none' justifyContent='start' alignItems='start'>
@@ -209,7 +209,7 @@ export default function Page({regNum, tab}: UIProps){
                                         <GridItem display='flex' border="0.5pt solid black" borderRight="none" justifyContent='center' alignItems='center'>{`Course Fee (PHP)`}</GridItem>
                                     </Grid>
                                     {trainings && trainings.length > 0 ? (
-                                        trainings.filter((training) => (tab === 'enrolled' ? training.reg_status === 3 : training.reg_status === 2)).map((training, index) => (
+                                        trainings.filter((training) => (tab === 'enrolled' ? training.reg_status >= 3 : training.reg_status === 2)).map((training, index) => (
                                             <Grid key={index} templateColumns="2.95in 1.85in 1.72in" gap={0} h='0.31in' fontFamily="Arial, sans-serif" textTransform='uppercase' fontWeight='normal' fontSize='8pt'>
                                                 <GridItem display='flex' border="0.5pt solid black" borderTop='none' borderRight="none" justifyContent="center" alignItems="center">
                                                     <Text >

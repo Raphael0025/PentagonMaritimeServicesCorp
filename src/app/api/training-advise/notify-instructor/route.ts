@@ -8,10 +8,14 @@ export async function POST(request: NextRequest){
             course_code, 
             course_name, 
             time_duration, 
+            presentation_link,
             trainees,
-            notes,
+            note1,
+            schedule,
             instructor,
-            tro_contact, 
+            class_code,
+            gmeet_code,
+            gmeet_link,
             staff, 
             position 
         } = await request.json()
@@ -25,11 +29,12 @@ export async function POST(request: NextRequest){
         })
 
         const listOfTrainees = trainees.map((trainee: string) => `<li>${trainee}</li>`).join('');
-        console.log(listOfTrainees)
+        const currentYear = new Date().getFullYear()
+
         await transporter.sendMail({
             from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
             to,
-            subject: `LIST OF TRAINEES for ${course_code} Class`,
+            subject: `PENTAGON'S ${course_code} TRAINING - ${schedule.toUpperCase()}, ${currentYear}`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -123,23 +128,48 @@ export async function POST(request: NextRequest){
                                 <img src="https://i.imgur.com/aYyVE1x.png" alt="Pentagon Logo" class="logo" />
                             </header>
                             <main class="email-body">
-                                <h1>${course_name} CLASS</h1>
                                 <p>Good Day ${instructor}!</p>
+                                <div class="section">
+                                    <p><strong>TRAINING DETAILS</strong></p>
+                                    <p><strong>Date:</strong> ${schedule.toUpperCase()}, ${currentYear}</p>
+                                    <p><strong>Time:</strong> ${time_duration}</p>
+                                    <p><strong>Mode of Training:</strong> Online</p>
+                                </div>
+                                <div class="section">
+                                    <p>The intended training will be carried out as follows:</p>
+                                    ${note1}
+                                    <p>Indicated below are the codes that you can use for the training tomorrow.</p>
+                                </div>
+                                <div>
+                                    <p><strong>For Google Classroom Code:</strong> ${class_code}</p>
+                                    <p>For Google Meet:</p>
+                                    <ul>
+                                        <li><strong>Meet Code:</strong> ${gmeet_code}</li>
+                                        <li>If you want direct access to the meet. Kindly click the link below.</li>
+                                        <li><strong>Meet Link:</strong> <a href="${gmeet_link}" target="_blank" >Click here</a></li>
+                                    </ul>
+                                    <p>I've already sent you a class invitation to your email, if you did not receive it we are happy to resend it to you upon request.</p>
+                                </div>
+                                <div class="section">
+                                    <p><strong>Reminders:</strong></p>
+                                    <p>Please remind the Pentagon Staff to give the final instructions to the trainees before concluding the training session. Please also be informed that your training activities are being monitored, so kindly utilize the full allotted time unless we advise otherwise. If you have already completed your course presentation, we would appreciate it if you could show relevant training videos to the trainees for the remaining duration of the session.</p>
+                                </div>
                                 <p>Below is the list of trainees for the ${course_code} class at ${time_duration}</p>
                                 <div class="section">
-                                    <ol>
-                                        ${listOfTrainees}
-                                    </ol>
+                                    <p><strong>COURSE PRESENTATION LINK:</strong></p>
+                                    <p>Below here is the presentation link for you to be able to view with ease:</p>
+                                    <a href="${presentation_link}" target="_blank">Click here to view</a>
                                 </div>
                                 <div class="section">
-                                    <p>If their are any participants who have not yet joined the session, kindly inform us so that we would notify them</p>
-                                    <p>${notes}</p>
+                                    <p> <strong>LIST OF TRAINEES</strong></p>
+                                    <ol>
+                                        ${listOfTrainees.toUpperCase()}
+                                    </ol>
                                 </div>
-                                <p>For further training concerns, please contact this number: ${tro_contact}</p>
                                 <p><strong>Thank you!</strong></p>
                                 <div style={{ lineHeight: "1.2" }}>
-                                    <p style={{ color: "#D3D3D3" }}><strong>${staff}</strong><br />
-                                    <em style={{ color: "#D3D3D3", font-size: 5px }}>${position}</em>
+                                    <p style={{ color: "#D3D3D3" }}>
+                                        <strong>${staff}</strong> | <em style={{ color: "#D3D3D3", font-size: 5px }}>${position}</em>
                                     </p>
                                 </div>
                                 <div>

@@ -1,7 +1,7 @@
 import{ Timestamp } from 'firebase/firestore'
 
 export interface CourseBatch{
-    batch_no: number;
+    batch_no: string;
     start_date: string;
     end_date: string;
     numOfDays: number;
@@ -11,21 +11,44 @@ export interface CourseBatch{
     room: string;
     instructor: string;
     assessor: string;
+    act_ins: string;
+    act_ass: string;
 }
 
 export interface CourseBatchByID extends CourseBatch{
     id: string;
     time_duration: string
     training_mode: string;
+    attendance_remarks: string;
+    ccr_remarks: string;
     remarks: string;
+    attendance: fileArr[];
+    ccr: string;
     createdAt: Timestamp;
     updateAt: Timestamp;
+}
+
+export interface BDCourseBatchByID extends BDCourseBatch{
+    id: string;
+    createdAt: Timestamp;
+}
+
+export interface BDCourseBatch {
+    batch_no: number;
+    course: string;
+}
+
+interface fileArr {
+    name: string;
+    url: string;
 }
 
 export const initCourseBatch = {
     id: '',
     course: '',
-    batch_no: 0,
+    attendance: [],
+    ccr: '',
+    batch_no: '',
     start_date: '',
     end_date: '',
     numOfDays: 0,
@@ -36,7 +59,11 @@ export const initCourseBatch = {
     assessor: '',
     practicumSite: '',
     practicumDate: '',
+    attendance_remarks: '',
     remarks: '',
+    ccr_remarks: '',
     createdAt: Timestamp.now(),
     updateAt: Timestamp.now(),
+    act_ins: '',
+    act_ass: '',
 }

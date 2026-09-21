@@ -45,8 +45,19 @@ import BullsEyeIcon from './BullsEyeIcon'
 import LightBulbIcon from './LightBulbIcon'
 import StopIcon from './StopIcon'
 import TicketIcon from './TicketIcon'
+import InventoryIcon from './InventoryIcon'
+import InfoIcon from './InfoIcon'
+import AnnouncementIcon from './AnnouncementIcon'
+import AlertIcon from './AlertIcon'
+import QuoteIcon from './QuoteIcon'
 
-export {BellIcon, 
+export {
+    InfoIcon,
+    QuoteIcon,
+    AnnouncementIcon,
+    AlertIcon,
+    InventoryIcon,
+    BellIcon, 
     StopIcon, 
     TicketIcon, 
     UsersIcon,

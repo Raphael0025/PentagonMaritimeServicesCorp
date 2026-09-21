@@ -4,7 +4,7 @@
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import React, { useEffect, useState, useRef } from 'react'
-import { Timestamp } from 'firebase/firestore'
+import { updateDoc, doc, Timestamp } from 'firebase/firestore'
 
 // Chakra UI components
 import { Box, Text, Link, Tooltip, FormLabel, Checkbox, Switch, FormControl, Input, FormErrorMessage, FormHelperText, Alert, AlertTitle, AlertDescription, AlertIcon, UnorderedList, OrderedList, ListItem, InputLeftAddon, InputGroup, Heading, Button, useToast, useDisclosure, Select, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Accordion, AccordionIcon, AccordionPanel, AccordionItem, AccordionButton } from '@chakra-ui/react'
@@ -18,7 +18,7 @@ import { TRAINEE, TRAINEE_BY_ID, initTRAINEE, TEMP_COURSES_V2, TEMP_COURSES, TRA
 import { ToastStatus } from '@/types/handling';
 
 // Controllers
-import { addRegistrationDetails, addTrainingDetails, RE_ENROLLED_TRAINEE, changeImg } from '@/lib/trainee_controller'
+import { firestore, updateTraineeAttachments, addRegistrationDetails, addTrainingDetails, RE_ENROLLED_TRAINEE, changeImg } from '@/lib/trainee_controller'
 import {TrashIcon, PlusIcon, VerifyIcon, PinIcon, MailIcon, PhoneIcon, SearchIcon, FacebookIcon } from '@/Components/Icons'
 import { ReviewIcon, PolicyIcon, ClipIcon, SignIcon, ListIcon, CourseIcon, } from '@/Components/SideIcons'
 import { generateDateRanges } from '@/handlers/course_handler'
@@ -76,6 +76,22 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
     const [validSignature, setSignature] = useState<File[]>([])
     const [validSig, setValidSig] = useState<string>('')
     const [sig_file, setSigFile] = useState<string>('No file chosen yet...')
+    //Screenshot ng mismo
+    const [screenshotFile, setSCFile] = useState<File[]>([])
+    const [previewSC, setPreviewSC] = useState<string | null>(null)
+    const [sc_fileName, setScFileName] = useState<string>('No file chosen yet...')
+    //Med Cert
+    const [medCertFile, setMCFile] = useState<File[]>([])
+    const [previewMC, setPreviewMC] = useState<string | null>(null)
+    const [mc_fileName, setMcFileName] = useState<string>('No file chosen yet...')
+    //COP
+    const [copFile, setCOPFile] = useState<File[]>([])
+    const [previewCOP, setPreviewCOP] = useState<string | null>(null)
+    const [cop_fileName, setCOPFileName] = useState<string>('No file chosen yet...')
+    //Sea Service Record
+    const [ssrFile, setSSRFile] = useState<File[]>([])
+    const [previewSSR, setPreviewSSR] = useState<string | null>(null)
+    const [ssr_fileName, setSSRFileName] = useState<string>('No file chosen yet...')
     
     const [month, setMonth] = useState<number>(0)
     const [day, setDay] = useState<number>(0)
@@ -217,6 +233,72 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
             setPreview(objectUrl)
         } else {
             setSigFile('No file chosen yet...')
+        }
+    }
+
+    const handleValidSC = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setScFileName(file);
+            setSCFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewSC(objectUrl)
+        } else {
+            setScFileName('No file chosen yet...')
+        }
+    }
+
+    const handleValidMC = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setMcFileName(file);
+            setMCFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewMC(objectUrl)
+        } else {
+            setMcFileName('No file chosen yet...')
+        }
+    }
+    
+
+    const handleValidCOP = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setCOPFileName(file);
+            setCOPFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewCOP(objectUrl)
+        } else {
+            setCOPFileName('No file chosen yet...')
+        }
+    }
+    
+
+    const handleValidSSR = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+            const file = files[0].name
+            const mismo_profile = files[0];
+            setSSRFileName(file);
+            setSSRFile(Array.from(files))
+
+            const objectUrl = URL.createObjectURL(mismo_profile)
+            setPreviewSSR(objectUrl)
+        } else {
+            setSSRFileName('No file chosen yet...')
         }
     }
 
@@ -427,78 +509,52 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
             setLoading(true)
             
             if(checkTraineeChanges()){
-                await RE_ENROLLED_TRAINEE(idRef, trainee)
+                const traineeRef = doc(firestore, 'TRAINEES', idRef)
+                await updateDoc(traineeRef, {...trainee})
             }
-            if(file !== 'No file chosen yet...'){
-                await changeImg(idRef, trainee.last_name, trainee.first_name, 'validID', 'valid_id', validID, file, 'Re-Enrolled Trainee')                
-            }
-            if(pfpFile !== 'No file chosen yet...') {
-                await changeImg(idRef, trainee.last_name, trainee.first_name, 'idPic', 'photos', validPfp, pfpFile, 'Re-Enrolled Trainee')
-            }
-            if (sig_file !== 'No file chosen yet...') {
-                await changeImg(idRef, trainee.last_name, trainee.first_name, 'esign', 'e-signs', validSignature, sig_file, 'Re-Enrolled Trainee')
+            const attachmentFiles = { validID, validPfp, validSignature, screenshotFile, medCertFile, copFile, ssrFile, sc_fileName, mc_fileName, cop_fileName, ssr_fileName, file, pfpFile, sig_file }
+            await updateTraineeAttachments(idRef, trainee, attachmentFiles, 'Re-Enrolled Trainee')
+            if(!idRef){
+                router.push('/admissions/ol/forms')
+                return
             }
 
-            if(idRef !== null){
-                const ccArr = []
-                const crewArr = []
-                for(const course of courses){
-                    if(course.accountType === 0){
-                        crewArr.push(course)
-                    } else {
-                        ccArr.push(course)
-                    }
-                }
-                let regCCID, regCrewID
-                if(ccArr.length !== 0){
-                    let fee: number = 0
-                    for(const course of ccArr){
-                        fee = course.course_fee + fee
-                    }
-                    regCCID = await addRegistrationDetails(idRef, fee, 0, 1, 1, trainee.marketing)
-                    for(const course of ccArr){
-                        try{
-                            if(regCCID){
-                                await addTrainingDetails(course, regCCID, trainee.marketing)
-                            }
-                        }catch(error){
-                            console.error('Failed to process this company charge: ', error)
-                        }
-                    }
-                }
+            const accountTypes = [
+                { type: 1, list: courses.filter(c => c.accountType !== 0)},
+                { type: 0, list: courses.filter(c => c.accountType === 0)},
+            ]
+
+            for(const chargeType of accountTypes){
+                if(chargeType.list.length === 0) continue
+
+                const totalFee = chargeType.list.reduce((sum, c) => sum + (c.course_fee || 0), 0)
+
+                const registrationID = await addRegistrationDetails(idRef, totalFee, 0,1,chargeType.type, trainee.marketing)
                 
-                if(crewArr.length !== 0){
-                    let fee: number = 0
-                    for(const course of crewArr){
-                        fee = course.course_fee + fee
-                    }
-                    regCrewID = await addRegistrationDetails(idRef, fee, 0, 1, 1, trainee.marketing)
-                    for(const course of crewArr){
-                        try{
-                            if(regCrewID){
-                                await addTrainingDetails(course, regCrewID, trainee.marketing)
-                            }
-                        }catch(error){
-                            console.error('Failed to process this crew charge: ', error)
-                        }
-                    }
+                if(registrationID){
+                    await Promise.all(
+                        chargeType.list.map(course =>
+                            addTrainingDetails(course, registrationID, trainee.marketing)
+                            .catch(err => console.error(`Failed course ${course.course}:`, err))
+                        )
+                    )
                 }
-                await fetch('/api/send-mail', {
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/json',
-                    }, 
-                    body: JSON.stringify({
-                        to: trainee.email,
-                        subject: 'ENROLLMENT TO PENTAGON MARITIME SERVICES CORP.',
-                        text: 'Thank you for submitting your online registration form, someone will assist you once your registration is verified. Thank you have a nice day!',
-                        last_name: trainee.last_name,
-                        first_name: trainee.first_name,
-                    })
-                })
-            } else {
-                router.push('/admissions/ol/forms')
             }
+    
+            await fetch('/api/send-mail', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                }, 
+                body: JSON.stringify({
+                    to: trainee.email,
+                    subject: 'ENROLLMENT TO PENTAGON MARITIME SERVICES CORP.',
+                    text: 'Thank you for submitting your online registration form, someone will assist you once your registration is verified. Thank you have a nice day!',
+                    last_name: trainee.last_name,
+                    first_name: trainee.first_name,
+                })
+            })
+
             onCloseReview()
             onOpenThankYou()
         } catch(error){
@@ -558,12 +614,12 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
                                             </FormLabel>
                                             <Input readOnly value={courseFound ? `${courseFound.course_code} - ${courseFound.course_name}` : ''} onClick={() => {onOpenModal(); setCourseIndex(index); }} fontWeight="400" textTransform="uppercase" placeholder="Select Course" shadow="md" />
                                         </FormControl>
-                                        <FormControl display={tempCourses[index]?.accountType === 0 ? 'block' : 'none'} w={{ base: "100%", md: "30%" }} isRequired>
+                                        {/* <FormControl display={tempCourses[index]?.accountType === 0 ? 'block' : 'none'} w={{ base: "100%", md: "30%" }} isRequired>
                                             <FormLabel htmlFor={`fee-${index}`} py="2" fontWeight="600" fontSize="0.5625rem" textTransform="uppercase" color="blue.700" >
                                                 Course Fee
                                             </FormLabel>
                                             <Input id={`fee-${index}`} value={tempCourses[index]?.course_fee} readOnly />
-                                        </FormControl>
+                                        </FormControl> */}
                                     </Box>
                                     <Box display="flex" flexDir={{ base: "column", md: "row" }} gap="4" pt="3" pb="8">
                                         <FormControl isRequired>
@@ -630,7 +686,7 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
                                         <p>{trainee.relationship === '' ? `* Relationship to Contact person` : ''}</p>
                                         <p>{trainee.marketing === '' ? `* Marketing` : ''}</p>
                                         {trainee.marketing !== '' && (
-                                            <p>{trainee.otherMarketing === '' ? `* Marketing` : ''}</p>
+                                            <p>{trainee.otherMarketing === '' && trainee?.marketing === 'OTHERS' ? `* Marketing` : ''}</p>
                                         )}
                                     </Box>
                                 </Box>
@@ -820,11 +876,63 @@ export default function OldTrainee_v2({ oldTrainee }: Props){
                                 <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
                                 <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                             </FormControl>
-                            {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (
+                            {/* {tempCourses.some(fc => allCourses?.filter(c => c.courseType === 0)?.some(c => c.id === fc.course)) && (<> */}
                                 <FormControl isRequired >
-                                    <FormLabel htmlFor='photo' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
+                                    <FormLabel htmlFor='mismoSC' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>MISMO Profile Account</FormLabel>
                                     <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a screenshot of your MISMO Profile Account.)</FormHelperText>
-                                    <Input id='photo' onChange={handleValid2x2} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <Input id='mismoSC' onChange={handleValidSC} p='4px' placeholder='e.g. John' accept='.jpg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                                {/* </>)} */}
+                        </Box>
+                        <Box display='flex' flexDir={{base:'column', md: 'row'}} gap={{base: '2', md: '4'}} pt='3' pb='8'>
+                            {/* 1. Medical Certificate Section */}
+                            {tempCourses.some(fc => {
+                                const courseFound = allCourses?.find(c => c.id === fc.course);
+                                return (
+                                    courseFound &&
+                                    [0, 2, 3].includes(courseFound.courseType) &&
+                                    ['BT', 'AFF', 'RAFF', 'RBT'].includes(courseFound.course_code.toUpperCase())
+                                );
+                            }) && (
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='med_cert' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Medical Certificate</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your Medical Certificate)</FormHelperText>
+                                    <Input id='med_cert' onChange={handleValidMC} p='4px' accept='.jpg,.jpeg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                            )}
+                            {/* 2. COP Section */}
+                            {tempCourses.some(fc => {
+                                const courseFound = allCourses?.find(c => c.id === fc.course);
+                                return (
+                                    courseFound &&
+                                    [0, 2, 3].includes(courseFound.courseType) &&
+                                    ['UBT-PSSR', 'RAFF', 'RBT'].includes(courseFound.course_code.toUpperCase())
+                                );
+                            }) && (
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='cop' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Certificate of Proficiency (COP)</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Please provide a SCANNED COPY of your COP)</FormHelperText>
+                                    <Input id='cop' onChange={handleValidCOP} p='4px' accept='.jpg,.jpeg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>{`COP Cert (BT) or (AFF) for UBT-PSSR COP Cert (BT)`}</FormHelperText>
+                                    <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
+                                </FormControl>
+                            )}
+                            {/* 3. Sea Service Records Section */}
+                            {tempCourses.some(fc => {
+                                const courseFound = allCourses?.find(c => c.id === fc.course);
+                                return (
+                                    courseFound &&
+                                    [0, 2, 3].includes(courseFound.courseType) &&
+                                    ['RAFF', 'RBT'].includes(courseFound.course_code.toUpperCase())
+                                );
+                            }) && (
+                                <FormControl isRequired >
+                                    <FormLabel htmlFor='ssr' m='0' pt='2' fontWeight='700' fontSize='0.75rem' textTransform='uppercase' color='blue.700'>Sea Service Records</FormLabel>
+                                    <FormHelperText mt='0' fontWeight='600' pb='2' fontSize='10px'>(Note: Provide a SCANNED COPY of your Sea Service Records)</FormHelperText>
+                                    <Input id='ssr' onChange={handleValidSSR} p='4px' accept='.jpg,.jpeg' type='file' shadow='md' fontWeight='400' borderWidth='1px' borderStyle='solid' borderColor='gray.400' />
+                                    <FormHelperText fontWeight='600' fontSize='10px'>It MUST be ATLEAST 12 months recent.</FormHelperText>
                                     <FormHelperText fontWeight='600' fontSize='10px'>File type shall be *.jpeg, .jpg and maximum upload file size shall be less than 2MB</FormHelperText>
                                 </FormControl>
                             )}

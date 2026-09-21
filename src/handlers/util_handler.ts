@@ -17,6 +17,7 @@ export const getFormatDate = (dateRange: string): string => {
     // Regular expression to extract the month and day from the input
     const regex = /(?:\w+, )?(\w+) (\d+)(?: - (?:\w+, )?(\w+) (\d+))?/
     const match = dateRange.match(regex)
+    const year = new Date().getFullYear()
 
     if (!match) {
         throw new Error("Invalid date range format")
@@ -25,10 +26,10 @@ export const getFormatDate = (dateRange: string): string => {
     const [, startMonth, startDay, endMonth, endDay] = match
     // If the months are the same, format as "Oct 07-09"
     if (startMonth === endMonth) {
-        return `${startMonth} ${startDay}-${endDay}`
+        return `${startMonth} ${startDay}-${endDay}, ${year}`
     }
     // If the months are different, format as "Oct 31 - Nov 01"
-    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`
 }
 
 export const getFormattedDate = (date: Date): string => {
@@ -42,6 +43,103 @@ export const getFormattedDate = (date: Date): string => {
 export const getFormatDateWithTime = (date: Date | null): string => {
     if(!date) return 'cannot format date'
     return date.toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true})
+}
+
+export const trainingModeColor = (value: string) => {
+    switch(value){
+        case 'f2f':
+            return 'cyan.900';
+        case 'f2fm':
+            return 'cyan.400';
+        case 'f2ft':
+            return 'cyan.600';
+        case 'f2fp':
+            return 'cyan.800';
+        case 'ol':
+            return 'blue.100';
+        case 'olm':
+            return 'blue.300';
+        case 'olt':
+            return 'blue.500';
+        case 'olp':
+            return 'blue.700';
+        case 'blended':
+            return 'orange.400';
+        default:
+            return '';
+    }
+}
+
+export const trainingModeFontColor = (value: string) => {
+    switch(value){
+        case 'f2ft':
+        case 'olt':
+        case 'olp':
+        case 'f2f':
+            return 'white';
+        default:
+            return '';
+    }
+}
+
+export const backgroundColor = (value: number) => {
+    switch(value){
+        case 3:
+            return '';
+        case 4:
+            return 'blue.400';
+        case 5:
+            return 'yellow.400';
+        case 6:
+            return 'green.400';
+        case 7:
+            return 'red.500';
+        case 8:
+            return 'red.400';
+        case 9:
+            return 'yellow.600';
+        default:
+            return '';
+    }
+}
+
+export const certBackgroundColor = (value: number) => {
+    switch(value){
+        case 0:
+                return 'red.400';
+        case 1:
+            return 'blue.400';
+        case 2:
+            return 'green.400';
+        default:
+            return '';
+    }
+}
+
+export const BackgroundTypeColor = (value: string) => {
+    switch(value.toLowerCase()){
+        case 'announcement':
+            return 'yellow.50'
+        case 'alert':
+            return 'red.50'
+        case 'info':
+            return 'blue.50'
+        default:
+            return 'No Match'
+    }
+}
+
+export const FontTypeColor = (value: string) => {
+    switch(value.toLowerCase()){
+        case 'announcement':
+            return 'yellow.700'
+        case 'alert':
+            return 'red.700'
+        case 'info':
+            return 'blue.700'
+        default:
+            return 'No Match'
+    }
 }
 
 const borderTextColorMap: Record<string, Record<number, string>> = {

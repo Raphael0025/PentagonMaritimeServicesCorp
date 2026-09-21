@@ -12,7 +12,7 @@ interface BannerProps{
 export default function BannerComponent({title, content, image}: BannerProps) {
     return(
     <>
-        <Box position='relative'>
+        <Box position='relative' >
             <Box pos='relative'>
                 <Box pos='absolute' top='0' left='0' pointerEvents='none' w='100%' h='100%' bgGradient='linear(126deg, rgba(5,5,5,0.8547794117647058) 40%, rgba(0,40,129,0) 100%)' />
                 <Image src={`${image}`} w='100%' h='400px' objectFit='cover' objectPosition='center' alt='banner'/>
@@ -23,7 +23,7 @@ export default function BannerComponent({title, content, image}: BannerProps) {
                 </Box>
                 <Box display={{base:'none', md: 'block', lg: 'block'}} bgColor='#fbffff' pos='absolute' top='0' right='18%' height='100%' width='15%' clipPath={'polygon(56% 0%, 74% 0%, 20% 100%, 0% 100%)'} />
                 <Text fontSize='5xl' fontWeight='800' color='#fbffff'>{title}</Text>
-                <Text fontSize='xl' fontWeight='400' w={{base: '100%', lg: '50%'}} color='#fdfdfdaa'>{content}</Text>
+                <Text fontSize='md' fontWeight='400' w={{base: '100%', lg: '50%'}} color='#fdfdfdaa'>{content}</Text>
             </Box>
         </Box>
     </>

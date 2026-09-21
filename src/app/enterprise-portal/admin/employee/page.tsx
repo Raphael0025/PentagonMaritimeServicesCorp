@@ -8,8 +8,10 @@ import { GetCompanyUserSpecificData } from '@/types/company_users'
 import { formatDate } from '@/types/handling'
 import { countCompanyUsersByCategoryStatusAndType, getUserPerStatusOf } from '@/handlers/company_user_handler'
 import { useCompanyUsers } from '@/context/CompanyUserContext'
+import { useRoles } from '@/context/UserRolesContext'
 
 export default function Page(){
+    const { data: allRoles } = useRoles()
     const {data: allCompanyUsers} = useCompanyUsers()
     const [employees, setEmployees] = useState<GetCompanyUserSpecificData[]>([])
     const [totalEmployees, setTotalEmployees] = useState<number>(0)
@@ -113,8 +115,8 @@ export default function Page(){
                                             <Th>Date Added</Th>
                                             <Th>User Code</Th>
                                             <Th>Employee</Th>
+                                            <Th>Role</Th>
                                             <Th>Department</Th>
-                                            <Th>Job Title</Th>
                                             <Th>Action</Th>
                                         </Tr>
                                     </Thead>
@@ -132,16 +134,16 @@ export default function Page(){
                                             ) : (
                                                 employees.map((employee: GetCompanyUserSpecificData) => (
                                                     <Tr key={employee.id}>
-                                                        <Td>{formatDate(employee.candidate_added.toDate())}</Td>
-                                                        <Td>{employee.user_code}</Td>
-                                                        <Td>{employee.full_name}</Td>
-                                                        <Td>{employee.department}</Td>
-                                                        <Td>{employee.job_position}</Td>
-                                                        <Td>
-                                                            <Box className='flex space-x-2 items-center'>
-                                                                <Link href={`/enterprise-portal/admin/employee/${employee.id}`} >
-                                                                    <ViewIcon color={'#0D70AB'} size={'24'} />
-                                                                </Link>
+                                                            <Td>{formatDate(employee.candidate_added.toDate())}</Td>
+                                                            <Td>{employee.user_code}</Td>
+                                                            <Td>{employee.full_name}</Td>
+                                                            <Td>{allRoles?.find((role) => role.id === employee.user_role)?.role_name ?? 'No Role Assigned'}</Td>
+                                                            <Td>{employee.department}</Td>
+                                                            <Td>
+                                                                <Box className='flex space-x-2 items-center'>
+                                                                    <Link href={`/enterprise-portal/admin/employee/${employee.id}`} >
+                                                                        <ViewIcon color={'#0D70AB'} size={'24'} />
+                                                                    </Link>
                                                                 {/* <button ref={cancelRef} onClick={() => {openDeleteDialog(); setIdRef(candidate.id)}}>
                                                                     <CloseIcon />
                                                                 </button> */}

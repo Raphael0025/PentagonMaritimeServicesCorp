@@ -1,6 +1,5 @@
 'use client'
 
-import { useRef } from 'react'
 import { Box, Text, Grid, Image, GridItem } from '@chakra-ui/react'
 
 import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
@@ -10,10 +9,8 @@ import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
-import { useCourseBatch } from '@/context/BatchContext'
 import {useRank} from '@/context/RankContext'
 
-import { useReactToPrint } from 'react-to-print'
 import './reg_admission.css'
 
 import { reformatTrainingSched } from '@/handlers/trainee_handler'
@@ -26,15 +23,8 @@ interface UIProps {
 
 export default function Page({regNum, tab, traineeName}: UIProps){
 
-    const componentRef = useRef<HTMLDivElement | null>(null);
-    const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `${traineeName}_ADMISSION_FORM.pdf`,
-    })
-
-    const { data: courseBatch } = useCourseBatch()
     const { data: allRanks } = useRank()
-    const { data: allClients, courseCodes } = useClients()
+    const { courseCodes } = useClients()
     const { data: allTrainee } = useTrainees()
     const { data: allTraining } = useTraining()
     const { data: allCourses } = useCourses()
@@ -95,14 +85,14 @@ export default function Page({regNum, tab, traineeName}: UIProps){
                 <Box display='flex' flexDir='column' w='95%' >
                     <Box className='flex w-full justify-between'>
                         <Text fontSize='22pt' fontWeight='bold' color='#002060' textTransform='uppercase' fontFamily='Arial, sans-serif'>Admission Form</Text>
-                        <Box w='2.26in' fontFamily='Arial, sans-serif' lineHeight={'none'} px='4' py='2' h='0.48in' borderColor='black' borderWidth='0.75pt'>
+                        <Box w='2.35in' fontFamily='Arial, sans-serif' lineHeight={'none'} px='4' py='2' h='0.48in' borderColor='black' borderWidth='0.75pt'>
                             <Text mb='0' fontSize='10pt' sx={{fontVariant: 'small-caps'}} textTransform='uppercase' fontWeight='bold' >Registration No:</Text>
                             <Text mt='0' fontSize='12pt' px='5' textTransform='uppercase' fontWeight='bold' color='#ff0000'>{`REG-${reg.reg_no}`}</Text>
                         </Box>
                     </Box> 
                     <Box>
                         <Box display='flex' flexDir='column'  className='content-one p-1'>
-                            <Text fontWeight='bold' as='i' fontFamily='Calibri' fontSize='7pt' w='100%' textAlign='end'>{`FM-02-10-01 REV.03  Issued Date: 05/01/2025`}</Text>
+                            <Text fontWeight='bold' as='i' fontFamily='Calibri' fontSize='7pt' w='100%' textAlign='end'>{`FM-03-10-02 REV.03`}</Text>
                         </Box>
                         <Grid h='0.22in' pt='0.1px' pb='4' sx={{ textIndent: '0.08in' }} fontSize='9pt' bgColor='#002060' color='white' fontWeight='bold' fontFamily='Arial'>
                             <GridItem display='flex' border="0.5pt solid black" borderBottom='none' justifyContent='start' alignItems='start'>

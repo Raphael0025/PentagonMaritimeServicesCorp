@@ -37,6 +37,11 @@ export const initTRAINEE_BY_ID = {
     valid_id: '',
     photo: '',
     e_sig: '',
+    mismoSC: '',
+    medCert: '',
+    ssr: '',
+    cop: '',
+
     marketing: '',
     otherMarketing: '',
     createdAt: Timestamp.now(),
@@ -71,6 +76,11 @@ export interface TRAINEE {
     valid_id: string;
     photo: string;
     e_sig: string;
+    mismoSC: string;
+    medCert: string;
+    ssr: string;
+    cop: string;
+
     marketing: string;
     otherMarketing: string;
 }
@@ -104,6 +114,11 @@ export const initTRAINEE = {
     valid_id: '',
     photo: '',
     e_sig: '',
+    mismoSC: '',
+    medCert: '',
+    ssr: '',
+    cop: '',
+    
     marketing: '',
     otherMarketing: '',
     createdAt: Timestamp.now(),
@@ -134,29 +149,55 @@ export interface REGISTRATION {
     otherMarketing: string;
     reg_accountType: number; // 0 - crew | 1 - company
 }
-
 export interface TRAINING {
     reg_ref_id: string;
-
-    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel
+    enrolledBy: number;
+    
+    isEmailed: boolean;
+    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel | 8 - absent | 9 - Non-Appearance
     course_fee: number;
     course: string;
     start_date: string;
+    act_start_date: string;
     numOfDays: number;
     end_date: string;
+    act_end_date: string;
     accountType: number; // 0 - crew | 1 - company
-    
+    act_ins: string;
+    act_assessor: string;
+
     date_enrolled: Timestamp;
     batch: string;
     regType: number; // 2 - def | 0 - dated | 1 - bd
     
+    trainingMode: string;
     isCertified: boolean;
     cert_released: Timestamp;
-    cert_status: number; // 0 - pending | 1 - released
+    releasedBy: string;
+    releasingProof: string;
+    cert_status: number; // 0 - pending | 1 - unclaimed | 2 - released
     cert_no: string;
+
+    transmittalID: string;
+    certTitle: string;
+    certContent: string;
+    cert_version: string;
+    printCount: number;
+    viewCount: number;
+    hasViewed: boolean;
+    isUrgent: boolean;
+    webCertTitle: string;
+    webCertContent: string;
+    conductedOnline: boolean;
+
+    attendance: boolean;
+    ccr: boolean;
+    assessment: boolean;
+    evaluation: boolean;
     practical: number;
     written: number;
     result: number;
+    
     marketing: string;
     otherMarketing: string;
     train_remarks: string;
@@ -165,23 +206,49 @@ export interface TRAINING {
 export const initTraining = {
     id: '',
     reg_ref_id: '',
+    enrolledBy: 0,
 
-    reg_status: 0, // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - on-hold | 5 - pending | 6 - grad | 7 - cancel
+    isEmailed: false,
+    reg_status: 0, // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel
     course_fee: 0,
     course: '',
     start_date: '',
     numOfDays: 0,
     end_date: '',
+    act_end_date: '',
+    act_start_date: '',
     accountType: 0, // 0 - crew | 1 - company
-    
+    act_ins: '',
+    act_assessor: '',
+
     date_enrolled: Timestamp.now(),
     batch: '',
     regType: 0, // 2 - def | 0 - dated | 1 - bd
     
+    trainingMode: '',
     isCertified: false,
     cert_released: Timestamp.now(),
     cert_status: 0, // 0 - pending | 1 - released
     cert_no: '',
+    releasedBy: '',
+    releasingProof: '',
+
+    transmittalID: '',
+    certTitle: '',
+    certContent: '',
+    cert_version: '',
+    printCount: 0,
+    viewCount: 0,
+    hasViewed: false,
+    isUrgent: false,
+    webCertTitle: '',
+    webCertContent: '',
+    conductedOnline: false,
+
+    attendance: false,
+    ccr: false,
+    assessment: false,
+    evaluation: false,
     practical: 0,
     written: 0,
     result: 0,

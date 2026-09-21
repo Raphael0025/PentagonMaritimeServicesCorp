@@ -4,8 +4,7 @@ import React, { useState, useEffect } from 'react'
 import {
     Box, Text, Button, Input, InputGroup, Alert, AlertIcon, AlertTitle, AlertDescription, InputLeftAddon, Textarea, Select, useToast, useDisclosure,
     Modal, DrawerHeader, DrawerBody, DrawerFooter, Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, ModalCloseButton, ModalOverlay, ModalContent, ModalHeader,
-    ModalBody, ModalFooter, Checkbox, CheckboxGroup,
-    VisuallyHidden
+    ModalBody, ModalFooter, Checkbox, CheckboxGroup
 } from '@chakra-ui/react';
 
 import { TRAINING_BY_ID } from '@/types/trainees'
@@ -20,6 +19,7 @@ import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useClients } from '@/context/ClientCompanyContext'
+import { useInstructors } from '@/context/InstructorContext'
 
 import { UPDATE_BATCH } from '@/lib/course_batches_controller'
 
@@ -39,6 +39,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     const { allData: allRegistrations } = useRegistrations()
     const { data: allCourses } = useCourses()
     const { data: allClients, courseCodes } = useClients()
+    const { data: allInstructors } = useInstructors()
     
     const [course, setCourse] = useState<CoursesById>(initCoursesById)
     const [batch, setBatchDetails] = useState<CourseBatchByID>(initCourseBatch)
@@ -47,8 +48,12 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     const [selectedEmails, setSelectedEmails] = useState<string[]>([])
 
     // instructor details
-    const [notes, setNote] = useState<string>('')
+    const [note1, setNote1] = useState<string>('')
+    const [note2, setNote2] = useState<string>('')
     const [email, setEmail] = useState<string>('')
+    const [gmeet_link, setGMeet_Link] = useState<string>('')
+    const [gmeet_code, setGMeet_Code] = useState<string>('')
+    const [c_presentation_link, setPresentationLink] = useState<string>('')
 
     const [loading ,setLoading] = useState<boolean>(false)
     const [loadTrainees ,setLoadTrainees] = useState<boolean>(false)
@@ -58,7 +63,6 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     // User | Training Department Staff
     // Details provided upon user login
     const staff: string | null = localStorage.getItem('customToken')
-    const contact: string | null = localStorage.getItem('phone')
     const [position, setPosition] = useState<string | null>('')
 
     useEffect(() => {
@@ -66,7 +70,6 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
         const getPosition = localStorage.getItem('jobPositionToken')
 
         const posArr = getPosition ? getPosition.split('/') : []
-    
         if (getDept) {
             const deptArr = getDept.split('/');
             const targetDept = 'Training';
@@ -105,7 +108,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
         }
     }
 
-    const trainingDataArr = trainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch.toString() === batchID)
+    const trainingDataArr = trainingData?.filter((training) => (training.course === course?.id || matchedCourseAndCompanyCourse?.includes(training.course)) && training.batch === batchID)
     .slice() // Create a shallow copy to avoid mutating the original array
     .sort((a, b) => {
         const regNoA = allRegistrations?.find((r) => r.id === a.reg_ref_id)?.reg_no || '';
@@ -141,6 +144,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
         {label: 'Online MODULAR', value: 'olm'},
         {label: 'Online THEORETICAL', value: 'olt'},
         {label: 'Online PRACTICAL', value: 'olp'},
+        {label: 'Blended', value: 'blended'},
     ]
 
     const OnChangeBatchDetails = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,6 +155,16 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
             [id]: value
         }))
     }
+    
+    const OnChangeBatchDetailsSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const { id, value } = e.target
+
+        setBatchDetails((prev) => ({
+            ...prev,
+            [id]: value
+        }))
+    }
+
     const OnChangeBatchDetailsTextArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const { id, value } = e.target
 
@@ -197,16 +211,23 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
 
     const handleNotifyTrainees = () => {
         setLoadTrainees(true)
+        
+        const company_staff: string | null = localStorage.getItem('customToken')
+        const jobPosition: string | null = localStorage.getItem('jobPositionToken')
         new Promise<void>((res, rej) => {
             setTimeout( async () => {
                 try{
                     const courseFound = allCourses?.find((c) => c.id === batch.course)
                     const startDateArr = batch.start_date.split(',')
                     const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
-                    const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
-                    const class_code = courseFound?.class_code
+                    const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} ${batch.end_date === '' ? '' : `to ${endDateArr[1].toUpperCase()}`}` : startDateArr[1].toUpperCase()
+                    const gClassLink = courseFound?.class_code
+                    const gmeetLink = courseFound?.gmeet_link
                     const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
-
+                    const firstName = company_staff?.split(' ')[0] || '';
+                    const lastName = company_staff?.split(' ').at(-1) || '';
+                    const staffName = `${firstName} ${lastName}`
+                    
                     const route = batch.training_mode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
                     await fetch(route, {
                         method: 'POST',
@@ -219,11 +240,10 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             course_name: courseFound?.course_name, 
                             schedule, 
                             time: timeArr[0], 
-                            training_mode: (batch.training_mode === 'olm' ? 'Online-Modular' : 'Online'), 
-                            class_code, 
-                            tro_contact: contact, 
-                            staff, 
-                            position 
+                            gClassLink, 
+                            gmeetLink,
+                            staff: staffName, 
+                            position: jobPosition 
                         })
                     })
                     res()
@@ -244,11 +264,30 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     
     const handleNotifyInstructor = () => {
         setLoadInstructor(true)
+        
+        const company_staff: string | null = localStorage.getItem('customToken')
+        const jobPosition: string | null = localStorage.getItem('jobPositionToken')
+
         new Promise<void>((res, rej) => {
             setTimeout( async () => {
                 try{
                     const courseFound = allCourses?.find((c) => c.id === batch.course)
-                    const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
+                    const startDateArr = batch.start_date.split(',')
+                    const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
+                    const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
+                    const gClassLink = courseFound?.class_code
+                    const gmeetLink = courseFound?.gmeet_link
+                    const firstName = company_staff?.split(' ')[0] || '';
+                    const lastName = company_staff?.split(' ').at(-1) || '';
+                    const staffName = `${firstName} ${lastName}`
+
+                    const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
+                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.act_ins);
+                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
+
+                    // Add 'MM' if rank is 'CAPT'
+                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                    const intructor_name = `${ins.rank} ${ins.name}${suffix}`;
 
                     const route = '/api/training-advise/notify-instructor'
                     
@@ -258,7 +297,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
 
                         return `${rank?.toUpperCase()} ${trainee?.last_name.toUpperCase()}, ${trainee?.first_name.toUpperCase()} ${middleInitial}`;
                     })
-                    
+
                     await fetch(route, {
                         method: 'POST',
                         headers: {
@@ -268,13 +307,16 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             to: email, 
                             course_code: courseFound?.course_code, 
                             course_name: courseFound?.course_name, 
-                            time_duration: timeArr[0], 
+                            time_duration: batch.time_duration, 
                             trainees: listOfTrainees,
-                            notes,
-                            instructor: batch.instructor,
-                            tro_contact: contact, 
-                            staff, 
-                            position 
+                            note1,
+                            schedule,
+                            gClassLink,
+                            gmeetLink,
+                            presentation_link: c_presentation_link,
+                            instructor: intructor_name,
+                            staff: staffName, 
+                            position: jobPosition 
                         })
                     })
                     res()
@@ -288,12 +330,19 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
             console.error('Error: ', error)
         }).finally(() =>{
             onModClose()
-            setNote('')
+            setNote1('')
+            setNote2('')
             setEmail('')
             setShow(true)
             setLoadInstructor(false)
         })
     }
+
+    const handleNotes = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        setNote2(value);
+        setNote1(value.replace(/\n/g, "<br>"));
+    };
 
     return(
         <>
@@ -322,21 +371,73 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                         <Input id='room' value={batch.room} placeholder={`e.g., Room 1-7 only`} type='text' onChange={OnChangeBatchDetails} />
                     </InputGroup>
                 </Box>
-                <Box mt='2' >
-                    <InputGroup mb='2' shadow='md' size='sm'>
-                        <InputLeftAddon>Instructor:</InputLeftAddon>
-                        <Input id='instructor' value={batch.instructor} placeholder={`Type here instructor's name`} type='text' onChange={OnChangeBatchDetails} />
-                    </InputGroup>
-                    <InputGroup shadow='md' size='sm'>
-                        <InputLeftAddon>Training Mode:</InputLeftAddon>
-                        <Select onChange={(e) => {setBatchDetails((prev) => ({...prev, training_mode: e.target.value}))}} value={batch.training_mode}>
-                            <option label='Select Training Mode' hidden />
-                            {trainingModes.map((arr, index) => (
-                                <option key={index} label={arr.label} value={arr.value}/>
-                            ))}
-                        </Select>
-                    </InputGroup>
+                <Box mt='2' fontSize='10pt'>
+                    <Box fontWeight='normal' mb='2' >
+                        <Text fontWeight='bold' >Declared Instructor & Assessor:</Text>
+                        <Box display='flex' justifyContent='space-between'>
+                            <Box >
+                                <Text fontWeight='bold'>Instructor:</Text>
+                                <Text>
+                                {(() => {
+                                    const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
+                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.instructor);
+                                    if (!ins) return trainingBatch?.instructor || 'No Instructor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                    return `${ins.rank} ${ins.name}${suffix}`;
+                                })()} 
+                                </Text>
+                            </Box>
+                            <Box >
+                                <Text fontWeight='bold'>Assessor:</Text>
+                                <Text>
+                                {(() => {
+                                    const trainingBatch = courseBatch?.find((batch) => batch.id === batchID)
+                                    const ins = allInstructors?.find((i) => i.id === trainingBatch?.assessor);
+                                    if (!ins) return trainingBatch?.assessor || 'No Instructor';
+
+                                    // Add 'MM' if rank is 'CAPT'
+                                    const suffix = ins.rank === 'CAPT' ? ', MM' : '';
+                                    return `${ins.rank} ${ins.name}${suffix}`;
+                                })()} 
+                                </Text>
+                            </Box>
+                        </Box>
+                    </Box>
                 </Box>
+                <Box mt='2' >
+                    <Text fontSize='10pt'>Actual Instructor & Assessor:</Text>
+                    <Box display='flex' justifyContent='space-between'>
+                        <InputGroup shadow='md' mr='2' w='50%' size='sm'>
+                            <InputLeftAddon>Instructor:</InputLeftAddon>
+                            <Select id='act_ins' shadow='md' onChange={OnChangeBatchDetailsSelect}>
+                                <option hidden>{`${batch.act_ins ? (allInstructors?.find((i) => i.id === batch.act_ins)?.name || batch.act_ins) : 'Select Instructor'}`}</option>
+                                {allInstructors && allInstructors.map((i) => (
+                                    <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                ))}
+                            </Select>
+                        </InputGroup>
+                        <InputGroup shadow='md' w='50%' size='sm'>
+                            <InputLeftAddon>Assessor:</InputLeftAddon>
+                            <Select id='act_ass' shadow='md' onChange={OnChangeBatchDetailsSelect}>
+                                <option hidden>{`${batch.act_ass ? (allInstructors?.find((i) => i.id === batch.act_ass)?.name || batch.act_ass) : 'Select Assessor'}`}</option>
+                                {allInstructors && allInstructors.map((i) => (
+                                    <option key={i.id} value={i.id}>{`${i.rank} ${i.name}`}</option>
+                                ))}
+                            </Select>
+                        </InputGroup>
+                    </Box>
+                </Box>
+                <InputGroup mt='2' shadow='md' size='sm'>
+                    <InputLeftAddon>Training Mode:</InputLeftAddon>
+                    <Select onChange={(e) => {setBatchDetails((prev) => ({...prev, training_mode: e.target.value}))}} value={batch.training_mode}>
+                        <option label='Select Training Mode' hidden />
+                        {trainingModes.map((arr, index) => (
+                            <option key={index} label={arr.label} value={arr.value}/>
+                        ))}
+                    </Select>
+                </InputGroup>
             </DrawerHeader>
             <DrawerBody>
                 <Box mt='2' >
@@ -391,7 +492,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                 </Box>
                 <Box mt='3'>
                     <Text fontSize='10pt'>Remarks:</Text>
-                    <Textarea id='remarks' fontWeight='normal' value={batch.remarks} onChange={OnChangeBatchDetailsTextArea} placeholder='Type here your remarks' shadow='md' size='sm' resize='vertical' minH='150px' />
+                    <Textarea id='remarks' fontWeight='normal' value={batch.attendance_remarks} onChange={OnChangeBatchDetailsTextArea} placeholder='Type here your remarks' shadow='md' size='sm' resize='vertical' minH='150px' />
                 </Box>
             </DrawerBody>
             <DrawerFooter>
@@ -452,16 +553,18 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                                     {show ? 'Notify Instructor' : 'Hide'}
                                 </Button>
                                 <Box display={show ? 'none' : ''} >
-                                    <Input placeholder='Instructor Email' onChange={(e) => setEmail(e.target.value)} />
-                                    <Textarea placeholder='Place your notes here...' mt='4' onChange={(e) => setNote(e.target.value)} />
+                                    <Input size='sm' fontWeight='normal' placeholder='Instructor Email' onChange={(e) => setEmail(e.target.value)} mb='2' />
+                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Code' onChange={(e) => setGMeet_Code(e.target.value)} mb='2' />
+                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Link' onChange={(e) => setGMeet_Link(e.target.value)} mb='2' />
+                                    <Input size='sm' fontWeight='normal' placeholder='Course Presentation Link' onChange={(e) => setPresentationLink(e.target.value)} mb='2' />
+                                    <Textarea fontWeight='normal' placeholder='Place your notes here...' value={note2} mt='4' onChange={handleNotes} />
                                 </Box>
                             </Box>
-
                         </Box>
                     </ModalBody>
                     <ModalFooter>
                         <Button isLoading={loadTrainees} loadingText='Notifying Trainees...' isDisabled={selectedEmails.length === 0 || loadInstructor} bgColor='blue.700' colorScheme='blue' shadow='md' mr={3} onClick={handleNotifyTrainees}>Notify Trainees</Button>
-                        <Button isLoading={loadInstructor} loadingText='Notifying Instructor...' isDisabled={notes === '' || email === '' || loadTrainees} bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handleNotifyInstructor}>Notify Instructor</Button>
+                        <Button isLoading={loadInstructor} loadingText='Notifying Instructor...' isDisabled={email === '' || loadTrainees} bgColor='blue.700' colorScheme='blue' shadow='md' onClick={handleNotifyInstructor}>Notify Instructor</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

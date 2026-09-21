@@ -192,8 +192,12 @@ export default function NewCourseForm({ onClose } : IProps){
                 </FormControl>
             </Box>
             <Box >
-                <Text >Class Code:</Text>
+                <Text >GClass Link:</Text>
                 <Input id='class_code' textTransform='lowercase' onChange={handleChange} fontSize='lg' size='lg' placeholder='' type='text' className='p-3 form-input' border='0' borderBottom='2px' borderColor='#A1A1A1' borderRadius='0' autoComplete='off' _hover={{borderColor: '#2F67B2'}} _focus={{ boxShadow:'0 0 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}} />
+            </Box>
+            <Box >
+                <Text >GMeet Link:</Text>
+                <Input id='gmeet_link' textTransform='lowercase' onChange={handleChange} fontSize='lg' size='lg' placeholder='' type='text' className='p-3 form-input' border='0' borderBottom='2px' borderColor='#A1A1A1' borderRadius='0' autoComplete='off' _hover={{borderColor: '#2F67B2'}} _focus={{ boxShadow:'0 0 0px 0px rgba(88, 144, 255, .75), 0 0px 0px rgba(0, 0, 0, .15)'}} />
             </Box>
             <Box className='flex space-x-4'>
                 <Box className='input-grp w-full '>
@@ -205,11 +209,13 @@ export default function NewCourseForm({ onClose } : IProps){
                         <option value='Thursday'>Thursday</option>
                         <option value='Friday'>Friday</option>
                         <option value='Saturday'>Saturday</option>
+                        <option value='Sunday'>Sunday</option>
                     </select>
                 </Box>
                 <Box className='input-grp w-full '>
                     <select id='numOfDays' onChange={handleSelect} className='drop form-input w-full' defaultValue='' required>
                         <option value='' hidden disabled>Select Number of Days</option>
+                        <option value={10}>10 days</option>
                         <option value={6}>6 days</option>
                         <option value={5}>5 days</option>
                         <option value={4}>4 days</option>
@@ -226,6 +232,8 @@ export default function NewCourseForm({ onClose } : IProps){
                         <option hidden>Select Type</option>
                         <option value={0}>Marina</option>
                         <option value={1}>In-House</option>
+                        <option value={2}>STCW</option>
+                        <option value={3}>Safety Courses</option>
                     </Select>
                 </Box>
                 <Box className='w-full'>

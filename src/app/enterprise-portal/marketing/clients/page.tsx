@@ -492,6 +492,10 @@ export default function Page(){
                                 <Input name='edit' className='uppercase' value={clientUpdate.company} id='company' onChange={handleOnChange} type='text' variant='flushed' />
                             </FormControl>
                             <FormControl>
+                                <FormLabel fontSize='14' color='#a1a1a1'>Company Alias Name:</FormLabel>
+                                <Input name='edit' className='uppercase' value={clientUpdate.alias} id='alias' onChange={handleOnChange} type='text' variant='flushed' />
+                            </FormControl>
+                            <FormControl>
                                 <FormLabel fontSize='14' color='#a1a1a1'>Company Address:</FormLabel>
                                 <Input name='edit' className='uppercase' value={clientUpdate.address} id='address' onChange={handleOnChange} type='text' variant='flushed' />
                             </FormControl>
@@ -677,6 +681,10 @@ export default function Page(){
                             <FormControl>
                                 <FormLabel fontSize='14' color='#a1a1a1'>Company Name:</FormLabel>
                                 <Input className='uppercase' id='company' onChange={handleOnChange} type='text' variant='flushed' />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel fontSize='14' color='#a1a1a1'>Company Alias Name:</FormLabel>
+                                <Input className='uppercase' id='alias' onChange={handleOnChange} type='text' variant='flushed' />
                             </FormControl>
                             <FormControl>
                                 <FormLabel fontSize='14' color='#a1a1a1'>Company Address:</FormLabel>

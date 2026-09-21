@@ -15,8 +15,7 @@ import { useInstructors } from '@/context/InstructorContext'
 
 import { getFormatDate } from '@/handlers/util_handler';
 import { formatDateToShort } from '@/handlers/trainee_handler';
-import { parsingTimestamp, ToastStatus } from '@/types/handling'
-import { splitTextAtWordBoundary } from '@/handlers/util_handler';
+import { parsingTimestamp } from '@/types/handling'
 
 interface TFProps {
     batch: CourseBatchByID | null;
@@ -32,11 +31,11 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
 
     if(!batch) return null;
     const course = allCourses?.find((course) => course.id === batch.course)
-    const formattedDate = batch.end_date === '' ? formatDateToShort(batch.start_date) :getFormatDate(`${batch.start_date} - ${batch.end_date}`)
+    const formattedDate = batch.end_date === '' ? formatDateToShort(batch.start_date) : getFormatDate(`${batch.start_date} - ${batch.end_date}`)
 
     return(
     <>
-     <Box w='100%'>
+    <Box w='100%'>
         <Box display='flex' flexDir='column' justifyContent='center' alignItems='center'>
             {/** Header */}
             <Box display='flex' justifyContent='space-between' alignItems='center' w='90%'>
@@ -73,19 +72,19 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                 <Box w='47%'>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Course:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${course?.course_code}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' fontSize='6pt' w='100%'>{`${course?.course_name.toUpperCase()}`}</Text>
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Schedule:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${formattedDate}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${formattedDate}`}</Text>
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Practicum Site:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.practicumSite}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.practicumSite}`}</Text>
                     </Box>
                     <Box w='100%' display='flex' alignItems='end'>
                         <Text w='40%'>{`Instructor:`}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>
                             {(() => {
                                 const ins = allInstructors?.find((i) => i.id === batch?.instructor);
                                 if (!ins) return batch?.instructor || 'No Instructor';
@@ -100,19 +99,19 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                 <Box w='45%'>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Class No: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.batch_no}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.batch_no}`}</Text>
                     </Box>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Room No: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.room}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.room}`}</Text>
                     </Box>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Practicum Date: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>{`${batch?.practicumDate}`}</Text>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>{`${batch?.practicumDate}`}</Text>
                     </Box>
                     <Box w='100%' display='flex'  alignItems='end' ms='1'>
                         <Text w='40%'>{`Assessor: `}</Text>
-                        <Text textAlign='center' borderBottomWidth='1px' borderColor='black' w='100%'>
+                        <Text textAlign='center' borderBottomWidth='1px' fontSize='7pt' borderColor='black' w='100%'>
                             {(() => {
                                 const ins = allInstructors?.find((i) => i.id === batch?.assessor);
                                 if (!ins) return batch?.assessor || 'No Instructor';
@@ -198,15 +197,24 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                         const regNoB = allRegistrations?.find((r) => r.id === b.reg_ref_id)?.reg_no || '';
                 
                         // Extract numeric parts of the registration number
-                        const [yearA, numberA] = regNoA.split('-').map(Number);
-                        const [yearB, numberB] = regNoB.split('-').map(Number);
+                        const [yearA, monthA, numberA] = regNoA.split('-').map(Number);
+                        const [yearB, monthB, numberB] = regNoB.split('-').map(Number);
                 
                         // Compare by year first, then by number
                         if (yearA !== yearB) {
                             return yearA - yearB;
                         }
                         return numberA - numberB;
-                    }).map((training, index) => {
+                    })
+                    // .sort((a, b) => {
+                    //     // Use .toMillis() for Firestore Timestamps, default to 0 if missing
+                    //     const timeA = a.date_enrolled ? a.date_enrolled.toMillis() : 0;
+                    //     const timeB = b.date_enrolled ? b.date_enrolled.toMillis() : 0;
+
+                    //     // Ascending order (Oldest -> Newest)
+                    //     return timeA - timeB;
+                    // })
+                    .map((training, index) => {
                         const registrations = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                         const trainee = allTrainee?.find((t) => t.id === registrations?.trainee_ref_id)
                         return(
@@ -396,13 +404,12 @@ export default function AttendanceForm({ batch, trainingArray}: TFProps) {
                         const ins = allInstructors?.find((i) => i.id === batch?.instructor)
 
                         const eSignSrc = ins?.e_sign || '/placeholder-signature.png'
-                        const suffix = ins?.rank === 'CAPT' ? ', MM' : ''
                     
                         return(
                             <>
                                 {batch?.room?.toLowerCase() === 'online' && (
                                     <Box position='absolute' top='-20px' left='50%' transform="translateX(-50%)" zIndex={2} >
-                                        <NextImage src={eSignSrc} width='100' height='20' alt='signature' />
+                                        <ChakraImage src={eSignSrc} h='85' alt='signature' />
                                     </Box>
                                 )}
                                 <Text mt='8' position='relative' zIndex={1} w='100%' textAlign='center' borderBottomWidth='1px' borderColor='black'>

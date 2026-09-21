@@ -11,12 +11,13 @@ export interface Courses{
     course_name: string;
     class_code: string;
     course_fee: number;
+    gmeet_link: string;
     day: string;
     startTime: Timestamp;
     endTime: Timestamp;
     trainingMode: number; // 0 - NS | 1 - Simu
     numOfDays: number;
-    courseType: number; // 0 - Marina | 1 - In-house  
+    courseType: number; // 0 - Marina | 1 - In-house | 2 - STCW | 3 - Safety Course
 }
 
 export const initCourses = {
@@ -24,6 +25,7 @@ export const initCourses = {
     course_name: '',
     course_fee: 0,
     class_code: '',
+    gmeet_link: '',
     day: '',
     numOfDays: 0,
     courseType: 2,
@@ -38,6 +40,7 @@ export const initCoursesById = {
     course_code: '',
     course_name: '',
     class_code: '',
+    gmeet_link: '',
     course_fee: 0,
     day: '',
     startTime: Timestamp.now(),

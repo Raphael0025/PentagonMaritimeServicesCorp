@@ -6,5 +6,6 @@ import MapComponent from './MapComponent'
 import BannerView from './BannerView'
 import CardOverlay from './CardOverlay'
 import BannerComponent from './BannerComponent'
+import NavBarV2 from './NavBarV2'
 
-export { CustomLink, BannerComponent, CardOverlay, BannerView, NavBar, Footer, MapComponent, ElementView }
+export { CustomLink, BannerComponent, CardOverlay, BannerView, NavBar, NavBarV2, Footer, MapComponent, ElementView }

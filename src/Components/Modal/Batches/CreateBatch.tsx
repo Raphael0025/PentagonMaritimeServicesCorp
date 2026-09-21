@@ -42,7 +42,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
 
     const [startDate, setStart] = useState<string>('')
     const [endDate, setEnd] = useState<string>('')
-    const [batch, setBatch] = useState<number>(0)
+    const [batch, setBatch] = useState<string>('')
     const [numDays, setNumDays] = useState<number>(0)
     const [loading, setLoading] = useState<boolean>(false)
 
@@ -71,11 +71,14 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
     && training.regType === reg_Type // By using training.regType || reg_Type like reg_status to validate the status of training, is also considered if a training is enrolled or not.
     && (Number(training.batch) === 1 || Number(training.batch) === 0)) // this will validate if training is still has 1 as its value
     
-    const lastBatchNum = courseBatch && courseBatch?.filter((batch) => batch.course === courseName?.id).reduce((max, curr) => (curr.batch_no > max ? curr.batch_no : max), 0)
+    // const lastBatchNum = courseBatch?.filter(batch => batch.course === courseName?.id).reduce((max, curr) => {
+    //                     const batchNum = Number(String(curr.batch_no).replace(/\D/g, ""))
+    //                         return batchNum > max ? batchNum : max
+    //                     }, 0) ?? 0
 
-    const handleBatchDuplication = (batchVal: number) => {
-        return courseBatch?.some((batch) => batch.course === courseName?.id && batch.batch_no === batchVal)
-    }
+    // const handleBatchDuplication = (batchVal: string) => {
+    //     return courseBatch?.some((batch) => batch.course === courseName?.id && batch.batch_no === batchVal)
+    // }
 
     const handleCreateBatch = async () => {
         setLoading(true)
@@ -97,11 +100,21 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                         room: '',
                         instructor: '',
                         assessor: '',
+                        act_ins: '',
+                        act_ass: '',
                     }
                     const batch_id = await GENERATE_BATCH(newBatchRecord, actor) 
                     await Promise.all(
                         selectedTraining.map((trainingData) => 
-                            UPDATE_TRAINING(trainingData.training.id, {batch: batch_id}, actor)
+                            UPDATE_TRAINING(
+                                trainingData.training.id, 
+                                {
+                                    batch: batch_id,
+                                    start_date: startDate,
+                                    end_date: endDate,
+                                }, 
+                                actor
+                            )
                         )
                     )
                     res()
@@ -118,7 +131,7 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             setSelectedTrainings([])
             setStart('')
             setEnd('')
-            setBatch(0)
+            setBatch('')
             setNumDays(0)
             onClose()
         })
@@ -130,15 +143,16 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             setEnd(end_date)
             setNumDays(numOfDays)
             handleSelection(training, registration, trainee)
-        } else if (endDate.toUpperCase() !== '' || endDate.toUpperCase() === end_date.toUpperCase()){
-            if(startDate.toUpperCase() !== start_date.toUpperCase()){
-                handleToast('Training Date Not Matched!', `You're trying to select a training with un-matching training schedule. Kindly select a training with matching dates.`, 7000, 'warning')
-                return
-            } 
+        } 
+        // else if (endDate.toUpperCase() !== '' || endDate.toUpperCase() === end_date.toUpperCase()){
+        //     if(startDate.toUpperCase() !== start_date.toUpperCase()){
+        //         handleToast('Training Date Not Matched!', `You're trying to select a training with un-matching training schedule. Kindly select a training with matching dates.`, 7000, 'warning')
+        //         return
+        //     } 
+        else {
             handleSelection(training, registration, trainee)
-        } else {
-            handleToast('Training Date Not Matched!', `You're trying to select a training with un-matching training schedule. Kindly select a training with matching dates.`, 7000, 'warning')
-            return
+        //     handleToast('Training Date Not Matched!', `You're trying to select a training with un-matching training schedule. Kindly select a training with matching dates.`, 7000, 'warning')
+        //     return
         }
     }
 
@@ -184,6 +198,43 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
         setMonthSelected(new Date().getMonth())
         setYearSelected(new Date().getFullYear())
         onCloseM()
+    }
+
+    const handleTrainingDates = async () => {
+        setLoading(true)
+        const actor: string | null = localStorage.getItem('customToken')
+
+        handleToast('Processing...', `This may take some time to finish, Kindly wait for it to complete.`, 5000, 'info')
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    // This function is to add some more trainings, if the condition is true then function will execute 
+                    // await UPDATE_BATCH(batch_id, {start_date: startDate, end_date: endDate}, '')
+                    selectedTraining.length > 0 && (
+                        await Promise.all(
+                            selectedTraining.map((trainingData) => {
+                                return Promise.resolve(UPDATE_TRAINING(trainingData.training.id, 
+                                    {
+                                        start_date: startDate,
+                                        end_date: endDate
+                                    }, 
+                                    actor
+                                ))
+                            })
+                        )
+                    )
+                    res()
+                }catch(error){
+                    rej(error)
+                }
+            }, 500)
+        }).then(() => {
+            handleToast('Batch Successfully Updated!', `Batch# ${batch} for this course ${courseName?.course_code} has been updated.`, 5000, 'success')
+        }).catch((error) => {
+            console.log('Error:, ', error)
+        }).finally(() => {
+            setLoading(false)
+        })
     }
 
     return(
@@ -245,34 +296,38 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                             <Box display='flex' flexDir='column' alignItems='start'>
                                 <FormControl display='flex' flexDir='column' justifyContent='start' alignItems='start'>
                                     <Text fontSize='14px' mr='4'>Batch:</Text>
-                                    <Input className={`${selectedTraining.length === 0 ? 'hover:cursor-not-allowed' : ''}`} value={batch === 0 ? '' : batch} isDisabled={selectedTraining.length === 0} type='number' onChange={(e) => setBatch(Number(e.target.value))} placeholder='Batch #' shadow='md' />
+                                    <Input className={`${selectedTraining.length === 0 ? 'hover:cursor-not-allowed' : ''}`} value={batch === '' ? '' : batch} isDisabled={selectedTraining.length === 0} type='string' onChange={(e) => setBatch(e.target.value)} placeholder='Batch #' shadow='md' />
                                 </FormControl>
-                                <FormLabel mt='2' fontSize='12px' color='red.500'>
+                                {/* <FormLabel mt='2' fontSize='12px' color='red.500'>
                                     <Text>
-                                        {`Last Batch #: ${lastBatchNum === null || lastBatchNum === 0 ? '' : lastBatchNum}`}
+                                        {`Last Batch #: ${lastBatchNum === null || lastBatchNum === '' ? '' : lastBatchNum}`}
                                     </Text>
                                     {handleBatchDuplication(batch) && (
                                         <Text>
                                             {`You cannot duplicate a batch number. That batch number already exists.`}
                                         </Text>
                                     )}
-                                </FormLabel>
+                                </FormLabel> */}
                             </Box>
                             <Text fontSize='14px' display='flex' flexDir='column' whiteSpace={'8'} ml='4'>
                                 <Text as='span'>{`From:`}</Text>
-                                <Text as='span'>{`${startDate}`}</Text>
+                                <Input value={startDate} type='text' onChange={(e) => setStart(e.target.value)} />
                             </Text>
                             <Text fontSize='14px' display='flex' flexDir='column' whiteSpace={'8'} ml='4'>
                                 <Text as='span'>{`To:`}</Text>
-                                <Text as='span'>{`${endDate}`}</Text>
+                                <Input value={endDate} type='text' onChange={(e) => setEnd(e.target.value)} />
                             </Text>
-                            <Button onClick={() => {setStart(''); setEnd(''); setBatch(0); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
+                            <Box display='flex' flexDir='column' ml='4' gap='3'>
+                                <Button onClick={() => {setStart(''); setEnd(''); setBatch(''); setSelectedTrainings([])}} ml='4' size='xs' colorScheme='red' isDisabled={startDate === ''} shadow='md'> Clear Data</Button>
+                            </Box>
                         </Box>
                         <Box py='4'>
                             <Box px='6' display='flex' color='gray.600' py='3' justifyContent={'space-between'} alignItems={'center'} borderRadius='5px' borderWidth='1px' borderColor='gray.400'>
                                 <Text w='30%' textAlign='start'>#</Text>
                                 <Text w='100%' textAlign='start'>Name</Text>
                                 <Text w='100%' textAlign='center'>Rank</Text>
+                                <Text w='100%' textAlign='center'>Start Date</Text>
+                                <Text w='100%' textAlign='center'>End Date</Text>
                                 <Text w='100%' textAlign='center'>Registration No.</Text>
                             </Box>
                             {selectedTraining.map((row, index) => (
@@ -280,6 +335,8 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
                                     <Text w='30%' textAlign='start'>{(index + 1)}</Text>
                                     <Text w='100%' textAlign='start'>{`${row.trainee.last_name}, ${row.trainee.first_name} ${!row.trainee.middle_name || ['n/a', 'na'].includes(row.trainee.middle_name.toLowerCase()) ? '' : `${row.trainee.middle_name.charAt(0)}.`} ${!row.trainee.suffix || ['n/a', 'na'].includes(row.trainee.suffix.toLowerCase()) ? '' : row.trainee.suffix}`}</Text>
                                     <Text w='100%' textAlign='center'>{`${row.trainee.rank}`}</Text>
+                                    <Text w='100%' textAlign='center'>{`${row.training.start_date}`}</Text>
+                                    <Text w='100%' textAlign='center'>{`${row.training.end_date !== '' ? row.training.end_date: '--'}`}</Text>
                                     <Text w='100%' textAlign='center'>{`REG-${row.registration.reg_no}`}</Text>
                                 </Box>
                             ))}
@@ -289,7 +346,9 @@ export default function CreateBatch({onClose, course_id, reg_Type}: PageProps){
             </ModalBody>
             <ModalFooter borderTopWidth='2px' display={'flex'} justifyContent='center'>
                 <Button onClick={onClose} variant={'outline'} colorScheme='red' mr={3} shadow='md'>Cancel</Button>
-                <Button onClick={handleCreateBatch} isDisabled={batch === 0 || handleBatchDuplication(batch)} isLoading={loading} loadingText='Creating Batch...' colorScheme='blue' bgColor='blue.700' shadow='md'>Create Batch</Button>
+                <Button onClick={handleCreateBatch} isDisabled={batch === '' 
+                    // || handleBatchDuplication(batch)
+                    } isLoading={loading} loadingText='Creating Batch...' colorScheme='blue' bgColor='blue.700' shadow='md'>Create Batch</Button>
             </ModalFooter>
         </ModalContent>
         {/*  Date Modal */}

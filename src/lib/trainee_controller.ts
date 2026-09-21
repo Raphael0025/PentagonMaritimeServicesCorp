@@ -1,4 +1,4 @@
-import { addDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp } from 'firebase/firestore'
+import { addDoc, getDoc, updateDoc, setDoc, writeBatch, doc, getDocs, query, orderBy, where, collection, limit, getFirestore, serverTimestamp, DocumentReference, Timestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, uploadString } from 'firebase/storage'
 import { storage } from './firebase'
 import { app } from './firebase'
@@ -43,7 +43,7 @@ export const INSERT_TRAINEE = async (traineeDetails: TRAINEE, ) => {
     }
 }
 
-export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string,) => {
+export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: number, allFiles: any) => {
     try{
         const traineeQuery = query(trainees, where('last_name', '==', traineeDetails.last_name), where('first_name', '==', traineeDetails.first_name))
         const querySnapshot = await getDocs(traineeQuery)
@@ -56,76 +56,105 @@ export const addNewTrainee = async (traineeDetails: TRAINEE, trainee_type: numbe
             })
             return null
         }
-
-        const newDetails = {
-            ...traineeDetails,
-        }
         
-        const docRef: DocumentReference = await addDoc(trainees, {...newDetails})
-        await addAttachments(docRef.id, traineeDetails.last_name, traineeDetails.first_name, trainee_type, validID, profileID, validSignature, file, pfpFile)
+        const docRef: DocumentReference = await addDoc(trainees, {...traineeDetails, trainee_type})
+        await addAttachments(docRef.id, {...traineeDetails, trainee_type}, allFiles)
+
         return docRef.id
     } catch(error){
         throw error
     }
 }
 
-export const addAttachments = async (id: string, lastName: string, givenName: string, traineeType: number, validID: any, profileID: any, validSignature: any, file: string, pfpFile: string) => {
-    try{
-        let sig_url = '';
-        let validURL = '';
-        let validProfileURL = '';
+export const uploadTraineeFile = async (folder: string, fileNameSuffix: string, fileData: any, checkString: string, context: {lastName: string, givenName: string, isReEnroll: boolean}) => {
+    if(!fileData || !fileData[0] || checkString === 'No file chosen yet...') return '';
+    const prefix = context.isReEnroll ? 're-enroll_' : '';
+    const path = `TRAINEES/${folder}/${prefix}${context.lastName}_${context.givenName}_${fileNameSuffix}.jpg`
+    
+    const storageRef = ref(storage, path)
+    const uploadRes = await uploadBytes(storageRef, fileData[0])
+    return await getDownloadURL(uploadRes.ref)
+}
 
-        if (file !== 'No file chosen yet...') {
-            // Upload valid id to Storage
-            const idRef = ref(storage, `TRAINEES/valid_id/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_validID.jpg`);
-            const id_data = await uploadBytes(idRef, validID[0]);
-            validURL = await getDownloadURL(id_data.ref);
-        }
-        if (pfpFile !== 'No file chosen yet...') {
-            // Upload valid pfp to Storage
-            const pfpRef = ref(storage, `TRAINEES/photos/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_idPic.jpg`);
-            const pfp_data = await uploadBytes(pfpRef, profileID[0]);
-            validProfileURL = await getDownloadURL(pfp_data.ref);
-        }
-        
-        if (validSignature && validSignature.length > 0) {
-            // Upload valid signature to Storage
-            const sigRef = ref(storage, `TRAINEES/e-signs/${traineeType !== 0 ? 're-enroll_' : ''}${lastName}_${givenName}_esign.jpg`);
-            const sig_data = await uploadBytes(sigRef, validSignature[0]);
-            sig_url = await getDownloadURL(sig_data.ref);
-        }
-        const getDoc = doc(firestore, `TRAINEES/${id}`)
-        const newAttachments = {
-            e_sig: sig_url,
-            photo: validProfileURL,
-            valid_id: validURL,
-        }
-        await setDoc(getDoc, newAttachments, {merge: true})
+export const addAttachments = async (id: string, traineeDetails: any, files: any) => {
+    try{
+        const {last_name, first_name, trainee_type} = traineeDetails
+        const context = {lastName: last_name, givenName: first_name, isReEnroll: trainee_type !== 0}
+
+        const fileMap = [
+            { key: 'valid_id', folder: 'valid_id', suffix: 'validID', data: files.validID, check: files.file},
+            { key: 'photo', folder: 'photos', suffix: 'idPic', data: files.profileID, check: files.pfpfile},
+            { key: 'e_sig', folder: 'e-signs', suffix: 'esign', data: files.validSignature, check: files.validSignaturefile},
+            { key: 'mismoSC', folder: 'MISMO', suffix: 'mismo', data: files.mismoSC, check: files.mismoSCfile},
+            { key: 'medCert', folder: 'MEDICAL_CERTS', suffix: 'medCert', data: files.medCert, check: files.mcfile},
+            { key: 'cop', folder: 'CERTIFICATE_OF_PROFICIENCY', suffix: 'cop', data: files.cop, check: files.copfile},
+            { key: 'ssr', folder: 'SEA_SERVICE_RECORDS', suffix: 'ssr', data: files.ssr, check: files.ssrfile},
+        ]
+        // 1. Create a results object
+        const newAttachments: Record<string, string> = {};
+
+        // 2. Execute uploads
+        const results = await Promise.all(
+            fileMap.map(async (item) => {
+                const url = await uploadTraineeFile(item.folder, item.suffix, item.data, item.check, context);
+                return { key: item.key, url };
+            })
+        );
+
+        // 3. Only add to the object if a URL was actually generated
+        results.forEach(result => {
+            if (result.url) {
+                newAttachments[result.key] = result.url;
+            }
+        });
+
+        // 4. If no new files were uploaded, don't hit Firestore
+        if (Object.keys(newAttachments).length === 0) return;
+
+        const docRef = doc(firestore, `TRAINEES/${id}`);
+        await setDoc(docRef, newAttachments, { merge: true });
     }catch(error){
+        console.error("Attachment upload failed: ", error)
         throw error
     }
 }
 
 export const addRegistrationDetails = async (ref_id: string, payment_fee: number, registrationType: number, traineeType: number, account_type: number, marketing: string) => {
     try{
-            const newRegistration: REGISTRATION = {
-                trainee_ref_id: ref_id,
-                reg_no: '',
-                regApproach: registrationType,
-                traineeType,
-                payment_balance: payment_fee,
-                payment_status: 2,
-                payment_mode: 3,
-                date_registered: Timestamp.now(),
-                reg_remarks: '',
-                regType: 2,
-                marketing: marketing,
-                otherMarketing: '',
-                reg_accountType: account_type === 0 ? account_type : 1,
-            }  
-            const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
-            return idRef.id
-        
+        const newRegistration: REGISTRATION = {
+            trainee_ref_id: ref_id,
+            reg_no: '',
+            regApproach: registrationType,
+            traineeType,
+            payment_balance: payment_fee,
+            payment_status: 2,
+            payment_mode: 3,
+            date_registered: Timestamp.now(),
+            reg_remarks: '',
+            regType: 2,
+            marketing: marketing,
+            otherMarketing: '',
+            reg_accountType: account_type,
+        }  
+        const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
+        return idRef.id
+    }catch(error){
+        console.error('Error: ', error)
+    }
+}
+
+export const duplicateRegRecord = async(newRegData: any) => {
+    try{
+        const regRefId: DocumentReference = await addDoc(registration, {...newRegData})
+        return regRefId.id
+    }catch(error){
+        console.error('Error: ', error)
+    }
+}
+
+export const duplicateTrainRec = async(newTrainData: any) => {
+    try{
+        await addDoc(training, {...newTrainData})
     }catch(error){
         console.error('Error: ', error)
     }
@@ -143,15 +172,39 @@ export const addTrainingDetails = async (tempCourses: TEMP_COURSES, id: string, 
             const newTraining: TRAINING = {
                 ...tempCourses,
                 reg_ref_id: id,
+                isEmailed: false,
+                enrolledBy: 0,
                 reg_status: 2,
                 isCertified: false,
                 cert_released: Timestamp.now(),
                 cert_status: 0,
                 cert_no: '',
+                certTitle: '',
+                certContent: '',
+                cert_version: '',
+                printCount: 0,
+                viewCount: 0,
+                hasViewed: false,
+                isUrgent: false,
+                webCertTitle: '',
+                webCertContent: '',
+                conductedOnline: false,
+                transmittalID: '',
+                attendance: false,
+                act_end_date: '',
+                act_start_date: '',
+                ccr: false,
+                act_ins: '',
+                act_assessor: '',
+                releasedBy: '',
+                releasingProof: '',
+                assessment: false,
+                evaluation: false,
                 practical: 0,
                 written: 0,
                 result: 0,
                 train_remarks: '',
+                trainingMode: '',
                 regType: 2,
                 batch: '1',
                 marketing: marketing,
@@ -177,14 +230,38 @@ export const EnrolledTraining = async (tempCourses: TEMP_COURSES, id: string, ma
             const newTraining: TRAINING = {
                 ...tempCourses,
                 reg_ref_id: id,
+                enrolledBy: 0,
+                isEmailed: false,
                 reg_status: 3,
                 isCertified: false,
                 cert_released: Timestamp.now(),
                 cert_status: 0,
                 cert_no: '',
+                certTitle: '',
+                certContent: '',
+                cert_version: '',
+                printCount: 0,
+                viewCount: 0,
+                hasViewed: false,
+                isUrgent: false,
+                webCertTitle: '',
+                webCertContent: '',
+                conductedOnline: false,
+                act_end_date: '',
+                act_start_date: '',
+                transmittalID: '',
+                act_ins: '',
+                act_assessor: '',
+                releasedBy: '',
+                releasingProof: '',
+                attendance: false,
+                ccr: false,
+                assessment: false,
+                evaluation: false,
                 practical: 0,
                 written: 0,
                 result: 0,
+                trainingMode: '',
                 train_remarks: '',
                 regType: 2,
                 batch: '1',
@@ -215,51 +292,70 @@ export const PROCESS_CANCELLATION = async (val_id: string, type: number, reason:
     }
 }
 
-// export const addRegTypeField = async () => {
-//     const trainingRef = collection(firestore, 'TRAINING'); // Adjust the collection name as needed
-//     const registrationRef = collection(firestore, 'REGISTRATION');
-    
-//     try {
-//         // Get all documents from the training collection
-//         const trainingSnapshot = await getDocs(trainingRef);
+export const STORE_PROOF_RELEASING = async (training_id: string, isDated: boolean, certificate_no: string, proofFile: string) => {
+    try{
+        let proof = '';
+        const category = isDated ? 'dated' : 'bd';
 
-//         for (const trainingDoc of trainingSnapshot.docs) {
-//             const trainingData = trainingDoc.data();
-//             const regType = trainingData.regType;
-//             const regRefId = trainingData.reg_ref_id;
-            
-//             // Find the corresponding registration document by reg_ref_id
-//             const regDocRef = doc(firestore, 'REGISTRATION', regRefId);
-//             const regDocSnapshot = await getDoc(regDocRef);  // Use getDoc instead of getDocs for single document retrieval
-
-//             if (regDocSnapshot.exists()) {
-//                 const regData = regDocSnapshot.data();
-                
-//                 // Check if regType already exists in the registration document
-//                 if (!regData.hasOwnProperty('regType')) {
-//                     // If regType does not exist, add it
-//                     await updateDoc(regDocRef, {
-//                         regType: regType
-//                     });
-//                     console.log(`Added regType to document ${regRefId}`);
-//                 } else {
-//                     console.log(`regType already exists in document ${regRefId}, skipping.`);
-//                 }
-//             } else {
-//                 console.log(`No matching document found for reg_ref_id: ${regRefId}`);
-//             }
-//         }
-
-//     } catch (error) {
-//         console.error('Error updating registration documents:', error);
-//     }
-// };
+        if (proofFile) {
+            // Upload valid signature to Storage
+            const proofRef = ref(storage, `certifications/RELEASING/${category}/release-log/${certificate_no}-${training_id}.jpg`);
+            await uploadString(proofRef, proofFile, "data_url");
+            proof = await getDownloadURL(proofRef);
+        }
+        const getDoc = doc(firestore, `TRAINING/${training_id}`)
+        const newAttachments = {
+            releasingProof: proof,
+        }
+        await setDoc(getDoc, newAttachments, {merge: true})
+    }catch(error){
+        throw error
+    }
+}
 
 export const UPDATE_TRAINING = async (training_id: string, updateTrainingDoc: Partial<TRAINING>, actor: string | null) => {
     try{
         const trainingRef = doc(firestore, 'TRAINING', training_id)
         await updateDoc(trainingRef, updateTrainingDoc)
     }catch(error){
+        throw error
+    }
+}
+
+export const UPDATE_VIEW_CERT_ACCESS = async (training_id: string, view_count: number, actor: string | null) => {
+    try{
+        const trainingRef = doc(firestore, 'TRAINING', training_id)
+        await updateDoc(trainingRef, {hasViewed: true, viewCount: view_count})
+    }catch(error){
+        throw error
+    }
+}
+
+export async function BATCH_UPDATE_TRAININGS(
+        updates: { id: string; cert_status: number }[],
+        actor: string | null
+    ) {
+    const batch = writeBatch(firestore)
+
+    updates.forEach(({ id, cert_status }) => {
+        const ref = doc(firestore, 'TRAINING', id)
+        batch.update(ref, {
+        cert_status,
+        cert_released: Timestamp.now(),
+        updated_by: actor,
+        updated_at: Timestamp.now(),
+        })
+    })
+
+    await batch.commit()
+}
+
+export const UPDATE_TRAINING_FORMS = async (training_id: string, updateTrainingDoc: Partial<TRAINING>, actor: string | null) => {
+    try{
+        const trainingRef = doc(firestore, 'TRAINING', training_id)
+        await setDoc(trainingRef, updateTrainingDoc, {merge: true})
+    }catch(error){
+        console.error(error)
         throw error
     }
 }
@@ -273,31 +369,24 @@ export const UPDATE_REGISTRATION = async (reg_id: string, updateRegDoc: Partial<
     }
 }
 
-// export const UPDATE_TS = async (training_id: string, startDate: string, endDate: string, actor: string | null) => {
-//     try{
-//         const trainingRef = doc(firestore, 'TRAINING', training_id)
-//         await updateDoc(trainingRef, {start_date: startDate, end_date: endDate})
-//         await addLog(actor, 'Training Scheduled Updated', 'TRAINING', training_id)
-//     }catch(error){
-//         throw error
-//     }
-// }
-
-// export const UPDATE_COURSE_FEE = async (training_id: string, course_fee: number, actor: string | null) => {
-//     try{
-//         const trainingRef = doc(firestore, 'TRAINING', training_id)
-//         await updateDoc(trainingRef, {course_fee})
-//         await addLog(actor, 'Training Fee Updated', 'TRAINING', training_id)
-//     }catch(error){
-//         throw error
-//     }
-// }
-
 export const UPDATE_TRAINEE = async (traineeInfo: TRAINEE_BY_ID, actor: string | null) => {
     try{
         const traineeRef = doc(firestore, 'TRAINEES', traineeInfo.id)
         await updateDoc(traineeRef, {...traineeInfo})
         await addLog(actor, 'Trainee Updated', 'TRAINEES', traineeInfo.id)
+    }catch(error){
+        console.error('Error: ', error)
+        throw error
+    }
+}
+
+export const UPDATE_TRAINEE_PARTIAL = async (traineeInfo: Partial<TRAINEE_BY_ID>) => {
+    try{
+        const id = traineeInfo.id
+        if(!id) throw new Error('Trainee id is required for partial update')
+            
+        const traineeRef = doc(firestore, 'TRAINEES', id)
+        await updateDoc(traineeRef, {...traineeInfo})
     }catch(error){
         console.error('Error: ', error)
         throw error
@@ -351,7 +440,7 @@ export const CHANGE_AT = async (training_id: string, reg_doc: REGISTRATION_BY_ID
     }
 } 
 
-export const ENROLL_COURSE = async (batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
+export const ENROLL_COURSE = async (user_code: number, batch: string, training_id: string, registration_id: string, trainee_id: string, reg_type: number, reg_account_type: number, actor: string | null) => {
     try{
         // this part fetches the latest registration number then increments it, 
         // but if no data is found it initializes a registration number
@@ -364,18 +453,37 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
         )
         
         const currentYear = new Date().getFullYear();
-        let maxNum = 0;
+        const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
 
-        filteredDocs.forEach(doc => {
-            const regNo = doc.data().reg_no; // e.g., "Reg-2025-10000"
+        let maxNum = 0, reg_num = '';
+        const year_month = `${currentYear}-${currentMonth}`
+        
+        const filterDocsByYear = filteredDocs.filter(doc => {
+            const regNo = doc.data().reg_no; // e.g., "2025-01-10000"
             const parts = regNo.split("-");
-            const numPart = parseInt(parts[1]); // directly get the number part
-            if (numPart > maxNum) {
-                maxNum = numPart;
-            }
-        });
+            const yearPart = parseInt(parts[0]);
 
-        const maxRegNo = `${currentYear}-${maxNum + 1}`;
+            return yearPart === currentYear;
+        })
+
+        const numOfDigits = reg_type === 0 ? 4 : 5 
+        let series_str = (maxNum + 1).toString()
+
+        if(filterDocsByYear.length === 0){
+            reg_num = `${year_month}-${series_str.padStart(numOfDigits, '0')}`;
+        } else {
+            filterDocsByYear.forEach(doc => {
+                const regNo = doc.data().reg_no; // e.g., "2025-01-10000"
+                const parts = regNo.split("-");
+                const numPart = parseInt(parts[2]); // directly get the number part
+                
+                if (numPart > maxNum) {
+                    maxNum = numPart;
+                }
+            });
+            series_str = (maxNum + 1).toString()
+            reg_num = `${year_month}-${series_str.padStart(numOfDigits, '0')}`;
+        }
         
         // on this part, it fetches all documents with the same reg_ref_id in training collection
         const tQuery = query(training, where('reg_ref_id', '==', registration_id))
@@ -383,7 +491,9 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
         const data: TRAINING_BY_ID[] = []
 
         if (!tQSnapshot.empty) {
+            //This get current date of the day
             const currDate = new Date()
+            //This converts the current date into a string
             const currDateString = `${currDate.getFullYear()}-${String(currDate.getMonth()+1).padStart(2, "0")}-${String(currDate.getDate()).padStart(2, "0")}`
             
             tQSnapshot.forEach((doc) => {
@@ -392,7 +502,7 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 data.push(docData);
             })
             // then it ensures that some of the documents have enrolled (3) and enrolled date are the same as the current date
-            const hasRegStat3 = data.some((doc) => doc.reg_status === 3)
+            const hasRegStat3 = data.some((doc) => doc.reg_status === 3 || doc.reg_status === 6)
             const hasMatchingDate = data.some((doc) => {
                 if (doc.date_enrolled instanceof Timestamp) {
                     const enrolledDate = doc.date_enrolled.toDate();
@@ -406,14 +516,49 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
 
             if (hasRegStat3 && hasMatchingDate) { 
                 // If both are true, then update the reg_status of the document to enrolled (3) and its date_enrolled
-                const trainingRef = doc(firestore, 'TRAINING', training_id);
-                const newStatus = {
-                    batch,
-                    regType: reg_type === 0 ? reg_type : 1,
-                    reg_status: 3, // Set reg_status to 3 (enrolled)
-                    date_enrolled: Timestamp.now()  // Set current date as enrollment date
-                };
-                await updateDoc(trainingRef, { ...newStatus });
+                const trainingRef = doc(firestore, 'TRAINING', training_id)
+                const regRef = doc(firestore, 'REGISTRATION', registration_id)
+                const regSnap = await getDoc(regRef)
+                const regData = regSnap.data() as REGISTRATION
+
+                if(regData.regType === reg_type){
+                    const newStatus = {
+                        batch,
+                        enrolledBy: user_code,
+                        regType: reg_type,
+                        reg_status: 3, // Set reg_status to 3 (enrolled)
+                        date_enrolled: Timestamp.now()  // Set current date as enrollment date
+                    };
+                    await updateDoc(trainingRef, { ...newStatus })
+                } else {
+                    const newRegistration: REGISTRATION = {
+                        trainee_ref_id: trainee_id,         // You can adjust the reference field as needed
+                        reg_no: reg_num,                  // Use the incremented reg_no
+                        regApproach: 0,                    
+                        traineeType: 0,    
+                        regType: reg_type,                
+                        payment_status: 2,                 
+                        payment_mode: 0,                   
+                        payment_balance: 0,                
+                        date_registered: Timestamp.now(),  // Current timestamp
+                        reg_remarks: '',
+                        marketing: '',
+                        otherMarketing: '',
+                        reg_accountType: reg_account_type,              
+                    };
+                    const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
+
+                    const trainingRef = doc(firestore, 'TRAINING', training_id)
+                    const newStatus= {
+                        batch,
+                        enrolledBy: user_code,
+                        reg_ref_id: idRef.id,
+                        regType: reg_type,
+                        reg_status: 3,
+                        date_enrolled: Timestamp.now()
+                    }
+                    await updateDoc(trainingRef, {...newStatus})
+                }
             } else if(!hasRegStat3){
                 // on this condition, check if the fetched training documents with the same reg_ref_id
                 // if some of them have 3 as values for reg_status 
@@ -422,15 +567,16 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 
                 const newStatus = {
                     batch,
-                    regType: reg_type === 0 ? reg_type : 1,
+                    enrolledBy: user_code,
+                    regType: reg_type,
                     reg_status: 3, // Set reg_status to 3 (enrolled)
                     date_enrolled: Timestamp.now()  // Set current date as enrollment date
                 }
                 await updateDoc(trainingRef, { ...newStatus })
 
                 const newRegInfo = {
-                    reg_no: maxRegNo,
-                    regType: reg_type === 0 ? reg_type : 1,  
+                    reg_no: reg_num,
+                    regType: reg_type,  
                 }
                 await updateDoc(regRef, { ...newRegInfo })
             } else { 
@@ -438,10 +584,10 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                 // and creates a new registration number
                 const newRegistration: REGISTRATION = {
                     trainee_ref_id: trainee_id,         // You can adjust the reference field as needed
-                    reg_no: maxRegNo,                  // Use the incremented reg_no
+                    reg_no: reg_num,                  // Use the incremented reg_no
                     regApproach: 0,                    
                     traineeType: 0,    
-                    regType: reg_type === 0 ? reg_type : 1,                
+                    regType: reg_type,                
                     payment_status: 2,                 
                     payment_mode: 0,                   
                     payment_balance: 0,                
@@ -449,15 +595,16 @@ export const ENROLL_COURSE = async (batch: string, training_id: string, registra
                     reg_remarks: '',
                     marketing: '',
                     otherMarketing: '',
-                    reg_accountType: reg_account_type === 0 ? reg_account_type : 1,              
+                    reg_accountType: reg_account_type,              
                 };
                 const idRef: DocumentReference = await addDoc(registration, {...newRegistration})
 
                 const trainingRef = doc(firestore, 'TRAINING', training_id)
                 const newStatus= {
                     batch,
+                    enrolledBy: user_code,
                     reg_ref_id: idRef.id,
-                    regType: reg_type === 0 ? reg_type : 1,
+                    regType: reg_type,
                     reg_status: 3,
                     date_enrolled: Timestamp.now()
                 }
@@ -498,6 +645,43 @@ export const RE_ENROLLED_TRAINEE = async (trainee_id: string, newTrainee: TRAINE
     }
 }
 
+export const updateTraineeAttachments = async(id: string, trainee: any, files: any, staff: string) => {
+    try{
+        const { last_name, first_name } = trainee
+        const updates: Record<string, string> = {}
+
+        const fileConfig = [
+            {key: 'valid_id', data: files.validID, check: files.file, suffix: 'validID', folder: 'valid_id'},
+            {key: 'photo', data: files.validPfp, check: files.pfpFile, suffix: 'idPic', folder: 'photos'},
+            {key: 'e_sig', data: files.validSignature, check: files.sig_file, suffix: 'esign', folder: 'e-signs'},
+            {key: 'mismoSC', data: files.screenshotFile, check: files.sc_fileName, suffix: 'mismo', folder: 'MISMO'},
+            {key: 'medCert', data: files.medCertFile, check: files.mc_fileName, suffix: 'medCert', folder: 'MEDICAL_CERTS'},
+            {key: 'cop', data: files.copFile, check: files.cop_fileName, suffix: 'cop', folder: 'CERTIFICATE_OF_PROFICIENCY'},
+            {key: 'ssr', data: files.ssrFile, check: files.ssr_fileName, suffix: 'ssr', folder: 'SEA_SERVICE_RECORDS'},
+        ]
+
+        await Promise.all(fileConfig.map(async (item) => {
+            if(item.check && item.check !== 'No file chosen yet...'){
+                const storagePath = `TRAINEES/${item.folder}/${last_name}_${first_name}_${item.suffix}.jpg`
+                const storageRef = ref(storage, storagePath)
+                const snapshot = await uploadBytes(storageRef, item.data[0])
+                updates[item.key] = await getDownloadURL(snapshot.ref)
+            }
+        })) 
+
+        if(Object.keys(updates).length > 0){
+            const traineeRef = doc(firestore, 'TRAINEES', id)
+            await updateDoc(traineeRef, updates)
+            //await addLog(staff, `Attachments for ${first_name} ${last_name} updated.`, 'TRAINEES', id) 
+        }
+        return updates
+    }catch(err){
+        console.error(err)
+        throw err
+    }
+}
+
+// Obsolete, find this function on other files then replace it with the new function above
 export const changeImg = async (trainee_id: string, last_name: string, first_name: string, cat: string, attachment_type: string, validID: any, file: string, staff: string | null) => {
     try {
         // Check if a trainee with the same first and last name already exists

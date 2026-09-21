@@ -11,7 +11,7 @@ interface BannerProps{
 
 export default function BannerView({initial, animate, transition, children}: BannerProps){
     return(
-    <div style={{overflow: 'hidden'}}>
+    <div style={{overflow: 'hidden', }} >
         <motion.div 
             initial={initial}
             animate={animate}

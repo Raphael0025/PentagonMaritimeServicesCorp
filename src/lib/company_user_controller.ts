@@ -2,11 +2,12 @@ import { addDoc, deleteDoc, getDoc, updateDoc, setDoc, doc, getDocs, query, orde
 import { ref, uploadBytes, getDownloadURL, uploadString,} from 'firebase/storage'
 import { storage } from './firebase'
 import { generateUserCode, } from '@/types/handling'
-import { NewStaffValues, GetAllCompanyUsers } from '@/types/company_users'
+import { NewStaffValues, GetAllCompanyUsers, UserRole, RoleWithID } from '@/types/company_users'
 import { firestore } from './controller'
 import { addLog } from '@/lib/history_log_controller'
 
 export const companyUsers = collection(firestore, 'company_users')
+export const userRoles = collection(firestore, 'USER_ROLES')
 
 // Get All Company User Accounts
 export const getAllCompanyUsers = async (): Promise<GetAllCompanyUsers[]> => {
@@ -27,6 +28,67 @@ export const getAllCompanyUsers = async (): Promise<GetAllCompanyUsers[]> => {
             return data
         } else {
             return data
+        }
+    }catch(error){
+        throw error
+    }
+}
+
+// USER ROLES
+export const ASSIGN_ROLE = async (user_id: string, role_id: string, actor: string | null) => {
+    try{
+        const userRef = doc(firestore, `company_users/${user_id}`)
+        await updateDoc(userRef, { user_role: role_id })
+        await addLog(actor, `User Role has been assigned.`, 'companyUser', user_id)
+    }catch(error){
+        console.error('Error assigning user role: ', error)
+    }
+}
+
+export const ADD_USER_ROLE = async (user_role: UserRole) => {
+    try{
+        const newUserRole = {
+            ...user_role,
+            createdAt: Timestamp.now()
+        }
+        await addDoc(userRoles, newUserRole)
+    }catch(error){
+        console.error('Error adding user role: ', error)
+    }
+}
+
+export const UPDATE_USER_ROLE = async (role_id: string, user_role: UserRole) => {
+    try{
+        const roleRef = doc(firestore, `USER_ROLES/${role_id}`)
+        await updateDoc(roleRef, { ...user_role })
+    }catch(error){
+        console.error('Error updating user role: ', error)
+    }
+}
+
+export const DELETE_USER_ROLE = async (role_id: string) => {
+    try{
+        const roleRef = doc(firestore, `USER_ROLES/${role_id}`)
+        await deleteDoc(roleRef)
+    }catch(error){
+        console.error('Error deleting user role: ', error)
+    }
+}
+
+export const GET_ROLES = async (): Promise<RoleWithID[]> => {
+    try{
+        const roles_query = query(userRoles, orderBy('createdAt', 'desc'))
+        const querySnapshot = await getDocs(roles_query)
+        const rolesData: RoleWithID[] = []
+        if(!querySnapshot.empty){
+            querySnapshot.forEach((doc) => {
+                const docData = doc.data() as RoleWithID
+                docData.id = doc.id
+                rolesData.push(docData)
+            })
+            return rolesData
+        } else {
+            return rolesData
         }
     }catch(error){
         throw error
