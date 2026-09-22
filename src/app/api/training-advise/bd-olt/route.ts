@@ -10,25 +10,31 @@ export async function POST(request: NextRequest){
             schedule, 
             actual_sched,
             time, 
-            class_code, 
+            gmeetLink,
+            gClassLink, 
             staff, 
             position 
         } = await request.json()
         
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+            port: Number(process.env.SMTP_PORT) || 465,
+            secure: process.env.SMTP_SECURE === 'true' || true,
             auth: {
                 user: process.env.EMAIL,
                 pass: process.env.EMAIL_PASS,
-            },
+            },  
         })
         const currentYear = new Date().getFullYear()
 
+        const aliasEmail = 'training@pentagonmaritime.com'
+        
         await transporter.sendMail({
-            from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
-            to: `undisclosed-recipients:;`,
+            from: `Pentagon Maritime Services Corp. <${process.env.SENDER_EMAIL}>`,
+            to: 'pentagonmartimecorp@gmail.com',
             bcc: bcc,
-            subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()})`,
+            replyTo: aliasEmail,
+            subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -124,12 +130,13 @@ export async function POST(request: NextRequest){
                             <main class="email-body">
                                 <p class="subhead"><strong>PLEASE READ THIS MESSAGE IN FULL. IT CONTAINS IMPORTANT DETAILS FOR YOUR UPCOMING TRAINING.</strong></p>
                                 <div class="section">
-                                    <p><strong>TRAINING:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
+                                    <br><strong>TRAINING:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
                                     <strong>When:</strong><br>
-                                    Certificate Date: ${schedule}<br>
-                                    Training date and time: ${actual_sched}, ${currentYear} - ${time} (PH Time)<br>
-                                    Where: Google Classroom and Google Meet<br>
-                                    Classroom code: <strong>${class_code}</strong></p>
+                                    <strong>Certificate Date:</strong> ${schedule}<br>
+                                    <strong>Training date and time:</strong> ${actual_sched}, ${currentYear} - ${time} (PH Time)<br>
+                                    <strong>Apps to download:</strong> Google Classroom and Google Meet<br>
+                                    <strong>Google Classroom link:</strong> <a href="${gClassLink}" target="_blank">${gClassLink}</a></p><br>
+                                    <strong>Google Meet link:</strong> <a href="${gmeetLink}" target="_blank">${gmeetLink}</a></p>
                                 </div>
                                 <div class="section">
                                     <p><strong>Important: <i></i>YOU NEED TO JOIN GOOGLE MEET.</i></strong> Please access and complete the materials in Google Classroom.<br>

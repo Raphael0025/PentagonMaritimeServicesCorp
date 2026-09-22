@@ -21,20 +21,24 @@ export async function POST(request: NextRequest){
         } = await request.json()
         
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+            port: Number(process.env.SMTP_PORT) || 465,
+            secure: process.env.SMTP_SECURE === 'true' || true,
             auth: {
                 user: process.env.EMAIL,
                 pass: process.env.EMAIL_PASS,
-            },
+            },  
         })
 
+        const aliasEmail = 'training@pentagonmaritime.com'
         const listOfTrainees = trainees.map((trainee: string) => `<li>${trainee}</li>`).join('');
         const currentYear = new Date().getFullYear()
 
         await transporter.sendMail({
-            from: `Pentagon Maritime Services Corp. <${process.env.EMAIL}>`,
+            from: `Pentagon Maritime Services Corp. <${process.env.SENDER_EMAIL}>`,
             to,
-            subject: `PENTAGON'S ${course_code} TRAINING - ${schedule.toUpperCase()}, ${currentYear}`,
+            replyTo: aliasEmail,
+            subject: `PENTAGON's ${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
                     <head>
@@ -131,6 +135,7 @@ export async function POST(request: NextRequest){
                                 <p>Good Day ${instructor}!</p>
                                 <div class="section">
                                     <p><strong>TRAINING DETAILS</strong></p>
+                                    <p><strong>Course Training:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})</p>
                                     <p><strong>Date:</strong> ${schedule.toUpperCase()}, ${currentYear}</p>
                                     <p><strong>Time:</strong> ${time_duration}</p>
                                     <p><strong>Mode of Training:</strong> Online</p>
@@ -144,7 +149,6 @@ export async function POST(request: NextRequest){
                                     <p><strong>For Google Classroom Code:</strong> ${class_code}</p>
                                     <p>For Google Meet:</p>
                                     <ul>
-                                        <li><strong>Meet Code:</strong> ${gmeet_code}</li>
                                         <li>If you want direct access to the meet. Kindly click the link below.</li>
                                         <li><strong>Meet Link:</strong> <a href="${gmeet_link}" target="_blank" >Click here</a></li>
                                     </ul>
@@ -154,18 +158,19 @@ export async function POST(request: NextRequest){
                                     <p><strong>Reminders:</strong></p>
                                     <p>Please remind the Pentagon Staff to give the final instructions to the trainees before concluding the training session. Please also be informed that your training activities are being monitored, so kindly utilize the full allotted time unless we advise otherwise. If you have already completed your course presentation, we would appreciate it if you could show relevant training videos to the trainees for the remaining duration of the session.</p>
                                 </div>
-                                <p>Below is the list of trainees for the ${course_code} class at ${time_duration}</p>
                                 <div class="section">
                                     <p><strong>COURSE PRESENTATION LINK:</strong></p>
                                     <p>Below here is the presentation link for you to be able to view with ease:</p>
                                     <a href="${presentation_link}" target="_blank">Click here to view</a>
                                 </div>
+                                <p>Below is the list of trainees for the ${course_code} class at ${time_duration}</p>
                                 <div class="section">
                                     <p> <strong>LIST OF TRAINEES</strong></p>
                                     <ol>
                                         ${listOfTrainees.toUpperCase()}
                                     </ol>
                                 </div>
+                                <p>For further training concerns, please contact this number: <strong>0945 325 7161</strong></p>
                                 <p><strong>Thank you!</strong></p>
                                 <div style={{ lineHeight: "1.2" }}>
                                     <p style={{ color: "#D3D3D3" }}>

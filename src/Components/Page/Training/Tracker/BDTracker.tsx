@@ -467,8 +467,8 @@ export default function BDTracker (){
                     const staffName = `${firstName} ${lastName}`
 
                     const actor = localStorage.getItem('customToken')
-                    const splitActualTD = actualSchedule.split(' to ')
-                    await UPDATE_TRAINING(training_ID, {act_start_date: splitActualTD[0] || '', act_end_date: splitActualTD[1] || ''}, actor)
+                    const splitActualTD = schedule.split(' to ')
+                    //await UPDATE_TRAINING(training_ID, {act_start_date: splitActualTD[0] || '', act_end_date: splitActualTD[1] || ''}, actor)
                     const route = trainingMode === 'olm' ? '/api/training-advise/bd-olm' : '/api/training-advise/bd-olt';
                     await fetch(route, {
                         method: 'POST',
@@ -479,7 +479,7 @@ export default function BDTracker (){
                             bcc: selectedEmails, 
                             course_code: courseFound?.course_code, 
                             course_name: courseFound?.course_name, 
-                            schedule: cert_date,
+                            schedule: schedule,
                             actual_sched: actualSchedule,
                             time, 
                             class_code, 
@@ -717,6 +717,7 @@ export default function BDTracker (){
                                     <Text w="100px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
                                     <Text w="150px" _hover={{cursor: 'pointer', color: 'blue.700'}} onClick={() => {
                                             setSchedule(training.end_date !== '' ? `${training.start_date.toUpperCase()} to ${training.end_date.toUpperCase()}` : `${training.start_date.toUpperCase()}`); 
+                                            setActSched(`${training.act_start_date.toUpperCase()} ${training.act_end_date.toUpperCase() ? `to ${training.act_end_date.toUpperCase()}` : ''}`);
                                             setSelectedEmails(prev => [...prev, trainee.email]); 
                                             setCourse(training.course);
                                             setTrainingMode(training?.trainingMode || '');
@@ -811,7 +812,7 @@ export default function BDTracker (){
             }))}
             </Box>
         </Box>
-        <Modal isOpen={isOpenATD} onClose={() => {setActSched(''); onCloseATD();}} >
+        {/* <Modal isOpen={isOpenATD} onClose={() => {setActSched(''); onCloseATD();}} >
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>Actual Training Date</ModalHeader>
@@ -825,7 +826,7 @@ export default function BDTracker (){
                     <Button onClick={handleActualtrainingDate} w='full' isLoading={loading} loadingText='Saving...' colorScheme='blue' shadow='md' borderRadius='5px' bgColor='blue.700'>Save Training Date</Button>
                 </ModalFooter>
             </ModalContent>
-        </Modal>
+        </Modal> */}
         <Modal isOpen={isOpenMod} scrollBehavior='inside' size='xl' onClose={() => {setSelectedEmails([]); setInstructor(''); setTrainingID(''); setToggle('t_mode'); setActSched(''); setCertDate(''); setSchedule(''); setCourse(''); setTime(''); setTrainingMode(''); onModClose();}} >
             <ModalOverlay />
             <ModalContent px='2'>
@@ -896,14 +897,6 @@ export default function BDTracker (){
                                         <InputGroup shadow='md' my='2' w='100%' size='sm'>
                                             <InputLeftAddon>Time:</InputLeftAddon>
                                             <Input id='time_duration' type='text' value={time} placeholder={`e.g., 7:00am-5:00pm`} onChange={(e) => setTime(e.target.value)} />
-                                        </InputGroup>
-                                        <InputGroup shadow='md' my='2' w='100%' size='sm'>
-                                            <InputLeftAddon>Actual Training Schedule:</InputLeftAddon>
-                                            <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd, YYYY to MMM dd, YYYY`} onChange={(e) => setActSched(e.target.value)} />
-                                        </InputGroup>
-                                        <InputGroup shadow='md' my='2' w='100%' size='sm'>
-                                            <InputLeftAddon>Certificate Date:</InputLeftAddon>
-                                            <Input id='cert_date' type='text' value={cert_date} placeholder={`MMM dd, YYYY`} onChange={(e) => setCertDate(e.target.value)} />
                                         </InputGroup>
                                     </Box>
                                 </Box>

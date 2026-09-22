@@ -51,8 +51,6 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     const [note1, setNote1] = useState<string>('')
     const [note2, setNote2] = useState<string>('')
     const [email, setEmail] = useState<string>('')
-    const [gmeet_link, setGMeet_Link] = useState<string>('')
-    const [gmeet_code, setGMeet_Code] = useState<string>('')
     const [c_presentation_link, setPresentationLink] = useState<string>('')
 
     const [loading ,setLoading] = useState<boolean>(false)
@@ -554,8 +552,6 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                                 </Button>
                                 <Box display={show ? 'none' : ''} >
                                     <Input size='sm' fontWeight='normal' placeholder='Instructor Email' onChange={(e) => setEmail(e.target.value)} mb='2' />
-                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Code' onChange={(e) => setGMeet_Code(e.target.value)} mb='2' />
-                                    <Input size='sm' fontWeight='normal' placeholder='Google Meet Link' onChange={(e) => setGMeet_Link(e.target.value)} mb='2' />
                                     <Input size='sm' fontWeight='normal' placeholder='Course Presentation Link' onChange={(e) => setPresentationLink(e.target.value)} mb='2' />
                                     <Textarea fontWeight='normal' placeholder='Place your notes here...' value={note2} mt='4' onChange={handleNotes} />
                                 </Box>
