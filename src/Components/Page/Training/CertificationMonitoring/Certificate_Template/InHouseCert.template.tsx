@@ -171,13 +171,13 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                             {training?.conductedOnline ? (
                                 <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                     dangerouslySetInnerHTML={{
-                                        __html: `<span>Conducted online ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                        __html: `<span>Conducted online ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate}</span>${normalizeCertContent(training.certContent)}`
                                     }}
                                 />
                             ) : (
                                 <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                     dangerouslySetInnerHTML={{
-                                        __html: `<span>Conducted ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                        __html: `<span>Conducted ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate}</span>${normalizeCertContent(training.certContent)}`
                                     }}
                                 />
                             )}

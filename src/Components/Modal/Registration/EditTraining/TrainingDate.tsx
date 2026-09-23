@@ -37,12 +37,14 @@ export default function TrainingDate({onClose, training}: PageProps){
     const [sdSTR, setSDStr] = useState<string>('')
     const [end_date, setEndDate] = useState<Date | null>(new Date())
     const [edSTR, setEDStr] = useState<string>('')
+    const [numOfDays, setNumOfDays] = useState<number | ''>(1);
 
     useEffect(() => {
         const fetchData = () => {
             const trainingDoc = training
             if(trainingDoc){
                 const numOfDay_as_num = trainingDoc.numOfDays
+                setNumOfDays(numOfDay_as_num)
 
                 const start_date = `${trainingDoc.start_date}, ${currentYear}`
                 setStartDate(new Date(start_date))
@@ -95,12 +97,14 @@ export default function TrainingDate({onClose, training}: PageProps){
     const handleUpdate = async () => {
         setLoading(true)
         const actor: string | null = localStorage.getItem('customToken')
+        const normalizedNumOfDays = numOfDays === '' ? 1 : numOfDays
         new Promise<void>((res, rej) => {
             setTimeout(async () => {
                 try{
                     const updateTD = {
                         start_date: sdSTR,
                         end_date: training.numOfDays > 1 ? edSTR : '',
+                        numOfDays: normalizedNumOfDays,
                     }
                     await UPDATE_TRAINING(training.id, updateTD, actor)
                     res()
@@ -127,7 +131,7 @@ export default function TrainingDate({onClose, training}: PageProps){
                         <DatePicker preventOpenOnFocus showPopperArrow={false} selected={start_date} onChange={(date) => {setStartDate(date); handleStartD(date);}} filterDate={isSunday} holidays={dynamicHolidays} showMonthDropdown useShortMonthInDropdown dateFormat='E, MMM. dd'
                             customInput={<Input id='start_date' w={parentWidth} textAlign='center' className='shadow-md' /> } />
                     </FormControl>
-                    {training.end_date !== '' && (
+                    {numOfDays !== '' && numOfDays > 1 && (
                         <>
                             <FormControl display='flex' flexDir='column' w='100%' alignItems='start'>
                                 <FormLabel m='0' color='gray.500'>End Date:</FormLabel>
@@ -136,6 +140,23 @@ export default function TrainingDate({onClose, training}: PageProps){
                             </FormControl>
                         </>
                     )}
+                    <FormControl mt='2'>
+                        <FormLabel m='0' color='gray.500'>Number of Days:</FormLabel>
+                        <Input
+                            type='number'
+                            value={numOfDays}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setNumOfDays(val === '' ? '' : parseInt(val));
+                            }}
+                            onBlur={() => {
+                                // Optional: resets to 0 or 1 if user clicks away while leaving it empty
+                                if (numOfDays === '' || isNaN(Number(numOfDays))) {
+                                setNumOfDays(0); // or 1
+                                }
+                            }}
+                        />
+                    </FormControl>
                 </Box>
             </ModalBody>
             <ModalFooter display='flex' justifyContent='end'>

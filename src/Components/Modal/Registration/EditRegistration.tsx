@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Button, useDisclosure, Checkbox, MenuList, Menu, MenuItem, MenuButton, IconButton, Modal, ModalOverlay, HStack, VStack, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Button, Input, useDisclosure, Checkbox, MenuList, Menu, MenuItem, MenuButton, IconButton, Modal, useToast, ModalOverlay, HStack, VStack, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SettingsIcon } from '@chakra-ui/icons';
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
@@ -15,6 +15,8 @@ import { Course, CourseFee, TrainingDate, AccountType } from './EditTraining'
 import { TRAINING_BY_ID, initTraining } from '@/types/trainees'
 import { InsertTraining } from '@/Components/Modal/Pending'
 
+import { ToastStatus } from '@/types/handling'
+
 import { UPDATE_TRAINING, UPDATE_REGISTRATION, duplicateRegRecord, duplicateTrainRec } from '@/lib/trainee_controller'
 
 interface PageProps {
@@ -25,6 +27,7 @@ interface PageProps {
 }
 
 export default function EditRegistration({onClose, reg_id, reg_Type, permissions}: PageProps){
+    const toast = useToast()
     const { lastMonthReg: allRegistrations } = useRegistrations()
     const { data: allTraining } = useTraining()
     const { data: allTrainee } = useTrainees()
@@ -41,7 +44,8 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     const { isOpen: isOpenCancelT, onOpen: onOpenCancelT, onClose: onCloseCancelT } = useDisclosure()
     const { isOpen: isOpenNA, onOpen: onOpenNA, onClose: onCloseNA } = useDisclosure()
     const { isOpen: isOpenMBD, onOpen: onOpenMBD, onClose: onCloseMBD } = useDisclosure()
-    
+    const { isOpen: isOpenATD, onOpen: onOpenATD, onClose: onCloseATD } = useDisclosure()
+
     const [cID, setCID] = useState<string>('')
     const [account_type, setAccType] = useState<number>(0)
     const [trainingID, setTID] = useState<string>('')
@@ -52,7 +56,8 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     const [trainingDoc, setTraining] = useState<TRAINING_BY_ID>(initTraining)
     const [selectedTrainIDs, setSelectedTrainIDs] = useState<string[]>([]);
     const [permittedTo, setPermittedTo] = useState<string>('')
-    
+    const [actualSchedule, setActSched] = useState<string>('')
+
     const fetchedReg = allRegistrations?.find((reg) => reg.id === reg_id)
     const companyID = allTrainee?.find((t) => t.id === fetchedReg?.trainee_ref_id)?.company || ''
 
@@ -203,6 +208,43 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
         return permissions.some((p: { allowed: string | string[]; }) => p.allowed.includes(feature));
     }
 
+    const handleToast = (title: string = '', desc: string = '', timer: number, status: ToastStatus) => {
+        toast({
+            title: title,
+            description: desc,
+            position: 'top-right',
+            variant: 'left-accent',
+            status: status,
+            duration: timer,
+            isClosable: true,
+        })
+    }
+
+    const handleActualtrainingDate = () => {
+        setLoading(true)
+        new Promise<void>((res, rej) => {
+            setTimeout(async () => {
+                try{
+                    const splitActualTD = actualSchedule.split(' to ')
+                    const actor = localStorage.getItem('customToken')
+
+                    await UPDATE_TRAINING(trainingID, {act_start_date: splitActualTD[0] || '', act_end_date: splitActualTD[1] || ''}, actor)
+                }catch(error){
+                    rej(error)
+                }
+                res()
+            }, 500)
+        }).then(() =>{
+            handleToast( 'Actual training Date Updated!', ``, 5000, 'success' )
+        }).catch((error) => {
+            console.error('Error: ', error)
+        }).finally(() =>{
+            onCloseATD()
+            setActSched('')
+            setLoading(false)
+        })
+    }
+
     return(
     <>
     <Box>
@@ -210,56 +252,68 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             <Text fontSize='lg' fontWeight='800' color='blue.700' textTransform='uppercase'>Trainings</Text>
             <Button onClick={onClose} variant='ghost' ><CloseIcon /></Button>
         </Box>
-        <Box mt='4'>
+        <Box mt='4' >
             <Box display='flex' justifyContent='space-between'>
-                <Box display='flex'>
-                    <Text mr='2'>Account Type:</Text>
-                    {canDo("update") ? (
-                        <Text onClick={() => {onOpenAT(); setRegID(fetchedReg?.id ?? ''); setAT(fetchedReg?.reg_accountType ?? 0);}} _hover={{color: 'blue.700'}} className='hover:cursor-pointer'>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
-                    ) : (
-                        <Text>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
+                <Box display='flex' flexDir='column' justifyContent='space-between'>
+                    <Box display='flex'>
+                        <Text color='gray.600' mr='2'>Account Type:</Text>
+                        {canDo("update") ? (
+                            <Text onClick={() => {onOpenAT(); setRegID(fetchedReg?.id ?? ''); setAT(fetchedReg?.reg_accountType ?? 0);}} _hover={{color: 'blue.700'}} className='hover:cursor-pointer'>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
+                        ) : (
+                            <Text>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
+                        )}
+                    </Box>
+                    <Box display='flex' >
+                        <Text color='gray.600' mr='3'>Registraion Number:</Text>
+                        <Text color='blue.700'>{`REG-${fetchedReg?.reg_no}`}</Text>
+                    </Box>
+                </Box>
+                <Box display='flex' justifyContent='end' py='1'>
+                    {canDo("create") && (
+                        <Menu>
+                            <MenuButton
+                                as={IconButton}
+                                aria-label='Options'
+                                icon={<SettingsIcon />}
+                                size='sm'
+                                colorScheme='gray'
+                                shadow='md'
+                            />
+                            <MenuList minW='120px'>
+                                <MenuItem 
+                                    fontSize='xs'
+                                    onClick={() => {
+                                        onOpenTraining(); 
+                                        setAccType(fetchedReg?.reg_accountType ?? 0); 
+                                        setCID(companyID); 
+                                        setRegID(fetchedReg?.id ?? '');
+                                    }}
+                                >
+                                    Add Training
+                                </MenuItem>
+                                <MenuItem  onClick={() => {onOpenRB(); setRegID(reg_id); }}fontSize='xs'>Manage Record Status</MenuItem>
+                            </MenuList>
+                        </Menu>
                     )}
                 </Box>
-                <Box display='flex' >
-                    <Text color='gray.600' mr='3'>Registraion Number:</Text>
-                    <Text color='blue.700'>{`REG-${fetchedReg?.reg_no}`}</Text>
-                </Box>
-            </Box>
-            <Box display='flex' justifyContent='end' py='1'>
-                {canDo("create") && (
-                    <Menu>
-                        <MenuButton
-                            as={IconButton}
-                            aria-label='Options'
-                            icon={<SettingsIcon />}
-                            size='sm'
-                            colorScheme='gray'
-                            shadow='md'
-                        />
-                        <MenuList minW='120px'>
-                            <MenuItem 
-                                fontSize='xs'
-                                onClick={() => {
-                                    onOpenTraining(); 
-                                    setAccType(fetchedReg?.reg_accountType ?? 0); 
-                                    setCID(companyID); 
-                                    setRegID(fetchedReg?.id ?? '');
-                                }}
-                            >
-                                Add Training
-                            </MenuItem>
-                            <MenuItem  onClick={() => {onOpenRB(); setRegID(reg_id); }}fontSize='xs'>Manage Record Status</MenuItem>
-                        </MenuList>
-                    </Menu>
-                )}
             </Box>
             <Box mt='2'>
                 <Box p='2' borderBottom='1px' bgColor='blue.700' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
-                    <Text color='#fff' w='50%' textTransform={'uppercase'} fontSize='12px'>Course</Text>
-                    <Text color='#fff' w='50%' textTransform={'uppercase'} fontSize='12px'>Course Fee</Text>
-                    <Text color='#fff' w='80%' textTransform={'uppercase'} fontSize='12px'>Training Dates</Text>
+                    <Text color='#fff' w={`${reg_Type === 0 ? '70%' : '50%'}`} textTransform={'uppercase'} fontSize='12px'>Course</Text>
+                    <Text color='#fff' w='30%' textTransform={'uppercase'} fontSize='12px'>Course Fee</Text>
+                    {reg_Type === 0 ? (
+                        <Text color='#fff' w='80%' textTransform={'uppercase'} textAlign='center' fontSize='12px'>Training Dates</Text>
+                    ) : (
+                        <Text color='#fff' w='80%' textTransform={'uppercase'} textAlign='center' fontSize='12px'>
+                            <Text>Training Dates</Text>
+                            <Text display='flex' textAlign='center' justifyContent='space-between' fontSize='10px'>
+                                <Text w='100%' as='span'>Certificate Date/s</Text>
+                                <Text w='100%' as='span'>Actual Date/s</Text>
+                            </Text>
+                        </Text>
+                    )}
                     {canDo("update") && (
-                        <Text color='#fff' w='50%' display='flex' justifyContent='center' textTransform={'uppercase'} fontSize='12px'>Action</Text>
+                        <Text color='#fff' w='30%' display='flex' justifyContent='center' textTransform={'uppercase'} fontSize='12px'>Action</Text>
                     )}
                 </Box>
                 {allTraining && allTraining.filter((train) => (train.reg_status >= 3) && train.regType === reg_Type && train.reg_ref_id === reg_id)
@@ -278,8 +332,8 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                             {canDo("update") ? (
                                 <>
                                     <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
-                                    <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
-                                    <Text w='100%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
+                                    <Text w='30%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
+                                    <Text w='45%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
                                         <Text as='span' mr='3'>{train.start_date}</Text>
                                         {train.end_date !== '' && (
                                         <>
@@ -288,15 +342,30 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         </>
                                         )}
                                     </Text>
-                                    <Box w='50%' display='flex' flexDir='column' gap='1' justifyContent='end'>
-                                        {['bd', 'both'].some(p => permittedTo.includes(p)) && (
+                                    {reg_Type === 1 && (
+                                        <Text w='45%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTID(train.id);}} >
+                                            <Text as='span' mr='3'>{train.act_start_date}</Text>
+                                            {train.act_end_date !== '' ? (
+                                            <>
+                                                <Text as='span' mr='3'>to</Text>
+                                                <Text as='span'>{train.act_end_date}</Text>
+                                            </>
+                                            ) : (
+                                            <>
+                                                <Text onClick={() => {alert('ok')}}>Insert Date</Text>
+                                            </>
+                                            )}
+                                        </Text>
+                                    )}
+                                    <Box w='30%' display='flex' flexDir='column' gap='1' alignItems='center' justifyContent='center'>
+                                        {/* {['bd', 'both'].some(p => permittedTo.includes(p)) && (
                                             <Button fontWeight='normal' colorScheme='yellow' onClick={() => {onOpenNA(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Non-Appearance</Button>
-                                        )}
+                                        )} */}
                                         {/* {(['dated', 'both'].some(p => permittedTo.includes(p)) && canDo('delete')) && (
                                             <Button fontWeight='normal' colorScheme='teal' onClick={() => {onOpenMBD(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Move to BD</Button>
                                         )} */}
                                         {/* <Button fontWeight='normal' colorScheme='blue' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Other Options</Button> */}
-                                        <Button fontWeight='normal' colorScheme='red' onClick={() => {onOpenCancelT(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Cancel Training</Button>
+                                        <Button w='100px' fontWeight='normal' colorScheme='red' onClick={() => {onOpenCancelT(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Cancel Training</Button>
                                     </Box>
                                 </>
                             ) : (
@@ -312,6 +381,15 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         </>
                                         )}
                                     </Text>
+                                    <Text w='100%' className='hover:cursor-pointer' >
+                                        <Text as='span' mr='3'>{train.act_start_date}</Text>
+                                        {train.end_date !== '' && (
+                                        <>
+                                            <Text as='span' mr='3'>to</Text>
+                                            <Text as='span'>{train.act_end_date}</Text>
+                                        </>
+                                        )}
+                                    </Text>
                                 </>
                             )}
                         </Box>
@@ -320,6 +398,21 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             </Box>
         </Box>
     </Box>
+    <Modal isOpen={isOpenATD} onClose={() => {setActSched(''); onCloseATD();}} >
+        <ModalOverlay />
+        <ModalContent>
+            <ModalHeader>Actual Training Date</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+                <Box display='flex' flexDir='column' gap='4'>
+                    <Input id='actual_sched' type='text' value={actualSchedule} placeholder={`MMM dd, YYYY to MMM dd, YYYY`} onChange={(e) => setActSched(e.target.value)} />
+                </Box>
+            </ModalBody>
+            <ModalFooter>
+                <Button onClick={handleActualtrainingDate} w='full' isLoading={loading} loadingText='Saving...' colorScheme='blue' shadow='md' borderRadius='5px' bgColor='blue.700'>Save Training Date</Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
     <Modal isOpen={isOpenCourse} onClose={onCloseCourse}>
         <ModalOverlay />
         <Course onClose={onCloseCourse} company_id={companyID} trainingID={trainingID} />

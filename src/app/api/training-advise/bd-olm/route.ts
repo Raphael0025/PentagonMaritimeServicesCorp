@@ -129,7 +129,7 @@ export async function POST(request: NextRequest){
                             <main class="email-body">
                                 <p class="subhead"><strong>PLEASE READ THIS MESSAGE IN FULL. IT CONTAINS IMPORTANT DETAILS FOR YOUR UPCOMING TRAINING.</strong></p>
                                 <div class="section">
-                                    <br><strong>TRAINING:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
+                                    <br><strong>TRAINING COURSE:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
                                     <strong>When;</strong><br>
                                     <strong>Certificate Date:</strong> ${schedule}<br>
                                     <strong>Training date and time:</strong> ${actual_sched}, ${currentYear} - ${time} (PH Time)<br>
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest){
                                     </ul>
                                 </div>
                                 <div class="section">
-                                    <p><strong>Required:</strong></p>
+                                    <p><strong>What to Do:</strong></p>
                                     <ul>
                                         <li>Fill out the attendance form before the training starts <strong>(inside the classwork tab)</strong>.</li>
                                         <li>Read the presentation <strong>(inside the classwork tab)</strong>.</li>

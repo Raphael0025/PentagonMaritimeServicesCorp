@@ -135,8 +135,8 @@ export async function POST(request: NextRequest){
                                 <p class="subhead"><strong>PLEASE READ THIS MESSAGE IN FULL. IT CONTAINS IMPORTANT DETAILS FOR YOUR UPCOMING TRAINING.</strong></p>
                                 <div class="section">
                                     <p><strong>TRAINING DETAILS:</strong><br>
-                                    Course Training: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
-                                    When: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
+                                    Training Course: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
+                                    Date & Time: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
                                     Apps to download: Google Classroom and Google Meet<br>
                                     Google Classroom link: <a href="${gClassLink}" target="_blank">${gClassLink}</a></p>
                                     Google Meet link: <a href="${gmeetLink}" target="_blank">${gmeetLink}</a></p>

@@ -129,8 +129,8 @@ export async function POST(request: NextRequest){
                                 <p class="subhead"><strong>PLEASE READ THIS MESSAGE IN FULL. IT CONTAINS IMPORTANT DETAILS FOR YOUR UPCOMING TRAINING.</strong></p>
                                 <div class="section">
                                     <p><strong>TRAINING DETAILS:</strong><br>
-                                    Course Training: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
-                                    When: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
+                                    Training Course: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
+                                    Date & Time: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
                                     Apps to download: Google Classroom (Online Modular)<br>
                                     Google Classroom link: <a href="${gMeetLink}" target="_blank">${gMeetLink}</a></p>
                                 </div>
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest){
                                     <p><strong>Important: <i></i>YOU DO NOT NEED TO JOIN GOOGLE MEET.</i></strong> Please access and complete the materials in Google Classroom.<br>
                                 </div>
                                 <div class="section">
-                                    <p><strong>Required:</strong></p>
+                                    <p><strong>What to Do:</strong></p>
                                     <ul>
                                         <li>Fill out the attendance form before the training starts <strong>(inside the classwork tab)</strong>.</li>
                                         <li>Read the presentation <strong>(inside the classwork tab)</strong>.</li>
