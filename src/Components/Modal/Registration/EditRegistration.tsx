@@ -318,7 +318,6 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                 </Box>
                 {allTraining && allTraining.filter((train) => (train.reg_status >= 3) && train.regType === reg_Type && train.reg_ref_id === reg_id)
                 .map((train) => {
-
                     const course = allCourses?.find((course) => course.id === train.course)?.course_code || courseCodes?.find((course) => course.id === train.course)?.company_course_code || ''
 
                     return(
@@ -343,17 +342,18 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                         )}
                                     </Text>
                                     {reg_Type === 1 && (
-                                        <Text w='45%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTID(train.id);}} >
+                                        <Text w='45%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenATD(); setTID(train.id);}} >
                                             <Text as='span' mr='3'>{train.act_start_date}</Text>
-                                            {train.act_end_date !== '' ? (
+                                            {train.act_end_date !== '' && (
                                             <>
                                                 <Text as='span' mr='3'>to</Text>
                                                 <Text as='span'>{train.act_end_date}</Text>
                                             </>
-                                            ) : (
-                                            <>
-                                                <Text onClick={() => {alert('ok')}}>Insert Date</Text>
-                                            </>
+                                            )}
+                                            {train.act_end_date === '' && train.act_start_date === '' && 
+                                            (
+                                                <Text onClick={() => {onOpenATD(); setTID(train.id);}}>Insert Date</Text>
+                                            
                                             )}
                                         </Text>
                                     )}
