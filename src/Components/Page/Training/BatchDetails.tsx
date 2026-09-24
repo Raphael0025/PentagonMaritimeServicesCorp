@@ -22,6 +22,7 @@ import { useClients } from '@/context/ClientCompanyContext'
 import { useInstructors } from '@/context/InstructorContext'
 
 import { UPDATE_BATCH } from '@/lib/course_batches_controller'
+import { UPDATE_TRAINING } from '@/lib/trainee_controller'
 
 interface ComponentProps{
     batchID: string;
@@ -46,6 +47,9 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     const [trainingData, setTrainingData] = useState<TRAINING_BY_ID[]>([])
     const [openIndexes, setOpenIndexes] = useState<number[] | number>([])
     const [selectedEmails, setSelectedEmails] = useState<string[]>([])
+
+    const [failedEmailsModal, setFailedEmailsModal] = useState<Array<{ email: string; reason?: string }>>([]);
+    const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
 
     // instructor details
     const [note1, setNote1] = useState<string>('')
@@ -208,57 +212,87 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
     }
 
     const handleNotifyTrainees = () => {
-        setLoadTrainees(true)
-        
-        const company_staff: string | null = localStorage.getItem('customToken')
-        const jobPosition: string | null = localStorage.getItem('jobPositionToken')
-        new Promise<void>((res, rej) => {
-            setTimeout( async () => {
-                try{
-                    const courseFound = allCourses?.find((c) => c.id === batch.course)
-                    const startDateArr = batch.start_date.split(',')
-                    const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
-                    const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} ${batch.end_date === '' ? '' : `to ${endDateArr[1].toUpperCase()}`}` : startDateArr[1].toUpperCase()
-                    const gClassLink = courseFound?.class_code
-                    const gmeetLink = courseFound?.gmeet_link
-                    const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration]
-                    const firstName = company_staff?.split(' ')[0] || '';
-                    const lastName = company_staff?.split(' ').at(-1) || '';
-                    const staffName = `${firstName} ${lastName}`
-                    
-                    const route = batch.training_mode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
-                    await fetch(route, {
-                        method: 'POST',
-                        headers: {
-                        'Content-Type': 'application/json',
-                        }, 
-                        body: JSON.stringify({
-                            bcc: selectedEmails, 
-                            course_code: courseFound?.course_code, 
-                            course_name: courseFound?.course_name, 
-                            schedule, 
-                            time: timeArr[0], 
-                            gClassLink, 
-                            gmeetLink,
-                            staff: staffName, 
-                            position: jobPosition 
-                        })
+    setLoadTrainees(true);
+
+    const company_staff: string | null = localStorage.getItem('customToken');
+    const jobPosition: string | null = localStorage.getItem('jobPositionToken');
+
+    new Promise<void>((res, rej) => {
+        setTimeout(async () => {
+            try {
+                const courseFound = allCourses?.find((c) => c.id === batch.course);
+                const startDateArr = batch.start_date.split(',');
+                const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : '';
+                const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} ${batch.end_date === '' ? '' : `to ${endDateArr[1].toUpperCase()}`}` : startDateArr[1].toUpperCase();
+                const gClassLink = courseFound?.class_code;
+                const gmeetLink = courseFound?.gmeet_link;
+                const timeArr = batch.time_duration.includes('-') ? batch.time_duration.split('-') : [batch.time_duration];
+                const firstName = company_staff?.split(' ')[0] || '';
+                const lastName = company_staff?.split(' ').at(-1) || '';
+                const staffName = `${firstName} ${lastName}`;
+
+                const route = batch.training_mode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
+
+                // 1. Dispatch Email API call
+                const response = await fetch(route, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bcc: selectedEmails,
+                        course_code: courseFound?.course_code,
+                        course_name: courseFound?.course_name,
+                        schedule,
+                        time: timeArr[0],
+                        class_code: gClassLink,
+                        gmeetLink,
+                        staff: staffName,
+                        position: jobPosition
                     })
-                    res()
-                }catch(error){
-                    rej(error)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
                 }
-            }, 500)
-        }).then(() =>{
-            handleToast( 'Notified Trainees Successfully!', `Trainees have been successfully sent the training details via email.`, 5000, 'success' )
-        }).catch((error) => {
-            console.error('Error: ', error)
-        }).finally(() =>{
-            onModClose()
-            setSelectedEmails([])
-            setLoadTrainees(false)
-        })
-    }
+
+                const result = await response.json();
+                // 1. Properly detect success from your API response structure
+                const isSuccess = response.ok || !!result.messageId || result.success;
+
+                // Extract successful email list
+                const successfulEmails: string[] = Array.isArray(result.successfulEmails)
+                    ? result.successfulEmails
+                    : (isSuccess ? selectedEmails : []);
+
+                // 2. Filter trainee items matching successfully dispatched emails
+                const successfulTrainingIds = traineeDataArr
+                    .filter((item) => item.trainee?.email && successfulEmails.includes(item.trainee.email))
+                    .map((item) => item.training.id);
+
+                // 3. Update database for successful dispatches
+                if (successfulTrainingIds.length > 0) {
+                    const updatePromises = successfulTrainingIds.map((t_id) => 
+                        UPDATE_TRAINING(t_id, { isEmailed: true }, company_staff)
+                    );
+                    await Promise.all(updatePromises);
+                }
+                handleToast('Notified Trainees Successfully!', `All trainees received training details via email.`, 5000, 'success');
+                
+                res();
+            } catch (error) {
+                rej(error);
+            }
+        }, 500);
+    })
+    .catch((error) => {
+        console.error('Error: ', error);
+        handleToast('Failed to Notify', 'An error occurred while dispatching emails or updating records.', 5000, 'error');
+    })
+    .finally(() => {
+        onModClose();
+        setSelectedEmails([]);
+        setLoadTrainees(false);
+    });
+}
     
     const handleNotifyInstructor = () => {
         setLoadInstructor(true)
@@ -557,6 +591,64 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                                 </Box>
                             </Box>
                         </Box>
+                        {isFailedModalOpen && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl dark:bg-slate-800">
+            <div className="flex items-center justify-between border-b pb-3 dark:border-slate-700">
+                <h3 className="text-lg font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                    ⚠️ Undelivered Emails ({failedEmailsModal.length})
+                </h3>
+                <button
+                    onClick={() => setIsFailedModalOpen(false)}
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <p className="my-3 text-sm text-slate-600 dark:text-slate-300">
+                The following email addresses failed or were rejected by the mail server. Their records were <strong>not</strong> updated as emailed in the system:
+            </p>
+
+            <div className="max-h-60 overflow-y-auto rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
+                <ul className="space-y-2 text-sm">
+                    {failedEmailsModal.map((item, index) => (
+                        <li key={index} className="flex flex-col border-b border-slate-200 pb-2 text-slate-800 last:border-none last:pb-0 dark:border-slate-800 dark:text-slate-200">
+                            <span className="font-mono font-medium text-rose-700 dark:text-rose-300">
+                                • {item.email}
+                            </span>
+                            {item.reason && (
+                                <span className="text-xs text-slate-500 pl-3">
+                                    Reason: {item.reason}
+                                </span>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-3">
+                <button
+                    type="button"
+                    onClick={() => {
+                        navigator.clipboard.writeText(failedEmailsModal.map(f => f.email).join(', '));
+                        handleToast('Copied!', 'Failed email addresses copied to clipboard.', 3000, 'info');
+                    }}
+                    className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                    Copy Failed Emails
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setIsFailedModalOpen(false)}
+                    className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
+                >
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+)}
                     </ModalBody>
                     <ModalFooter>
                         <Button isLoading={loadTrainees} loadingText='Notifying Trainees...' isDisabled={selectedEmails.length === 0 || loadInstructor} bgColor='blue.700' colorScheme='blue' shadow='md' mr={3} onClick={handleNotifyTrainees}>Notify Trainees</Button>

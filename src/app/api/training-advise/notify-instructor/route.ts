@@ -21,7 +21,7 @@ export async function POST(request: NextRequest){
         } = await request.json()
         
         const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: Number(process.env.SMTP_PORT) || 465,
             secure: process.env.SMTP_SECURE === 'true' || true,
             auth: {
@@ -30,14 +30,12 @@ export async function POST(request: NextRequest){
             },  
         })
 
-        const aliasEmail = 'training@pentagonmaritime.com'
         const listOfTrainees = trainees.map((trainee: string) => `<li>${trainee}</li>`).join('');
         const currentYear = new Date().getFullYear()
 
         await transporter.sendMail({
-            from: `Pentagon Maritime Services Corp. <${process.env.SENDER_EMAIL}>`,
+            from: `Pentagon Maritime Training Dept. <${process.env.EMAIL}>`,
             to,
-            replyTo: aliasEmail,
             subject: `PENTAGON's ${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
@@ -136,7 +134,7 @@ export async function POST(request: NextRequest){
                                 <div class="section">
                                     <p><strong>TRAINING DETAILS</strong></p>
                                     <p><strong>Course Training:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})</p>
-                                    <p><strong>Date:</strong> ${schedule.toUpperCase()}, ${currentYear}</p>
+                                    <p><strong>Date:</strong> ${schedule.toUpperCase()}</p>
                                     <p><strong>Time:</strong> ${time_duration}</p>
                                     <p><strong>Mode of Training:</strong> Online</p>
                                 </div>

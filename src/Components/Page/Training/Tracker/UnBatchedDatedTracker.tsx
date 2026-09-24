@@ -119,10 +119,14 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                         const courseCode = courseCodes?.find((code) => code.id === courseID);
                         return course.id === courseCode?.id_course_ref;
                     });
-                    const class_code = courseFound?.class_code
+                    const gClassLink = courseFound?.class_code
+                    const gmeetLink = courseFound?.gmeet_link
                     const firstName = company_staff?.split(' ')[0] || '';
                     const lastName = company_staff?.split(' ').at(-1) || '';
                     const staffName = `${firstName} ${lastName}`
+                    
+                    const actor = localStorage.getItem('customToken')
+                    await UPDATE_TRAINING(t_id, { isEmailed: true }, actor)
                     
                     const route = trainingMode === 'olm' ? '/api/training-advise/olm-route' : '/api/training-advise/olt-route';
                     await fetch(route, {
@@ -136,7 +140,8 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                             course_name: courseFound?.course_name, 
                             schedule, 
                             time, 
-                            class_code, 
+                            gClassLink, 
+                            gmeetLink,
                             staff: staffName, 
                             position: jobPosition 
                         })
@@ -254,6 +259,7 @@ export default function UnBatchedDated ({ searchTerm, trainings }: UnBatchedDate
                                     setCourse(training.course);
                                     setTraineeName(`${trainee.last_name}, ${trainee.first_name} ${trainee.middle_name}`);
                                     setEmailDisplay(trainee.email);
+                                    setID(training.id);
                                     onModOpen(); 
                                 }} _hover={{cursor: 'pointer'}}>
                                 Notify Trainee

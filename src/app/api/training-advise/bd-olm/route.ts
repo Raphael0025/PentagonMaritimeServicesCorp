@@ -10,13 +10,15 @@ export async function POST(request: NextRequest){
             schedule, 
             actual_sched,
             time, 
-            gClassLink, 
+            gClassLink,  
+            gmeetLink,
             staff, 
             position 
         } = await request.json()
+        const recipientArray: string[] = Array.isArray(bcc) ? bcc : [bcc];
         
         const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: Number(process.env.SMTP_PORT) || 465,
             secure: process.env.SMTP_SECURE === 'true' || true,
             auth: {
@@ -26,13 +28,10 @@ export async function POST(request: NextRequest){
         })
         const currentYear = new Date().getFullYear()
 
-        const aliasEmail = 'training@pentagonmaritime.com'
-
         await transporter.sendMail({
-            from: `Pentagon Maritime Services Corp. <${process.env.SENDER_EMAIL}>`,
-            to: 'pentagonmartimecorp@gmail.com',
-            bcc: bcc,
-            replyTo: aliasEmail,
+            from: `Pentagon Maritime Training Dept. <${process.env.EMAIL}>`,
+            to: `undisclosed-recipients:;`,
+            bcc: recipientArray,
             subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
@@ -132,7 +131,7 @@ export async function POST(request: NextRequest){
                                     <br><strong>TRAINING COURSE:</strong> ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
                                     <strong>When;</strong><br>
                                     <strong>Certificate Date:</strong> ${schedule}<br>
-                                    <strong>Training date and time:</strong> ${actual_sched}, ${currentYear} - ${time} (PH Time)<br>
+                                    <strong>Training date and time:</strong> ${actual_sched} - ${time} (PH Time)<br>
                                     <strong>Where:</strong> Google Classroom (Online Modular)<br>
                                     <strong>Google Classroom link:</strong> <a href="${gClassLink}" target="_blank">${gClassLink}</a></p><br>
                                 </div>

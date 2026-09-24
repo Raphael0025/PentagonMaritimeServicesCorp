@@ -1,4 +1,4 @@
-'use client'
+    'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Box, Text, Input, Textarea, Spinner, Center, Button, ButtonGroup, Checkbox, InputLeftAddon, HStack, FormControl, Select, InputGroup, useDisclosure, useToast, Alert, AlertTitle, AlertDescription, AlertIcon, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
@@ -462,13 +462,14 @@ export default function BDTracker (){
                         return course.id === courseCode?.id_course_ref;
                     });
                     const class_code = courseFound?.class_code
+                    const gmeetLink = courseFound?.gmeet_link
                     const firstName = company_staff?.split(' ')[0] || '';
                     const lastName = company_staff?.split(' ').at(-1) || '';
                     const staffName = `${firstName} ${lastName}`
 
                     const actor = localStorage.getItem('customToken')
-                    const splitActualTD = schedule.split(' to ')
-                    //await UPDATE_TRAINING(training_ID, {act_start_date: splitActualTD[0] || '', act_end_date: splitActualTD[1] || ''}, actor)
+                    await UPDATE_TRAINING(training_ID, { isEmailed: true }, actor)
+                    
                     const route = trainingMode === 'olm' ? '/api/training-advise/bd-olm' : '/api/training-advise/bd-olt';
                     await fetch(route, {
                         method: 'POST',
@@ -482,7 +483,8 @@ export default function BDTracker (){
                             schedule: schedule,
                             actual_sched: actualSchedule,
                             time, 
-                            class_code, 
+                            gClassLink: class_code, 
+                            gmeetLink,
                             staff: staffName, 
                             position: jobPosition 
                         })

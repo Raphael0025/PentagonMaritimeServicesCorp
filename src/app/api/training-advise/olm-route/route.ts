@@ -9,29 +9,28 @@ export async function POST(request: NextRequest){
             course_name, 
             schedule, 
             time, 
-            gMeetLink, 
+            class_code, 
+            gmeetLink, 
             staff, 
             position 
         } = await request.json()
+        const recipientArray: string[] = Array.isArray(bcc) ? bcc : [bcc];
         
         const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: Number(process.env.SMTP_PORT) || 465,
             secure: process.env.SMTP_SECURE === 'true' || true,
             auth: {
                 user: process.env.EMAIL,
                 pass: process.env.EMAIL_PASS,
-            },
+            },  
         })
         const currentYear = new Date().getFullYear()
-        
-        const aliasEmail = 'training@pentagonmaritime.com'
 
         await transporter.sendMail({
-            from: `Pentagon Maritime Services Corp. <${process.env.SENDER_EMAIL}>`,
-            to: 'pentagonmartimecorp@gmail.com',
-            bcc: bcc,
-            replyTo: aliasEmail,
+            from: `Pentagon Maritime Training Dept. <${process.env.EMAIL}>`,
+            to: `undisclosed-recipients:;`,
+            bcc: recipientArray,
             subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
@@ -132,7 +131,7 @@ export async function POST(request: NextRequest){
                                     Training Course: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
                                     Date & Time: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
                                     Apps to download: Google Classroom (Online Modular)<br>
-                                    Google Classroom link: <a href="${gMeetLink}" target="_blank">${gMeetLink}</a></p>
+                                    Google Classroom link: <a href="${class_code}" target="_blank">${class_code}</a></p>
                                 </div>
                                 <div class="section">
                                     <p><strong>Important: <i></i>YOU DO NOT NEED TO JOIN GOOGLE MEET.</i></strong> Please access and complete the materials in Google Classroom.<br>

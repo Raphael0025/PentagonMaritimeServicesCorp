@@ -9,19 +9,19 @@ export async function POST(request: NextRequest){
             course_name, 
             schedule, 
             time, 
+            class_code, // gClassLink,
             gmeetLink,
-            gClassLink, 
             staff, 
             position 
         } = await request.json()
-        
+        const recipientArray: string[] = Array.isArray(bcc) ? bcc : [bcc];
         const transporter = nodemailer.createTransport({
             // service: 'gmail',
             // auth: {
             //     user: process.env.EMAIL,
             //     pass: process.env.EMAIL_PASS,
             // },
-            host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: Number(process.env.SMTP_PORT) || 465,
             secure: process.env.SMTP_SECURE === 'true' || true,
             auth: {
@@ -31,13 +31,10 @@ export async function POST(request: NextRequest){
         })
         const currentYear = new Date().getFullYear()
 
-        const aliasEmail = 'training@pentagonmaritime.com'
-
         const info = await transporter.sendMail({
-            from: `Pentagon Maritime Services Corp. <${process.env.SENDER_EMAIL}>`,
-            to: 'pentagonmartimecorp@gmail.com',
-            bcc: bcc,
-            replyTo: aliasEmail,
+            from: `Pentagon Maritime Training Dept. <${process.env.EMAIL}>`,
+            to: `undisclosed-recipients:;`,
+            bcc: recipientArray,
             subject: `${course_code.toUpperCase()} TRAINING (${schedule.toUpperCase()}, ${currentYear})`,
             html:  `<!DOCTYPE html>
                     <html lang="en">
@@ -136,9 +133,9 @@ export async function POST(request: NextRequest){
                                 <div class="section">
                                     <p><strong>TRAINING DETAILS:</strong><br>
                                     Training Course: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
-                                    Date & Time: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
+                                    Date & Time: ${schedule} - ${time} (PH Time)<br>
                                     Apps to download: Google Classroom and Google Meet<br>
-                                    Google Classroom link: <a href="${gClassLink}" target="_blank">${gClassLink}</a></p>
+                                    Google Classroom link: <a href="${class_code}" target="_blank">${class_code}</a></p>
                                     Google Meet link: <a href="${gmeetLink}" target="_blank">${gmeetLink}</a></p>
                                 </div>
                                 <div class="section">
@@ -174,16 +171,18 @@ export async function POST(request: NextRequest){
                     </html>
                 `,
         })
-        return NextResponse.json({ 
-            message: 'Training advise sent successfully via Hostinger SMTP',
-            messageId: info.messageId 
+        const rejectedSet = new Set(info.rejected || []);
+        
+        const successfulEmails = recipientArray.filter(email => !rejectedSet.has(email));
+        
+        return NextResponse.json({
+            success: true,
+            messageId: info.messageId,
+            successfulEmails,
         });
 
     } catch (error: any) {
-        console.error('Hostinger SMTP Error:', error);
-        return NextResponse.json(
-            { error: 'Failed to send training advise', details: error.message || String(error) }, 
-            { status: 500 }
-        );
+        console.error('Email dispatch error:', error);
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
