@@ -9,7 +9,7 @@ export async function POST(request: NextRequest){
             course_name, 
             schedule, 
             time, 
-            class_code, 
+            gClassLink, 
             gmeetLink, 
             staff, 
             position 
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest){
                                     Training Course: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
                                     Date & Time: ${schedule}, ${currentYear} - ${time} (PH Time)<br>
                                     Apps to download: Google Classroom (Online Modular)<br>
-                                    Google Classroom link: <a href="${class_code}" target="_blank">${class_code}</a></p>
+                                    Google Classroom link: <a href="${gClassLink}" target="_blank">${gClassLink}</a></p>
                                 </div>
                                 <div class="section">
                                     <p><strong>Important: <i></i>YOU DO NOT NEED TO JOIN GOOGLE MEET.</i></strong> Please access and complete the materials in Google Classroom.<br>

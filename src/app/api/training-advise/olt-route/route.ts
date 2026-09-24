@@ -9,7 +9,7 @@ export async function POST(request: NextRequest){
             course_name, 
             schedule, 
             time, 
-            class_code, // gClassLink,
+            gClassLink, // gClassLink,
             gmeetLink,
             staff, 
             position 
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest){
                                     Training Course: ${course_name.toUpperCase()} (${course_code.toUpperCase()})<br>
                                     Date & Time: ${schedule} - ${time} (PH Time)<br>
                                     Apps to download: Google Classroom and Google Meet<br>
-                                    Google Classroom link: <a href="${class_code}" target="_blank">${class_code}</a></p>
+                                    Google Classroom link: <a href="${gClassLink}" target="_blank">${gClassLink}</a></p>
                                     Google Meet link: <a href="${gmeetLink}" target="_blank">${gmeetLink}</a></p>
                                 </div>
                                 <div class="section">

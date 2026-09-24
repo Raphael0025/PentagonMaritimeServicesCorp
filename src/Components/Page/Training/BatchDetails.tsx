@@ -243,7 +243,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                         course_name: courseFound?.course_name,
                         schedule,
                         time: timeArr[0],
-                        class_code: gClassLink,
+                        gClassLink,
                         gmeetLink,
                         staff: staffName,
                         position: jobPosition
