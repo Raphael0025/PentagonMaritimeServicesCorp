@@ -1,7 +1,8 @@
 'use client'
 
+import { Timestamp } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react'
-import { Box, Text, Button, Input, useDisclosure, Checkbox, MenuList, Menu, MenuItem, MenuButton, IconButton, Modal, useToast, ModalOverlay, HStack, VStack, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Button, Input, useDisclosure, InputGroup, InputLeftAddon, Checkbox, MenuList, Menu, MenuItem, MenuButton, IconButton, Modal, useToast, ModalOverlay, HStack, VStack, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SettingsIcon } from '@chakra-ui/icons';
 import { useTraining } from '@/context/TrainingContext'
 import { useRegistrations } from '@/context/RegistrationContext'
@@ -15,7 +16,7 @@ import { Course, CourseFee, TrainingDate, AccountType } from './EditTraining'
 import { TRAINING_BY_ID, initTraining } from '@/types/trainees'
 import { InsertTraining } from '@/Components/Modal/Pending'
 
-import { ToastStatus } from '@/types/handling'
+import { parsingTimestamp, ToastStatus } from '@/types/handling'
 
 import { UPDATE_TRAINING, UPDATE_REGISTRATION, duplicateRegRecord, duplicateTrainRec } from '@/lib/trainee_controller'
 
@@ -45,6 +46,17 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
     const { isOpen: isOpenNA, onOpen: onOpenNA, onClose: onCloseNA } = useDisclosure()
     const { isOpen: isOpenMBD, onOpen: onOpenMBD, onClose: onCloseMBD } = useDisclosure()
     const { isOpen: isOpenATD, onOpen: onOpenATD, onClose: onCloseATD } = useDisclosure()
+
+    // Timestamped enrolled date
+    const [isDateModalOpen, setIsDateModalOpen] = useState<boolean>(false);
+    const [selectedTrainItem, setSelectedTrainItem] = useState<any>(null);
+    const [newDateTime, setNewDateTime] = useState<string>('');
+    const [isSavingDate, setIsSavingDate] = useState<boolean>(false);
+
+    // Reg
+    const [isRegModalOpen, setIsRegModalOpen] = useState<boolean>(false);
+    const [newRegNo, setNewRegNo] = useState<string>('');
+    const [isSavingReg, setIsSavingReg] = useState<boolean>(false);
 
     const [cID, setCID] = useState<string>('')
     const [account_type, setAccType] = useState<number>(0)
@@ -245,6 +257,60 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
         })
     }
 
+    const handleSaveEnrolledDate = async () => {
+        if (!selectedTrainItem || !newDateTime) return;
+
+        setIsSavingDate(true);
+
+        try {
+            // Convert input string into a Firebase Timestamp object
+            const dateObj = new Date(newDateTime);
+            const firestoreTimestamp = Timestamp.fromDate(dateObj);
+
+            const company_staff = localStorage.getItem('customToken');
+
+            // Pass the Timestamp object to match Partial<TRAINING> type
+            await UPDATE_TRAINING(
+                selectedTrainItem.id, 
+                { date_enrolled: firestoreTimestamp }, 
+                company_staff
+            );
+
+            handleToast('Success', 'Enrolled date and time updated successfully.', 3000, 'success');
+            setIsDateModalOpen(false);
+        } catch (error) {
+            console.error('Failed to update enrolled date:', error);
+            handleToast('Failed to Update', 'An error occurred while saving the new timestamp.', 5000, 'error');
+        } finally {
+            setIsSavingDate(false);
+        }
+    }
+
+    const handleSaveRegNo = async () => {
+        if (!fetchedReg?.id || !newRegNo.trim()) return;
+
+        setIsSavingReg(true);
+
+        try {
+            const company_staff = localStorage.getItem('customToken');
+
+            // Replace UPDATE_REGISTRATION with your database update function
+            await UPDATE_REGISTRATION(
+                fetchedReg.id, 
+                { reg_no: newRegNo.trim() }, 
+                company_staff
+            );
+
+            handleToast('Success', 'Registration number updated successfully.', 3000, 'success');
+            setIsRegModalOpen(false);
+        } catch (error) {
+            console.error('Failed to update registration number:', error);
+            handleToast('Error', 'Failed to update registration number.', 4000, 'error');
+        } finally {
+            setIsSavingReg(false);
+        }
+    }
+
     return(
     <>
     <Box>
@@ -258,14 +324,31 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                     <Box display='flex'>
                         <Text color='gray.600' mr='2'>Account Type:</Text>
                         {canDo("update") ? (
-                            <Text onClick={() => {onOpenAT(); setRegID(fetchedReg?.id ?? ''); setAT(fetchedReg?.reg_accountType ?? 0);}} _hover={{color: 'blue.700'}} className='hover:cursor-pointer'>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
+                            <Text onClick={() => {onOpenAT(); setRegID(fetchedReg?.id ?? ''); setAT(fetchedReg?.reg_accountType ?? 0);}} _hover={{color: 'blue.700'}} className='hover:cursor-pointer'>
+                                {`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}
+                            </Text>
                         ) : (
                             <Text>{`${fetchedReg?.reg_accountType === 0 ? 'Crew' : 'Company'} Charge`}</Text>
                         )}
                     </Box>
-                    <Box display='flex' >
-                        <Text color='gray.600' mr='3'>Registraion Number:</Text>
-                        <Text color='blue.700'>{`REG-${fetchedReg?.reg_no}`}</Text>
+
+                    <Box display='flex' alignItems='center'>
+                        <Text color='gray.600' mr='3'>Registration Number:</Text>
+                        {canDo("update") ? (
+                            <Text 
+                                color='blue.700' 
+                                _hover={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue.900' }}
+                                title="Click to edit Registration Number"
+                                onClick={() => {
+                                    setNewRegNo(fetchedReg?.reg_no ?? '');
+                                    setIsRegModalOpen(true);
+                                }}
+                            >
+                                {`REG-${fetchedReg?.reg_no}`}
+                            </Text>
+                        ) : (
+                            <Text color='blue.700'>{`REG-${fetchedReg?.reg_no}`}</Text>
+                        )}
                     </Box>
                 </Box>
                 <Box display='flex' justifyContent='end' py='1'>
@@ -299,7 +382,8 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             </Box>
             <Box mt='2'>
                 <Box p='2' borderBottom='1px' bgColor='blue.700' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
-                    <Text color='#fff' w={`${reg_Type === 0 ? '70%' : '50%'}`} textTransform={'uppercase'} fontSize='12px'>Course</Text>
+                    <Text color='#fff' w='20%' textTransform={'uppercase'} fontSize='12px'>Enrolled Date</Text>
+                    <Text color='#fff' w={`${reg_Type === 0 ? '50%' : '20%'}`} textTransform={'uppercase'} fontSize='12px'>Course</Text>
                     <Text color='#fff' w='30%' textTransform={'uppercase'} fontSize='12px'>Course Fee</Text>
                     {reg_Type === 0 ? (
                         <Text color='#fff' w='80%' textTransform={'uppercase'} textAlign='center' fontSize='12px'>Training Dates</Text>
@@ -328,9 +412,40 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                 mr='3' 
                                 colorScheme='blue'
                             />
+                            <Text
+                                w='50%'
+                                textAlign='center'
+                                _hover={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue.600' }}
+                                title="Click to edit enrolled date and time"
+                                onClick={() => {
+                                    setSelectedTrainItem(train);
+                                    if (train.date_enrolled) {
+                                        const dateObj = new Date(parsingTimestamp(train.date_enrolled));
+                                        // Formats to YYYY-MM-THH:mm required by HTML5 datetime-local input
+                                        const localIso = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000)
+                                            .toISOString()
+                                            .slice(0, 16);
+                                        setNewDateTime(localIso);
+                                    } else {
+                                        setNewDateTime('');
+                                    }
+                                    setIsDateModalOpen(true);
+                                }}
+                            >
+                                {train.date_enrolled
+                                    ? parsingTimestamp(train.date_enrolled).toLocaleString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true,
+                                    })
+                                    : '--'}
+                            </Text>
                             {canDo("update") ? (
                                 <>
-                                    <Text w='50%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
+                                    <Text w='30%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
                                     <Text w='30%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
                                     <Text w='45%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
                                         <Text as='span' mr='3'>{train.start_date}</Text>
@@ -398,6 +513,92 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             </Box>
         </Box>
     </Box>
+    {/* Edit Registration Number Modal */}
+    <Modal isOpen={isRegModalOpen} onClose={() => setIsRegModalOpen(false)} size="sm">
+        <ModalOverlay />
+        <ModalContent borderRadius="md">
+            <ModalHeader fontSize="md" fontWeight="bold">
+                Edit Registration Number
+            </ModalHeader>
+            <ModalCloseButton />
+
+            <ModalBody py={4}>
+                <Box display="flex" flexDirection="column" gap={2}>
+                    <Text fontSize="xs" color="gray.600">
+                        Enter the new registration number (prefix `REG-` is automatically attached):
+                    </Text>
+                    <InputGroup size="sm">
+                        <InputLeftAddon children="REG-" />
+                        <Input
+                            value={newRegNo}
+                            onChange={(e) => setNewRegNo(e.target.value)}
+                            placeholder="2026-09-01840"
+                        />
+                    </InputGroup>
+                </Box>
+            </ModalBody>
+
+            <ModalFooter gap={2} bg="gray.50" borderBottomRadius="md">
+                <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setIsRegModalOpen(false)}
+                    isDisabled={isSavingReg}
+                >
+                    Cancel
+                </Button>
+                <Button 
+                    size="sm" 
+                    colorScheme="blue" 
+                    onClick={handleSaveRegNo}
+                    isLoading={isSavingReg}
+                >
+                    Save
+                </Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
+    {/* Edit Date & Time Modal */}
+    <Modal isOpen={isDateModalOpen} onClose={() => setIsDateModalOpen(false)} size="sm">
+        <ModalOverlay />
+        <ModalContent borderRadius="md">
+            <ModalHeader fontSize="md" fontWeight="bold">
+                Edit Enrolled Date & Time
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody py={4}>
+                <Box display="flex" flexDirection="column" gap={2}>
+                    <Text fontSize="xs" color="gray.600">
+                        Select new date and time for this enrollment:
+                    </Text>
+                    <Input
+                        type="datetime-local"
+                        size="sm"
+                        value={newDateTime}
+                        onChange={(e) => setNewDateTime(e.target.value)}
+                    />
+                </Box>
+            </ModalBody>
+            <ModalFooter gap={2} bg="gray.50" borderBottomRadius="md">
+                <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setIsDateModalOpen(false)}
+                    isDisabled={isSavingDate}
+                >
+                    Cancel
+                </Button>
+                <Button 
+                    size="sm" 
+                    colorScheme="blue" 
+                    onClick={handleSaveEnrolledDate}
+                    isLoading={isSavingDate}
+                >
+                    Save
+                </Button>
+            </ModalFooter>
+        </ModalContent>
+    </Modal>
     <Modal isOpen={isOpenATD} onClose={() => {setActSched(''); onCloseATD();}} >
         <ModalOverlay />
         <ModalContent>

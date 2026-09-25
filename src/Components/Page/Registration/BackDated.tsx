@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react';
-import { Box, Text, Image, Input, IconButton, Textarea, Button, InputLeftAddon, Grid, GridItem, FormControl, Select, FormLabel, Switch, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { Box, Text, Image, Input, IconButton, Badge, Textarea, Button, InputLeftAddon, Grid, GridItem, FormControl, Select, FormLabel, Switch, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon, EditIcon, DownloadIcon, CopyIcon, } from '@chakra-ui/icons'
 import { Timestamp } from 'firebase/firestore'
@@ -463,10 +463,34 @@ export default function Page(){
                                     return(
                                         <Box key={training.id} _hover={{bgColor: 'blue.100', borderBottomWidth: '1px', borderColor: 'blue.700'}} w='2800px' className="flex text-center justify-between p-1 border-b space-x-4 items-center uppercase" style={{ whiteSpace: 'nowrap' }} >
                                             <Box display='flex' flexDir='column' justifyContent='center' alignItems='center' borderBottom='10px solid' borderRadius='5px' borderColor={`${training.reg_status === 3 ? 'green.100' : training.reg_status === 9 ? 'yellow.100' : training.reg_status === 7 ? 'red.200' : training.reg_status === 6 ? 'green.500' : training.reg_status === 8 ? 'red.100' : ''}`}>
-                                                <Box className='w-full flex space-x-3'>
-                                                    <Text w="80px">{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>                                                                             
-                                                    <Text w="100px">{training.enrolledBy}</Text>  
-                                                    <Text w="150px" _hover={{color: 'blue.700'}} onClick={() => {setRegNum(reg_id); setTraineeInfo(trainee); onOpenReg();}} className='hover:cursor-pointer'>
+                                                <Box className='w-full flex space-x-3' justifyContent='center' alignItems='center'>
+                                                    <Box w="80px" position="relative" display="flex" flexDir="column" alignItems="center" justifyContent="center">
+                                                        {/* Render overlay badge on top when status is Non-Appearance */}
+                                                        {training.reg_status === 9 && (
+                                                            <Badge
+                                                                position="absolute"
+                                                                bottom="-12px"
+                                                                left='1px'
+                                                                bg="yellow.500"
+                                                                color="white"
+                                                                fontSize="8px"
+                                                                fontWeight="bold"
+                                                                px={2}
+                                                                py={0.5}
+                                                                borderRadius="full"
+                                                                whiteSpace="nowrap"
+                                                                boxShadow="sm"
+                                                            >
+                                                                NON-APPEARANCE
+                                                            </Badge>
+                                                        )}
+                                                        <Text>{parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})}</Text>  
+                                                    </Box><Text w="100px">{training.enrolledBy}</Text>  
+                                                    <Text 
+                                                        _hover={{color: 'blue.700'}} 
+                                                        onClick={() => {setRegNum(reg_id); setTraineeInfo(trainee); onOpenReg();}} 
+                                                        className='hover:cursor-pointer'
+                                                    >
                                                         {`Reg-${reg_num}`}
                                                     </Text> 
                                                     <Text w="130px">

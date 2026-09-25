@@ -899,7 +899,7 @@ export default function BDTrackerCertification (){
             console.error("Error managing report viewing session:", error);
             alert("Something went wrong trying to initialize the report records.");
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
     }
 

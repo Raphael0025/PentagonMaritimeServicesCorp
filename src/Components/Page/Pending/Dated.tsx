@@ -279,7 +279,7 @@ export default function Page() {
             );
 
             // 2. Executes ONLY after ENROLL_COURSE resolves successfully
-            await UPDATE_TRAINING(training_id, { reg_status: 9 }, actor);
+            await UPDATE_TRAINING(training_id, { isNonAppearance: true, reg_status: 9 }, actor);
 
             handleToast(
                 'Status Updated Successfully!',

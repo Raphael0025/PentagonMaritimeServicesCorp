@@ -154,6 +154,7 @@ export interface TRAINING {
     enrolledBy: number;
     
     isEmailed: boolean;
+    isNonAppearance: boolean;
     reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel | 8 - absent | 9 - Non-Appearance
     course_fee: number;
     course: string;
@@ -209,6 +210,7 @@ export const initTraining = {
     enrolledBy: 0,
 
     isEmailed: false,
+    isNonAppearance: false,
     reg_status: 0, // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel
     course_fee: 0,
     course: '',
