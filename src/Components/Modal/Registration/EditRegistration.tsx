@@ -528,7 +528,8 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                         Enter the new registration number (prefix `REG-` is automatically attached):
                     </Text>
                     <InputGroup size="sm">
-                        <InputLeftAddon children="REG-" />
+                        {/* Fixed: Nest string between opening and closing tags */}
+                        <InputLeftAddon>REG-</InputLeftAddon>
                         <Input
                             value={newRegNo}
                             onChange={(e) => setNewRegNo(e.target.value)}
