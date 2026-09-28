@@ -382,7 +382,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             </Box>
             <Box mt='2'>
                 <Box p='2' borderBottom='1px' bgColor='blue.700' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
-                    <Text color='#fff' w='20%' textTransform={'uppercase'} fontSize='12px'>Enrolled Date</Text>
+                    <Text color='#fff' w='40%' textTransform={'uppercase'} textAlign='center' fontSize='12px'>Enrolled Date</Text>
                     <Text color='#fff' w={`${reg_Type === 0 ? '50%' : '20%'}`} textTransform={'uppercase'} fontSize='12px'>Course</Text>
                     <Text color='#fff' w='30%' textTransform={'uppercase'} fontSize='12px'>Course Fee</Text>
                     {reg_Type === 0 ? (
@@ -405,7 +405,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                     const course = allCourses?.find((course) => course.id === train.course)?.course_code || courseCodes?.find((course) => course.id === train.course)?.company_course_code || ''
 
                     return(
-                        <Box key={train.id} p='2' borderBottom='1px' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
+                        <Box key={train.id} p='2' borderBottom='1px' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between' fontWeight='normal'>
                             <Checkbox 
                                 isChecked={selectedTrainIDs.includes(train.id)} 
                                 onChange={() => handleToggleSelect(train.id)} 
@@ -413,7 +413,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                 colorScheme='blue'
                             />
                             <Text
-                                w='50%'
+                                w='30%'
                                 textAlign='center'
                                 _hover={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue.600' }}
                                 title="Click to edit enrolled date and time"
@@ -447,7 +447,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                 <>
                                     <Text w='30%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
                                     <Text w='30%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
-                                    <Text w='45%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
+                                    <Text w='45%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
                                         <Text as='span' mr='3'>{train.start_date}</Text>
                                         {train.end_date !== '' && (
                                         <>
@@ -480,7 +480,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                                             <Button fontWeight='normal' colorScheme='teal' onClick={() => {onOpenMBD(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Move to BD</Button>
                                         )} */}
                                         {/* <Button fontWeight='normal' colorScheme='blue' onClick={() => {onOpenRB(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Other Options</Button> */}
-                                        <Button w='100px' fontWeight='normal' colorScheme='red' onClick={() => {onOpenCancelT(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Cancel Training</Button>
+                                        <Button w='100px' fontWeight='normal' colorScheme='red' onClick={() => {onOpenCancelT(); setRegID(reg_id); setTID(train.id);}} size='xs' shadow='md'>Cancel</Button>
                                     </Box>
                                 </>
                             ) : (

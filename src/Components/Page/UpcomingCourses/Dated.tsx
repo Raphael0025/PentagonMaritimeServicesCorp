@@ -159,149 +159,160 @@ export default function Page() {
   }
 
   // OPTIMIZED MEMOIZATION WITH O(1) MAP LOOKUPS
-  const groupedSchedule = useMemo(() => {
-    if (!allTraining || allTraining.length === 0) return []
+const groupedSchedule = useMemo(() => {
+  if (!allTraining || allTraining.length === 0) return []
 
-    // Hash map pre-processing to eliminate O(N^2) array finds
-    const registrationsMap = new Map((allRegistrations || []).map((r) => [String(r.id), r]))
-    const traineesMap = new Map((allTrainee || []).map((t) => [String(t.id), t]))
-    const standardCoursesMap = new Map((allCourses || []).map((c) => [String(c.id), c.course_code]))
-    const companyCoursesMap = new Map((courseCodes || []).map((c) => [String(c.id), c.company_course_code]))
+  // Hash map pre-processing to eliminate O(N^2) array finds
+  const registrationsMap = new Map((allRegistrations || []).map((r) => [String(r.id), r]))
+  const traineesMap = new Map((allTrainee || []).map((t) => [String(t.id), t]))
+  const standardCoursesMap = new Map((allCourses || []).map((c) => [String(c.id), c.course_code]))
+  const companyCoursesMap = new Map((courseCodes || []).map((c) => [String(c.id), c.company_course_code]))
 
-    const enriched = []
+  const enriched = []
 
-    for (let i = 0; i < allTraining.length; i++) {
-      const t = allTraining[i]
+  for (let i = 0; i < allTraining.length; i++) {
+    const t = allTraining[i]
 
-      const isCorrectRegType = t.regType === 0 || t.regType === 2
-      const isValidStatus = t.reg_status !== undefined && t.reg_status >= 0
+    const isCorrectRegType = t.regType === 0 || t.regType === 2
+    const isValidStatus = t.reg_status !== undefined && t.reg_status >= 0
 
-      if (!isCorrectRegType || !isValidStatus) continue
+    if (!isCorrectRegType || !isValidStatus) continue
 
-      const registration = registrationsMap.get(String(t.reg_ref_id))
-      const rawTimestamp = t.date_enrolled
+    const registration = registrationsMap.get(String(t.reg_ref_id))
+    const rawTimestamp = t.date_enrolled
 
-      if (rawTimestamp !== undefined && rawTimestamp !== null) {
-        let enrolledDate: Date | null = null
+    if (rawTimestamp !== undefined && rawTimestamp !== null) {
+      let enrolledDate: Date | null = null
 
-        if (typeof rawTimestamp === 'object' && rawTimestamp !== null && 'toDate' in rawTimestamp && typeof (rawTimestamp as any).toDate === 'function') {
-          enrolledDate = (rawTimestamp as any).toDate()
-        } else if (!isNaN(Number(rawTimestamp))) {
-          const num = Number(rawTimestamp)
-          enrolledDate = new Date(num < 10000000000 ? num * 1000 : num)
-        } else if (typeof rawTimestamp === 'string' || typeof rawTimestamp === 'number' || rawTimestamp instanceof Date) {
-          enrolledDate = new Date(rawTimestamp)
-        }
-
-        if (enrolledDate && !isNaN(enrolledDate.getTime())) {
-          if (enrolledDate.getFullYear() !== currentYear) {
-            continue
-          }
-        }
+      if (typeof rawTimestamp === 'object' && rawTimestamp !== null && 'toDate' in rawTimestamp && typeof (rawTimestamp as any).toDate === 'function') {
+        enrolledDate = (rawTimestamp as any).toDate()
+      } else if (!isNaN(Number(rawTimestamp))) {
+        const num = Number(rawTimestamp)
+        enrolledDate = new Date(num < 10000000000 ? num * 1000 : num)
+      } else if (typeof rawTimestamp === 'string' || typeof rawTimestamp === 'number' || rawTimestamp instanceof Date) {
+        enrolledDate = new Date(rawTimestamp)
       }
 
-      const resolvedCourseCode =
-        standardCoursesMap.get(String(t.course)) ||
-        companyCoursesMap.get(String(t.course)) ||
-        'UNASSIGNED COURSE'
+      if (enrolledDate && !isNaN(enrolledDate.getTime())) {
+        if (enrolledDate.getFullYear() !== currentYear) {
+          continue
+        }
+      }
+    }
 
-      const trainee = registration ? traineesMap.get(String(registration.trainee_ref_id)) : null
-      const { monthName, startDateObj } = getMonthInfo(t.start_date)
-      const displayDate = t.start_date ? String(t.start_date).toUpperCase() : 'NO DATE'
-      const monthYear = `${monthName} ${currentYear}`
+    const resolvedCourseCode =
+      standardCoursesMap.get(String(t.course)) ||
+      companyCoursesMap.get(String(t.course)) ||
+      'UNASSIGNED COURSE'
 
-      // Extract Start and End Dates safely
-      const startDate = t.start_date ? String(t.start_date).trim() : 'N/A'
-      const endDate = t.end_date ? String(t.end_date).trim() : ''
+    const trainee = registration ? traineesMap.get(String(registration.trainee_ref_id)) : null
+    const { monthName, startDateObj } = getMonthInfo(t.start_date)
+    const displayDate = t.start_date ? String(t.start_date).toUpperCase() : 'NO DATE'
+    const monthYear = `${monthName} ${currentYear}`
 
-      // Determine single-day status (if end_date is missing, N/A, or matches start_date)
-      const isSingleDay = !endDate || endDate.toUpperCase() === 'N/A' || endDate === startDate
+    // Extract Start and End Dates safely
+    const startDate = t.start_date ? String(t.start_date).trim() : 'N/A'
+    const endDate = t.end_date ? String(t.end_date).trim() : ''
 
-      enriched.push({
-        ...t,
-        courseCode: resolvedCourseCode.toUpperCase(),
-        startDateObj,
-        monthName,
-        monthYear,
-        displayDate,
-        startDate,
-        endDate,
-        isSingleDay,
-        isEmailed: t.isEmailed || false,
-        attendance: t.attendance || false,
-        traineeName: trainee
-          ? `${allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank} ${trainee.last_name}, ${trainee.first_name} ${
-              trainee.middle_name ? trainee.middle_name.charAt(0) + '.' : ''
-            }`
-          : 'Unknown Trainee',
-        contactNo: trainee?.contact_no || 'N/A',
-        email: trainee?.email || 'N/A',
-        company: t.accountType === 1 ? 'COMPANY' : 'CREW',
-        companyName: allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company
+    // Determine single-day status (if end_date is missing, N/A, or matches start_date)
+    const isSingleDay = !endDate || endDate.toUpperCase() === 'N/A' || endDate === startDate
+
+    enriched.push({
+      ...t,
+      courseCode: resolvedCourseCode.toUpperCase(),
+      startDateObj,
+      monthName,
+      monthYear,
+      displayDate,
+      startDate,
+      endDate,
+      isSingleDay,
+      isEmailed: t.isEmailed || false,
+      attendance: t.attendance || false,
+      traineeName: trainee
+        ? `${allRanks?.find((rank) => rank.code === trainee.rank)?.rank || trainee.rank} ${trainee.last_name}, ${trainee.first_name} ${
+            trainee.middle_name ? trainee.middle_name.charAt(0) + '.' : ''
+          }`
+        : 'Unknown Trainee',
+      contactNo: trainee?.contact_no || 'N/A',
+      email: trainee?.email || 'N/A',
+      company: t.accountType === 1 ? 'COMPANY' : 'CREW',
+      companyName: allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company
+    })
+  }
+
+  const monthFiltered = selectedMonth
+    ? enriched.filter((item) => item.monthName.toLowerCase() === selectedMonth.toLowerCase())
+    : enriched
+
+  // Filter by Specific Day of Month
+  const filteredData = selectedDay && selectedDay !== 'ALL'
+    ? monthFiltered.filter((item) => {
+        if (!item.startDateObj || isNaN(item.startDateObj.getTime())) return false
+        return item.startDateObj.getDate() === parseInt(selectedDay, 10)
+      })
+    : monthFiltered
+
+  const dateMap = new Map<string, {
+    displayDate: string,
+    monthYear: string,
+    startDateObj: Date,
+    coursesMap: Map<string, {
+      courseCode: string,
+      startDate: string,
+      endDate: string,
+      isSingleDay: boolean,
+      trainees: typeof filteredData
+    }>
+  }>()
+
+  filteredData.forEach((item) => {
+    if (!dateMap.has(item.displayDate)) {
+      dateMap.set(item.displayDate, {
+        displayDate: item.displayDate,
+        monthYear: item.monthYear,
+        startDateObj: item.startDateObj,
+        coursesMap: new Map()
+      })
+    }
+    const dateGroup = dateMap.get(item.displayDate)!
+
+    // FIX: Group purely by course code so all trainees under the course share one header
+    const courseKey = item.courseCode
+
+    if (!dateGroup.coursesMap.has(courseKey)) {
+      dateGroup.coursesMap.set(courseKey, {
+        courseCode: item.courseCode,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        isSingleDay: item.isSingleDay,
+        trainees: []
       })
     }
 
-    const monthFiltered = selectedMonth
-      ? enriched.filter((item) => item.monthName.toLowerCase() === selectedMonth.toLowerCase())
-      : enriched
+    const courseGroup = dateGroup.coursesMap.get(courseKey)!
 
-      // Filter by Specific Day of Month
-    const filteredData = selectedDay && selectedDay !== 'ALL'
-      ? monthFiltered.filter((item) => {
-          if (!item.startDateObj || isNaN(item.startDateObj.getTime())) return false
-          return item.startDateObj.getDate() === parseInt(selectedDay, 10)
-        })
-      : monthFiltered
+    // Fall back to valid start/end dates if the initial entry used a placeholder
+    if ((courseGroup.startDate === 'N/A' || courseGroup.startDate === 'NO DATE') && item.startDate !== 'N/A' && item.startDate !== 'NO DATE') {
+      courseGroup.startDate = item.startDate
+      courseGroup.endDate = item.endDate
+      courseGroup.isSingleDay = item.isSingleDay
+    }
 
-    const dateMap = new Map<string, {
-      displayDate: string,
-      monthYear: string,
-      startDateObj: Date,
-      coursesMap: Map<string, {
-        courseCode: string,
-        startDate: string,
-        endDate: string,
-        isSingleDay: boolean,
-        trainees: typeof filteredData
-      }>
-    }>()
+    courseGroup.trainees.push(item)
+  })
 
-    filteredData.forEach((item) => {
-      if (!dateMap.has(item.displayDate)) {
-        dateMap.set(item.displayDate, {
-          displayDate: item.displayDate,
-          monthYear: item.monthYear,
-          startDateObj: item.startDateObj,
-          coursesMap: new Map()
-        })
-      }
-      const dateGroup = dateMap.get(item.displayDate)!
+  const sortedDateGroups = Array.from(dateMap.values()).sort((a, b) => {
+    return sortOrder === 'desc'
+      ? b.startDateObj.getTime() - a.startDateObj.getTime()
+      : a.startDateObj.getTime() - b.startDateObj.getTime()
+  })
 
-      const courseKey = `${item.courseCode}_${item.startDate}_${item.endDate}`
-
-      if (!dateGroup.coursesMap.has(courseKey)) {
-        dateGroup.coursesMap.set(courseKey, {
-          courseCode: item.courseCode,
-          startDate: item.startDate,
-          endDate: item.endDate,
-          isSingleDay: item.isSingleDay,
-          trainees: []
-        })
-      }
-      dateGroup.coursesMap.get(courseKey)!.trainees.push(item)
-    })
-
-    const sortedDateGroups = Array.from(dateMap.values()).sort((a, b) => {
-      return sortOrder === 'desc'
-        ? b.startDateObj.getTime() - a.startDateObj.getTime()
-        : a.startDateObj.getTime() - b.startDateObj.getTime()
-    })
-
-    return sortedDateGroups.map((dateGroup) => ({
-      ...dateGroup,
-      courses: Array.from(dateGroup.coursesMap.values())
-    }))
-  }, [allTraining, allCourses, courseCodes, allRegistrations, allTrainee, selectedMonth, selectedDay, currentYear, sortOrder])
+  return sortedDateGroups.map((dateGroup) => ({
+    ...dateGroup,
+    courses: Array.from(dateGroup.coursesMap.values())
+  }))
+}, [allTraining, allCourses, courseCodes, allRegistrations, allTrainee, selectedMonth, selectedDay, currentYear, sortOrder])
 
   const handleToggleAttendance = async(id: string, val: boolean)=> {
     const actor: string | null = localStorage.getItem('customToken')

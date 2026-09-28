@@ -107,7 +107,7 @@ export default function TrainingDate({onClose, training}: PageProps){
                         end_date: training.numOfDays > 1 ? edSTR : '',
                         numOfDays: normalizedNumOfDays,
                     }
-                    //await UPDATE_TRAINING(training.id, updateTD, actor)
+                    await UPDATE_TRAINING(training.id, updateTD, actor)
                     res()
                 }catch(error){
                     rej(error)

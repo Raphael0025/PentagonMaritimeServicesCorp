@@ -362,14 +362,14 @@ const groupedSchedule = useMemo(() => {
     }>
   }>();
 
-  // 3. Iterate over filteredData (instead of monthFiltered)
+  // 3. Iterate over filteredData
   filteredData.forEach((item) => {
     const isValidDate = item.startDateObj && !isNaN(item.startDateObj.getTime()) && item.startDateObj.getTime() !== 0;
     
     // Normalize to YYYY-MM-DD so backdated and scheduled dates resolve to the exact same map key
     const dateKey = isValidDate ? getStandardDateKey(item.startDateObj) : item.displayDate;
     
-    // Standardize header display text (e.g., SEP 28 2026)
+    // Standardize header display text
     const unifiedDisplayDate = isValidDate ? formatUnifiedDisplayDate(item.startDateObj) : item.displayDate;
 
     if (!dateMap.has(dateKey)) {
@@ -383,7 +383,9 @@ const groupedSchedule = useMemo(() => {
     }
     
     const dateGroup = dateMap.get(dateKey)!;
-    const courseKey = `${item.courseCode}_${item.startDate}_${item.endDate}`;
+
+    // FIX: Group purely by course code so backdated & scheduled items merge into one course block
+    const courseKey = item.courseCode;
 
     if (!dateGroup.coursesMap.has(courseKey)) {
       dateGroup.coursesMap.set(courseKey, {
@@ -394,7 +396,17 @@ const groupedSchedule = useMemo(() => {
         trainees: []
       });
     }
-    dateGroup.coursesMap.get(courseKey)!.trainees.push(item);
+
+    const courseGroup = dateGroup.coursesMap.get(courseKey)!;
+
+    // Fall back to valid start/end dates if the initial item was missing dates
+    if (courseGroup.startDate === 'NO DATE' && item.startDate !== 'NO DATE') {
+      courseGroup.startDate = item.startDate;
+      courseGroup.endDate = item.endDate;
+      courseGroup.isSingleDay = item.isSingleDay;
+    }
+
+    courseGroup.trainees.push(item);
   });
 
   const sortedDateGroups = Array.from(dateMap.values()).sort((a, b) => {
