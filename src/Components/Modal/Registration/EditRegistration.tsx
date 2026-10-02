@@ -382,8 +382,8 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
             </Box>
             <Box mt='2'>
                 <Box p='2' borderBottom='1px' bgColor='blue.700' borderBottomColor='gray.500' mb='2' display='flex' alignItems='center' justifyContent='space-between'>
-                    <Text color='#fff' w='40%' textTransform={'uppercase'} textAlign='center' fontSize='12px'>Enrolled Date</Text>
-                    <Text color='#fff' w={`${reg_Type === 0 ? '50%' : '20%'}`} textTransform={'uppercase'} fontSize='12px'>Course</Text>
+                    <Text color='#fff' w={`${reg_Type === 0 ? '60%' : '40%'}`} textTransform={'uppercase'} textAlign='center' fontSize='12px'>Enrolled Date</Text>
+                    <Text color='#fff' w={`${reg_Type === 0 ? '40%' : '20%'}`} textAlign={`${reg_Type === 0 ? 'center' : 'start'}`} textTransform={'uppercase'} fontSize='12px'>Course</Text>
                     <Text color='#fff' w='30%' textTransform={'uppercase'} fontSize='12px'>Course Fee</Text>
                     {reg_Type === 0 ? (
                         <Text color='#fff' w='80%' textTransform={'uppercase'} textAlign='center' fontSize='12px'>Training Dates</Text>
@@ -397,7 +397,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                         </Text>
                     )}
                     {canDo("update") && (
-                        <Text color='#fff' w='30%' display='flex' justifyContent='center' textTransform={'uppercase'} fontSize='12px'>Action</Text>
+                        <Text color='#fff' w={`${reg_Type === 0 ? '40%' : '30%'}`} display='flex' justifyContent='center' textTransform={'uppercase'} fontSize='12px'>Action</Text>
                     )}
                 </Box>
                 {allTraining && allTraining.filter((train) => (train.reg_status >= 3) && train.regType === reg_Type && train.reg_ref_id === reg_id)
@@ -446,7 +446,7 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
                             {canDo("update") ? (
                                 <>
                                     <Text w='30%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenCourse(); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{course}</Text>
-                                    <Text w='30%' className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
+                                    <Text w={`${reg_Type === 0 ? '20%' : '30%'}`} className='hover:cursor-pointer' _hover={{color: 'blue.700'}} onClick={() => {onOpenCF(); setCF(train.course_fee); setTID(train.id);}} textTransform={'uppercase'} fontSize='12px'>{`₱ ${train.course_fee}`}.00</Text>
                                     <Text w='45%' className='hover:cursor-pointer' textAlign='center' _hover={{color: 'blue.700'}} onClick={() => {onOpenTD(); setTraining(train);}} >
                                         <Text as='span' mr='3'>{train.start_date}</Text>
                                         {train.end_date !== '' && (

@@ -466,7 +466,7 @@ export default function Page(){
                                                 <Box className='w-full flex space-x-3' justifyContent='center' alignItems='center'>
                                                     <Box w="80px" position="relative" display="flex" flexDir="column" alignItems="center" justifyContent="center">
                                                         {/* Render overlay badge on top when status is Non-Appearance */}
-                                                        {training.reg_status === 9 && (
+                                                        {(training.isNonAppearance || training.reg_status === 9) && (
                                                             <Badge
                                                                 position="absolute"
                                                                 bottom="-12px"

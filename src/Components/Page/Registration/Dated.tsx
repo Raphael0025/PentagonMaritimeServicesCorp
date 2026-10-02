@@ -917,7 +917,7 @@ export default function Page(){
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-            <Modal isOpen={isOpenReg} size='3xl' onClose={onCloseReg}>
+            <Modal isOpen={isOpenReg} size='4xl' onClose={onCloseReg}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalBody >

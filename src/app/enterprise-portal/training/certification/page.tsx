@@ -107,130 +107,136 @@ export default function TrackerPage(){
     })
 
     useEffect(() => {
-        const fetchData = () => {
-            setLoading(true)
-            const allTrainData = allTrainingData && allTrainingData
-                .filter((t) => {
-                    if(!t.batch) {
-                        return false;
-                    } 
-                    else if (!hasNoBatch) {
-                        const batch = courseBatch?.find((b) => b.id === t.batch);
-                        if (!batch?.createdAt) return false;
-                        
-                        // Firestore Timestamp → JS Date
-                        const createdDate = batch.createdAt.toDate();
-                        
-                        return (
-                            createdDate.getMonth() === monthSelected &&
-                            createdDate.getFullYear() === yearSelected
-                        );
-                    } 
-                    else {    
-                        return true;
-                    }
-                })
-                .filter(t => {
-                    const start = t.start_date.toLowerCase();
-                    const end = t.end_date.toLowerCase();
+    const fetchData = () => {
+        setLoading(true)
+        const allTrainData = allTrainingData && allTrainingData
+            .filter((t) => {
+                if (!t.batch) {
+                    return false;
+                } 
+                else if (!hasNoBatch) {
+                    const batch = courseBatch?.find((b) => b.id === t.batch);
+                    if (!batch?.createdAt) return false;
                     
-                    const MONTH_MAP = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-                    const trimmedMonth = MONTH_MAP[monthSelected];
+                    // Fixes the TypeScript overload error cleanly
+                    const rawCreatedAt = batch.createdAt as any;
+                    const createdDate: Date = 
+                        typeof rawCreatedAt?.toDate === 'function' 
+                            ? rawCreatedAt.toDate() 
+                            : new Date(rawCreatedAt);
 
-                    return (start.includes(trimmedMonth) || end.includes(trimmedMonth) )
-                })
-                .sort((a, b) => {
-                    // ---------- 1️⃣ DATE SORT (PRIMARY) ----------
-                    const getTime = (d?: string) => d ? new Date(d).getTime() : 0
-
-                    const dateA = getTime(a.end_date) || getTime(a.start_date)
-                    const dateB = getTime(b.end_date) || getTime(b.start_date)
-
-                    if (dateA !== dateB) {
-                        return dateB - dateA // newest → oldest
-                    }
-
-                    // ---------- 2️⃣ COURSE SORT (SECONDARY) ----------
-                    const courseA =
-                        allCourses?.find((c) => c.id === a.course)?.course_code?.toLowerCase() ||
-                        courseCodes?.find((c) => c.id === a.course)?.company_course_code?.toLowerCase() ||
-                        ''
-
-                    const courseB =
-                        allCourses?.find((c) => c.id === b.course)?.course_code?.toLowerCase() ||
-                        courseCodes?.find((c) => c.id === b.course)?.company_course_code?.toLowerCase() ||
-                        ''
-
-                    if (courseA < courseB) return -1
-                    if (courseA > courseB) return 1
-
-                    // ---------- 3️⃣ REG_NO SORT (TERTIARY) ----------
-                    const regNoA =
-                        allRegData?.find((r) => r.id === a.reg_ref_id)?.reg_no || ''
-                    const regNoB =
-                        allRegData?.find((r) => r.id === b.reg_ref_id)?.reg_no || ''
-
-                    // Expected format: YYYY-MM-XXX
-                    const [yearA = 0, monthA = 0, numberA = 0] = regNoA.split('-').map(Number)
-                    const [yearB = 0, monthB = 0, numberB = 0] = regNoB.split('-').map(Number)
-
-                    if (yearA !== yearB) return yearA - yearB
-                    if (monthA !== monthB) return monthA - monthB
-                    return numberA - numberB
-                })
-                .filter((t) => t.reg_status === 6 || t.reg_status === 3)
-                .filter((t) => {
-                    if(!filterCharge) return true
-                    return t.accountType.toString() === filterCharge
-                })
-                .filter((t) => {
-                    const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
-                    const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
-                    if (!trainee) return false;
-                    if (filterCompany === '') return true;
-
-                    return trainee.company === filterCompany
-                })
-                .filter((t) => {
-                    if (!filterCourse || filterCourse === '') return true;
+                    if (isNaN(createdDate.getTime())) return false;
 
                     return (
-                        allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
-                        courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
-                    )
-                })
-                .filter((t) => { 
-                    if(filterStatus === '') return true
-                    return t.cert_status === Number(filterStatus) 
-                })
-                .filter((f) => {
-                    if(!filterRecency) return true
-                    const recency = getRelativeDate(f.end_date, f.start_date)
-                    return recency.toLowerCase() === filterRecency.toLowerCase()
-                })
+                        createdDate.getMonth() === monthSelected &&
+                        createdDate.getFullYear() === yearSelected
+                    );
+                } 
+                else {    
+                    return true;
+                }
+            })
+            .filter(t => {
+                // Safe string conversion preventing crashes on empty/undefined strings
+                const start = String(t.start_date || '').toLowerCase();
+                const end = String(t.end_date || '').toLowerCase();
+                
+                const MONTH_MAP = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                const trimmedMonth = MONTH_MAP[monthSelected];
 
-            if(!allTrainData) return
+                // Check start, end, or displayDate for the target month tag
+                return start.includes(trimmedMonth) || (end !== '' && end.includes(trimmedMonth));
+            })
+            .sort((a, b) => {
+                // ---------- 1️⃣ DATE SORT (PRIMARY) ----------
+                const getTime = (d?: string) => d ? new Date(d).getTime() : 0
 
-            const filteredTrainingData: TRAINING_BY_ID[] = allTrainData?.filter(t => t.batch !== '1' && t.regType === 0) || []
+                const dateA = getTime(a.end_date) || getTime(a.start_date)
+                const dateB = getTime(b.end_date) || getTime(b.start_date)
 
-            const traineeChargeCount = filteredTrainingData?.filter(t => t.accountType === 0).length
-            const companyChargeCount = filteredTrainingData?.filter(t => t.accountType === 1).length
-            const ttlReleased = filteredTrainingData?.filter(t => t.cert_status === 2).length
-            const ttlUnclaimed = filteredTrainingData?.filter(t => t.cert_status === 1).length
-            const ttlPending = filteredTrainingData?.filter(t => t.cert_status === 0).length
+                if (dateA !== dateB) {
+                    return dateB - dateA // newest → oldest
+                }
 
-            // 3️⃣ Set the states
-            setAllTData(allTrainData ?? []);
+                // ---------- 2️⃣ COURSE SORT (SECONDARY) ----------
+                const courseA =
+                    allCourses?.find((c) => c.id === a.course)?.course_code?.toLowerCase() ||
+                    courseCodes?.find((c) => c.id === a.course)?.company_course_code?.toLowerCase() ||
+                    ''
 
-            setTraineeCharge(traineeChargeCount)
-            setCompanyCharge(companyChargeCount)
-            setReleasedCerts(ttlReleased);
-            setUnclaimedCert(ttlUnclaimed);
-            setPendingCerts(ttlPending);
-            setLoading(false)
-        }
-        fetchData()
-    },[monthSelected, yearSelected, allTrainingData, filterCharge, filterCourse, filterStatus, filterRecency, filterCompany])
+                const courseB =
+                    allCourses?.find((c) => c.id === b.course)?.course_code?.toLowerCase() ||
+                    courseCodes?.find((c) => c.id === b.course)?.company_course_code?.toLowerCase() ||
+                    ''
+
+                if (courseA < courseB) return -1
+                if (courseA > courseB) return 1
+
+                // ---------- 3️⃣ REG_NO SORT (TERTIARY) ----------
+                const regNoA =
+                    allRegData?.find((r) => r.id === a.reg_ref_id)?.reg_no || ''
+                const regNoB =
+                    allRegData?.find((r) => r.id === b.reg_ref_id)?.reg_no || ''
+
+                const [yearA = 0, monthA = 0, numberA = 0] = regNoA.split('-').map(Number)
+                const [yearB = 0, monthB = 0, numberB = 0] = regNoB.split('-').map(Number)
+
+                if (yearA !== yearB) return yearA - yearB
+                if (monthA !== monthB) return monthA - monthB
+                return numberA - numberB
+            })
+            .filter((t) => t.reg_status === 6 || t.reg_status === 3)
+            .filter((t) => {
+                if (!filterCharge) return true
+                return t.accountType?.toString() === filterCharge
+            })
+            .filter((t) => {
+                const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
+                const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
+                if (!trainee) return false;
+                if (filterCompany === '') return true;
+
+                return trainee.company === filterCompany
+            })
+            .filter((t) => {
+                if (!filterCourse || filterCourse === '') return true;
+
+                return (
+                    allCourses?.find((course) => course.id === t.course)?.course_code?.toUpperCase() === filterCourse.toUpperCase() || 
+                    courseCodes?.find((course) => course.id === t.course)?.company_course_code?.toUpperCase() === filterCourse.toUpperCase()
+                )
+            })
+            .filter((t) => { 
+                if (filterStatus === '') return true
+                return t.cert_status === Number(filterStatus) 
+            })
+            .filter((f) => {
+                if (!filterRecency) return true
+                const recency = getRelativeDate(f.end_date, f.start_date)
+                return recency.toLowerCase() === filterRecency.toLowerCase()
+            })
+
+        if (!allTrainData) return
+
+        const filteredTrainingData: TRAINING_BY_ID[] = allTrainData?.filter(t => t.batch !== '1' && t.regType === 0) || []
+
+        const traineeChargeCount = filteredTrainingData?.filter(t => t.accountType === 0).length
+        const companyChargeCount = filteredTrainingData?.filter(t => t.accountType === 1).length
+        const ttlReleased = filteredTrainingData?.filter(t => t.cert_status === 2).length
+        const ttlUnclaimed = filteredTrainingData?.filter(t => t.cert_status === 1).length
+        const ttlPending = filteredTrainingData?.filter(t => t.cert_status === 0).length
+
+        setAllTData(allTrainData ?? []);
+
+        setTraineeCharge(traineeChargeCount)
+        setCompanyCharge(companyChargeCount)
+        setReleasedCerts(ttlReleased);
+        setUnclaimedCert(ttlUnclaimed);
+        setPendingCerts(ttlPending);
+        setLoading(false)
+    }
+    fetchData()
+}, [monthSelected, yearSelected, allTrainingData, filterCharge, filterCourse, filterStatus, filterRecency, filterCompany])
 
     const batchedData = useMemo(
         () => allTData?.filter(t => t.regType === 0).filter(t => t.batch !== '1'),

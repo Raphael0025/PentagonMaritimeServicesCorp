@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Badge, Select, HStack, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, Textarea, useDisclosure, useToast } from '@chakra-ui/react'
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Badge, Select, HStack, Stack, FormLabel, FormControl, Input, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, Textarea, useDisclosure, useToast } from '@chakra-ui/react'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -96,6 +96,7 @@ export default function Page() {
   const toast = useToast()
 
   const { isOpen: isOpenRm, onOpen: onOpenRm, onClose: onCloseRm } = useDisclosure()
+
   const [idRef, setID] = useState<string>('')
   const [remarks, setRemarks] = useState<string>('')
   const [isSaving, setIsSaving] = useState<boolean>(false)
@@ -105,6 +106,11 @@ export default function Page() {
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthName)
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
   const [selectedDay, setSelectedDay] = useState<string>('ALL')
+
+  // Form fields state
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   // Handler to jump directly to today's month and day
   const handleSelectToday = () => {
@@ -312,7 +318,15 @@ const groupedSchedule = useMemo(() => {
     ...dateGroup,
     courses: Array.from(dateGroup.coursesMap.values())
   }))
+  console.table(sortedDateGroups) // Debugging: Log the grouped schedule structure
 }, [allTraining, allCourses, courseCodes, allRegistrations, allTrainee, selectedMonth, selectedDay, currentYear, sortOrder])
+
+  // Infer the exact item type from your groupedSchedule output
+  type EnrichedTrainee = typeof groupedSchedule[number]['courses'][number]['trainees'][number]
+
+  // Inside your main component:
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [selectedReschedRecord, setSelectedReschedRecord] = useState<EnrichedTrainee | null>(null)
 
   const handleToggleAttendance = async(id: string, val: boolean)=> {
     const actor: string | null = localStorage.getItem('customToken')
@@ -331,6 +345,94 @@ const groupedSchedule = useMemo(() => {
         'error'
       )
       throw new Error('Error toggling attendance: ' + error)
+    }
+  }
+
+  // When a status badge is clicked, open modal & pre-fill existing dates
+  const handleStatusClick = (trainee: EnrichedTrainee) => {
+    setSelectedReschedRecord(trainee)
+    // Pre-fill if trainee already has ISO/formatted start_date or fallback to empty string
+    setStartDate(trainee.start_date ? String(trainee.start_date) : '')
+    setEndDate(trainee.end_date ? String(trainee.end_date) : '')
+    onOpen()
+  }
+
+  const formatDateString = (dateStr: string | null | undefined): string => {
+    // Return empty string immediately if input is missing, empty, or invalid
+    if (!dateStr || typeof dateStr !== 'string' || !dateStr.includes('-')) {
+      return ''
+    }
+
+    const [yearStr, monthStr, dayStr] = dateStr.split('-')
+    const year = Number(yearStr)
+    const month = Number(monthStr)
+    const day = Number(dayStr)
+
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      return ''
+    }
+
+    const date = new Date(year, month - 1, day)
+
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+    const dayOfWeek = days[date.getDay()]
+    const monthName = months[date.getMonth()]
+    const paddedDay = String(day).padStart(2, '0')
+
+    return `${dayOfWeek}, ${monthName} ${paddedDay}`
+  }
+
+  // Handle form submission / update logic
+  const handleConfirmReschedule = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedReschedRecord || !startDate) return
+
+    try {
+      setIsSubmitting(true)
+
+      // 1. Format individual dates
+      const formattedStart = formatDateString(startDate)
+      // Fallback explicitly to an empty string if endDate is missing or falsy
+      const formattedEnd = endDate ? formatDateString(endDate) : ''
+
+      // 2. Build display string
+      let formattedDisplayDate = formattedStart
+      if (formattedEnd && formattedEnd !== formattedStart) {
+        formattedDisplayDate = `${formattedStart} to ${formattedEnd}`
+      }
+
+      // 3. Payload with empty string fallback for end_date
+      const payload = {
+        start_date: formattedStart,
+        end_date: formattedEnd || '', // Ensures an empty string if no end date
+        displayDate: formattedDisplayDate,
+      }
+
+      console.log('Sending Payload:', payload)
+
+      // TODO: await updateTrainingSchedule(selectedReschedRecord.id, payload)
+
+      toast({
+        title: 'Schedule Updated',
+        description: `Training date set to ${formattedDisplayDate}`,
+        status: 'success',
+        duration: 4000,
+        isClosable: true
+      })
+
+      onClose()
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update schedule.',
+        status: 'error',
+        duration: 4000,
+        isClosable: true
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -473,7 +575,10 @@ const groupedSchedule = useMemo(() => {
                           >{item.traineeName}</Td>
                           <Td fontSize="xs">{item.contactNo}</Td>
                           <Td fontSize="xs" color="blue.700" textDecoration="underline">{item.email}</Td>
-                          <Td fontSize="xs">
+                          <Td fontSize="xs"
+                            cursor='pointer'
+                            onClick={() => handleStatusClick(item)}
+                          >
                             <Badge mr='3'
                               colorScheme={item.reg_status === 6 ? 'green' : item.reg_status === 7 ? 'red' : 'gray'}
                               fontSize="10px"
@@ -523,7 +628,103 @@ const groupedSchedule = useMemo(() => {
           </Tbody>
         </Table>
       </Box>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered size="md">
+        <ModalOverlay backdropFilter="blur(4px)" />
+        <ModalContent overflow="hidden" borderRadius="lg" as="form" onSubmit={handleConfirmReschedule}>
+          
+          {/* Modal Header */}
+          <ModalHeader bg="blue.900" color="white" py={4} fontSize="md" fontWeight="bold">
+            Reschedule Training
+          </ModalHeader>
+          <ModalCloseButton color="white" />
 
+          {/* Modal Body */}
+          <ModalBody py={5}>
+            <Text fontSize="sm" color="gray.600" mb={4}>
+              Please select the new training start and end dates for this trainee.
+            </Text>
+
+            {/* Trainee Details Card */}
+            {selectedReschedRecord && (
+              <Box 
+                bg="slate.50" 
+                p={3} 
+                mb={5}
+                borderRadius="md" 
+                borderWidth="1px" 
+                borderColor="gray.200"
+                fontSize="xs"
+              >
+                <Text mb={1}>
+                  <Text as="span" fontWeight="bold" color="gray.600">Trainee Name: </Text>
+                  {selectedReschedRecord.traineeName}
+                </Text>
+                <Text mb={1}>
+                  <Text as="span" fontWeight="bold" color="gray.600">Course Code: </Text>
+                  {selectedReschedRecord.courseCode}
+                </Text>
+                <Text>
+                  <Text as="span" fontWeight="bold" color="gray.600">Current Schedule: </Text>
+                  {selectedReschedRecord.displayDate}
+                </Text>
+              </Box>
+            )}
+
+            {/* Date Form Controls */}
+            <Stack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel fontSize="xs" fontWeight="bold" color="gray.700">
+                  New Start Date
+                </FormLabel>
+                <Input 
+                  type="date"
+                  size="sm"
+                  borderRadius="md"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel fontSize="xs" fontWeight="bold" color="gray.700">
+                  New End Date <Text as="span" color="gray.400" fontWeight="normal">(Optional)</Text>
+                </FormLabel>
+                <Input 
+                  type="date"
+                  size="sm"
+                  borderRadius="md"
+                  value={endDate}
+                  min={startDate} // Ensures end date cannot be earlier than start date
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </FormControl>
+            </Stack>
+          </ModalBody>
+
+          {/* Modal Actions */}
+          <ModalFooter bg="gray.100" py={3}>
+            <Button 
+              variant="outline" 
+              mr={3} 
+              onClick={onClose} 
+              size="sm"
+              isDisabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit"
+              colorScheme="blue" 
+              size="sm"
+              isLoading={isSubmitting}
+              loadingText="Saving..."
+            >
+              Confirm Reschedule
+            </Button>
+          </ModalFooter>
+
+        </ModalContent>
+      </Modal>
       <Modal isOpen={isOpenRm} onClose={onCloseRm} isCentered size="md">
         <ModalOverlay />
         <ModalContent>
