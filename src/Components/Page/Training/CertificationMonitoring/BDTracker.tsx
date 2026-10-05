@@ -11,6 +11,7 @@ import { ArrowBackIcon, RepeatIcon, AddIcon, MinusIcon, ChevronDownIcon } from '
 import { SearchIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons';
 
 import { writeBatch, doc, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
+import { firestore } from '@/lib/trainee_controller'
 import { TRAINING_BY_ID } from '@/types/trainees'
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 
@@ -961,6 +962,40 @@ export default function BDTrackerCertification (){
         }
     }
 
+    const handleCertStat = async (newStatus: number) => {
+        if (!t_ids.length) return
+        setCertLoading(true)
+        try {
+            const actor = localStorage.getItem('customToken')
+            const batch = writeBatch(firestore)
+
+            t_ids.forEach(t_id => {
+                const ref = doc(firestore, 'TRAINING', t_id)
+                batch.update(ref, {
+                    cert_status: newStatus,
+                    cert_released: Timestamp.now(),
+                    updated_by: actor
+                })
+            })
+
+            // 🔥 ONE network request only
+            await batch.commit()
+
+            handleToast(
+                'Status Updated',
+                "Crew's certificate status updated successfully.",
+                3000,
+                'success'
+            )
+
+            setIDS([]) // clear selection
+        } catch (error) {
+            console.error('ERROR DETECTED:', error)
+        } finally {
+            setCertLoading(false)
+        }
+    }
+
     return(
         <>
         <Text>BackDated Monitoring</Text>
@@ -1021,7 +1056,7 @@ export default function BDTrackerCertification (){
                 <Box display='flex' justifyContent='end' mt='4'>
                     {t_ids.length !== 0 && (
                         <>
-                            <Button onClick={() => handleCertStatus(firstSelected ? 2 : 1)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Claimed' : 'Release'} Certificate`}</Button>
+                            <Button onClick={() => handleCertStat(firstSelected ? 2 : 1)} isLoading={certLoading} loadingText='Updating Status...' colorScheme={firstSelected ? 'blue' : 'green'} size='sm' shadow='md' fontWeight='normal' mr='4'>{`${!firstSelected ? 'Un-Claimed' : 'Release'} Certificate`}</Button>
                             <Button onClick={() => {setIDS([]);}} colorScheme='red' variant='outline' size='sm' shadow='md' fontWeight='normal' >Clear</Button>
                         </>
                     )}
@@ -1229,8 +1264,8 @@ export default function BDTrackerCertification (){
                             <Text w="100px" >{training.accountType === 0 ? 'crew' : 'company'}</Text>  
                             <Box w='200px' display='flex' justifyContent='center' gap='2'>
                                 <Checkbox shadow='md' onChange={() => {setFirstSelected(training.cert_status === 1 ? true : false); 
-                                        setSelectedTrainingID(prev => [...prev, training.id])}} isChecked={training?.id === trainingID.find((id) => id === training.id)
-                                    }/>
+                                    setIDS(prev => [...prev, training.id])}} isChecked={training?.id === t_ids.find((id) => id === training.id)
+                                }/>
                                 <Text w='100%' px='2' bgColor={certBackgroundColor(training.cert_status)} borderRadius='5px' size='xs'>
                                     {handleCertStatus(training.cert_status)}
                                 </Text>

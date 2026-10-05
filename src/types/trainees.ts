@@ -144,7 +144,7 @@ export interface REGISTRATION {
     
     date_registered: Timestamp;
     reg_remarks: string;
-    regType: number; // 2 - def | 0 - dated | 1 - bd | 3 - cancel
+    regType: number; // 2 - def | 0 - dated | 1 - bd | 3 - cancel | 4 - resched 
     marketing: string;
     otherMarketing: string;
     reg_accountType: number; // 0 - crew | 1 - company
@@ -155,7 +155,7 @@ export interface TRAINING {
     
     isEmailed: boolean;
     isNonAppearance: boolean;
-    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel | 8 - absent | 9 - Non-Appearance
+    reg_status: number; // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel | 8 - absent | 9 - Non-Appearance | 10 - RESCHED
     course_fee: number;
     course: string;
     start_date: string;
@@ -211,7 +211,7 @@ export const initTraining = {
 
     isEmailed: false,
     isNonAppearance: false,
-    reg_status: 0, // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel
+    reg_status: 0, // 0 - def | 1 - AR | 2 - AC | 3 - enrolled | 4 - reschedule | 5 - pending | 6 - grad | 7 - cancel | 8 - absent | 9 - Non-Appearance | 10 - RESCHED
     course_fee: 0,
     course: '',
     start_date: '',

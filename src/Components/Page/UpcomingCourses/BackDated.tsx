@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Badge, Select, HStack, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, Textarea, useDisclosure, useToast } from '@chakra-ui/react'
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Badge, Select, HStack, Stack, FormLabel, FormControl, Input, Text, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, Textarea, useDisclosure, useToast } from '@chakra-ui/react'
 
 import { useTrainees } from '@/context/TraineeContext'
 import { useTraining } from '@/context/TrainingContext'
@@ -9,7 +9,8 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useRank } from '@/context/RankContext'
-import { SAVE_REMARKS, UPDATE_TRAINING } from '@/lib/trainee_controller'
+import { SAVE_REMARKS, UPDATE_TRAINING, duplicateRegRecord, duplicateTrainRec } from '@/lib/trainee_controller'
+import { TRAINING_BY_ID, initTraining } from '@/types/trainees'
 
 const getStatusBgColor = (status: number) => {
   switch (status) {
@@ -22,6 +23,7 @@ const getStatusBgColor = (status: number) => {
     case 7: return 'red.200'
     case 8: return 'red.100'
     case 9: return 'yellow.100'
+    case 10: return 'orange.200'
     default: return 'white'
   }
 }
@@ -37,6 +39,7 @@ const getStatus = (status: number) => {
     case 7: return 'CANCELLED'
     case 8: return 'ABSENT'
     case 9: return 'NON-APPEARANCE'
+    case 10: return 'RE-SCHEDULE'
     default: return 'white'
   }
 }
@@ -105,6 +108,13 @@ export default function Page() {
   const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthName)
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
   const [selectedDay, setSelectedDay] = useState<string>('ALL')
+
+  // Form fields state
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  const [num_Of_Days, setNumOfDays] = useState<number | ''>(1);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [trainingRec, setTrainingRec] = useState<TRAINING_BY_ID>(initTraining)
 
   // Handler to jump directly to today's month and day
   const handleSelectToday = () => {
@@ -237,6 +247,11 @@ const groupedSchedule = useMemo(() => {
 
     const registration = registrationsMap.get(String(t.reg_ref_id));
     
+    // 2. Registration level regType check (exclude registration if its regType is 3 or "3")
+    // if (registration) {
+    //   const numericRegType = Number(registration.regType)
+    //   if (numericRegType === 3) continue
+    // }
     // Process enrolled_date timestamp
     const rawTimestamp = t.date_enrolled;
     let enrolledDate: Date | null = null;
@@ -421,6 +436,13 @@ const groupedSchedule = useMemo(() => {
   }));
 }, [allTraining, allCourses, courseCodes, allRegistrations, allTrainee, selectedMonth, selectedDay, currentYear, sortOrder]);
 
+  // Infer the exact item type from your groupedSchedule output
+  type EnrichedTrainee = typeof groupedSchedule[number]['courses'][number]['trainees'][number]
+
+  // Inside your main component:
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [selectedReschedRecord, setSelectedReschedRecord] = useState<EnrichedTrainee | null>(null)
+
   const handleToggleAttendance = async(id: string, val: boolean)=> {
     const actor: string | null = localStorage.getItem('customToken')
     try{
@@ -438,6 +460,104 @@ const groupedSchedule = useMemo(() => {
         'error'
       )
       throw new Error('Error toggling attendance: ' + error)
+    }
+  }
+
+  // When a status badge is clicked, open modal & pre-fill existing dates
+  const handleStatusClick = (trainee: EnrichedTrainee) => {
+    setSelectedReschedRecord(trainee)
+    // Pre-fill if trainee already has ISO/formatted start_date or fallback to empty string
+    setStartDate(trainee.start_date ? String(trainee.start_date) : '')
+    setEndDate(trainee.end_date ? String(trainee.end_date) : '')
+    
+    const foundTrainingRec = allTraining && allTraining.find((t) => t.id === trainee.id)
+    if(!foundTrainingRec) throw new Error('Training record not found. ')
+    setTrainingRec(foundTrainingRec)
+    
+    onOpen()
+  }
+
+  const formatDateString = (dateStr: string | null | undefined): string => {
+    // Return empty string immediately if input is missing, empty, or invalid
+    if (!dateStr || typeof dateStr !== 'string' || !dateStr.includes('-')) {
+      return ''
+    }
+
+    const [yearStr, monthStr, dayStr] = dateStr.split('-')
+    const year = Number(yearStr)
+    const month = Number(monthStr)
+    const day = Number(dayStr)
+
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      return ''
+    }
+
+    const date = new Date(year, month - 1, day)
+
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+    const dayOfWeek = days[date.getDay()]
+    const monthName = months[date.getMonth()]
+    const paddedDay = String(day).padStart(2, '0')
+
+    return `${dayOfWeek}, ${monthName} ${paddedDay}`
+  }
+
+  // Handle form submission / update logic
+  const handleConfirmReschedule = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedReschedRecord || !startDate) return
+
+    try {
+      setIsSubmitting(true)
+
+      // 1. Format individual dates
+      const formattedStart = formatDateString(startDate)
+      // Fallback explicitly to an empty string if endDate is missing or falsy
+      const formattedEnd = endDate ? formatDateString(endDate) : ''
+
+      // 2. Build display string
+      let formattedDisplayDate = formattedStart
+      if (formattedEnd && formattedEnd !== formattedStart) {
+        formattedDisplayDate = `${formattedStart} to ${formattedEnd}`
+      }
+
+      const foundRegRec = allRegistrations && allRegistrations.find((r) => r.id === trainingRec.reg_ref_id)
+      if(!foundRegRec) throw new Error('Registration record not found.')
+      
+      const { id: regID, regType: reg_type, ...cleanRegData } = foundRegRec
+      const oldRegData = {...cleanRegData, regType: 4}
+
+      const oldRegID = await duplicateRegRecord(oldRegData) // id: NwnGNwr7XgZ7h9dmUwDh
+      //trainee id: "KP5BrTnEyvAd19S7FD3O"
+
+      const { id: trainID, start_date: trainStartDate, numOfDays: num_of_days, reg_status: regStatus, end_date: trainEndDate, reg_ref_id, ...cleanTrainData } = trainingRec
+      const oldTrainRec = {...cleanTrainData, numOfDays: num_of_days, reg_status: 10, reg_ref_id: oldRegID, start_date: trainStartDate, end_date: trainEndDate}
+      const newTrainRec = {...cleanTrainData, start_date: formattedStart, reg_ref_id, reg_status: regStatus, num_Of_Days, end_date: formattedEnd || ''}
+      
+      await duplicateTrainRec(oldTrainRec)
+      await UPDATE_TRAINING(trainID, newTrainRec, localStorage.getItem('customToken'))
+      
+      toast({
+        title: 'Schedule Updated',
+        description: `Training date set to ${formattedDisplayDate}`,
+        status: 'success',
+        duration: 4000,
+        isClosable: true
+      })
+
+      onClose()
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update schedule.',
+        status: 'error',
+        duration: 4000,
+        isClosable: true
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -579,9 +699,12 @@ const groupedSchedule = useMemo(() => {
                           >{item.traineeName}</Td>
                           <Td fontSize="xs">{item.contactNo}</Td>
                           <Td fontSize="xs" color="blue.700" textDecoration="underline">{item.email}</Td>
-                          <Td fontSize="xs">
-                            <Badge
-                              colorScheme={item.reg_status === 6 ? 'green' : item.reg_status === 7 ? 'red' : 'gray'}
+                          <Td fontSize="xs"
+                            cursor='pointer'
+                            onClick={() => handleStatusClick(item)}
+                          >
+                            <Badge mr='3'
+                              colorScheme={item.reg_status === 6 ? 'green' : item.reg_status === 7 ? 'red' : item.reg_status === 10 ? 'orange' : 'gray'}
                               fontSize="10px"
                             >
                               {getStatus(item.reg_status)}
@@ -629,7 +752,120 @@ const groupedSchedule = useMemo(() => {
           </Tbody>
         </Table>
       </Box>
+      <Modal isOpen={isOpen} onClose={onClose} isCentered size="md">
+        <ModalOverlay backdropFilter="blur(4px)" />
+        <ModalContent overflow="hidden" borderRadius="lg" as="form" onSubmit={handleConfirmReschedule}>
+          
+          {/* Modal Header */}
+          <ModalHeader bg="blue.900" color="white" py={4} fontSize="md" fontWeight="bold">
+            Reschedule Training
+          </ModalHeader>
+          <ModalCloseButton color="white" />
 
+          {/* Modal Body */}
+          <ModalBody py={5}>
+            <Text fontSize="sm" color="gray.600" mb={4}>
+              Please select the new training start and end dates for this trainee.
+            </Text>
+
+            {/* Trainee Details Card */}
+            {selectedReschedRecord && (
+              <Box 
+                bg="slate.50" 
+                p={3} 
+                mb={5}
+                borderRadius="md" 
+                borderWidth="1px" 
+                borderColor="gray.200"
+                fontSize="xs"
+              >
+                <Text mb={1}>
+                  <Text as="span" fontWeight="bold" color="gray.600">Trainee Name: </Text>
+                  {selectedReschedRecord.traineeName.toUpperCase()}
+                </Text>
+                <Text mb={1}>
+                  <Text as="span" fontWeight="bold" color="gray.600">Course Code: </Text>
+                  {selectedReschedRecord.courseCode}
+                </Text>
+                <Text>
+                  <Text as="span" fontWeight="bold" color="gray.600">Current Schedule: </Text>
+                  {`${selectedReschedRecord.start_date} ${selectedReschedRecord.end_date !== '' ? selectedReschedRecord.end_date : ''}`}
+                </Text>
+              </Box>
+            )}
+
+            {/* Date Form Controls */}
+            <Stack spacing={4}>
+              <FormControl isRequired>
+                <FormLabel fontSize="xs" fontWeight="bold" color="gray.700">
+                  New Start Date
+                </FormLabel>
+                <Input 
+                  type="date"
+                  size="sm"
+                  borderRadius="md"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel fontSize="xs" fontWeight="bold" color="gray.700">
+                  New End Date <Text as="span" color="gray.400" fontWeight="normal">(Optional)</Text>
+                </FormLabel>
+                <Input 
+                  type="date"
+                  size="sm"
+                  borderRadius="md"
+                  value={endDate}
+                  min={startDate} // Ensures end date cannot be earlier than start date
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+                <FormControl mt='2'>
+                  <FormLabel m='0' color='gray.500'>Number of Days:</FormLabel>
+                  <Input
+                      type='number'
+                      value={num_Of_Days}
+                      onChange={(e) => {
+                          const val = e.target.value;
+                          setNumOfDays(val === '' ? '' : parseInt(val));
+                      }}
+                      onBlur={() => {
+                          // Optional: resets to 0 or 1 if user clicks away while leaving it empty
+                          if (num_Of_Days === '' || isNaN(Number(num_Of_Days))) {
+                          setNumOfDays(0); // or 1
+                          }
+                      }}
+                  />
+                </FormControl>
+              </FormControl>
+            </Stack>
+          </ModalBody>
+
+          {/* Modal Actions */}
+          <ModalFooter bg="gray.100" py={3}>
+            <Button 
+              variant="outline" 
+              mr={3} 
+              onClick={onClose} 
+              size="sm"
+              isDisabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit"
+              colorScheme="blue" 
+              size="sm"
+              isLoading={isSubmitting}
+              loadingText="Saving..."
+            >
+              Confirm Reschedule
+            </Button>
+          </ModalFooter>
+
+        </ModalContent>
+      </Modal>
       <Modal isOpen={isOpenRm} onClose={onCloseRm} isCentered size="md">
         <ModalOverlay />
         <ModalContent>

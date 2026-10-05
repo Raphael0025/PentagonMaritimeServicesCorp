@@ -9,7 +9,8 @@ import { useRegistrations } from '@/context/RegistrationContext'
 import { useCourses } from '@/context/CourseContext'
 import { useClients } from '@/context/ClientCompanyContext'
 import { useRank } from '@/context/RankContext'
-import { SAVE_REMARKS, UPDATE_TRAINING } from '@/lib/trainee_controller'
+import { SAVE_REMARKS, UPDATE_TRAINING, duplicateRegRecord, duplicateTrainRec } from '@/lib/trainee_controller'
+import { TRAINING_BY_ID, initTraining } from '@/types/trainees'
 
 const getStatusBgColor = (status: number) => {
   switch (status) {
@@ -22,6 +23,7 @@ const getStatusBgColor = (status: number) => {
     case 7: return 'red.200'
     case 8: return 'red.100'
     case 9: return 'yellow.100'
+    case 10: return 'orange.200'
     default: return 'white'
   }
 }
@@ -37,6 +39,7 @@ const getStatus = (status: number) => {
     case 7: return 'CANCELLED'
     case 8: return 'ABSENT'
     case 9: return 'NON-APPEARANCE'
+    case 10: return 'RE-SCHEDULE'
     default: return 'white'
   }
 }
@@ -110,7 +113,9 @@ export default function Page() {
   // Form fields state
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
+  const [num_Of_Days, setNumOfDays] = useState<number | ''>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [trainingRec, setTrainingRec] = useState<TRAINING_BY_ID>(initTraining)
 
   // Handler to jump directly to today's month and day
   const handleSelectToday = () => {
@@ -185,6 +190,12 @@ const groupedSchedule = useMemo(() => {
     if (!isCorrectRegType || !isValidStatus) continue
 
     const registration = registrationsMap.get(String(t.reg_ref_id))
+
+    // 2. Registration level regType check (exclude registration if its regType is 3 or "3")
+    // if (registration) {
+    //   const numericRegType = Number(registration.regType)
+    //   if (numericRegType === 3) continue
+    // }
     const rawTimestamp = t.date_enrolled
 
     if (rawTimestamp !== undefined && rawTimestamp !== null) {
@@ -314,11 +325,11 @@ const groupedSchedule = useMemo(() => {
       : a.startDateObj.getTime() - b.startDateObj.getTime()
   })
 
+  //console.table(sortedDateGroups) // Debugging: Log the grouped schedule structure
   return sortedDateGroups.map((dateGroup) => ({
     ...dateGroup,
     courses: Array.from(dateGroup.coursesMap.values())
   }))
-  console.table(sortedDateGroups) // Debugging: Log the grouped schedule structure
 }, [allTraining, allCourses, courseCodes, allRegistrations, allTrainee, selectedMonth, selectedDay, currentYear, sortOrder])
 
   // Infer the exact item type from your groupedSchedule output
@@ -354,6 +365,11 @@ const groupedSchedule = useMemo(() => {
     // Pre-fill if trainee already has ISO/formatted start_date or fallback to empty string
     setStartDate(trainee.start_date ? String(trainee.start_date) : '')
     setEndDate(trainee.end_date ? String(trainee.end_date) : '')
+    
+    const foundTrainingRec = allTraining && allTraining.find((t) => t.id === trainee.id)
+    if(!foundTrainingRec) throw new Error('Training record not found. ')
+    setTrainingRec(foundTrainingRec)
+    
     onOpen()
   }
 
@@ -403,17 +419,22 @@ const groupedSchedule = useMemo(() => {
         formattedDisplayDate = `${formattedStart} to ${formattedEnd}`
       }
 
-      // 3. Payload with empty string fallback for end_date
-      const payload = {
-        start_date: formattedStart,
-        end_date: formattedEnd || '', // Ensures an empty string if no end date
-        displayDate: formattedDisplayDate,
-      }
+      const foundRegRec = allRegistrations && allRegistrations.find((r) => r.id === trainingRec.reg_ref_id)
+      if(!foundRegRec) throw new Error('Registration record not found.')
+      
+      const { id: regID, regType: reg_type, ...cleanRegData } = foundRegRec
+      const oldRegData = {...cleanRegData, regType: 4}
 
-      console.log('Sending Payload:', payload)
+      const oldRegID = await duplicateRegRecord(oldRegData) // id: NwnGNwr7XgZ7h9dmUwDh
+      //trainee id: "KP5BrTnEyvAd19S7FD3O"
 
-      // TODO: await updateTrainingSchedule(selectedReschedRecord.id, payload)
-
+      const { id: trainID, start_date: trainStartDate, numOfDays: num_of_days, reg_status: regStatus, end_date: trainEndDate, reg_ref_id, ...cleanTrainData } = trainingRec
+      const oldTrainRec = {...cleanTrainData, numOfDays: num_of_days, reg_status: 10, reg_ref_id: oldRegID, start_date: trainStartDate, end_date: trainEndDate}
+      const newTrainRec = {...cleanTrainData, start_date: formattedStart, reg_ref_id, reg_status: regStatus, num_Of_Days, end_date: formattedEnd || ''}
+      
+      await duplicateTrainRec(oldTrainRec)
+      await UPDATE_TRAINING(trainID, newTrainRec, localStorage.getItem('customToken'))
+      
       toast({
         title: 'Schedule Updated',
         description: `Training date set to ${formattedDisplayDate}`,
@@ -558,7 +579,6 @@ const groupedSchedule = useMemo(() => {
                           </HStack>
                         </Td>
                       </Tr>
-
                       {courseGroup.trainees.map((item) => (
                         <Tr
                           key={item.id}
@@ -574,13 +594,13 @@ const groupedSchedule = useMemo(() => {
                             onClick={(e) => {handleToggleAttendance(item.id, item.attendance)}}
                           >{item.traineeName}</Td>
                           <Td fontSize="xs">{item.contactNo}</Td>
-                          <Td fontSize="xs" color="blue.700" textDecoration="underline">{item.email}</Td>
+                          <Td fontSize="xs" color='black' textDecoration="underline">{item.email.toLowerCase()}</Td>
                           <Td fontSize="xs"
                             cursor='pointer'
                             onClick={() => handleStatusClick(item)}
                           >
                             <Badge mr='3'
-                              colorScheme={item.reg_status === 6 ? 'green' : item.reg_status === 7 ? 'red' : 'gray'}
+                              colorScheme={item.reg_status === 6 ? 'green' : item.reg_status === 7 ? 'red' : item.reg_status === 10 ? 'orange' : 'gray'}
                               fontSize="10px"
                             >
                               {getStatus(item.reg_status)}
@@ -657,7 +677,7 @@ const groupedSchedule = useMemo(() => {
               >
                 <Text mb={1}>
                   <Text as="span" fontWeight="bold" color="gray.600">Trainee Name: </Text>
-                  {selectedReschedRecord.traineeName}
+                  {selectedReschedRecord.traineeName.toUpperCase()}
                 </Text>
                 <Text mb={1}>
                   <Text as="span" fontWeight="bold" color="gray.600">Course Code: </Text>
@@ -665,7 +685,7 @@ const groupedSchedule = useMemo(() => {
                 </Text>
                 <Text>
                   <Text as="span" fontWeight="bold" color="gray.600">Current Schedule: </Text>
-                  {selectedReschedRecord.displayDate}
+                  {`${selectedReschedRecord.start_date} ${selectedReschedRecord.end_date !== '' ? selectedReschedRecord.end_date : ''}`}
                 </Text>
               </Box>
             )}
@@ -697,6 +717,23 @@ const groupedSchedule = useMemo(() => {
                   min={startDate} // Ensures end date cannot be earlier than start date
                   onChange={(e) => setEndDate(e.target.value)}
                 />
+                <FormControl mt='2'>
+                  <FormLabel m='0' color='gray.500'>Number of Days:</FormLabel>
+                  <Input
+                      type='number'
+                      value={num_Of_Days}
+                      onChange={(e) => {
+                          const val = e.target.value;
+                          setNumOfDays(val === '' ? '' : parseInt(val));
+                      }}
+                      onBlur={() => {
+                          // Optional: resets to 0 or 1 if user clicks away while leaving it empty
+                          if (num_Of_Days === '' || isNaN(Number(num_Of_Days))) {
+                          setNumOfDays(0); // or 1
+                          }
+                      }}
+                  />
+                </FormControl>
               </FormControl>
             </Stack>
           </ModalBody>
