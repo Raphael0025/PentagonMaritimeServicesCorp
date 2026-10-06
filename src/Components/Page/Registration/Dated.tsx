@@ -92,12 +92,6 @@ export default function Page(){
     const { isOpen: isOpenEditTrainee, onOpen: onOpenEditTrainee, onClose: onCloseEditTrainee } = useDisclosure()
     const { isOpen: isOpenDR, onOpen: onOpenDR, onClose: onCloseDR } = useDisclosure()
 
-    const todayFormatted = new Date().toLocaleDateString('en-US', {
-        month: 'long',
-        day: '2-digit',
-        year: 'numeric'
-    }).toUpperCase()
-
     const formatDateHeader = (date: Date): string => {
         const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
         const months = ['JANAUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']

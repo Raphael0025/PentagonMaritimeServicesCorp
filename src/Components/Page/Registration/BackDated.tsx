@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react';
-import { Box, Text, Image, Input, IconButton, Badge, Textarea, Button, InputLeftAddon, Grid, GridItem, FormControl, Select, FormLabel, Switch, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton } from '@chakra-ui/react';
+import { useState, useRef, useMemo, useEffect } from 'react';
+import { Box, Text, Image, Input, IconButton, Textarea, Button, InputLeftAddon, Grid, GridItem, FormControl, Select, FormLabel, Switch, Tooltip, InputGroup, useDisclosure, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, HStack, Flex, Menu, MenuItem, MenuList, MenuButton, Table, Thead, Tbody, Tr, Th, Td,TableContainer, Checkbox, Badge } from '@chakra-ui/react';
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon, EditIcon, DownloadIcon, CopyIcon, } from '@chakra-ui/icons'
 import { Timestamp } from 'firebase/firestore'
@@ -16,6 +16,7 @@ import { useRoles } from '@/context/UserRolesContext'
 import { useTypes } from '@/context/TypeContext'
 import {useCategory} from '@/context/CategoryContext'
 import { useRank } from '@/context/RankContext'
+import { useInquiries } from '@/context/InquiriesContext'
 import DatePicker from 'react-datepicker'
 
 import { handleRegStatus } from '@/handlers/trainee_handler'
@@ -37,6 +38,7 @@ import { initTRAINEE_BY_ID, TRAINEE_BY_ID, TRAINING_BY_ID } from '@/types/traine
 
 export default function Page(){
     const toast = useToast()
+    const { data: allInquiries = [] } = useInquiries()
     const { data: courseBatch } = useCourseBatch()
     const { data: allRanks } = useRank()
     const { data: allClients, courseCodes } = useClients()
@@ -87,6 +89,58 @@ export default function Page(){
     const { isOpen: isOpenMarketing, onOpen: onOpenMarketing, onClose: onCloseMarketing  } = useDisclosure()
     const { isOpen: isOpenAttach, onOpen: onOpenAttach, onClose: onCloseAttach } = useDisclosure()
     const { isOpen: isOpenEditTrainee, onOpen: onOpenEditTrainee, onClose: onCloseEditTrainee } = useDisclosure()
+    const { isOpen: isOpenDR, onOpen: onOpenDR, onClose: onCloseDR } = useDisclosure()
+
+    const formatDateHeader = (date: Date): string => {
+        const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        const months = ['JANAUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
+        return `${months[date.getMonth()]} ${String(date.getDate()).padStart(2, '0')}, ${date.getFullYear()}`
+    }
+
+    // Helper to safely parse any Firestore Timestamp or Date field
+    const parseToDate = (raw: any): Date | null => {
+        if (!raw) return null
+        if (typeof raw === 'object' && typeof raw.toDate === 'function') return raw.toDate()
+        if (!isNaN(Number(raw))) {
+            const num = Number(raw)
+            return new Date(num < 10000000000 ? num * 1000 : num)
+        }
+        const d = new Date(raw)
+        return isNaN(d.getTime()) ? null : d
+    }
+
+    // Default date state initialized to today (YYYY-MM-DD format for <Input type="date" />)
+    const [selectedReportDate, setSelectedReportDate] = useState<string>(
+        new Date().toISOString().split('T')[0]
+    )
+
+    // Format header text based on user selection
+    const headerDateString = useMemo(() => {
+        const parsed = new Date(selectedReportDate)
+        if (isNaN(parsed.getTime())) return ''
+        return formatDateHeader(parsed)
+    }, [selectedReportDate])
+
+    // Dynamic record filter comparing normalized midnight timestamps
+    const filteredDailyRecords = useMemo(() => {
+        if (!selectedReportDate || !allTraining) return []
+
+        const targetDate = new Date(selectedReportDate)
+        targetDate.setHours(0, 0, 0, 0)
+
+        return allTraining.filter((record: any) => {
+            // Exclude regType === 3
+            if (Number(record.regType) === 3 || Number(record.regType) === 2 || Number(record.regType) === 1) return false
+
+            const recordDate = parseToDate(record.date_enrolled || record.start_date)
+            if (!recordDate) return false
+
+            const normalizedRecordDate = new Date(recordDate)
+            normalizedRecordDate.setHours(0, 0, 0, 0)
+
+            return normalizedRecordDate.getTime() === targetDate.getTime()
+            })
+    }, [selectedReportDate, allTraining])
 
     const componentRef = useRef<HTMLDivElement | null>(null);
     const handlePrint = useReactToPrint({
@@ -294,6 +348,59 @@ export default function Page(){
         onCloseRank()
     }
 
+    const totalCourseFees = useMemo(() => {
+        if (!filteredDailyRecords || filteredDailyRecords.length === 0) return 0
+
+        return filteredDailyRecords.reduce((sum: number, item: any) => {
+            // Ensure item has valid registration and trainee before summing
+            const regRec = allRegistrations?.find((r) => r.id === item.reg_ref_id)
+            const traineeRec = allTrainee?.find((t) => t.id === regRec?.trainee_ref_id)
+            
+            if (!regRec || !traineeRec) return sum
+
+            // Safely parse string/number course_fee to float
+            const fee = parseFloat(item.course_fee)
+            return sum + (isNaN(fee) ? 0 : fee)
+        }, 0)
+    }, [filteredDailyRecords, allRegistrations, allTrainee])
+
+    // Filter Inquiries for Selected Date
+    const filteredInquiries = useMemo(() => {
+        if (!selectedReportDate || !allInquiries) return []
+
+        const targetDate = new Date(selectedReportDate)
+        targetDate.setHours(0, 0, 0, 0)
+
+        return allInquiries.filter((inquiry: any) => {
+        const inquiryDate = parseToDate(inquiry.createdAt)
+        if (!inquiryDate) return false
+
+        const normalizedInquiryDate = new Date(inquiryDate)
+        normalizedInquiryDate.setHours(0, 0, 0, 0)
+
+        return normalizedInquiryDate.getTime() === targetDate.getTime()
+        })
+    }, [selectedReportDate, allInquiries])
+
+    // Minimum grid rows to maintain layout spacing
+    const paddedInquiryRows = Math.max(0, 2 - filteredInquiries.length)
+
+    {/* Helper function defined outside or inside the file */}
+    const getPreparedByFromToken = (): string => {
+        try {
+            const token = localStorage.getItem('customToken')
+
+            if (!token) return 'ABEGAIL PALADA'
+            return token.toUpperCase()
+        } catch (error) {
+            return 'ABEGAIL PALADA'
+        }
+    }
+
+    const handlePrintDR = () => {
+        window.print()
+    }
+    
     return(
         <>
             <main className="w-full space-y-3">
@@ -341,9 +448,17 @@ export default function Page(){
                             <Button w='50%' mr={4} onClick={() => {setFilter(''); setCompanyFilter(''); setCFilter('');}} colorScheme='red' size='sm' shadow='md'>Clear Filter</Button>
                         )}
                         <Button w='60%' mr={4} onClick={onOpenDate} rightIcon={<ChevronDownIcon />} size='sm' shadow='md'>Filter Date</Button>
-                        {canDo("print") && (
-                            <Button w='60%' bgColor='#1C437E' onClick={onOpenSForm} colorScheme='blue' size='sm' shadow='md'>Print Forms</Button>
-                        )}
+                        <Menu>
+                            <MenuButton as={Button} w='60%' bgColor='#1C437E' colorScheme='blue' size='sm' shadow='md' ml='4'>
+                                Export
+                            </MenuButton>
+                            <MenuList>
+                                {canDo("print") && (
+                                    <MenuItem onClick={onOpenSForm}>Registration Form</MenuItem>
+                                )}
+                                <MenuItem onClick={onOpenDR}>Daily Report</MenuItem>
+                            </MenuList>
+                        </Menu>
                     </Box>
                 </Box>
                 <Box className="w-full flex" style={{maxHeight: '700px', overflowY: 'auto',}}>
@@ -548,6 +663,208 @@ export default function Page(){
                     </Box>
                 </Box>
             </main>
+            <Modal isOpen={isOpenDR} onClose={onCloseDR} size="full">
+                <ModalOverlay />
+                <ModalContent px="5" id="daily-report-printable">
+                    <ModalHeader borderBottom="1px solid" borderColor="black" pb="4">
+                        <Flex justify="space-between" align="center" mb="3" px="2">
+                            {/* Left Side: Logo & Brand Name */}
+                            <HStack spacing="3" align="center">
+                                <Image
+                                    src="/Logo-bgLess.png" // Update to your logo path (e.g. /images/pentagon-logo.png)
+                                    alt="Pentagon Logo"
+                                    w="250px"
+                                    objectFit="contain"
+                                    fallbackSrc="https://via.placeholder.com/48?text=PENTAGON"
+                                />
+                            </HStack>
+                            {/* Right Side: Address & Contact Details */}
+                            <Box textAlign="right" fontSize="10pt" lineHeight="1.3" color="gray.800">
+                                <Text fontWeight="semibold">ADDRESS: 2/F RM 201 BUILDING UN AVE., ERMITA MANILA</Text>
+                                <Text>CONTACT NOS: (02) 8225-8333 / 0961-486-7221 / 0945-349-7290 / 0909-185-6273</Text>
+                                <Text>EMAIL: pentagonmaritimeservicescorp@gmail.com</Text>
+                                <Text>FB: /pentagonmaritimeservicescorp</Text>
+                            </Box>
+                        </Flex>
+                        <Flex align="center" justify="space-between" pr="10">
+                            <Text fontSize="xl" fontWeight="bold">
+                                Daily Report as of {headerDateString}
+                            </Text>
+                            {/* Date Selector Control */}
+                            <HStack spacing="3">
+                            <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                                Select Report Date:
+                            </Text>
+                            <Input
+                                type="date"
+                                value={selectedReportDate}
+                                onChange={(e) => setSelectedReportDate(e.target.value)}
+                                width="180px"
+                                size="sm"
+                                borderRadius="md"
+                            />
+                            </HStack>
+                        </Flex>
+                    </ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody py="6">
+                        <Box>
+                            <Box display='flex' justifyContent='space-between' pb='2'>
+                                <Text mb="4" fontSize="sm" color="gray.500">
+                                    Showing <strong>{filteredDailyRecords.length}</strong> record(s) for {headerDateString}
+                                </Text>
+                                <Button onClick={handlePrintDR} colorScheme="blue" bgColor="blue.700" shadow="md">
+                                    Print Report
+                                </Button>
+                            </Box>
+                            <TableContainer border="1px solid" borderColor="black" borderRadius="md">
+                                <Table variant="striped" colorScheme="gray" size="sm">
+                                    <Thead bgColor="blue.200">
+                                        <Tr>
+                                            <Th color="black">REG NO</Th>
+                                            <Th color="black">COURSE</Th>
+                                            <Th color="black">LAST NAME</Th>
+                                            <Th color="black">FIRST NAME</Th>
+                                            <Th color="black">MIDDLE NAME</Th>
+                                            <Th color="black">RANK</Th>
+                                            <Th color="black">COMPANY</Th>
+                                            <Th color="black">REFERRED</Th>
+                                            <Th color="black">MARKETING TYPE</Th>
+                                            <Th color="black">FROM</Th>
+                                            <Th color="black">TO</Th>
+                                            <Th color="black">CHARGE TO</Th>
+                                            <Th color="black">Fee</Th>
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                        {filteredDailyRecords.length > 0 ? (
+                                        <>
+                                            {filteredDailyRecords.map((item: any, idx: number) => {
+                                            const regRec = allRegistrations?.find((r) => r.id === item.reg_ref_id)
+                                            if (!regRec) return null
+                                            const traineeRec = allTrainee?.find((t) => t.id === regRec?.trainee_ref_id)
+                                            if (!traineeRec) return null
+
+                                            return (
+                                                <Tr key={item.id || idx} fontWeight="normal" textTransform="uppercase">
+                                                    <Td>{regRec?.reg_no}</Td>
+                                                    <Td fontWeight="semibold">
+                                                        {allCourses?.find((course) => course.id === item.course)?.course_code ||
+                                                        courseCodes?.find((course) => course.id === item.course)?.company_course_code ||
+                                                        ''}
+                                                    </Td>
+                                                    <Td>{traineeRec.last_name}</Td>
+                                                    <Td>{traineeRec.first_name}</Td>
+                                                    <Td>{traineeRec.middle_name}</Td>
+                                                    <Td>
+                                                        {allRanks?.find((rank) => rank.code === traineeRec.rank)?.rank || traineeRec.rank}
+                                                    </Td>
+                                                    <Td>
+                                                        <Text w="150px" noOfLines={1} className="text-wrap">
+                                                        {allClients?.find((client) => client.id === traineeRec.company)?.alias ||
+                                                            traineeRec.company}
+                                                        </Text>
+                                                    </Td>
+                                                    <Td>{traineeRec.endorser}</Td>
+                                                    <Td>{traineeRec.marketing || 'N/A'}</Td>
+                                                    <Td>{item.start_date || 'N/A'}</Td>
+                                                    <Td>{item.end_date || '--'}</Td>
+                                                    <Td>
+                                                        <Badge colorScheme={item.accountType === 1 ? 'green' : 'blue'}>
+                                                        {item.accountType === 1 ? 'COMPANY' : 'CREW'}
+                                                        </Badge>
+                                                    </Td>
+                                                    <Td>{item.course_fee ? Number(item.course_fee).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '--'}</Td>
+                                                </Tr>
+                                            )
+                                            })}
+                                            {/* Summary Row at the end of the table */}
+                                            <Tr fontWeight="bold" bgColor="gray.100">
+                                                <Td colSpan={12} textAlign="right" textTransform="uppercase">
+                                                    TOTAL COURSE FEES:
+                                                </Td>
+                                                <Td color="blue.700">
+                                                    {totalCourseFees.toLocaleString('en-US', {
+                                                    style: 'currency',
+                                                    currency: 'PHP' // Change to USD or desired currency code
+                                                    })}
+                                                </Td>
+                                            </Tr>
+                                        </>
+                                        ) : (
+                                        <Tr>
+                                            <Td colSpan={12} textAlign="center" py="8" color="gray.500">
+                                            No records found for {headerDateString}
+                                            </Td>
+                                        </Tr>
+                                        )}
+                                    </Tbody>
+                                </Table>
+                            </TableContainer>
+                            {/* 2. Inquiry Table Section */}
+                            <TableContainer border="1px solid" borderColor="black" borderRadius="md" mt='4'mb="8">
+                                <Table variant="simple" size="sm">
+                                    <Thead>
+                                    <Tr>
+                                        <Th rowSpan={2} border="1px solid" borderColor="black" textAlign="center" fontSize="sm" w="18%">NAME</Th>
+                                        <Th rowSpan={2} border="1px solid" borderColor="black" textAlign="center" fontSize="sm" w="14%">CONTACT NUMBER</Th>
+                                        <Th rowSpan={2} border="1px solid" borderColor="black" textAlign="center" fontSize="sm" w="14%">COMPANY</Th>
+                                        <Th rowSpan={2} border="1px solid" borderColor="black" textAlign="center" fontSize="sm" w="14%">REFERRED</Th>
+                                        <Th colSpan={2} border="1px solid" borderColor="black" textAlign="center" fontSize="sm">INQUIRY</Th>
+                                        <Th rowSpan={2} border="1px solid" borderColor="black" textAlign="center" fontSize="sm" w="16%">REMARKS</Th>
+                                    </Tr>
+                                    <Tr>
+                                        <Th border="1px solid" borderColor="black" textAlign="center" fontSize="sm" w="12%">COURSE INQUIRY</Th>
+                                        <Th border="1px solid" borderColor="black" textAlign="center" fontSize="sm" w="12%">AVAILABLE DATE</Th>
+                                    </Tr>
+                                    </Thead>
+
+                                    <Tbody>
+                                    {/* Render Mapped Inquiries */}
+                                    {filteredInquiries.map((inq: any, idx: number) => (
+                                        <Tr key={inq.id || idx} textTransform="uppercase" h="24px">
+                                            <Td border="1px solid" borderColor="black" fontSize="sm" p="1">
+                                                {inq.name || ''}
+                                            </Td>
+                                            <Td border="1px solid" borderColor="black" fontSize="sm" p="1">{inq.contact_no || ''}</Td>
+                                            <Td border="1px solid" borderColor="black" fontSize="sm" p="1">{inq.company || ''}</Td>
+                                            <Td border="1px solid" borderColor="black" fontSize="sm" p="1">{inq.referral || ''}</Td>
+                                            <Td border="1px solid" borderColor="black" fontSize="sm" p="1">{inq.course_inquiry || ''}</Td>
+                                            <Td border="1px solid" borderColor="black" fontSize="sm" p="1">{inq.date_avail || ''}</Td>
+                                            <Td border="1px solid" borderColor="black" fontSize="sm" p="1">{inq.remarks || ''}</Td>
+                                        </Tr>
+                                    ))}
+                                    {/* Padding empty inquiry rows if less than minimum height */}
+                                    {Array.from({ length: paddedInquiryRows }).map((_, i) => (
+                                        <Tr key={`empty-inq-${i}`} h="24px">
+                                            <Td border="1px solid" borderColor="black" p="1"></Td>
+                                            <Td border="1px solid" borderColor="black" p="1"></Td>
+                                            <Td border="1px solid" borderColor="black" p="1"></Td>
+                                            <Td border="1px solid" borderColor="black" p="1"></Td>
+                                            <Td border="1px solid" borderColor="black" p="1"></Td>
+                                            <Td border="1px solid" borderColor="black" p="1"></Td>
+                                            <Td border="1px solid" borderColor="black" p="1"></Td>
+                                        </Tr>
+                                    ))}
+                                    </Tbody>
+                                </Table>
+                            </TableContainer>
+                            {/* 3. Bottom Signature Block */}
+                            <Flex justify="space-between" align="flex-start" mt="6" px="8" fontSize="sm" fontWeight="bold">
+                                <Flex align="center">
+                                    <Text mr="4">PREPARED BY:</Text>
+                                    <Text borderBottom="none" pt="1">{getPreparedByFromToken()}</Text>
+                                </Flex>
+
+                                <Flex align="center">
+                                    <Text mr="4">REVIEWED BY:</Text>
+                                    <Text borderBottom="none" pt="1">JULIUS RYAN M. MEDALLON</Text>
+                                </Flex>
+                            </Flex>
+                        </Box>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
             <Modal isOpen={isOpenEditTrainee} onClose={onCloseEditTrainee} size='6xl'>
                 <ModalOverlay />
                 <ModalContent>

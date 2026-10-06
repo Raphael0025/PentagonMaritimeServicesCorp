@@ -892,7 +892,7 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                                     ? formatTrainingSchedule(training.start_date, getYear || 0) 
                                     : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
                                 
-                                const isMoreThanOneDay = training.numOfDays === 1 ? false : true
+                                const isMoreThanOneDay = training.numOfDays > 1 ? true : false
 
                                 if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
