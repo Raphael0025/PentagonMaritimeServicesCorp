@@ -101,7 +101,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
             const trainingDate = training.numOfDays === 1 
                 ? formatTrainingSchedule(training.start_date, training.year || getYear) 
                 : `${formatTrainingSchedule(training.start_date, training.year || getYear)} to ${formatTrainingSchedule(training.end_date, training.year || getYear)}`
-            const isMoreThanOneDay = trainingDate.includes('to') ? true : false
+            const isMoreThanOneDay = training.numOfDays === 1 ? false : true
 
             if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
