@@ -113,9 +113,11 @@ export default function DatedAnalytics() {
     if (editorRef.current) {
       setContent(editorRef.current.innerHTML); // Now works cleanly without ts(2339)
       setRegReport((prev) => ({
-        ...prev,
+        month: prev?.month ?? new Date().getMonth(), // fallback to current month if null
+        year: prev?.year ?? new Date().getFullYear(),  // fallback to current year if null
+        ...(prev || {}),
         otherMatters: editorRef.current?.innerHTML || '',
-      }))
+      }));
     }
     onClose();
   };
