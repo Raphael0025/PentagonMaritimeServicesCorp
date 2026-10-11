@@ -26,6 +26,7 @@ export const FETCH_REG_REPORT = async () => {
         }
     }catch(e){
         console.error('Error fetching Registration Report: ', e)
+        throw e
     }
 }
 
@@ -40,6 +41,7 @@ export const GENERATE_REG_REPORT = async (temp_rep: RegistrationReport, actor: s
         return reportID.id
     }catch(e){
         console.error('Error generating registration report: ', e)
+        throw e
     }
 }
 

@@ -28,7 +28,7 @@ export const ReportMetadataProvider: React.FC<ReportMetadataProviderProps>  = ({
                 const initData = await FETCH_REPORTMETADATA()
                 setData(initData)
                 const initRegData = await FETCH_REG_REPORT()
-                setRegReport(initRegData)
+                setRegReport(initRegData || [])
 
                 const report = collection(firestore, 'REPORT_METADATA')
                 const regReport = collection(firestore, 'REGISTRATION_REPORT')
