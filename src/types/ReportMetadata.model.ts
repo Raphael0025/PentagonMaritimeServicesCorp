@@ -1,5 +1,24 @@
 import { Timestamp } from 'firebase/firestore'
 
+export interface RegistrationReportByID extends RegistrationReport {
+    id: string;
+    generatedAt: Timestamp;
+    generatedBy: string;
+}
+
+
+export interface RegistrationReport {
+    month: number;
+    year: number;
+    otherMatters: string;
+}
+
+export const initRegReport = {
+    month: 0,
+    year: 0,
+    otherMatters: '',
+}
+
 export interface TrainingReportByID extends TrainingReport{
     id: string;
     generatedAt: Timestamp;

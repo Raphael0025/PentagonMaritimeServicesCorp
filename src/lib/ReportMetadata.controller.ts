@@ -1,11 +1,59 @@
 import { addDoc, deleteDoc, DocumentReference, updateDoc, arrayUnion, doc, getDocs, query, collection, getFirestore, Timestamp } from 'firebase/firestore'
 import { app } from './firebase'
-import { TrainingReportByID, TrainingReport, } from '@/types/ReportMetadata.model'
+import { TrainingReportByID, TrainingReport, RegistrationReportByID, RegistrationReport } from '@/types/ReportMetadata.model'
 import { addLog } from '@/lib/history_log_controller'
 
 export const firestore = getFirestore(app)
 // Course batches Collection
 export const reportMD = collection(firestore, 'REPORT_METADATA')
+export const regReport = collection(firestore, 'REGISTRATION_REPORT')
+
+export const FETCH_REG_REPORT = async () => {
+    try{
+        const regRep = query(regReport)
+        const qSnapshot = await getDocs(regRep)
+        const data: RegistrationReportByID[] = []
+
+        if(!qSnapshot.empty){
+            qSnapshot.forEach((doc) => {
+                const docData = doc.data() as RegistrationReportByID
+                docData.id = doc.id
+                data.push(docData)
+            })
+            return data
+        }else{
+            return data
+        }
+    }catch(e){
+        console.error('Error fetching Registration Report: ', e)
+    }
+}
+
+export const GENERATE_REG_REPORT = async (temp_rep: RegistrationReport, actor: string | null) => {
+    try{
+        const newRegReport = {
+            ...temp_rep,
+            generatedAt: Timestamp.now(),
+            generatedBy: actor,
+        }
+        const reportID: DocumentReference = await addDoc(regReport, {...newRegReport})
+        return reportID.id
+    }catch(e){
+        console.error('Error generating registration report: ', e)
+    }
+}
+
+export const UPDATE_REG_REPORT = async (report_id: string, updateReportRecord: Partial<RegistrationReport>) => {
+    try{
+        const reportRef = doc(firestore, 'REGISTRATION_REPORT', report_id)
+        const newReportRecord = {
+            ...updateReportRecord,
+        }
+        await updateDoc(reportRef, newReportRecord)
+    }catch(error){
+        throw error
+    }
+}
 
 export const FETCH_REPORTMETADATA = async () => {
     try{

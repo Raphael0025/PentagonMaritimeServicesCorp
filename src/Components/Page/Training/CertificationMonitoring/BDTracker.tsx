@@ -1798,7 +1798,8 @@ export default function BDTrackerCertification (){
                                 const trainingDate = training.numOfDays === 1 
                                     ? formatTrainingSchedule(training.start_date, training.year || 0) 
                                     : `${formatTrainingSchedule(training.start_date, training.year || 0)} to ${formatTrainingSchedule(training.end_date, training.year || 0)}`
-            
+                                const isMoreThanOneDay = training.numOfDays > 1 ? true : false
+
                                 if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1888,13 +1889,13 @@ export default function BDTrackerCertification (){
                                                             {training?.conductedOnline ? (
                                                                 <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                                                     dangerouslySetInnerHTML={{
-                                                                        __html: `<span>Conducted online on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                                                        __html: `<span>Conducted online ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
                                                                     }}
                                                                 />
                                                             ) : (
                                                                 <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                                                     dangerouslySetInnerHTML={{
-                                                                        __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
+                                                                        __html: `<span>Conducted ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
                                                                     }}
                                                                 />
                                                             )}
