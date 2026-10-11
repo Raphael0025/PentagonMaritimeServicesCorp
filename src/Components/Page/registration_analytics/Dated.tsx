@@ -733,7 +733,7 @@ export default function DatedAnalytics() {
               // 🟢 Update Track 2 state with the new database markers
               setRegReportID({
                   ...regReport,
-                  id: savedRecord,
+                  id: savedRecord || '',
                   generatedAt: Timestamp.now(),
                   generatedBy: actor || '',
               });
