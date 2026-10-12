@@ -758,7 +758,9 @@ export default function DatedAnalytics() {
     responsive: true,
     maintainAspectRatio: false,
     plugins:{
-      legend: false,
+      legend: {
+        display: false
+      },
     },
   }
 
@@ -1288,10 +1290,20 @@ export default function DatedAnalytics() {
                   body: {
                       margin: 0,
                   },
-                  // Stops rows from breaking awkwardly in half across page folds
+                  // 🟢 CRITICAL: Allow tables and containers to break naturally across pages
+                  'table, .table-container, div': {
+                      pageBreakInside: 'auto !important',
+                      breakInside: 'auto !important',
+                  },
+                  // 🟢 Protect ONLY individual rows from splitting in half across page folds
                   'tr': {
                       pageBreakInside: 'avoid !important',
                       breakInside: 'avoid !important',
+                  },
+                  // Prevent section headings from being left orphaned at the bottom alone
+                  'h1, h2, h3, h4, h5, h6': {
+                      pageBreakAfter: 'avoid !important',
+                      breakAfter: 'avoid !important',
                   },
               },
           }}
@@ -1669,7 +1681,9 @@ export default function DatedAnalytics() {
                         </Box> */}
                         <Box mt='2'>
                           <Text my='2'>TRAINING COURSES FOR NEXT MONTH:</Text>
-                          <TableContainer width="300px" my={4} borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                          <TableContainer width="300px" my={4} borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" 
+                          //sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                          >
                             <Table variant="simple" size="sm" px='2'
                               sx={{
                                 'th, td': {
@@ -1705,14 +1719,17 @@ export default function DatedAnalytics() {
                         </Box>
                       </Box>
                       <Box mt='4'
-                        sx={{
-                            '@media print': {
-                                breakBefore: 'page', // Modern CSS standard alternative
-                                marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
-                            }
-                        }}>
+                        // sx={{
+                        //     '@media print': {
+                        //         breakBefore: 'page', // Modern CSS standard alternative
+                        //         marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
+                        //     }
+                        // }}
+                        >
                         <Text my='2'>II. CUSTOMERS GROUP BY COMPANY:</Text>
-                        <TableContainer w='950px' borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                        <TableContainer w='950px' borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" 
+                        //sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                        >
                           <Table w='100%' variant="simple" size="sm" 
                             sx={{
                               'th, td': {
@@ -1787,17 +1804,19 @@ export default function DatedAnalytics() {
                         </TableContainer>
                       </Box>
                       <Box mt='2'
-                        sx={{
-                            '@media print': {
-                                breakBefore: 'page', // Modern CSS standard alternative
-                                marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
-                            }
-                        }}
+                        // sx={{
+                        //     '@media print': {
+                        //         breakBefore: 'page', // Modern CSS standard alternative
+                        //         marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
+                        //     }
+                        // }}
                       >
                         <Text mt='2'>III. CUSTOMERS GROUP BY COURSE:</Text>
                         <HStack spacing={4} align="flex-start" wrap="wrap">
                           {/* 1. MASTER TABLE: CUSTOMERS GROUP BY COURSE */}
-                          <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                          <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px" 
+                          //sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                          >
                             <Table variant="simple" size="sm"
                               sx={{
                                 'th, td': {
@@ -1835,7 +1854,9 @@ export default function DatedAnalytics() {
                           {/* RIGHT COLUMN: SIMULATOR & NON-SIMULATOR */}
                           <VStack spacing={6} align="stretch" minW="260px">
                             {/* 2. SIMULATOR COURSES */}
-                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" 
+                            //sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                            >
                               <Table variant="simple" size="sm"
                                 sx={{
                                   'th, td': {
@@ -1871,7 +1892,9 @@ export default function DatedAnalytics() {
                               </Table>
                             </TableContainer>
                             {/* 4. MARINA COURSES */}
-                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px" 
+                            //sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                            >
                               <Table variant="simple" size="sm"
                                 sx={{
                                   'th, td': {
@@ -1908,7 +1931,9 @@ export default function DatedAnalytics() {
                             </TableContainer>
                           </VStack>
                             {/* 3. NON-SIMULATOR COURSES */}
-                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" 
+                            //sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                            >
                               <Table variant="simple" size="sm"
                                 sx={{
                                   'th, td': {
@@ -1945,12 +1970,13 @@ export default function DatedAnalytics() {
                             </TableContainer>
                         </HStack>
                       </Box>
-                      <Box mt='2'sx={{
-                            '@media print': {
-                                breakBefore: 'page', // Modern CSS standard alternative
-                                marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
-                            }
-                        }}
+                      <Box mt='2'
+                      // sx={{
+                      //       '@media print': {
+                      //           breakBefore: 'page', // Modern CSS standard alternative
+                      //           marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
+                      //       }
+                      //   }}
                       >
                         <Text my='2'>IV. OTHER MATTERS:</Text>
                         {isEmpty ? (
