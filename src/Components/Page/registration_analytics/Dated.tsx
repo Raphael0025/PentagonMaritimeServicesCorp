@@ -3,8 +3,9 @@
 import { Timestamp } from 'firebase/firestore'
 import React, { useState, useRef, useEffect} from 'react'
 import { useReactToPrint } from 'react-to-print'
-import { Box, Text, Input, SimpleGrid, Textarea, Button, IconButton, Tooltip as ChakraTooltip, HStack, Flex, Select, useToast, Stat, StatLabel, Link, VStack, StatNumber, StatHelpText, StatArrow, Badge, Tfoot, Table, TableContainer, Tbody, Thead, Th, Tr, Td, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Divider, } from '@chakra-ui/react'
+import { Image as ChakraImage, Box, Text, Input, SimpleGrid, Textarea, Button, IconButton, Tooltip as ChakraTooltip, HStack, Flex, Select, useToast, Stat, StatLabel, Link, VStack, StatNumber, StatHelpText, StatArrow, Badge, Tfoot, Table, TableContainer, Tbody, Thead, Th, Tr, Td, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Divider, List, ListItem, ListIcon, UnorderedList} from '@chakra-ui/react'
 
+import { PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend} from 'chart.js'
 import { Bar, Doughnut } from 'react-chartjs-2'
 import { ToastStatus } from '@/types/handling'
@@ -20,6 +21,7 @@ import { useReportMetaData } from '@/context/ReportMetaDataContext'
 import { GENERATE_REG_REPORT, UPDATE_REG_REPORT } from '@/lib/ReportMetadata.controller'
 
 import { RegistrationReport, RegistrationReportByID, initRegReport } from '@/types/ReportMetadata.model'
+import { REGISTRATION } from '../../../types/trainees';
 
 ChartJS.register( CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend )
 // Define interface for the table structure
@@ -63,14 +65,14 @@ export default function DatedAnalytics() {
 
   const [ regReport, setRegReport ] = useState<RegistrationReport | null>(initRegReport)
   const [ regReportID, setRegReportID ] = useState<RegistrationReportByID | null>({...initRegReport, id: '', generatedAt: Timestamp.now(), generatedBy: '',})
-
+  const [ userName, setUsername ] = useState<string>('')
 
   // State for Top 3 Clients Chart
-  const [topClientNames, setTopClientNames] = useState<string[]>(['N/A', 'N/A', 'N/A'])
-  const [topClientCounts, setTopClientCounts] = useState<number[]>([0, 0, 0])
+  const [topClientNames, setTopClientNames] = useState<string[]>(['N/A', 'N/A', 'N/A', 'N/A', 'N/A'])
+  const [topClientCounts, setTopClientCounts] = useState<number[]>([0, 0, 0,0,0])
 
-  const [courseLabels, setCourseLabels] = useState<string[]>(['N/A', 'N/A', 'N/A'])
-  const [courseData, setCourseData] = useState<number[]>([0, 0, 0])
+  const [courseLabels, setCourseLabels] = useState<string[]>(['N/A', 'N/A', 'N/A', 'N/A', 'N/A'])
+  const [courseData, setCourseData] = useState<number[]>([0, 0, 0,0,0])
 
   // --- Date Picker / Filter States (Defaults to Current Month and Year) ---
   const currentDate = new Date()
@@ -89,6 +91,8 @@ export default function DatedAnalytics() {
   const [simuCourseBreakdown, setSimuCourseBreakdown] = useState<CourseBreakdown[]>([])
   const [marinaCourseBreakdown, setMarinaCourseBreakdown] = useState<CourseBreakdown[]>([])
   const [nonSimuCourseBreakdown, setNonSimuCourseBreakdown] = useState<CourseBreakdown[]>([])
+
+  const [nextMonthCourseCounts, setNextMonthCourseCounts] = useState<{ code: string; count: number }[]>([]);
 
   const [content, setContent] = useState('');
   const [tempContent, setTempContent] = useState('');
@@ -176,6 +180,9 @@ export default function DatedAnalytics() {
 
   useEffect(() => {
     const fetchReportData = () => {
+      const actor: string | null = localStorage.getItem('customToken');
+      setUsername(actor || '')
+
       const foundRecord = regRepData?.find(rep =>
         rep?.month === selectedMonth &&
         rep?.year === selectedYear
@@ -254,6 +261,55 @@ export default function DatedAnalytics() {
         return t.reg_status === 7
       })
       setCancelledCount(filteredCancelledTraining.length)
+
+      const filteredTrainingCourses = (filteredTraining || []).filter((t: any) => {
+        if (t.regType !== 0) return false;
+        if (t.reg_status === 7) return false;
+        if (!t.start_date) return false;
+
+        // Calculate target next month and handle year rollover (Dec -> Jan)
+        const targetMonth = selectedMonth === 11 ? 0 : selectedMonth + 1;
+        const targetYear = selectedMonth === 11 ? selectedYear + 1 : selectedYear;
+
+        // Append the target year to the string so JavaScript can parse it correctly
+        const dateStringWithYear = `${t.start_date}, ${targetYear}`;
+        const startDate = new Date(dateStringWithYear);
+
+        if (isNaN(startDate.getTime())) return false;
+
+        const isNextMonthYear =
+          startDate.getMonth() === targetMonth &&
+          startDate.getFullYear() === targetYear;
+
+        if (!isNextMonthYear) return false;
+
+        return t.reg_status === 3 || t.reg_status === 6;
+      });
+
+      // 2. Count all matching course occurrences from the filtered records
+      const countMap: { [code: string]: number } = {};
+
+      filteredTrainingCourses.forEach((training: any) => {
+        // Use your exact fallback logic to resolve the course code
+        const code =
+          allCourses?.find((course: any) => course.id === training.course)?.course_code ||
+          courseCodes?.find((course: any) => course.id === training.course)?.company_course_code ||
+          '';
+
+        // Only count if a valid course code was found
+        if (code) {
+          countMap[code] = (countMap[code] || 0) + 1;
+        }
+      });
+      // 3. Convert the map into an array of objects and sort them from highest to lowest count
+      const sortedCourseCounts = Object.entries(countMap)
+        .map(([code, count]) => ({
+          code,
+          count,
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      setNextMonthCourseCounts(sortedCourseCounts);
       // -------------------------------------------------------------
       // 2. Marketing Breakdown (Filtered)
       // -------------------------------------------------------------
@@ -346,12 +402,12 @@ export default function DatedAnalytics() {
 
       const sortedClients = Object.entries(clientMap)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
+        .slice(0, 5)
 
       const names = sortedClients.map(([name]) => name)
       const counts = sortedClients.map(([, count]) => count)
 
-      while (names.length < 3) {
+      while (names.length < 5) {
         names.push('N/A')
         counts.push(0)
       }
@@ -392,12 +448,12 @@ export default function DatedAnalytics() {
 
       const sortedCourses = Object.entries(courseMap)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
+        .slice(0, 5)
 
       const topCourseNames = sortedCourses.map(([name]) => name)
       const topCourseCounts = sortedCourses.map(([, count]) => count)
 
-      while (topCourseNames.length < 3) {
+      while (topCourseNames.length < 5) {
         topCourseNames.push('N/A')
         topCourseCounts.push(0)
       }
@@ -415,6 +471,7 @@ export default function DatedAnalytics() {
 
       const prevMonthTraining = (allTraining || []).filter((t: any) => {
         if (t.regType !== 0) return false
+        if (t.reg_status === 7) return false
         if (!t.date_enrolled) return false
 
         const enrolledDate: Date =
@@ -598,7 +655,7 @@ export default function DatedAnalytics() {
 
 
       setAllCourseBreakdown(allList)
-      setSimuCourseBreakdown(allList.filter((c) => c.isSimuCourse))
+      setSimuCourseBreakdown(allList.filter((c) => c.isSimuCourse && !c.isMarinaCourse))
       setMarinaCourseBreakdown(allList.filter((c) => c.isMarinaCourse))
       setNonSimuCourseBreakdown(allList.filter((c) => !c.isSimuCourse))
 
@@ -700,9 +757,17 @@ export default function DatedAnalytics() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    plugins:{
+      legend: false,
+    },
+  }
+
+  const chartOptionsDoughnut = {
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom' as const,
+        position: 'right' as const,
       },
     },
   }
@@ -814,11 +879,9 @@ export default function DatedAnalytics() {
                 </option>
               ))}
             </Select>
-            <ChakraTooltip w='150px' label="Set the orientation to Landscape and Scale to 50%" hasArrow placement="bottom">
-              <Button onClick={handlePrint} colorScheme="blue" bgColor="blue.700" shadow="md">
-                Export Report
-              </Button>
-            </ChakraTooltip>
+            <Button onClick={handlePrint} colorScheme="blue" bgColor="blue.700" shadow="md">
+              Export Report
+            </Button>
           </Flex>
         </Flex>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
@@ -847,7 +910,7 @@ export default function DatedAnalytics() {
               Customers Assisted
             </Text>
             <Box h="260px" position="relative">
-              <Doughnut data={customersAssistedData} options={chartOptions} />
+              <Doughnut data={customersAssistedData} options={chartOptionsDoughnut} />
             </Box>
           </Box>
           {/* Top 3 courses */}
@@ -918,15 +981,15 @@ export default function DatedAnalytics() {
             <Box w='500px' id='c_asst'>
               <Text fontSize="md" fontWeight="bold" mt='8' mb={4} color="gray.700">Total # of Customers Assisted:</Text>
               <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm">
-                <Table minW='450px' variant="simple" size="sm">
+                <Table minW='450px' variant="simple" size="sm" sx={{'tbody tr:hover': {bg: 'gray.50 !important'}}}>
                   <Thead bg="gray.100">
                     <Tr>
                       <Th fontSize="xs" fontWeight="bold">ENROLLED</Th>
                       <Th isNumeric fontSize="xs" fontWeight="bold">TOTAL</Th>
                     </Tr>
                   </Thead>
-                  <Tbody>
-                    <Tr>
+                  <Tbody >
+                    <Tr >
                       <Td fontWeight="bold" color="blue.800" fontSize="xs">
                         1.1 Company Endorsement
                       </Td>
@@ -1030,7 +1093,7 @@ export default function DatedAnalytics() {
           <Box display="flex" gap={8}>
             <Box id='grpByCmpy' >
               <Text fontSize="md" fontWeight="bold" mt='8' mb={4} color="gray.700">Customers Group by Company</Text>
-              <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm">
+              <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{'tbody tr:hover':{bg: 'gray.50 !important'}}}>
                 <Table w='400px' variant="simple" size="sm">
                   <Thead bg="gray.100">
                     <Tr>
@@ -1101,7 +1164,7 @@ export default function DatedAnalytics() {
               <HStack spacing={6} align="flex-start" wrap="wrap">
                 {/* 1. MASTER TABLE: CUSTOMERS GROUP BY COURSE */}
                 <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px">
-                  <Table variant="simple" size="sm">
+                  <Table variant="simple" size="sm" sx={{'tbody tr:hover':{bg: 'gray.100 !important'}}}>
                     <Thead bg="gray.100">
                       <Tr>
                         <Th fontSize="xs" fontWeight="bold">Course</Th>
@@ -1130,7 +1193,7 @@ export default function DatedAnalytics() {
                 <VStack spacing={6} align="stretch" minW="260px">
                   {/* 4. MARINA COURSES */}
                   <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px">
-                    <Table variant="simple" size="sm">
+                    <Table variant="simple" size="sm" sx={{'tbody tr:hover':{bg: 'gray.100 !important'}}}>
                       <Thead bg="blue.50">
                         <Tr>
                           <Th fontSize="xs" fontWeight="bold" color="blue.800">MARINA COURSES</Th>
@@ -1157,7 +1220,7 @@ export default function DatedAnalytics() {
                   </TableContainer>
                   {/* 2. SIMULATOR COURSES */}
                   <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm">
-                    <Table variant="simple" size="sm">
+                    <Table variant="simple" size="sm" sx={{'tbody tr:hover':{bg: 'gray.100 !important'}}}>
                       <Thead bg="purple.50">
                         <Tr>
                           <Th fontSize="xs" fontWeight="bold" color="purple.800">SIMULATOR COURSES</Th>
@@ -1184,7 +1247,7 @@ export default function DatedAnalytics() {
                   </TableContainer>
                   {/* 3. NON-SIMULATOR COURSES */}
                   <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm">
-                    <Table variant="simple" size="sm">
+                    <Table variant="simple" size="sm" sx={{'tbody tr:hover':{bg: 'gray.100 !important'}}}>
                       <Thead bg="orange.50">
                         <Tr>
                           <Th fontSize="xs" fontWeight="bold" color="orange.800">NON-SIMULATOR COURSES</Th>
@@ -1214,10 +1277,701 @@ export default function DatedAnalytics() {
             </Box>
           </Box>
         </Box>
-        {/** print preview tables */}
-        
         {/** actual print */}
-        
+        <Box ref={printRef} 
+        display={{ base: 'none', md: 'none' }} 
+        flexDir='column' justifyContent='center' w='100%'
+          sx={{
+              // 🟢 Global CSS print instructions passed to the browser engine
+              '@media print': {
+                  display: 'flex !important', // Forces it to show up during print
+                  body: {
+                      margin: 0,
+                  },
+                  // Stops rows from breaking awkwardly in half across page folds
+                  'tr': {
+                      pageBreakInside: 'avoid !important',
+                      breakInside: 'avoid !important',
+                  },
+              },
+          }}
+        >
+          <Box w='100%' p='2'>
+            <table style={{width: '100%', borderCollapse: 'collapse'}}>
+              <thead>
+                <tr>
+                  <td>
+                      <Box display="flex" justifyContent="space-between" alignItems="center" pb="4" mb="6" >
+                          <ChakraImage src="/Logo.jpg" width="2.81in" height="0.66in" alt="logo" />
+                          <Box>
+                          <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                              <Text as="span" mr={1}><PinIcon size="12" color="#000" /></Text>
+                              2/F 801 Building UN Avenue Ermita Manila
+                          </Text>
+                          <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                              <Text as="span" mr={1}><PhoneIcon size="12" color="#000" /></Text>
+                              (02) 8 281-8155
+                          </Text>
+                          <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                              <Text as="span" mr={1}><MailIcon size="12" color="#000" /></Text>
+                              pentagonmaritimeservicescorp@gmail.com
+                          </Text>
+                          <Text display="flex" justifyContent="end" alignItems="center" fontSize="9pt" fontFamily="Calibri, Arial, sans-serif">
+                              <Text as="span" mr={1}><FacebookIcon size="12" color="#000" /></Text>
+                              /pentagonmaritimeservicescorp
+                          </Text>
+                          </Box>
+                      </Box>
+                  </td>
+              </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <Box as='main' w='100%'>
+                      {/** Report Title */}
+                      <Box display='flex' fontSize='11pt' justifyContent='space-between' alignItems='end'>
+                        <Text textAlign='center' display='flex'>
+                            <Text as='span' mr='2' fontWeight='bold' >{`MONTHLY REPORT FOR THE MONTH OF `}</Text>
+                            <Text as='span' textTransform='uppercase' fontWeight='normal'>{` ${months[selectedMonth]} ${selectedYear}`}</Text>
+                        </Text>
+                        <Text textAlign='center' display='flex' fontSize='10pt' gap='3'>
+                            <Text as='span' fontWeight='bold'>Department:</Text>
+                            <Text as='span' fontWeight='normal' textDecoration='underline'>REGISTRATION</Text>
+                        </Text>
+                      </Box>
+                      <Box display='flex' fontSize='11pt' justifyContent='space-between'>
+                        <Text textAlign='center' display='flex' fontSize='10pt' gap='3'>
+                            <Text as='span' fontWeight='bold'>Prepared By:</Text>
+                            <Text as='span' fontWeight='normal' textDecoration='underline'>{userName}</Text>
+                        </Text>
+                        <Text textAlign='center' display='flex' fontSize='10pt' gap='3'>
+                            <Text as='span' fontWeight='Bold'>Noted By:</Text>
+                            <Text as='span' fontWeight='normal' textDecoration='underline'>JULIUS RYAN MEDALLON</Text>
+                        </Text>
+                      </Box>
+                      <Box mt='2' fontWeight='normal'>
+                        <Text fontSize='11pt' fontWeight='bold' my='2'>OVERVIEW:</Text>
+                        <Text fontSize='11pt'>{`**For the month of ${months[selectedMonth]} ${selectedYear}, the Registration Department assisted a total of ${(cancelledCount+currentMonthCount)} clients. Out of ${(cancelledCount+currentMonthCount)} clients, ${(currentMonthCount)} trainees were successfully enrolled.`}</Text>
+                        <Text fontSize='11pt' fontWeight='bold'>Enrollment Summary:</Text>
+                        <Box >
+                          <Text fontSize='11pt' fontWeight='bold'>The enrolled trainees were sourced through the following channels:</Text>
+                          <Box display='flex' gap='3'>
+                            <table style={{width: '400px', height: '200px', fontSize: '11pt', borderCollapse: 'collapse', border: '1px solid #CBD5E0'}}>
+                              <thead style={{fontWeight: 'bold'}}>
+                                <tr>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Source</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Trainees</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Percentage</td>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(() => {
+                                  const totalCount = (companyEndorse + accountMgmt + consultancy + walkIn + fb + others)
+                                  const p1Num = totalCount > 0 ? (companyEndorse / totalCount) * 100 : 0;
+                                  const p2Num = totalCount > 0 ? (accountMgmt / totalCount) * 100 : 0;
+                                  const p3Num = totalCount > 0 ? (consultancy / totalCount) * 100 : 0;
+                                  const p4Num = totalCount > 0 ? (walkIn / totalCount) * 100 : 0;
+                                  const p5Num = totalCount > 0 ? (fb / totalCount) * 100 : 0;
+                                  const p6Num = totalCount > 0 ? (others / totalCount) * 100 : 0;
+
+                                  const p1 = p1Num.toFixed(2);
+                                  const p2 = p2Num.toFixed(2);
+                                  const p3 = p3Num.toFixed(2);
+                                  const p4 = p4Num.toFixed(2);
+                                  const p5 = p5Num.toFixed(2);
+                                  const p6 = p6Num.toFixed(2);
+
+                                  // 2. Sum the numeric variables first, THEN apply .toFixed(2) to the result
+                                  const totalP = (p1Num + p2Num + p3Num + p4Num + p5Num + p6Num).toFixed(2);
+
+                                  return (
+                                    <>
+                                      <tr>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Company Endorsements</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{companyEndorse}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p1}%`}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Account Management Officer</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{accountMgmt}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p2}%`}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Consultancy</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{consultancy}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p3}%`}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Walk-In</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{walkIn}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p4}%`}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Facebook</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{fb}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p5}%`}</td>
+                                      </tr>
+                                      <tr>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Other Referrals</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{others}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p6}%`}</td>
+                                      </tr>
+                                      {/* Combined Total Row */}
+                                      <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}><strong>Total</strong></td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{totalCount}</strong></td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{`${totalP}%`}</strong></td>
+                                      </tr>
+                                    </>
+                                  );
+                                })()}
+                              </tbody>
+                            </table>
+                            <Box as="a" cursor="pointer" p={4} borderWidth="1px" borderRadius="lg" boxShadow="sm" bg="white">
+                              <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
+                                Customers Assisted
+                              </Text>
+                              <Box h="300px" w='600px' position="relative">
+                                <Doughnut data={customersAssistedData} options={chartOptionsDoughnut} />
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Box>
+                        <Box>
+                          <Text fontSize='12pt' mt='4' fontWeight='bold'>{`Top Five Client Companies (based on ${(currentMonthCount)} Total Clients Assisted)`}</Text>
+                          <Box display='flex' gap='3'>    
+                            <table style={{width: '400px', height: '200px', fontSize: '11pt', borderCollapse: 'collapse', border: '1px solid #CBD5E0'}}>
+                              <thead style={{fontWeight: 'bold'}}>
+                                <tr>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Company</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Trainees</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Percentage</td>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(() => {
+                                  const totalCount = topClientCounts.reduce((sum, count) => sum + count, 0);
+
+                                  return (
+                                    <>
+                                      {topClientNames.map((name, index) => {
+                                        const count = topClientCounts[index] || 0;
+                                        const percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(2) : '0.00';
+
+                                        return (
+                                          <tr key={index}>
+                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>{name}</td>        {/* Client Name */}
+                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{count}</td>         {/* Count */}
+                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{percentage}%</td>    {/* Percentage */}
+                                          </tr>
+                                        );
+                                      })}
+                                      {/* Combined Total Row */}
+                                      <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Combined Total</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{totalCount}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${((totalCount / currentMonthCount) * 100).toFixed(2)}%`}</td>
+                                      </tr>
+                                    </>
+                                  );
+                                })()}
+                              </tbody>
+                            </table>
+                            <Box as="a" cursor="pointer" p={4} borderWidth="1px" borderRadius="lg" boxShadow="sm" bg="white">
+                              <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
+                                Top Five (5) Client Companies
+                              </Text>
+                              <Box h="300px" w='600px' position="relative">
+                                <Bar data={topClientsData} options={chartOptions} />
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Box>
+                        <Box>
+                          <Text fontSize='12pt' mt='4' fontWeight='bold'>{`Category Distribution (based on ${(currentMonthCount)} Total Clients Assisted)`}</Text>
+                          <Box display='flex' gap='3'>
+                            <table style={{width: '400px', height: '200px', fontSize: '11pt', borderCollapse: 'collapse', border: '1px solid #CBD5E0'}}>
+                              <thead style={{fontWeight: 'bold'}}>
+                                <tr>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Course</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Trainees</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Percentage</td>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(() => {
+                                  const totalCount = courseData.reduce((sum, count) => sum + count, 0);
+                                  // courseLabels
+                                  // courseData
+                                  return (
+                                    <>
+                                      {courseLabels.map((name, index) => {
+                                        const count = courseData[index] || 0;
+                                        const percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(2) : '0.00';
+
+                                        return (
+                                          <tr key={index}>
+                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>{name}</td>         {/* Client Name */}
+                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{count}</td>          {/* Count */}
+                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{percentage}%</td>    {/* Percentage with 2 decimal places */}
+                                          </tr>
+                                        );
+                                      })}
+
+                                      {/* Combined Total Row */}
+                                      <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}><strong>Combined Total</strong></td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{totalCount}</strong></td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{`${((totalCount/currentMonthCount)*100).toFixed(2)}%`}</strong></td>
+                                      </tr>
+                                    </>
+                                  );
+                                })()}
+                              </tbody>
+                            </table>
+                            <Box as="a" cursor="pointer" p={4} borderWidth="1px" borderRadius="lg" boxShadow="sm" bg="white">
+                              <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
+                                Top Five (5) Courses
+                              </Text>
+                              <Box h="300px" w='600px' position="relative">
+                                <Bar data={topCoursesChartData} options={chartOptions} />
+                              </Box>
+                            </Box>
+                          </Box>
+                        </Box>
+                        <Text mt='4' fontSize='12pt' fontWeight='bold' sx={{
+                            '@media print': {
+                                breakBefore: 'page', // Modern CSS standard alternative
+                                marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
+                            }
+                        }}>{`Cancelled/Withdrawn Trainees (based on ${(currentMonthCount+cancelledCount)} Total Clients Assisted)`}</Text>
+                        {(() => {
+                          const total = cancelledCount + currentMonthCount;
+                          const cancelledPercent = total > 0 ? ((cancelledCount / total) * 100).toFixed(2) : '0.00';
+                          const enrolledPercent = total > 0 ? ((currentMonthCount / total) * 100).toFixed(2) : '0.00';
+
+                          return (
+                            <UnorderedList>
+                              <ListItem fontSize='11pt'>{`Cancelled/Withdrawn:  ${cancelledCount} trainees (${cancelledPercent}%)`}</ListItem>
+                              <ListItem fontSize='11pt'>{`Successfully Enrolled:  ${currentMonthCount} trainees (${enrolledPercent}%)`}</ListItem>
+                            </UnorderedList>
+                          );
+                        })()}
+                        {(() => {
+                          // 1. Calculate totals for each category
+                          const marinaTotal = marinaCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
+                          const simuTotal = simuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
+                          const nonSimuTotal = nonSimuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
+
+                          const marinaP = ((marinaTotal / currentMonthCount)*100).toFixed(2)
+                          const simuP = ((simuTotal / currentMonthCount)*100).toFixed(2)
+                          const nonSimuP = ((nonSimuTotal / currentMonthCount)*100).toFixed(2)
+
+                          // 2. Group them and sort from highest to lowest
+                          const rankedCategories = [
+                            { name: 'Marina courses', total: marinaTotal, percentage: marinaP },
+                            { name: 'Simulator courses', total: simuTotal, percentage: simuP },
+                            { name: 'Non-Simulator courses', total: nonSimuTotal, percentage: nonSimuP },
+                          ].sort((a, b) => b.total - a.total);
+
+                          return (
+                            <Text mt='4' fontSize='11pt'>
+                              {`**For the month of ${months[selectedMonth]} ${selectedYear}, ${rankedCategories[0].name} has the highest enrollment with ${rankedCategories[0].total} trainees, representing ${rankedCategories[0].percentage}% of the total enrollment. Followed by ${rankedCategories[1].name} which recorded ${rankedCategories[1].total} trainees (${rankedCategories[1].percentage}%), while ${rankedCategories[2].name} accounted for ${rankedCategories[2].total} trainees (${rankedCategories[2].percentage}%).`}
+                              </Text>
+                          )
+                        })()}
+                        <Text mt='4' fontSize='11pt'>{`**A total of ${currentMonthCount} trainees enrolled in ${months[selectedMonth]} ${selectedYear}, compared to ${prevMonthCount} trainees in ${months[(selectedMonth-1)]} ${selectedYear}. This is ${percentageChange >= 0 ? 'an increase' : 'a decrease'} of ${currentMonthCount > prevMonthCount ? (currentMonthCount - prevMonthCount) : (prevMonthCount - currentMonthCount)} trainees or ${Math.abs(percentageChange)}%, showing a significant ${percentageChange >= 0 ? 'rise' : 'drop'} in enrollment compared to the previous month.`}</Text>
+                      </Box>
+                      <Box mt='2' display='flex' gap='2'>
+                        {/* <Box mt='2' w='100%'>
+                          <Text my='2'>I. TOTAL # OF CUSTOMERS ASSISTED:</Text>
+                          <TableContainer width='280px' borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                            <Table variant="simple" size="sm"
+                              sx={{
+                                'th, td': {
+                                  py: '2px !important', // Reduces top and bottom padding drastically
+                                  px: '8px !important', // Adjusts left and right padding
+                                  lineHeight: '1.2',
+                                }
+                              }}
+                            >
+                              <Thead bg="gray.100">
+                                <Tr>
+                                  <Th fontSize="xs" fontWeight="bold" py={2} px={3}>ENROLLED</Th>
+                                  <Th isNumeric fontSize="xs" fontWeight="bold" py={2} px={3}>TOTAL</Th>
+                                </Tr>
+                              </Thead>
+                              <Tbody>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>
+                                    1.1 Company Endorsement
+                                  </Td>
+                                  <Td isNumeric py={1.5} px={3}>{companyEndorse}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>
+                                    Account Management Officer
+                                  </Td>
+                                  <Td isNumeric py={1.5} px={3}>{accountMgmt}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>
+                                    Consultancy
+                                  </Td>
+                                  <Td isNumeric py={1.5} px={3}>{consultancy}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>
+                                    Walk-in
+                                  </Td>
+                                  <Td isNumeric py={1.5} px={3}>{walkIn}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>
+                                    FB
+                                  </Td>
+                                  <Td isNumeric py={1.5} px={3}>{fb}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>
+                                    Others
+                                  </Td>
+                                  <Td isNumeric py={1.5} px={3}>{others}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td py={0.5} px={3}></Td>
+                                  <Td py={0.5} px={3}></Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>1.2 INQUIRY</Td>
+                                  <Td isNumeric py={1.5} px={3}>{totalInquiriesCount}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td py={0.5} px={3}></Td>
+                                  <Td py={0.5} px={3}></Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>1.3 CANCELLED/WITHDRAWN</Td>
+                                  <Td isNumeric py={1.5} px={3}>{cancelledCount}</Td>
+                                </Tr>
+                                <Tr>
+                                  <Td py={0.5} px={3}></Td>
+                                  <Td py={0.5} px={3}></Td>
+                                </Tr>
+                                <Tr>
+                                  <Td fontWeight="bold" color="blue.800" fontSize="xs" py={1.5} px={3}>1.4 VISITORS</Td>
+                                  <Td isNumeric py={1.5} px={3}>-</Td>
+                                </Tr>
+                              </Tbody>
+                            </Table>
+                          </TableContainer>
+                        </Box> */}
+                        <Box mt='2'>
+                          <Text my='2'>TRAINING COURSES FOR NEXT MONTH:</Text>
+                          <TableContainer width="300px" my={4} borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                            <Table variant="simple" size="sm" px='2'
+                              sx={{
+                                'th, td': {
+                                  py: '2px !important', // Reduces top and bottom padding drastically
+                                  px: '8px !important', // Adjusts left and right padding
+                                  lineHeight: '1.2',
+                                  border: '1px solid #CBD5E0 !important', // Adds borders to all cells
+                                }
+                              }}
+                            >
+                              <Thead bg="gray.50">
+                                <Tr>
+                                  <Th color="gray.700" fontWeight="bold">COURSE</Th>
+                                  <Th isNumeric color="gray.700" fontWeight="bold">TOTAL</Th>
+                                </Tr>
+                              </Thead>
+                              <Tbody>
+                                {nextMonthCourseCounts.map((item, index) => (
+                                  <Tr key={index} _hover={{ bg: 'gray.50' }}>
+                                    <Td fontWeight="medium">{item.code.toUpperCase()}</Td>
+                                    <Td isNumeric>{item.count}</Td>
+                                  </Tr>
+                                ))}
+                                <Tr bg="gray.100" fontWeight="bold">
+                                  <Td color="gray.800">Total</Td>
+                                  <Td isNumeric color="gray.800">
+                                    {nextMonthCourseCounts.reduce((sum, item) => sum + item.count, 0)}
+                                  </Td>
+                                </Tr>
+                              </Tbody>
+                            </Table>
+                          </TableContainer>
+                        </Box>
+                      </Box>
+                      <Box mt='4'
+                        sx={{
+                            '@media print': {
+                                breakBefore: 'page', // Modern CSS standard alternative
+                                marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
+                            }
+                        }}>
+                        <Text my='2'>II. CUSTOMERS GROUP BY COMPANY:</Text>
+                        <TableContainer w='950px' borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                          <Table w='100%' variant="simple" size="sm" 
+                            sx={{
+                              'th, td': {
+                                py: '2px !important', // Reduces top and bottom padding drastically
+                                px: '8px !important', // Adjusts left and right padding
+                                lineHeight: '1.2',
+                                border: '1px solid #CBD5E0 !important', // Adds borders to all cells
+                              }
+                            }}>
+                            <Thead bg="gray.100">
+                              <Tr>
+                                <Th w='200px' fontSize="xs" fontWeight="bold">CUSTOMERS NAME</Th>
+                                <Th isNumeric fontSize="xs" fontWeight="bold">
+                                  COMPANY CHARGE<br />(# of Trainees)
+                                </Th>
+                                <Th isNumeric fontSize="xs" fontWeight="bold">
+                                  CREW CHARGE<br />(# of Trainees)
+                                </Th>
+                                <Th isNumeric fontSize="xs" fontWeight="bold">
+                                  TOTAL # TRAINEES
+                                </Th>
+                              </Tr>
+                            </Thead>
+                            <Tbody>
+                              {/* 2.1 Tapped Clients Section */}
+                              {tappedClients.length > 0 && (
+                                <>
+                                  <Tr bg="blue.50">
+                                    <Td colSpan={4} fontWeight="bold" color="blue.800" fontSize="xs">
+                                      2.1 Tapped Clients
+                                    </Td>
+                                  </Tr>
+                                  {tappedClients.map((row) => (
+                                    <Tr key={row.name}>
+                                      <Td pl={6} fontWeight="medium">{row.name}</Td>
+                                      <Td isNumeric>{row.companyCharge > 0 ? row.companyCharge : '-'}</Td>
+                                      <Td isNumeric>{row.crewCharge > 0 ? row.crewCharge : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold">{row.total}</Td>
+                                    </Tr>
+                                  ))}
+                                </>
+                              )}
+                              {/* 2.2 Untapped Clients Section */}
+                              {untappedClients.length > 0 && (
+                                <>
+                                  <Tr bg="orange.50">
+                                    <Td colSpan={4} fontWeight="bold" color="orange.800" fontSize="xs">
+                                      2.2 Untapped Clients
+                                    </Td>
+                                  </Tr>
+                                  {untappedClients.map((row) => (
+                                    <Tr key={row.name}>
+                                      <Td pl={6} fontWeight="medium">{row.name}</Td>
+                                      <Td isNumeric>{row.companyCharge > 0 ? row.companyCharge : '-'}</Td>
+                                      <Td isNumeric>{row.crewCharge > 0 ? row.crewCharge : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold">{row.total}</Td>
+                                    </Tr>
+                                  ))}
+                                </>
+                              )}
+                            </Tbody>
+                            {/* Footer Summary */}
+                            <Tfoot bg="gray.100">
+                              <Tr fontWeight="bold">
+                                <Th fontSize="xs">TOTAL</Th>
+                                <Th isNumeric fontSize="xs">{grandCompanyCharge > 0 ? grandCompanyCharge : '-'}</Th>
+                                <Th isNumeric fontSize="xs">{grandCrewCharge > 0 ? grandCrewCharge : '-'}</Th>
+                                <Th isNumeric fontSize="xs" color="blue.600">{grandTotal}</Th>
+                              </Tr>
+                            </Tfoot>
+                          </Table>
+                        </TableContainer>
+                      </Box>
+                      <Box mt='2'
+                        sx={{
+                            '@media print': {
+                                breakBefore: 'page', // Modern CSS standard alternative
+                                marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
+                            }
+                        }}
+                      >
+                        <Text mt='2'>III. CUSTOMERS GROUP BY COURSE:</Text>
+                        <HStack spacing={4} align="flex-start" wrap="wrap">
+                          {/* 1. MASTER TABLE: CUSTOMERS GROUP BY COURSE */}
+                          <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                            <Table variant="simple" size="sm"
+                              sx={{
+                                'th, td': {
+                                  py: '2px !important', // Reduces top and bottom padding drastically
+                                  px: '8px !important', // Adjusts left and right padding
+                                  lineHeight: '1.2',
+                                  border: '1px solid #CBD5E0 !important', // Adds borders to all cells
+                                }
+                              }}
+                            >
+                              <Thead bg="gray.100">
+                                <Tr>
+                                  <Th fontSize="xs" fontWeight="bold">Course</Th>
+                                  <Th isNumeric fontSize="xs" fontWeight="bold"># of Enrollees</Th>
+                                </Tr>
+                              </Thead>
+                              <Tbody>
+                                {allCourseBreakdown.map((row) => (
+                                  <Tr key={row.course}>
+                                    <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
+                                    <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
+                                  </Tr>
+                                ))}
+                              </Tbody>
+                              <Tfoot bg="gray.100">
+                                <Tr fontWeight="bold">
+                                  <Th fontSize="xs">TOTAL</Th>
+                                  <Th isNumeric fontSize="xs" color="blue.600">
+                                    {allCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                  </Th>
+                                </Tr>
+                              </Tfoot>
+                            </Table>
+                          </TableContainer>
+                          {/* RIGHT COLUMN: SIMULATOR & NON-SIMULATOR */}
+                          <VStack spacing={6} align="stretch" minW="260px">
+                            {/* 2. SIMULATOR COURSES */}
+                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                              <Table variant="simple" size="sm"
+                                sx={{
+                                  'th, td': {
+                                    py: '2px !important', // Reduces top and bottom padding drastically
+                                    px: '8px !important', // Adjusts left and right padding
+                                    lineHeight: '1.2',
+                                    border: '1px solid #CBD5E0 !important', // Adds borders to all cells
+                                  }
+                                }}
+                              >
+                                <Thead bg="purple.50">
+                                  <Tr>
+                                    <Th fontSize="xs" fontWeight="bold" color="purple.800">SIMULATOR COURSES</Th>
+                                    <Th isNumeric fontSize="xs" fontWeight="bold" color="purple.800"># of Enrollees</Th>
+                                  </Tr>
+                                </Thead>
+                                <Tbody>
+                                  {simuCourseBreakdown.map((row) => (
+                                    <Tr key={row.course}>
+                                      <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
+                                      <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
+                                    </Tr>
+                                  ))}
+                                </Tbody>
+                                <Tfoot bg="gray.100">
+                                  <Tr fontWeight="bold">
+                                    <Th fontSize="xs">TOTAL</Th>
+                                    <Th isNumeric fontSize="xs" color="purple.700">
+                                      {simuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                    </Th>
+                                  </Tr>
+                                </Tfoot>
+                              </Table>
+                            </TableContainer>
+                            {/* 4. MARINA COURSES */}
+                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" minW="260px" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                              <Table variant="simple" size="sm"
+                                sx={{
+                                  'th, td': {
+                                    py: '2px !important', // Reduces top and bottom padding drastically
+                                    px: '8px !important', // Adjusts left and right padding
+                                    lineHeight: '1.2',
+                                    border: '1px solid #CBD5E0 !important', // Adds borders to all cells
+                                  }
+                                }}
+                              >
+                                <Thead bg="blue.50">
+                                  <Tr>
+                                    <Th fontSize="xs" fontWeight="bold" color="blue.800">MARINA COURSES</Th>
+                                    <Th isNumeric fontSize="xs" fontWeight="bold" color="blue.800"># of Enrollees</Th>
+                                  </Tr>
+                                </Thead>
+                                <Tbody>
+                                  {marinaCourseBreakdown.map((row) => (
+                                    <Tr key={row.course}>
+                                      <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
+                                      <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
+                                    </Tr>
+                                  ))}
+                                </Tbody>
+                                <Tfoot bg="gray.100">
+                                  <Tr fontWeight="bold">
+                                    <Th fontSize="xs">TOTAL</Th>
+                                    <Th isNumeric fontSize="xs" color="blue.700">
+                                      {marinaCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                    </Th>
+                                  </Tr>
+                                </Tfoot>
+                              </Table>
+                            </TableContainer>
+                          </VStack>
+                            {/* 3. NON-SIMULATOR COURSES */}
+                            <TableContainer borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                              <Table variant="simple" size="sm"
+                                sx={{
+                                  'th, td': {
+                                    py: '2px !important', // Reduces top and bottom padding drastically
+                                    px: '8px !important', // Adjusts left and right padding
+                                    lineHeight: '1.2',
+                                    border: '1px solid #CBD5E0 !important', // Adds borders to all cells
+                                  }
+                                }}
+                              >
+                                <Thead bg="orange.50">
+                                  <Tr>
+                                    <Th fontSize="xs" fontWeight="bold" color="orange.800">NON-SIMULATOR COURSES</Th>
+                                    <Th isNumeric fontSize="xs" fontWeight="bold" color="orange.800"># of Enrollees</Th>
+                                  </Tr>
+                                </Thead>
+                                <Tbody>
+                                  {nonSimuCourseBreakdown.map((row) => (
+                                    <Tr key={row.course}>
+                                      <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
+                                      <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
+                                    </Tr>
+                                  ))}
+                                </Tbody>
+                                <Tfoot bg="gray.100">
+                                  <Tr fontWeight="bold">
+                                    <Th fontSize="xs">TOTAL</Th>
+                                    <Th isNumeric fontSize="xs" color="orange.700">
+                                      {nonSimuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                    </Th>
+                                  </Tr>
+                                </Tfoot>
+                              </Table>
+                            </TableContainer>
+                        </HStack>
+                      </Box>
+                      <Box mt='2'sx={{
+                            '@media print': {
+                                breakBefore: 'page', // Modern CSS standard alternative
+                                marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
+                            }
+                        }}
+                      >
+                        <Text my='2'>IV. OTHER MATTERS:</Text>
+                        {isEmpty ? (
+                          <Text color="gray.500">
+                            No other matters to report.
+                          </Text>
+                        ) : (
+                          <Box
+                            p={4}
+                            sx={richTextStyles}
+                            dangerouslySetInnerHTML={{ __html: content }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </Box>
+        </Box>
       </Box>
       {/* Edit Modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>

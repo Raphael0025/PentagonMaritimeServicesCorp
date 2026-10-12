@@ -293,10 +293,10 @@ export default function EditRegistration({onClose, reg_id, reg_Type, permissions
 
         try {
             const company_staff = localStorage.getItem('customToken');
-
+            console.log(reg_id)
             // Replace UPDATE_REGISTRATION with your database update function
             await UPDATE_REGISTRATION(
-                fetchedReg.id, 
+                reg_id, 
                 { reg_no: newRegNo.trim() }, 
                 company_staff
             );
