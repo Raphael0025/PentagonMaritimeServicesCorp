@@ -11,12 +11,14 @@ export interface RegistrationReport {
     month: number;
     year: number;
     otherMatters: string;
+    regType: number;
 }
 
 export const initRegReport = {
     month: 0,
     year: 0,
     otherMatters: '',
+    regType: 0,
 }
 
 export interface TrainingReportByID extends TrainingReport{

@@ -300,7 +300,7 @@ const groupedSchedule = useMemo(() => {
       startDateStr = rawStart ? String(rawStart).trim().toUpperCase() : 'NO DATE';
       endDateStr = rawEnd ? String(rawEnd).trim().toUpperCase() : '';
 
-      startDateObj = parseFormattedDate(startDateStr, targetYear);
+      startDateObj = parseFormattedDate(startDateStr, targetYear)
 
       if (startDateObj && !isNaN(startDateObj.getTime())) {
         monthName = startDateObj.toLocaleString('default', { month: 'long' });

@@ -121,6 +121,7 @@ export default function DatedAnalytics() {
         year: prev?.year ?? new Date().getFullYear(),  // fallback to current year if null
         ...(prev || {}),
         otherMatters: editorRef.current?.innerHTML || '',
+        regType: 0,
       }));
     }
     onClose();
@@ -185,7 +186,8 @@ export default function DatedAnalytics() {
 
       const foundRecord = regRepData?.find(rep =>
         rep?.month === selectedMonth &&
-        rep?.year === selectedYear
+        rep?.year === selectedYear &&
+        rep?.regType === 0
       )
 
       if(foundRecord){
@@ -194,6 +196,7 @@ export default function DatedAnalytics() {
           ...foundRecord,
           month: selectedMonth,
           year: selectedYear,
+          regType: 0,
         })
         
         setRegReportID({
@@ -206,7 +209,7 @@ export default function DatedAnalytics() {
         setContent(foundRecord?.otherMatters || '')
         return
       }
-      setRegReport({...initRegReport, month: selectedMonth, year: selectedYear})
+      setRegReport({...initRegReport, regType: 0, month: selectedMonth, year: selectedYear})
       setRegReportID(null)
     }
     fetchReportData()
@@ -425,19 +428,51 @@ export default function DatedAnalytics() {
           const rawCourseId = t.course || t.course_id || t.courseCode || t.course_code
 
           if (rawCourseId && rawCourseId !== '' && rawCourseId !== 'N/A') {
-            const matchedCourse = Array.isArray(allCourses)
-              ? allCourses.find(
+            const searchStr = String(rawCourseId).trim().toLowerCase()
+
+            // 1. Check courseCodes first (Priority)
+            const matchedCourseCodeRecord: any = Array.isArray(courseCodes)
+              ? courseCodes.find(
                   (c: any) =>
-                    String(c.id) === String(rawCourseId) ||
-                    String(c._id) === String(rawCourseId) ||
-                    String(c.code) === String(rawCourseId) ||
-                    String(c.courseCode) === String(rawCourseId) ||
-                    String(c.course_code) === String(rawCourseId)
+                    String(c.id || '').trim().toLowerCase() === searchStr ||
+                    String(c._id || '').trim().toLowerCase() === searchStr ||
+                    String(c.code || '').trim().toLowerCase() === searchStr ||
+                    String(c.courseCode || '').trim().toLowerCase() === searchStr ||
+                    String(c.course_code || '').trim().toLowerCase() === searchStr ||
+                    String(c.company_course_code || '').trim().toLowerCase() === searchStr
                 )
               : null
 
-            const rawCode = matchedCourse?.course_code || rawCourseId
-            const displayName = rawCode?.toUpperCase()
+            // 2. Extract reference pointer if courseCodes links to allCourses (e.g., id_course_ref)
+            const secondaryRefId = matchedCourseCodeRecord?.id_course_ref || 
+                                  matchedCourseCodeRecord?.course_id || 
+                                  searchStr
+
+            const secondarySearchStr = String(secondaryRefId).trim().toLowerCase()
+
+            // 3. Fall back / match against allCourses second
+            let matchedCourse: any = Array.isArray(allCourses)
+              ? allCourses.find(
+                  (c: any) =>
+                    String(c.id || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c._id || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.code || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.courseCode || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.course_code || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.company_course_code || '').trim().toLowerCase() === secondarySearchStr
+                )
+              : null
+
+            const rawCode = 
+              matchedCourse?.company_course_code || 
+              matchedCourse?.course_code || 
+              matchedCourse?.code || 
+              matchedCourseCodeRecord?.company_course_code ||
+              matchedCourseCodeRecord?.course_code ||
+              matchedCourseCodeRecord?.code ||
+              rawCourseId
+
+            const displayName = String(rawCode).trim().toUpperCase()
 
             if (displayName) {
               courseMap[displayName] = (courseMap[displayName] || 0) + 1
@@ -895,7 +930,7 @@ export default function DatedAnalytics() {
             }}
           >
             <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
-              Top Three (3) Client Companies
+              Top Five (5) Client Companies
             </Text>
             <Box h="260px" position="relative">
               <Bar data={topClientsData} options={chartOptions} />
@@ -923,7 +958,7 @@ export default function DatedAnalytics() {
             }}
           >
             <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
-              Top Three (3) Courses
+              Top Five (5) Courses
             </Text>
             <Box h="260px" position="relative">
               <Bar data={topCoursesChartData} options={chartOptions} />
@@ -1280,9 +1315,9 @@ export default function DatedAnalytics() {
           </Box>
         </Box>
         {/** actual print */}
-        <Box ref={printRef} 
-        display={{ base: 'none', md: 'none' }} 
-        flexDir='column' justifyContent='center' w='100%'
+        {/* <Box w='794px' mx='auto' ref={printRef} 
+          display={{ base: 'none', md: 'none' }} 
+          flexDir='column' justifyContent='center'
           sx={{
               // 🟢 Global CSS print instructions passed to the browser engine
               '@media print': {
@@ -1301,6 +1336,46 @@ export default function DatedAnalytics() {
                       breakInside: 'avoid !important',
                   },
                   // Prevent section headings from being left orphaned at the bottom alone
+                  'h1, h2, h3, h4, h5, h6': {
+                      pageBreakAfter: 'avoid !important',
+                      breakAfter: 'avoid !important',
+                  },
+              },
+          }}
+        > */}
+        <Box 
+          w='794px' 
+          ref={printRef} 
+          position="absolute"
+          left="-9999px"
+          top="0"
+          opacity={0}
+          pointerEvents="none"
+          display='flex' 
+          flexDir='column' 
+          justifyContent='center'
+          sx={{
+              '@media print': {
+                  // Reset positioning instantly when the print dialog opens
+                  position: 'static !important',
+                  left: 'auto !important',
+                  top: 'auto !important',
+                  opacity: '1 !important',
+                  pointerEvents: 'auto !important',
+                  display: 'flex !important',
+                  
+                  body: {
+                      margin: 0,
+                      padding: 0,
+                  },
+                  'table, .table-container, div': {
+                      pageBreakInside: 'auto !important',
+                      breakInside: 'auto !important',
+                  },
+                  'tr': {
+                      pageBreakInside: 'avoid !important',
+                      breakInside: 'avoid !important',
+                  },
                   'h1, h2, h3, h4, h5, h6': {
                       pageBreakAfter: 'avoid !important',
                       breakAfter: 'avoid !important',
@@ -1444,7 +1519,7 @@ export default function DatedAnalytics() {
                               <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
                                 Customers Assisted
                               </Text>
-                              <Box h="300px" w='600px' position="relative">
+                              <Box h='300px' w='600px' position="relative">
                                 <Doughnut data={customersAssistedData} options={chartOptionsDoughnut} />
                               </Box>
                             </Box>
@@ -1494,7 +1569,7 @@ export default function DatedAnalytics() {
                               <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
                                 Top Five (5) Client Companies
                               </Text>
-                              <Box h="300px" w='600px' position="relative">
+                              <Box h='300px' w='600px' position="relative">
                                 <Bar data={topClientsData} options={chartOptions} />
                               </Box>
                             </Box>
@@ -1546,7 +1621,7 @@ export default function DatedAnalytics() {
                               <Text fontWeight="semibold" mb={3} textAlign="center" textTransform="uppercase">
                                 Top Five (5) Courses
                               </Text>
-                              <Box h="300px" w='600px' position="relative">
+                              <Box h='300px' w='600px' position="relative">
                                 <Bar data={topCoursesChartData} options={chartOptions} />
                               </Box>
                             </Box>
