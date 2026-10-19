@@ -585,19 +585,50 @@ export default function DatedAnalytics() {
           const rawCourseId = t.course || t.course_id || t.courseCode || t.course_code
 
           if (rawCourseId && rawCourseId !== '' && rawCourseId !== 'N/A') {
-            const matchedCourse = Array.isArray(allCourses)
-              ? allCourses.find(
+            const searchStr = String(rawCourseId).trim().toLowerCase()
+            // 1. Check courseCodes first (Priority)
+            const matchedCourseCodeRecord: any = Array.isArray(courseCodes)
+              ? courseCodes.find(
                   (c: any) =>
-                    String(c.id) === String(rawCourseId) ||
-                    String(c._id) === String(rawCourseId) ||
-                    String(c.code) === String(rawCourseId) ||
-                    String(c.courseCode) === String(rawCourseId) ||
-                    String(c.course_code) === String(rawCourseId)
+                    String(c.id || '').trim().toLowerCase() === searchStr ||
+                    String(c._id || '').trim().toLowerCase() === searchStr ||
+                    String(c.code || '').trim().toLowerCase() === searchStr ||
+                    String(c.courseCode || '').trim().toLowerCase() === searchStr ||
+                    String(c.course_code || '').trim().toLowerCase() === searchStr ||
+                    String(c.company_course_code || '').trim().toLowerCase() === searchStr
                 )
               : null
 
-            const rawCode = matchedCourse?.course_code || rawCourseId
-            const displayName = rawCode?.toUpperCase()
+            // 2. Extract reference pointer if courseCodes links to allCourses (e.g., id_course_ref)
+            const secondaryRefId = matchedCourseCodeRecord?.id_course_ref || 
+                                  matchedCourseCodeRecord?.course_id || 
+                                  searchStr
+
+            const secondarySearchStr = String(secondaryRefId).trim().toLowerCase()
+
+            // 3. Fall back / match against allCourses second
+            let matchedCourse: any = Array.isArray(allCourses)
+              ? allCourses.find(
+                  (c: any) =>
+                    String(c.id || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c._id || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.code || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.courseCode || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.course_code || '').trim().toLowerCase() === secondarySearchStr ||
+                    String(c.company_course_code || '').trim().toLowerCase() === secondarySearchStr
+                )
+              : null
+
+            const rawCode = 
+              matchedCourse?.company_course_code || 
+              matchedCourse?.course_code || 
+              matchedCourse?.code || 
+              matchedCourseCodeRecord?.company_course_code ||
+              matchedCourseCodeRecord?.course_code ||
+              matchedCourseCodeRecord?.code ||
+              rawCourseId
+
+            const displayName = String(rawCode).trim().toUpperCase()
 
             if (displayName) {
               courseMap[displayName] = (courseMap[displayName] || 0) + 1
@@ -1188,29 +1219,94 @@ export default function DatedAnalytics() {
   }, [ allInquiries, allCourses, allTrainee, allClients, allTraining, courseCodes, allRegistrations, selectedMonth, selectedYear, ])
 
     // Chart configuration object
+  // 1. Create a master array of unique course names from both streams
+  const unionCourseNames = Array.from(
+    new Set([...courseLabels, ...courseBDLabels])
+  ).filter((name) => name && name !== 'N/A');
+
+  // 2. Map counts for each stream against the unified labels
+  const datedCourseMap = courseLabels.reduce((acc, name, i) => {
+    acc[name] = courseData[i] || 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const bdCourseMap = courseBDLabels.reduce((acc, name, i) => {
+    acc[name] = courseBDData[i] || 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // 3. Generate aligned count arrays matching 'unionCourseNames'
+  const datedCourseCounts = unionCourseNames.map((name) => datedCourseMap[name] || 0);
+  const bdCourseCounts = unionCourseNames.map((name) => bdCourseMap[name] || 0);
+
+  // 4. Pass to Chart.js
   const topCoursesChartData = {
-    labels: courseBDLabels,
+    labels: unionCourseNames, // Displays all unique combined courses on X-axis
     datasets: [
       {
-        label: 'Registrations per Course',
-        data: courseBDData,
-        backgroundColor: [
-          '#3182CE', // Chakra Blue
-        ],
-        borderRadius: 6,
+        label: 'DATED',
+        data: datedCourseCounts,
+        backgroundColor: '#3182CE', // Blue bar segment
+        borderRadius: 4,
+      },
+      {
+        label: 'BD',
+        data: bdCourseCounts,
+        backgroundColor: '#805AD5', // Purple bar segment
+        borderRadius: 4,
       },
     ],
+  };
+
+  const topCoursesChartOptions = {
+    responsive: true,
+    scales: {
+      x: { 
+        stacked: true // Stacks them into one single column per course
+      }, 
+      y: { 
+        stacked: true, 
+        beginAtZero: true 
+      },
+    },
   }
 
   // --- CHART 2: Dynamic Top 3 Client Companies Bar Chart Data ---
+  // 1. Create a master array of unique client names from both streams
+  const unionClientNames = Array.from(
+    new Set([...topClientNames, ...topBDClientNames])
+  ).filter((name) => name && name !== 'N/A');
+
+  // 2. Map counts for each stream against the unified labels
+  const datedDataMap = topClientNames.reduce((acc, name, i) => {
+    acc[name] = topClientCounts[i] || 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const bdDataMap = topBDClientNames.reduce((acc, name, i) => {
+    acc[name] = topBDClientCounts[i] || 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // 3. Generate aligned count arrays matching 'unionClientNames'
+  const datedCounts = unionClientNames.map((name) => datedDataMap[name] || 0);
+  const bdCounts = unionClientNames.map((name) => bdDataMap[name] || 0);
+
+  // 4. Pass to Chart.js
   const topClientsData = {
-    labels: topBDClientNames,
+    labels: unionClientNames, // Shows ALL unique client names along the X-axis
     datasets: [
       {
-        label: 'Trainees Registered',
-        data: topBDClientCounts,
-        backgroundColor: ['#3182CE'], // Chakra teal, purple, orange
-        borderRadius: 6,
+        label: 'DATED',
+        data: datedCounts,
+        backgroundColor: '#3182CE', // Blue bar segment
+        borderRadius: 4,
+      },
+      {
+        label: 'BD',
+        data: bdCounts,
+        backgroundColor: '#805AD5', // Teal bar segment
+        borderRadius: 4,
       },
     ],
   }
@@ -1220,6 +1316,7 @@ export default function DatedAnalytics() {
     labels: ['Company Endorsement', 'Account Management', 'Consultancy', 'Walk-In', 'Facebook', 'Others'],
     datasets: [
       {
+        label: 'DATED',
         data: [
           companyEndorse,
           accountMgmt,
@@ -1227,6 +1324,26 @@ export default function DatedAnalytics() {
           walkIn,
           fb,
           others,
+        ],
+        backgroundColor: [
+          '#3182CE', // Company Endorsement (Chakra Blue 500)
+          '#805AD5', // Account Management  (Chakra Purple 500)
+          '#DD6B20', // Consultancy          (Chakra Orange 500)
+          '#38A169', // Walk-In              (Chakra Green 500)
+          '#319795', // Facebook             (Chakra Teal 500)
+          '#718096'  // Others               (Chakra Gray 500)
+        ],
+        borderWidth: 1,
+      },
+      {
+        label: 'BD',
+        data: [
+          bd_companyEndorse,
+          bd_accountMgmt,
+          bd_consultancy,
+          bd_walkIn,
+          bd_fb,
+          bd_others,
         ],
         backgroundColor: [
           '#3182CE', // Company Endorsement (Chakra Blue 500)
@@ -1326,7 +1443,7 @@ export default function DatedAnalytics() {
             </StatLabel>
             <Flex align="baseline" >
               <StatNumber fontSize="3xl" fontWeight="extrabold">
-                {currentMonthCount}{' '}
+                {(currentMonthCount+bd_currentMonthCount)}{' '}
                 <Text as="span" fontSize="md" color="gray.500" fontWeight="normal">
                   trainees
                 </Text>
@@ -1334,11 +1451,11 @@ export default function DatedAnalytics() {
             </Flex>
             <StatHelpText mb={0} fontSize="xs" color="gray.600">
               <Flex align="center" gap={1}>
-                <StatArrow type={percentageChange >= 0 ? 'increase' : 'decrease'} />
+                <StatArrow type={(bd_percentageChange+percentageChange) >= 0 ? 'increase' : 'decrease'} />
                 <Text as="span" fontWeight="semibold">
-                  {Math.abs(percentageChange)}%
+                  {Math.abs((bd_percentageChange+percentageChange)).toFixed(1)}%
                 </Text>{' '}
-                {percentageChange >= 0 ? 'increase' : 'decrease'} from last month ({prevMonthCount} trainees)
+                {(bd_percentageChange+percentageChange) >= 0 ? 'increase' : 'decrease'} from last month ({(prevMonthCount+bd_prevMonthCount)} trainees)
               </Flex>
             </StatHelpText>
           </Stat>
@@ -2047,7 +2164,7 @@ export default function DatedAnalytics() {
                       </Box>
                       <Box mt='2' fontWeight='normal'>
                         <Text fontSize='11pt' fontWeight='bold' my='2'>OVERVIEW:</Text>
-                        <Text fontSize='11pt'>{`**For the month of ${months[selectedMonth]} ${selectedYear}, the Registration Department assisted a total of ${(cancelledCount+currentMonthCount)} clients. Out of ${(cancelledCount+currentMonthCount)} clients, ${(currentMonthCount)} trainees were successfully enrolled.`}</Text>
+                        <Text fontSize='11pt'>{`**For the month of ${months[selectedMonth]} ${selectedYear}, we recorded a total of ${(currentMonthCount+bd_currentMonthCount)} enrollees-${currentMonthCount} under dated registration and ${bd_currentMonthCount} under BD registration.`}</Text>
                         <Text fontSize='11pt' fontWeight='bold'>Enrollment Summary:</Text>
                         <Box >
                           <Text fontSize='11pt' fontWeight='bold'>The enrolled trainees were sourced through the following channels:</Text>
@@ -2056,67 +2173,60 @@ export default function DatedAnalytics() {
                               <thead style={{fontWeight: 'bold'}}>
                                 <tr>
                                   <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Source</td>
-                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Trainees</td>
-                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Percentage</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>DATED</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>BD</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>TOTAL</td>
                                 </tr>
                               </thead>
                               <tbody>
                                 {(() => {
                                   const totalCount = (companyEndorse + accountMgmt + consultancy + walkIn + fb + others)
-                                  const p1Num = totalCount > 0 ? (companyEndorse / totalCount) * 100 : 0;
-                                  const p2Num = totalCount > 0 ? (accountMgmt / totalCount) * 100 : 0;
-                                  const p3Num = totalCount > 0 ? (consultancy / totalCount) * 100 : 0;
-                                  const p4Num = totalCount > 0 ? (walkIn / totalCount) * 100 : 0;
-                                  const p5Num = totalCount > 0 ? (fb / totalCount) * 100 : 0;
-                                  const p6Num = totalCount > 0 ? (others / totalCount) * 100 : 0;
-
-                                  const p1 = p1Num.toFixed(2);
-                                  const p2 = p2Num.toFixed(2);
-                                  const p3 = p3Num.toFixed(2);
-                                  const p4 = p4Num.toFixed(2);
-                                  const p5 = p5Num.toFixed(2);
-                                  const p6 = p6Num.toFixed(2);
-
-                                  // 2. Sum the numeric variables first, THEN apply .toFixed(2) to the result
-                                  const totalP = (p1Num + p2Num + p3Num + p4Num + p5Num + p6Num).toFixed(2);
+                                  const bdTotalCount = (bd_companyEndorse + bd_accountMgmt + bd_consultancy + bd_walkIn + bd_fb + bd_others)
 
                                   return (
                                     <>
                                       <tr>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Company Endorsements</td>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{companyEndorse}</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p1}%`}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bd_companyEndorse}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{(bd_companyEndorse+companyEndorse)}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Account Management Officer</td>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{accountMgmt}</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p2}%`}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bd_accountMgmt}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{(bd_accountMgmt+accountMgmt)}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Consultancy</td>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{consultancy}</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p3}%`}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bd_consultancy}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{(bd_consultancy+consultancy)}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Walk-In</td>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{walkIn}</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p4}%`}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bd_walkIn}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{(bd_walkIn+walkIn)}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Facebook</td>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{fb}</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p5}%`}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bd_fb}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{(bd_fb+fb)}</td>
                                       </tr>
                                       <tr>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Other Referrals</td>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{others}</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${p6}%`}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bd_others}</td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{(bd_others+others)}</td>
                                       </tr>
                                       {/* Combined Total Row */}
                                       <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}><strong>Total</strong></td>
                                         <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{totalCount}</strong></td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{`${totalP}%`}</strong></td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{bdTotalCount}</strong></td>
+                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{(bdTotalCount+totalCount)}</strong></td>
                                       </tr>
                                     </>
                                   );
@@ -2134,43 +2244,67 @@ export default function DatedAnalytics() {
                           </Box>
                         </Box>
                         <Box>
-                          <Text fontSize='12pt' mt='4' fontWeight='bold'>{`Top Five Client Companies (based on ${(currentMonthCount)} Total Clients Assisted)`}</Text>
+                          <Text fontSize='12pt' mt='4' fontWeight='bold'>{`Top Five Client Companies (based on ${(currentMonthCount+bd_currentMonthCount)} Total Clients Assisted)`}</Text>
                           <Box display='flex' gap='3'>    
                             <table style={{width: '400px', height: '200px', fontSize: '11pt', borderCollapse: 'collapse', border: '1px solid #CBD5E0'}}>
                               <thead style={{fontWeight: 'bold'}}>
                                 <tr>
                                   <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Company</td>
-                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Trainees</td>
-                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Percentage</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>DATED</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>BD</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>TOTAL</td>
                                 </tr>
                               </thead>
                               <tbody>
-                                {(() => {
-                                  const totalCount = topClientCounts.reduce((sum, count) => sum + count, 0);
+                              {(() => {
+                                // 1. Combine unique client names from both streams
+                                const unionClientNames = Array.from(
+                                  new Set([...topClientNames, ...topBDClientNames])
+                                ).filter((name) => name && name !== 'N/A');
 
-                                  return (
-                                    <>
-                                      {topClientNames.map((name, index) => {
-                                        const count = topClientCounts[index] || 0;
-                                        const percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(2) : '0.00';
+                                // 2. Create lookup maps for DATED and BD counts
+                                const datedMap = topClientNames.reduce((acc, name, i) => {
+                                  acc[name] = topClientCounts[i] || 0;
+                                  return acc;
+                                }, {} as Record<string, number>);
 
-                                        return (
-                                          <tr key={index}>
-                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>{name}</td>        {/* Client Name */}
-                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{count}</td>         {/* Count */}
-                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{percentage}%</td>    {/* Percentage */}
-                                          </tr>
-                                        );
-                                      })}
-                                      {/* Combined Total Row */}
-                                      <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Combined Total</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{totalCount}</td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{`${((totalCount / currentMonthCount) * 100).toFixed(2)}%`}</td>
-                                      </tr>
-                                    </>
-                                  );
-                                })()}
+                                const bdMap = topBDClientNames.reduce((acc, name, i) => {
+                                  acc[name] = topBDClientCounts[i] || 0;
+                                  return acc;
+                                }, {} as Record<string, number>);
+
+                                // 3. Compute grand totals across both streams
+                                const totalDated = Object.values(datedMap).reduce((a, b) => a + b, 0);
+                                const totalBD = Object.values(bdMap).reduce((a, b) => a + b, 0);
+                                const grandCombinedTotal = totalDated + totalBD;
+
+                                return (
+                                  <>
+                                    {unionClientNames.map((name, index) => {
+                                      const datedCount = datedMap[name] || 0;
+                                      const bdCount = bdMap[name] || 0;
+                                      const rowTotal = datedCount + bdCount;
+
+                                      return (
+                                        <tr key={index}>
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>{name}</td> {/* Client Name */}
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{datedCount}</td> {/* DATED Count */}
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bdCount}</td> {/* BD Count */}
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right', fontWeight: 'bold' }}>{rowTotal}</td> {/* Total */}
+                                        </tr>
+                                      );
+                                    })}
+
+                                    {/* Combined Total Row */}
+                                    <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Combined Total</td>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{totalDated}</td>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{totalBD}</td>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{grandCombinedTotal}</td>
+                                    </tr>
+                                  </>
+                                );
+                              })()}
                               </tbody>
                             </table>
                             <Box as="a" cursor="pointer" p={4} borderWidth="1px" borderRadius="lg" boxShadow="sm" bg="white">
@@ -2184,45 +2318,67 @@ export default function DatedAnalytics() {
                           </Box>
                         </Box>
                         <Box>
-                          <Text fontSize='12pt' mt='4' fontWeight='bold'>{`Category Distribution (based on ${(currentMonthCount)} Total Clients Assisted)`}</Text>
+                          <Text fontSize='12pt' mt='4' fontWeight='bold'>{`Category Distribution (based on ${(currentMonthCount+bd_currentMonthCount)} Total Clients Assisted)`}</Text>
                           <Box display='flex' gap='3'>
                             <table style={{width: '400px', height: '200px', fontSize: '11pt', borderCollapse: 'collapse', border: '1px solid #CBD5E0'}}>
                               <thead style={{fontWeight: 'bold'}}>
                                 <tr>
                                   <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>Course</td>
-                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Trainees</td>
-                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>Percentage</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>DATED</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>BD</td>
+                                  <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>TOTAL</td>
                                 </tr>
                               </thead>
                               <tbody>
-                                {(() => {
-                                  const totalCount = courseData.reduce((sum, count) => sum + count, 0);
-                                  // courseLabels
-                                  // courseData
-                                  return (
-                                    <>
-                                      {courseLabels.map((name, index) => {
-                                        const count = courseData[index] || 0;
-                                        const percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(2) : '0.00';
+                              {(() => {
+                                // 1. Combine unique course names from both streams
+                                const unionCourseNames = Array.from(
+                                  new Set([...courseLabels, ...courseBDLabels])
+                                ).filter((name) => name && name !== 'N/A');
 
-                                        return (
-                                          <tr key={index}>
-                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>{name}</td>         {/* Client Name */}
-                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{count}</td>          {/* Count */}
-                                            <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{percentage}%</td>    {/* Percentage with 2 decimal places */}
-                                          </tr>
-                                        );
-                                      })}
+                                // 2. Create lookup maps for DATED and BD course counts
+                                const datedCourseMap = courseLabels.reduce((acc, name, i) => {
+                                  acc[name] = courseData[i] || 0;
+                                  return acc;
+                                }, {} as Record<string, number>);
 
-                                      {/* Combined Total Row */}
-                                      <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}><strong>Combined Total</strong></td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{totalCount}</strong></td>
-                                        <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{`${((totalCount/currentMonthCount)*100).toFixed(2)}%`}</strong></td>
-                                      </tr>
-                                    </>
-                                  );
-                                })()}
+                                const bdCourseMap = courseBDLabels.reduce((acc, name, i) => {
+                                  acc[name] = courseBDData[i] || 0;
+                                  return acc;
+                                }, {} as Record<string, number>);
+
+                                // 3. Compute totals across both streams
+                                const totalDated = Object.values(datedCourseMap).reduce((a, b) => a + b, 0);
+                                const totalBD = Object.values(bdCourseMap).reduce((a, b) => a + b, 0);
+                                const grandCombinedTotal = totalDated + totalBD;
+
+                                return (
+                                  <>
+                                    {unionCourseNames.map((name, index) => {
+                                      const datedCount = datedCourseMap[name] || 0;
+                                      const bdCount = bdCourseMap[name] || 0;
+                                      const rowTotal = datedCount + bdCount;
+
+                                      return (
+                                        <tr key={index}>
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}>{name}</td>        {/* Course Name */}
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{datedCount}</td>   {/* DATED Count */}
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}>{bdCount}</td>       {/* BD Count */}
+                                          <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right', fontWeight: 'bold' }}>{rowTotal}</td> {/* Total */}
+                                        </tr>
+                                      );
+                                    })}
+
+                                    {/* Combined Total Row */}
+                                    <tr style={{ backgroundColor: '#EDF2F7', fontWeight: 'bold' }}>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px' }}><strong>Combined Total</strong></td>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{totalDated}</strong></td>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{totalBD}</strong></td>
+                                      <td style={{ border: '1px solid #CBD5E0', padding: '6px 8px', textAlign: 'right' }}><strong>{grandCombinedTotal}</strong></td>
+                                    </tr>
+                                  </>
+                                );
+                              })()}
                               </tbody>
                             </table>
                             <Box as="a" cursor="pointer" p={4} borderWidth="1px" borderRadius="lg" boxShadow="sm" bg="white">
@@ -2235,7 +2391,7 @@ export default function DatedAnalytics() {
                             </Box>
                           </Box>
                         </Box>
-                        <Text mt='4' fontSize='12pt' fontWeight='bold' sx={{
+                        {/* <Text mt='4' fontSize='12pt' fontWeight='bold' sx={{
                             '@media print': {
                                 breakBefore: 'page', // Modern CSS standard alternative
                                 marginTop: '0px'    // Reset margin top since it's now at the top of a fresh page
@@ -2252,22 +2408,26 @@ export default function DatedAnalytics() {
                               <ListItem fontSize='11pt'>{`Successfully Enrolled:  ${currentMonthCount} trainees (${enrolledPercent}%)`}</ListItem>
                             </UnorderedList>
                           );
-                        })()}
+                        })()} */}
                         {(() => {
                           // 1. Calculate totals for each category
                           const marinaTotal = marinaCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
                           const simuTotal = simuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
                           const nonSimuTotal = nonSimuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
+                          
+                          const bd_marinaTotal = bd_marinaCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
+                          const bd_simuTotal = bd_simuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
+                          const bd_nonSimuTotal = bd_nonSimuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0);
 
-                          const marinaP = ((marinaTotal / currentMonthCount)*100).toFixed(2)
-                          const simuP = ((simuTotal / currentMonthCount)*100).toFixed(2)
-                          const nonSimuP = ((nonSimuTotal / currentMonthCount)*100).toFixed(2)
+                          const marinaP = (((marinaTotal+bd_marinaTotal) / (currentMonthCount+bd_currentMonthCount))*100).toFixed(2)
+                          const simuP = (((simuTotal+bd_simuTotal) / (currentMonthCount+bd_currentMonthCount))*100).toFixed(2)
+                          const nonSimuP = (((nonSimuTotal+bd_nonSimuTotal) / (currentMonthCount+bd_currentMonthCount))*100).toFixed(2)
 
                           // 2. Group them and sort from highest to lowest
                           const rankedCategories = [
-                            { name: 'Marina courses', total: marinaTotal, percentage: marinaP },
-                            { name: 'Simulator courses', total: simuTotal, percentage: simuP },
-                            { name: 'Non-Simulator courses', total: nonSimuTotal, percentage: nonSimuP },
+                            { name: 'Marina courses', total: (marinaTotal+bd_marinaTotal), percentage: marinaP },
+                            { name: 'Simulator courses', total: (simuTotal+bd_simuTotal), percentage: simuP },
+                            { name: 'Non-Simulator courses', total: (nonSimuTotal+bd_nonSimuTotal), percentage: nonSimuP },
                           ].sort((a, b) => b.total - a.total);
 
                           return (
@@ -2276,9 +2436,9 @@ export default function DatedAnalytics() {
                               </Text>
                           )
                         })()}
-                        <Text mt='4' fontSize='11pt'>{`**A total of ${currentMonthCount} trainees enrolled in ${months[selectedMonth]} ${selectedYear}, compared to ${prevMonthCount} trainees in ${months[(selectedMonth-1)]} ${selectedYear}. This is ${percentageChange >= 0 ? 'an increase' : 'a decrease'} of ${currentMonthCount > prevMonthCount ? (currentMonthCount - prevMonthCount) : (prevMonthCount - currentMonthCount)} trainees or ${Math.abs(percentageChange)}%, showing a significant ${percentageChange >= 0 ? 'rise' : 'drop'} in enrollment compared to the previous month.`}</Text>
+                        {/* <Text mt='4' fontSize='11pt'>{`**A total of ${currentMonthCount} trainees enrolled in ${months[selectedMonth]} ${selectedYear}, compared to ${prevMonthCount} trainees in ${months[(selectedMonth-1)]} ${selectedYear}. This is ${percentageChange >= 0 ? 'an increase' : 'a decrease'} of ${currentMonthCount > prevMonthCount ? (currentMonthCount - prevMonthCount) : (prevMonthCount - currentMonthCount)} trainees or ${Math.abs(percentageChange)}%, showing a significant ${percentageChange >= 0 ? 'rise' : 'drop'} in enrollment compared to the previous month.`}</Text> */}
                       </Box>
-                      <Box mt='2' display='flex' gap='2'>
+                      {/* <Box mt='2' display='flex' gap='2'>
                         <Box mt='2'>
                           <Text my='2'>TRAINING COURSES FOR NEXT MONTH:</Text>
                           <TableContainer width="300px" my={4} borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" 
@@ -2317,7 +2477,7 @@ export default function DatedAnalytics() {
                             </Table>
                           </TableContainer>
                         </Box>
-                      </Box>
+                      </Box> */}
                       <Box mt='4'
                         // sx={{
                         //     '@media print': {
@@ -2327,78 +2487,181 @@ export default function DatedAnalytics() {
                         // }}
                         >
                         <Text my='2'>II. CUSTOMERS GROUP BY COMPANY:</Text>
-                        <TableContainer w='950px' borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" 
+                        <TableContainer maxW='1010px' w='100%' overflowX='auto' borderWidth="1px" borderRadius="lg" bg="white" boxShadow="sm" 
                         //sx={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
                         >
                           <Table w='100%' variant="simple" size="sm" 
+                            style={{ tableLayout: 'fixed' }}
                             sx={{
                               'th, td': {
-                                py: '2px !important', // Reduces top and bottom padding drastically
-                                px: '8px !important', // Adjusts left and right padding
+                                py: '2px !important', 
+                                px: '6px !important', 
                                 lineHeight: '1.2',
-                                border: '1px solid #CBD5E0 !important', // Adds borders to all cells
+                                fontSize: '11px', // Slightly smaller font to fit tight A4 spaces
+                                border: '1px solid #CBD5E0 !important',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'wrap',// Adds borders to all cells
                               }
                             }}>
                             <Thead bg="gray.100">
-                              <Tr>
-                                <Th w='200px' fontSize="xs" fontWeight="bold">CUSTOMERS NAME</Th>
-                                <Th isNumeric fontSize="xs" fontWeight="bold">
-                                  COMPANY CHARGE<br />(# of Trainees)
-                                </Th>
-                                <Th isNumeric fontSize="xs" fontWeight="bold">
-                                  CREW CHARGE<br />(# of Trainees)
-                                </Th>
-                                <Th isNumeric fontSize="xs" fontWeight="bold">
-                                  TOTAL # TRAINEES
-                                </Th>
-                              </Tr>
+                            <Tr>
+                              <Th fontSize="xs" fontWeight="bold">CUSTOMERS NAME</Th>
+                              {/* Dataset 1: BD Training (Blue headers) */}
+                              <Th isNumeric fontSize="xs" bgColor='blue.200' fontWeight="bold">
+                                BD COMPANY CHARGE<br />(# of Trainees)
+                              </Th>
+                              <Th isNumeric fontSize="xs" bgColor='blue.200' fontWeight="bold">
+                                BD CREW CHARGE<br />(# of Trainees)
+                              </Th>
+                              <Th w='80px' isNumeric fontSize="xs" bgColor='blue.200' fontWeight="bold">
+                                BD TOTAL
+                              </Th>
+                              {/* Dataset 2: Regular Training (Purple headers) */}
+                              <Th isNumeric fontSize="xs" bgColor='purple.200' fontWeight="bold">
+                                REG COMPANY CHARGE<br />(# of Trainees)
+                              </Th>
+                              <Th isNumeric fontSize="xs" bgColor='purple.200' fontWeight="bold">
+                                REG CREW CHARGE<br />(# of Trainees)
+                              </Th>
+                              <Th w='80px' isNumeric fontSize="xs" bgColor='purple.200' fontWeight="bold">
+                                REG TOTAL
+                              </Th>
+                              {/* Grand Total */}
+                              <Th w='110px' isNumeric fontSize="xs" bgColor='blue.700' color='white' fontWeight="bold">
+                                OVERALL TOTAL
+                              </Th>
+                            </Tr>
                             </Thead>
                             <Tbody>
                               {/* 2.1 Tapped Clients Section */}
-                              {tappedClients.length > 0 && (
-                                <>
-                                  <Tr bg="blue.50">
-                                    <Td colSpan={4} fontWeight="bold" color="blue.800" fontSize="xs">
-                                      2.1 Tapped Clients
-                                    </Td>
-                                  </Tr>
-                                  {tappedClients.map((row) => (
+                              {combiTappedClients.length > 0 && (
+                              <>
+                                <Tr bg="blue.50">
+                                  <Td colSpan={8} fontWeight="bold" color="blue.800" fontSize="xs">
+                                    2.1 Tapped Clients
+                                  </Td>
+                                </Tr>
+                                {combiTappedClients.map((row) => {
+                                  const bdTotal = row.bdCompanyCharge + row.bdCrewCharge;
+                                  const regTotal = row.regCompanyCharge + row.regCrewCharge;
+                                  const overallTotal = bdTotal + regTotal;
+
+                                  return (
                                     <Tr key={row.name}>
                                       <Td pl={6} fontWeight="medium">{row.name}</Td>
-                                      <Td isNumeric>{row.companyCharge > 0 ? row.companyCharge : '-'}</Td>
-                                      <Td isNumeric>{row.crewCharge > 0 ? row.crewCharge : '-'}</Td>
-                                      <Td isNumeric fontWeight="bold">{row.total}</Td>
+                                      {/* BD Data */}
+                                      <Td isNumeric>{row.bdCompanyCharge > 0 ? row.bdCompanyCharge : '-'}</Td>
+                                      <Td isNumeric>{row.bdCrewCharge > 0 ? row.bdCrewCharge : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold">{bdTotal > 0 ? bdTotal : '-'}</Td>
+                                      {/* Regular Data */}
+                                      <Td isNumeric>{row.regCompanyCharge > 0 ? row.regCompanyCharge : '-'}</Td>
+                                      <Td isNumeric>{row.regCrewCharge > 0 ? row.regCrewCharge : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold">{regTotal > 0 ? regTotal : '-'}</Td>
+                                      {/* Overall Total */}
+                                      <Td isNumeric fontWeight="bold" color="blue.600">{overallTotal}</Td>
                                     </Tr>
-                                  ))}
-                                </>
-                              )}
-                              {/* 2.2 Untapped Clients Section */}
-                              {untappedClients.length > 0 && (
-                                <>
-                                  <Tr bg="orange.50">
-                                    <Td colSpan={4} fontWeight="bold" color="orange.800" fontSize="xs">
-                                      2.2 Untapped Clients
-                                    </Td>
-                                  </Tr>
-                                  {untappedClients.map((row) => (
+                                  );
+                                })}
+                              </>
+                            )}
+
+                            {/* 2.2 Untapped Clients Section */}
+                            {combiUnTappedClients.length > 0 && (
+                              <>
+                                <Tr bg="orange.50">
+                                  <Td colSpan={8} fontWeight="bold" color="orange.800" fontSize="xs">
+                                    2.2 Untapped Clients
+                                  </Td>
+                                </Tr>
+                                {combiUnTappedClients.map((row) => {
+                                  const bdTotal = row.bdCompanyCharge + row.bdCrewCharge;
+                                  const regTotal = row.regCompanyCharge + row.regCrewCharge;
+                                  const overallTotal = bdTotal + regTotal;
+
+                                  return (
                                     <Tr key={row.name}>
                                       <Td pl={6} fontWeight="medium">{row.name}</Td>
-                                      <Td isNumeric>{row.companyCharge > 0 ? row.companyCharge : '-'}</Td>
-                                      <Td isNumeric>{row.crewCharge > 0 ? row.crewCharge : '-'}</Td>
-                                      <Td isNumeric fontWeight="bold">{row.total}</Td>
+                                      {/* BD Data */}
+                                      <Td isNumeric>{row.bdCompanyCharge > 0 ? row.bdCompanyCharge : '-'}</Td>
+                                      <Td isNumeric>{row.bdCrewCharge > 0 ? row.bdCrewCharge : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold">{bdTotal > 0 ? bdTotal : '-'}</Td>
+                                      {/* Regular Data */}
+                                      <Td isNumeric>{row.regCompanyCharge > 0 ? row.regCompanyCharge : '-'}</Td>
+                                      <Td isNumeric>{row.regCrewCharge > 0 ? row.regCrewCharge : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold">{regTotal > 0 ? regTotal : '-'}</Td>
+                                      {/* Overall Total */}
+                                      <Td isNumeric fontWeight="bold" color="blue.600">{overallTotal}</Td>
                                     </Tr>
-                                  ))}
-                                </>
-                              )}
+                                  );
+                                })}
+                              </>
+                            )}
                             </Tbody>
                             {/* Footer Summary */}
                             <Tfoot bg="gray.100">
-                              <Tr fontWeight="bold">
-                                <Th fontSize="xs">TOTAL</Th>
-                                <Th isNumeric fontSize="xs">{grandCompanyCharge > 0 ? grandCompanyCharge : '-'}</Th>
-                                <Th isNumeric fontSize="xs">{grandCrewCharge > 0 ? grandCrewCharge : '-'}</Th>
-                                <Th isNumeric fontSize="xs" color="blue.600">{grandTotal}</Th>
-                              </Tr>
+                            {(() => {
+                              const combineAll = [...combiTappedClients, ...combiUnTappedClients];
+                              
+                              const grandCC = combineAll.reduce((sum, item) => {
+                                const bd = Number(item.bdCompanyCharge || 0);
+                                const reg = Number(item.regCompanyCharge || 0);
+                                return sum + bd + reg;
+                              }, 0);
+
+                              const grandTC = combineAll.reduce((sum, item) => {
+                                const bd = Number(item.bdCrewCharge || 0);
+                                const reg = Number(item.regCrewCharge || 0);
+                                return sum + bd + reg;
+                              }, 0);
+                              
+                              const grandBD = combineAll.reduce((sum, item) => {
+                                const bd = Number(item.bdCompanyCharge || 0);
+                                const reg = Number(item.bdCrewCharge || 0);
+                                return sum + bd + reg;
+                              }, 0);
+
+                              const grandReg = combineAll.reduce((sum, item) => {
+                                const bd = Number(item.regCompanyCharge || 0);
+                                const reg = Number(item.regCrewCharge || 0);
+                                return sum + bd + reg;
+                              }, 0);
+
+                              const ttlBdCC = combineAll.reduce((sum, item) => {
+                                const bd = Number(item.bdCompanyCharge || 0);
+                                return sum + bd;
+                              }, 0);
+                              
+                              const ttlBdTC = combineAll.reduce((sum, item) => {
+                                const bd = Number(item.bdCrewCharge || 0);
+                                return sum + bd;
+                              }, 0);
+
+                              const ttlRegCC = combineAll.reduce((sum, item) => {
+                                const reg = Number(item.regCompanyCharge || 0);
+                                return sum + reg;
+                              }, 0);
+                              
+                              const ttlRegTC = combineAll.reduce((sum, item) => {
+                                const reg = Number(item.regCrewCharge || 0);
+                                return sum + reg;
+                              }, 0);
+
+                              const calculatedGrandTotal = grandCC + grandTC;
+
+                              return (
+                                <Tr fontWeight="bold" bg="gray.50">
+                                  <Th fontSize="xs">TOTAL</Th>
+                                  <Th isNumeric fontSize="xs">{ttlBdCC}</Th>
+                                  <Th isNumeric fontSize="xs">{ttlBdTC}</Th>
+                                  <Th isNumeric fontSize="xs">{grandBD}</Th>
+                                  <Th isNumeric fontSize="xs">{ttlRegCC}</Th>
+                                  <Th isNumeric fontSize="xs">{ttlRegTC}</Th>
+                                  <Th isNumeric fontSize="xs">{grandReg}</Th>
+                                  <Th isNumeric fontSize="xs" color="blue.600">{calculatedGrandTotal}</Th>
+                                </Tr>
+                              );
+                            })()}
                             </Tfoot>
                           </Table>
                         </TableContainer>
@@ -2429,23 +2692,40 @@ export default function DatedAnalytics() {
                             >
                               <Thead bg="gray.100">
                                 <Tr>
-                                  <Th fontSize="xs" fontWeight="bold">Course</Th>
-                                  <Th isNumeric fontSize="xs" fontWeight="bold"># of Enrollees</Th>
+                                  <Th fontSize="xs" fontWeight="bold" rowSpan={2}>COURSE</Th>
+                                  <Th isNumeric fontSize="xs" bgColor='blue.200' fontWeight="bold" colSpan={2} textAlign="center" borderBottom="1px solid" borderColor="gray.300">
+                                    # of Enrollees
+                                  </Th>
+                                  <Th fontSize="xs" bgColor='purple.200' fontWeight="bold" rowSpan={2} isNumeric>
+                                    TOTAL
+                                  </Th>
+                                </Tr>
+                                <Tr>
+                                  <Th isNumeric fontSize="xs" bgColor='blue.100' fontWeight="bold">DATED</Th>
+                                  <Th isNumeric fontSize="xs" bgColor='pink.100' fontWeight="bold">BD</Th>
                                 </Tr>
                               </Thead>
                               <Tbody>
-                                {allCourseBreakdown.map((row) => (
-                                  <Tr key={row.course}>
-                                    <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
-                                    <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
-                                  </Tr>
-                                ))}
+                              {bd_allCourseBreakdown.map((row) => (
+                                <Tr key={row.course}>
+                                  <Td fontWeight="medium" fontSize="xs">{row.course.toUpperCase()}</Td>
+                                  <Td isNumeric fontSize="xs">{row.regTrainees > 0 ? row.regTrainees : '-'}</Td>
+                                  <Td isNumeric fontSize="xs">{row.bdTrainees > 0 ? row.bdTrainees : '-'}</Td>
+                                  <Td isNumeric fontWeight="bold" fontSize="xs">{row.totalTrainees > 0 ? row.totalTrainees : '-'}</Td>
+                                </Tr>
+                              ))}
                               </Tbody>
                               <Tfoot bg="gray.100">
                                 <Tr fontWeight="bold">
                                   <Th fontSize="xs">TOTAL</Th>
                                   <Th isNumeric fontSize="xs" color="blue.600">
-                                    {allCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                    {bd_allCourseBreakdown.reduce((sum, item) => sum + item.regTrainees, 0)}
+                                  </Th>
+                                  <Th isNumeric fontSize="xs" color="blue.600">
+                                    {bd_allCourseBreakdown.reduce((sum, item) => sum + item.bdTrainees, 0)}
+                                  </Th>
+                                  <Th isNumeric fontSize="xs" color="blue.600">
+                                    {bd_allCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
                                   </Th>
                                 </Tr>
                               </Tfoot>
@@ -2469,25 +2749,42 @@ export default function DatedAnalytics() {
                               >
                                 <Thead bg="purple.50">
                                   <Tr>
-                                    <Th fontSize="xs" fontWeight="bold" color="purple.800">SIMULATOR COURSES</Th>
-                                    <Th isNumeric fontSize="xs" fontWeight="bold" color="purple.800"># of Enrollees</Th>
+                                    <Th fontSize="xs" fontWeight="bold" rowSpan={2}>SIMULATOR COURSES</Th>
+                                    <Th isNumeric fontSize="xs" bgColor='blue.200' fontWeight="bold" colSpan={2} textAlign="center" borderBottom="1px solid" borderColor="gray.300">
+                                      # of Enrollees
+                                    </Th>
+                                    <Th fontSize="xs" bgColor='purple.200' fontWeight="bold" rowSpan={2} isNumeric>
+                                      TOTAL
+                                    </Th>
+                                  </Tr>
+                                  <Tr>
+                                    <Th isNumeric fontSize="xs" bgColor='blue.100' fontWeight="bold">DATED</Th>
+                                    <Th isNumeric fontSize="xs" bgColor='pink.100' fontWeight="bold">BD</Th>
                                   </Tr>
                                 </Thead>
                                 <Tbody>
-                                  {simuCourseBreakdown.map((row) => (
-                                    <Tr key={row.course}>
-                                      <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
-                                      <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
-                                    </Tr>
-                                  ))}
+                                {bd_simuCourseBreakdown.map((row) => (
+                                  <Tr key={row.course}>
+                                    <Td fontWeight="medium" fontSize="xs">{row.course.toUpperCase()}</Td>
+                                    <Td isNumeric fontSize="xs">{row.regTrainees > 0 ? row.regTrainees : '-'}</Td>
+                                    <Td isNumeric fontSize="xs">{row.bdTrainees > 0 ? row.bdTrainees : '-'}</Td>
+                                    <Td isNumeric fontWeight="bold" fontSize="xs">{row.totalTrainees > 0 ? row.totalTrainees : '-'}</Td>
+                                  </Tr>
+                                ))}
                                 </Tbody>
                                 <Tfoot bg="gray.100">
-                                  <Tr fontWeight="bold">
-                                    <Th fontSize="xs">TOTAL</Th>
-                                    <Th isNumeric fontSize="xs" color="purple.700">
-                                      {simuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
-                                    </Th>
-                                  </Tr>
+                                <Tr fontWeight="bold">
+                                  <Th fontSize="xs">TOTAL</Th>
+                                  <Th isNumeric fontSize="xs" color="purple.700">
+                                    {bd_simuCourseBreakdown.reduce((sum, item) => sum + item.regTrainees, 0)}
+                                  </Th>
+                                  <Th isNumeric fontSize="xs" color="purple.700">
+                                    {bd_simuCourseBreakdown.reduce((sum, item) => sum + item.bdTrainees, 0)}
+                                  </Th>
+                                  <Th isNumeric fontSize="xs" color="purple.700">
+                                    {bd_simuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                  </Th>
+                                </Tr>
                                 </Tfoot>
                               </Table>
                             </TableContainer>
@@ -2507,15 +2804,26 @@ export default function DatedAnalytics() {
                               >
                                 <Thead bg="blue.50">
                                   <Tr>
-                                    <Th fontSize="xs" fontWeight="bold" color="blue.800">MARINA COURSES</Th>
-                                    <Th isNumeric fontSize="xs" fontWeight="bold" color="blue.800"># of Enrollees</Th>
+                                    <Th fontSize="xs" fontWeight="bold" rowSpan={2}>MARINA COURSE</Th>
+                                    <Th isNumeric fontSize="xs" bgColor='blue.200' fontWeight="bold" colSpan={2} textAlign="center" borderBottom="1px solid" borderColor="gray.300">
+                                      # of Enrollees
+                                    </Th>
+                                    <Th fontSize="xs" bgColor='purple.200' fontWeight="bold" rowSpan={2} isNumeric>
+                                      TOTAL
+                                    </Th>
+                                  </Tr>
+                                  <Tr>
+                                    <Th isNumeric fontSize="xs" bgColor='blue.100' fontWeight="bold">DATED</Th>
+                                    <Th isNumeric fontSize="xs" bgColor='pink.100' fontWeight="bold">BD</Th>
                                   </Tr>
                                 </Thead>
                                 <Tbody>
-                                  {marinaCourseBreakdown.map((row) => (
+                                  {bd_marinaCourseBreakdown.map((row) => (
                                     <Tr key={row.course}>
-                                      <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
-                                      <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
+                                      <Td fontWeight="medium" fontSize="xs">{row.course.toUpperCase()}</Td>
+                                      <Td isNumeric fontSize="xs">{row.regTrainees > 0 ? row.regTrainees : '-'}</Td>
+                                      <Td isNumeric fontSize="xs">{row.bdTrainees > 0 ? row.bdTrainees : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold" fontSize="xs">{row.totalTrainees > 0 ? row.totalTrainees : '-'}</Td>
                                     </Tr>
                                   ))}
                                 </Tbody>
@@ -2523,7 +2831,13 @@ export default function DatedAnalytics() {
                                   <Tr fontWeight="bold">
                                     <Th fontSize="xs">TOTAL</Th>
                                     <Th isNumeric fontSize="xs" color="blue.700">
-                                      {marinaCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                      {bd_marinaCourseBreakdown.reduce((sum, item) => sum + item.regTrainees, 0)}
+                                    </Th>
+                                    <Th isNumeric fontSize="xs" color="blue.700">
+                                      {bd_marinaCourseBreakdown.reduce((sum, item) => sum + item.bdTrainees, 0)}
+                                    </Th>
+                                    <Th isNumeric fontSize="xs" color="blue.700">
+                                      {bd_marinaCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
                                     </Th>
                                   </Tr>
                                 </Tfoot>
@@ -2546,15 +2860,26 @@ export default function DatedAnalytics() {
                               >
                                 <Thead bg="orange.50">
                                   <Tr>
-                                    <Th fontSize="xs" fontWeight="bold" color="orange.800">NON-SIMULATOR COURSES</Th>
-                                    <Th isNumeric fontSize="xs" fontWeight="bold" color="orange.800"># of Enrollees</Th>
+                                    <Th fontSize="xs" fontWeight="bold" rowSpan={2}>NON-SIMULATOR COURSES</Th>
+                                    <Th isNumeric fontSize="xs" bgColor='blue.200' fontWeight="bold" colSpan={2} textAlign="center" borderBottom="1px solid" borderColor="gray.300">
+                                      # of Enrollees
+                                    </Th>
+                                    <Th fontSize="xs" bgColor='purple.200' fontWeight="bold" rowSpan={2} isNumeric>
+                                      TOTAL
+                                    </Th>
+                                  </Tr>
+                                  <Tr>
+                                    <Th isNumeric fontSize="xs" bgColor='blue.100' fontWeight="bold">DATED</Th>
+                                    <Th isNumeric fontSize="xs" bgColor='pink.100' fontWeight="bold">BD</Th>
                                   </Tr>
                                 </Thead>
                                 <Tbody>
-                                  {nonSimuCourseBreakdown.map((row) => (
+                                  {bd_nonSimuCourseBreakdown.map((row) => (
                                     <Tr key={row.course}>
-                                      <Td fontWeight="medium">{row.course.toUpperCase()}</Td>
-                                      <Td isNumeric fontWeight="bold">{row.totalTrainees}</Td>
+                                      <Td fontWeight="medium" fontSize="xs">{row.course.toUpperCase()}</Td>
+                                      <Td isNumeric fontSize="xs">{row.regTrainees > 0 ? row.regTrainees : '-'}</Td>
+                                      <Td isNumeric fontSize="xs">{row.bdTrainees > 0 ? row.bdTrainees : '-'}</Td>
+                                      <Td isNumeric fontWeight="bold" fontSize="xs">{row.totalTrainees > 0 ? row.totalTrainees : '-'}</Td>
                                     </Tr>
                                   ))}
                                 </Tbody>
@@ -2562,7 +2887,13 @@ export default function DatedAnalytics() {
                                   <Tr fontWeight="bold">
                                     <Th fontSize="xs">TOTAL</Th>
                                     <Th isNumeric fontSize="xs" color="orange.700">
-                                      {nonSimuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
+                                      {bd_nonSimuCourseBreakdown.reduce((sum, item) => sum + item.regTrainees, 0)}
+                                    </Th>
+                                    <Th isNumeric fontSize="xs" color="orange.700">
+                                      {bd_nonSimuCourseBreakdown.reduce((sum, item) => sum + item.bdTrainees, 0)}
+                                    </Th>
+                                    <Th isNumeric fontSize="xs" color="orange.700">
+                                      {bd_nonSimuCourseBreakdown.reduce((sum, item) => sum + item.totalTrainees, 0)}
                                     </Th>
                                   </Tr>
                                 </Tfoot>
