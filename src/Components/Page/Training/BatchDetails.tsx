@@ -308,7 +308,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                     const endDateArr = batch.end_date !== '' ? batch.end_date.split(',') : ''
                     const schedule: string = batch.numOfDays > 1 ? `${startDateArr[1].toUpperCase()} to${endDateArr[1].toUpperCase()}` : startDateArr[1].toUpperCase()
                     const gClassLink = courseFound?.class_code
-                    const gmeetLink = courseFound?.gmeet_link
+                    const gmeet_link = courseFound?.gmeet_link
                     const firstName = company_staff?.split(' ')[0] || '';
                     const lastName = company_staff?.split(' ').at(-1) || '';
                     const staffName = `${firstName} ${lastName}`
@@ -344,7 +344,7 @@ export default function BatchDetails({ batchID, courseID, onClose }: ComponentPr
                             note1,
                             schedule,
                             gClassLink,
-                            gmeetLink,
+                            gmeet_link,
                             presentation_link: c_presentation_link,
                             instructor: intructor_name,
                             staff: staffName, 

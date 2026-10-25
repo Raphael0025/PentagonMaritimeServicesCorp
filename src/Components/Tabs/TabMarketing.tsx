@@ -40,6 +40,12 @@ export default function TabMarketing() {
 {/*             
             <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'marketing' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing' onClick={() => {handleClick('marketing')}}>Analytics</Link>
              */}
+            {canAccess("Analytics") && (
+                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'report' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing' onClick={() => {handleClick('report')}}>Analytics</Link>
+            )}
+            {canAccess("Sales") && (
+                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'sales' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing/sales' onClick={() => {handleClick('sales')}}>Sales</Link>
+            )}
             {canAccess("Trainee Registry") && (
                 <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'registry' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing/registry' onClick={() => {handleClick('registry')}}>Trainee Registry</Link>
             )}
@@ -48,12 +54,6 @@ export default function TabMarketing() {
             )}
             {canAccess("Promos") && (
                 <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'promos' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing/promos' onClick={() => {handleClick('promos')}}>Promos</Link>
-            )}
-            {canAccess("Sales") && (
-                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'sales' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing/sales' onClick={() => {handleClick('sales')}}>Sales</Link>
-            )}
-            {canAccess("Analytics") && (
-                <Link  className={`p-2 px-4 transition ease-in-out duration-300 ${ currentTab === 'report' ? 'border-tab-active font-semibold text-sky-600' : 'border-tab-inactive font-normal text-gray-400'} `} href='/enterprise-portal/marketing/report' onClick={() => {handleClick('report')}}>Reports</Link>
             )}
         </nav>
     )
