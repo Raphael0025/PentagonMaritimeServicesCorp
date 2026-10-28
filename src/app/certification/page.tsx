@@ -263,16 +263,17 @@ export default function Certification() {
                             ? formatTrainingSchedule(trainingDoc.start_date, year)
                             : `${formatTrainingSchedule(trainingDoc.start_date, year)} to ${formatTrainingSchedule(trainingDoc.end_date, year)}`
 
-                    const split_Month = formatTrainingSchedule(
-                        trainingDoc.end_date || trainingDoc.start_date,
-                        year
-                    ).split(' ')[0]
+                    // const split_Month = formatTrainingSchedule(
+                    //     trainingDoc.end_date || trainingDoc.start_date,
+                    //     year
+                    // ).split(' ')[0]
+                    const split_Month = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), year || 0).split(' ')[0]
 
-                    const split_Day = formatTrainingSchedule(
-                        trainingDoc.end_date || trainingDoc.start_date,
-                        year
-                    ).split(' ')[1].replace(/\D/g, '')
-                    //const splitDay = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), getYear || 0).split(' ')[1].replace(/\D/g, '')
+                    // const split_Day = formatTrainingSchedule(
+                    //     trainingDoc.end_date || trainingDoc.start_date,
+                    //     year
+                    // ).split(' ')[1].replace(/\D/g, '')
+                    const split_Day = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), year || 0).split(' ')[1].replace(/\D/g, '')
 
                     const nth_Day = getOrdinalHTML(Number(split_Day))
                     const view_count: number = (Number(trainingDoc?.viewCount || 0) + 1)
