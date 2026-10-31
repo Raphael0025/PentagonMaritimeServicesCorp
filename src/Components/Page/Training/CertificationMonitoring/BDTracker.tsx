@@ -1102,8 +1102,23 @@ export default function BDTrackerCertification (){
 
     return(
         <>
-        <Box ref={listRef} w="100%" overflowX="auto"
-            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+        <Box ref={listRef} w="100%" h='auto' overflowX="visible"
+            sx={{
+                display: 'none', 
+                '@media print': {
+                    display: 'block !important', 
+                    height: 'auto !important',
+                    maxHeight: 'none !important',
+                    overflow: 'visible !important',
+                    position: 'static !important',
+                    fontFamily: 'Arial, Helvetica, sans-serif !important', 
+                    WebkitPrintColorAdjust: 'exact', 
+                    '*': {
+                        fontFamily: 'Arial, Helvetica, sans-serif !important',
+                        overflow: 'visible !important'
+                    }
+                }
+            }}
         > {/* Handles horizontal scroll if columns exceed container width */}
             <Box>
                 <Text>Company:</Text>
@@ -1111,7 +1126,9 @@ export default function BDTrackerCertification (){
             </Box>
             {/* ---------- TABLE HEADER ---------- */}
             {traineesToShow.length > 0 && (
-                <Box  display="flex"  alignItems="center"  py="1"  px="3" bg="gray.100"  borderRadius="md"  mb="2" fontWeight="bold" minW="max-content" >
+                <Box  display="flex"  alignItems="center"  py="1"  px="3" bg="gray.100"  borderRadius="md"  mb="2" fontWeight="bold" minW="max-content" 
+                sx={{ '@media print': { pageBreakInside: 'avoid' } }}
+                >
                     <Text w="50px" fontSize="xs" color="gray.600">NO.</Text>
                     <Text w="320px" fontSize="xs" color="gray.600">TRAINEE NAME</Text>
                     {Array.from({ length: maxTrainingColumns }).map((_, idx) => (
@@ -1128,7 +1145,9 @@ export default function BDTrackerCertification (){
                 </Text>
             ) : (
                 traineesToShow.map((trainee, index) => (
-                    <Box  key={index}  display="flex"  alignItems="center"  py="1"  px="3" borderBottom="1px solid" borderColor="gray.100" _hover={{ bg: "gray.50" }} minW="max-content" >
+                    <Box  key={index}  display="flex"  alignItems="center"  py="1"  px="3" borderBottom="1px solid" borderColor="gray.100" _hover={{ bg: "gray.50" }} minW="max-content" 
+                        sx={{ '@media print': { pageBreakInside: 'avoid' } }}
+                    >
                         {/* Column 1: Trainee Name */}
                         <Text w="50px" color="blue.900" fontSize="7pt">
                             {index + 1}.
