@@ -595,7 +595,7 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
 
             if (!accumulator[traineeId]) {
                 accumulator[traineeId] = {
-                    name: `${trainee.first_name?.toUpperCase()} ${trainee.middle_name?.toUpperCase()} ${trainee.last_name?.toUpperCase()}` || 'UNKNOWN TRAINEE',
+                    name: `${trainee.last_name?.toUpperCase()}, ${trainee.first_name?.toUpperCase()} ${trainee.middle_name?.toUpperCase()}` || 'UNKNOWN TRAINEE',
                     entries: [trainingString],
                     certStatus: [certStat],
                     certNumber: [certNum],

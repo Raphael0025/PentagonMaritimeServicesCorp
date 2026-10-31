@@ -132,6 +132,8 @@ export default function BDTrackerCertification (){
     const { isOpen: isOpenBDCert, onOpen: onOpenBDCert, onClose: onCloseBDCert } = useDisclosure()
 
     const reportRef = useRef<HTMLDivElement | null>(null)
+    const listRef = useRef<HTMLDivElement | null>(null)
+    const issuedCertRef = useRef<HTMLDivElement | null>(null)
     const componentRef = useRef<HTMLDivElement | null>(null)
     const attachment = useRef<HTMLDivElement>(null)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -156,6 +158,54 @@ export default function BDTrackerCertification (){
         },
         onAfterPrint: () => {
             handleToast('Certificates Printed!', ``, 3000, 'success');
+        },
+    })
+
+    const handlePrintList = useReactToPrint({
+        content: () => listRef.current,
+        documentTitle: `TRAINEE LIST.pdf`,
+        pageStyle: `
+            @media print {
+                body {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                * {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                }
+            }
+        `,
+        onBeforePrint: () => {
+            setIsPrinting(false);
+            handleToast('Preparing to print List...', ``, 3000, 'info');
+        },
+        onAfterPrint: () => {
+            handleToast('List Printed!', ``, 3000, 'success');
+        },
+    })
+    
+    const handlePrintCompanyList = useReactToPrint({
+        content: () => issuedCertRef.current,
+        documentTitle: `COMPANY TRAINEE LIST.pdf`,
+        pageStyle: `
+            @media print {
+                body {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                * {
+                    font-family: Arial, Helvetica, sans-serif !important;
+                }
+            }
+        `,
+        onBeforePrint: () => {
+            setIsPrinting(false);
+            handleToast('Preparing to print List...', ``, 3000, 'info');
+        },
+        onAfterPrint: () => {
+            handleToast('List Printed!', ``, 3000, 'success');
         },
     })
 
@@ -996,8 +1046,156 @@ export default function BDTrackerCertification (){
         }
     }
 
+    const groupedTrainees = () => {
+        if (!allTData || allTData.length === 0) return [];
+
+        // Accumulator structure to collect training details per trainee document ID
+        const accumulator: { [traineeId: string]: { name: string; entries: string[], certStatus: number[], certNumber: string[] } } = {};
+
+        allTData.forEach((t) => {
+            // Find the registration tying this training to a trainee
+            const registration = allRegData?.find((r) => r.id === t.reg_ref_id);
+            if (!registration) return;
+
+            // Find the trainee details
+            const trainee = allTrainee?.find((tr) => tr.id === registration.trainee_ref_id);
+            if (!trainee) return;
+
+            // Apply search filter if active (checks against trainee's name)
+            if (searchTerm && !trainee.last_name?.toLowerCase().includes(searchTerm.toLowerCase())) {
+                return;
+            }
+
+            // Find batch info to get the batch descriptor/number
+            const batchObj = courseBatch?.find((b) => b.id === t.batch);
+            const batchLabel = batchObj ? (batchObj.batch_no) : t.batch;
+
+            // Create your display format chunk: "training 1, batch"
+            const courseFound = allCourses?.find((course) => course.id === t.course)?.course_code || courseCodes?.find((course) => course.id === t.course)?.company_course_code || ''
+            const trainingString = `${courseFound}, ${batchLabel}`;
+            const certStat = t.cert_status;
+            const certNum = t.cert_no;
+            const traineeId = trainee.id;
+
+            if (!accumulator[traineeId]) {
+                accumulator[traineeId] = {
+                    name: `${trainee.last_name?.toUpperCase()}, ${trainee.first_name?.toUpperCase()} ${trainee.middle_name?.toUpperCase()}` || 'UNKNOWN TRAINEE',
+                    entries: [trainingString],
+                    certStatus: [certStat],
+                    certNumber: [certNum],
+                };
+            } else {
+                // Avoid duplicating the exact same course/batch string if it somehow exists twice
+                if (!accumulator[traineeId].entries.includes(trainingString)) {
+                    accumulator[traineeId].entries.push(trainingString);
+                    accumulator[traineeId].certStatus.push(certStat);
+                    accumulator[traineeId].certNumber.push(certNum);
+                }
+            }
+        });
+
+        return Object.values(accumulator);
+    };
+
+    const traineesToShow = groupedTrainees();
+    const maxTrainingColumns = Math.max(...traineesToShow.map(t => t.entries.length), 1);
+
     return(
         <>
+        <Box ref={listRef} w="100%" overflowX="auto"
+            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+        > {/* Handles horizontal scroll if columns exceed container width */}
+            <Box>
+                <Text>Company:</Text>
+                <Text>{allClients?.find((client) => client.id === filterCompany)?.alias || filterCompany}</Text>
+            </Box>
+            {/* ---------- TABLE HEADER ---------- */}
+            {traineesToShow.length > 0 && (
+                <Box  display="flex"  alignItems="center"  py="1"  px="3" bg="gray.100"  borderRadius="md"  mb="2" fontWeight="bold" minW="max-content" >
+                    <Text w="50px" fontSize="xs" color="gray.600">NO.</Text>
+                    <Text w="320px" fontSize="xs" color="gray.600">TRAINEE NAME</Text>
+                    {Array.from({ length: maxTrainingColumns }).map((_, idx) => (
+                        <Text key={idx} w="180px" fontSize="xs" color="gray.600" mr="4">
+                            TRAINING {idx + 1}
+                        </Text>
+                    ))}
+                </Box>
+            )}
+            {/* ---------- TABLE ROWS ---------- */}
+            {traineesToShow.length === 0 ? (
+                <Text fontSize="sm" color="gray.500" fontStyle="italic" p="2">
+                    No matching trainee records found.
+                </Text>
+            ) : (
+                traineesToShow.map((trainee, index) => (
+                    <Box  key={index}  display="flex"  alignItems="center"  py="1"  px="3" borderBottom="1px solid" borderColor="gray.100" _hover={{ bg: "gray.50" }} minW="max-content" >
+                        {/* Column 1: Trainee Name */}
+                        <Text w="50px" color="blue.900" fontSize="7pt">
+                            {index + 1}.
+                        </Text>
+                        <Text w="320px" color="blue.900" fontWeight='normal' fontSize="7pt">
+                            {trainee.name}
+                        </Text>
+                        {/* Columns 3+: Individual Training Cells */}
+                        {trainee.entries.map((entry, entryIdx) => (
+                            <Box key={entryIdx} w="180px" mr="4">
+                                <Text  fontSize="7pt"  color="gray.700"  fontWeight="medium" bg="blue.50"  borderRadius="sm" isTruncated >
+                                    {entry}
+                                </Text>
+                            </Box>
+                        ))}
+                    </Box>
+                ))
+            )}
+        </Box>
+        <Box ref={issuedCertRef} w='100%' overflowX='auto'
+            sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
+        >
+            <Box display='flex' gap='3'>
+                <Text>Company:</Text>
+                <Text>{allClients?.find((client) => client.id === filterCompany)?.alias || filterCompany}</Text>
+            </Box>
+            {/* ---------- TABLE HEADER ---------- */}
+            {traineesToShow.length > 0 && (
+                <Box  display="flex"  alignItems="center"  py="1"  px="3" bg="gray.100"  borderRadius="md"  mb="2" fontWeight="bold" minW="max-content" >
+                    <Text w="50px" fontSize="xs" color="gray.600">NO.</Text>
+                    <Text w="320px" fontSize="xs" color="gray.600">TRAINEE NAME</Text>
+                    {Array.from({ length: maxTrainingColumns }).map((_, idx) => (
+                        <Text key={idx} w="180px" fontSize="xs" color="gray.600" mr="4">
+                            TRAINING {idx + 1}
+                        </Text>
+                    ))}
+                </Box>
+            )}
+            {/* ---------- TABLE ROWS ---------- */}
+            {traineesToShow.length === 0 ? (
+                <Text fontSize="sm" color="gray.500" fontStyle="italic" p="2">
+                    No matching trainee records found.
+                </Text>
+            ) : (
+                traineesToShow.filter((trainee) => trainee.certStatus.some((status) => status === 2)).map((trainee, index) => (
+                    <Box  key={index}  display="flex"  alignItems="center"  py="1"  px="3" borderBottom="1px solid" borderColor="gray.100" _hover={{ bg: "gray.50" }} minW="max-content" >
+                        {/* Column 1: Trainee Name */}
+                        <Text w="50px" color="blue.900" fontSize="7pt">
+                            {index + 1}.
+                        </Text>
+                        <Text w="320px" color="blue.900" fontWeight='normal' fontSize="7pt">
+                            {trainee.name}
+                        </Text>
+                        {/* Columns 3+: Individual Training Cells */}
+                        {trainee.entries.map((entry, entryIdx) => ({ entry, entryIdx })).filter(({ entryIdx }) => trainee.certStatus[entryIdx] === 2).map(({ entry, entryIdx }) => (
+                            <Box key={entryIdx} w="180px" mr="4">
+                                <Text  fontSize="7pt"  color="gray.700"  fontWeight="medium" bg="blue.50"  borderRadius="sm" isTruncated >
+                                    <Text as='span'>
+                                        {trainee.certNumber[entryIdx]}
+                                    </Text>
+                                </Text>
+                            </Box>
+                        ))}
+                    </Box>
+                ))
+            )}
+        </Box>
         <Text>BackDated Monitoring</Text>
         <Box display='flex' >
             <Box w='70%' mb='2' display='flex' justifyContent='end' flexDir='column' >
@@ -1101,6 +1299,18 @@ export default function BDTrackerCertification (){
                     </Box>
                 </Box>
             </Box>
+            {filterCompany && (
+            <Box mb='2' display='flex' justifyContent='end'>
+                {/* <Button onClick={handlePrintList} colorScheme='blue' bgColor='blue.700' shadow='md'>Print List</Button> */}
+                <Menu>
+                    <MenuButton as={Button} colorScheme='blue' bgColor='blue.700' shadow='md'>Export</MenuButton>
+                    <MenuList>
+                        <MenuItem onClick={handlePrintCompanyList}>Issued Certificates</MenuItem>
+                        <MenuItem onClick={handlePrintList}>Company Trainee Summary</MenuItem>
+                    </MenuList>
+                </Menu>
+            </Box>
+        )}
         </Box>
         {trainingID.length !== 0 && (
         <>
