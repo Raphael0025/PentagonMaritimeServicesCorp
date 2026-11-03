@@ -394,6 +394,76 @@ export default function Certificate_Template_Mgmt() {
         }
     }, [action])
 
+    const normalizeCertContent = (html: string) => {
+        const temp = document.createElement('div')
+        temp.innerHTML = html
+
+        // convert inner divs to spans
+        temp.querySelectorAll('div').forEach(div => {
+            const span = document.createElement('span')
+            span.innerHTML = div.innerHTML
+
+            // copy styles you need
+            span.style.display = 'inline'
+            span.style.textAlign = div.style.textAlign || 'center'
+            span.style.lineHeight = '1.2'
+
+            div.replaceWith(span)
+        })
+
+        return temp.innerHTML
+    }
+
+    const formatTrainingSchedule = (dateStr: string, year: number) => {
+        if (!dateStr) return '';
+
+        // Create a map for the month abbreviations
+        const monthMap: { [key: string]: string } = {
+            // Standard Keys
+            Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April',
+            May: 'May', Jun: 'June', Jul: 'July', Aug: 'August',
+            Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December',
+            
+            // All-Caps Keys
+            JAN: 'January', FEB: 'February', MAR: 'March', APR: 'April',
+            MAY: 'May', JUN: 'June', JUL: 'July', AUG: 'August',
+            SEP: 'September', OCT: 'October', NOV: 'November', DEC: 'December'
+        }
+
+        // 1. Remove commas and split by space
+        // "Tue, Apr 07" becomes ["Tue", "Apr", "07"]
+        const parts = dateStr.replace(',', '').split(' ');
+
+        const monthAbbr = parts[1]; // "Apr"
+        const day = parseInt(parts[2], 10); // "07" -> 7 (removes leading zero)
+
+        const fullMonth = monthMap[monthAbbr] || monthAbbr;
+
+        return `${fullMonth} ${day}, ${year}`; 
+    };
+
+    const formatCertContent = (year: number, trainingYear: number, isMoreThanADay: boolean, endDate: string, startDate: string, certContent: string, isOnline: boolean) => {
+        let courseTemplate = certContent
+
+        let processedContent = '';
+
+        const start_date = formatTrainingSchedule(startDate, trainingYear || year)
+        const end_date = formatTrainingSchedule(endDate, trainingYear || year)
+
+        const moreThanADay = isMoreThanADay ? 'from' : 'on'
+        const conductAt = isOnline ? 'online' : ' '
+
+        if(isMoreThanADay){
+            processedContent = courseTemplate.replace('[start_date] to [end_date]', `${start_date} to ${end_date}`).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }else {
+            processedContent = courseTemplate.replace('[start_date]', start_date).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }
+
+        const finalHtmlContent = normalizeCertContent(processedContent)
+
+        return finalHtmlContent
+    }
+
     return (
     <>
         <Box>
@@ -645,9 +715,14 @@ export default function Certificate_Template_Mgmt() {
                                         display: 'inline',
                                     },
                                 }}>
-                                    <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                    {/* <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                         dangerouslySetInnerHTML={{
                                             __html: `Conducted on _____________ ${certContentHtml}`
+                                        }}
+                                    /> */}
+                                    <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                        dangerouslySetInnerHTML={{
+                                            __html: `${formatCertContent(2026, 0, false, '', '', certContentHtml, false)}`
                                         }}
                                     />
                                 </Box>

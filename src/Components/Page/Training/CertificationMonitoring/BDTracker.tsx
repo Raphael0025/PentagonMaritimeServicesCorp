@@ -1046,6 +1046,7 @@ export default function BDTrackerCertification (){
         }
     }
 
+<<<<<<< HEAD
     const groupedTrainees = () => {
         if (!allTData || allTData.length === 0) return [];
 
@@ -1099,6 +1100,29 @@ export default function BDTrackerCertification (){
 
     const traineesToShow = groupedTrainees();
     const maxTrainingColumns = Math.max(...traineesToShow.map(t => t.entries.length), 1);
+=======
+    const formatCertContent = (year: number, trainingYear: number, isMoreThanADay: boolean, endDate: string, startDate: string, certContent: string, isOnline: boolean) => {
+        let courseTemplate = certContent
+
+        let processedContent = '';
+
+        const start_date = formatTrainingSchedule(startDate, trainingYear || year)
+        const end_date = formatTrainingSchedule(endDate, trainingYear || year)
+
+        const moreThanADay = isMoreThanADay ? 'from' : 'on'
+        const conductAt = isOnline ? 'online' : ' '
+
+        if(isMoreThanADay){
+            processedContent = courseTemplate.replace('[start_date] to [end_date]', `${start_date} to ${end_date}`).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }else {
+            processedContent = courseTemplate.replace('[start_date]', start_date).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }
+
+        const finalHtmlContent = normalizeCertContent(processedContent)
+
+        return finalHtmlContent
+    }
+>>>>>>> 3cc2c43 (Certification)
 
     return(
         <>
@@ -2115,7 +2139,7 @@ export default function BDTrackerCertification (){
                                                                 display: 'inline',
                                                             },
                                                         }}>
-                                                            {training?.conductedOnline ? (
+                                                            {/* {training?.conductedOnline ? (
                                                                 <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                                                     dangerouslySetInnerHTML={{
                                                                         __html: `<span>Conducted online ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
@@ -2127,7 +2151,12 @@ export default function BDTrackerCertification (){
                                                                         __html: `<span>Conducted ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
                                                                     }}
                                                                 />
-                                                            )}
+                                                            )} */}
+                                                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: `${formatCertContent(getYear, training.year, isMoreThanOneDay, training.end_date, training.start_date, training.certContent, training?.conductedOnline)}`
+                                                                }}
+                                                            />
                                                         </Box>
                                                         <div style={{marginTop: '10px'}}
                                                             dangerouslySetInnerHTML={{

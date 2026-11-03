@@ -81,6 +81,28 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
         return `${day}<sup>${suffix}</sup>`
     }
 
+    const formatCertContent = (year: number, trainingYear: number, isMoreThanADay: boolean, endDate: string, startDate: string, certContent: string, isOnline: boolean) => {
+        let courseTemplate = certContent
+
+        let processedContent = '';
+
+        const start_date = formatTrainingSchedule(startDate, trainingYear || year)
+        const end_date = formatTrainingSchedule(endDate, trainingYear || year)
+
+        const moreThanADay = isMoreThanADay ? 'from' : 'on'
+        const conductAt = isOnline ? 'online' : ' '
+
+        if(isMoreThanADay){
+            processedContent = courseTemplate.replace('[start_date] to [end_date]', `${start_date} to ${end_date}`).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }else {
+            processedContent = courseTemplate.replace('[start_date]', start_date).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }
+
+        const finalHtmlContent = normalizeCertContent(processedContent)
+
+        return finalHtmlContent
+    }
+
     return(
         <Box w='100%' placeItems='center' p='0' fontFamily='Arial'
             sx={{display: 'none', '@media print': {display: 'block', fontFamily: 'Arial, Helvetica, sans-serif !important', WebkitPrintColorAdjust: 'exact', '*': {fontFamily: 'Arial, Helvetica, sans-serif !important'}}}}
@@ -101,6 +123,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
             const trainingDate = training.numOfDays === 1 
                 ? formatTrainingSchedule(training.start_date, training.year || getYear) 
                 : `${formatTrainingSchedule(training.start_date, training.year || getYear)} to ${formatTrainingSchedule(training.end_date, training.year || getYear)}`
+            
             const isMoreThanOneDay = training.numOfDays > 1 ? true : false
 
             if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -168,7 +191,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                                 display: 'inline',
                             },
                         }}>
-                            {training?.conductedOnline ? (
+                            {/* {training?.conductedOnline ? (
                                 <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
                                     dangerouslySetInnerHTML={{
                                         __html: `<span>Conducted online ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate}</span>${normalizeCertContent(training.certContent)}`
@@ -180,7 +203,12 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                                         __html: `<span>Conducted ${isMoreThanOneDay ? 'from' : 'on'} ${trainingDate}</span>${normalizeCertContent(training.certContent)}`
                                     }}
                                 />
-                            )}
+                            )} */}
+                            <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
+                                dangerouslySetInnerHTML={{
+                                    __html: `${formatCertContent(getYear, training.year, isMoreThanOneDay, training.end_date, training.start_date, training.certContent, training?.conductedOnline)}`
+                                }}
+                            />
                         </Box>
                         <div style={{marginTop: '40px'}}
                             dangerouslySetInnerHTML={{
