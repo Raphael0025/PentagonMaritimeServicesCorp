@@ -149,6 +149,7 @@ export interface REGISTRATION {
     otherMarketing: string;
     reg_accountType: number; // 0 - crew | 1 - company
 }
+
 export interface TRAINING {
     reg_ref_id: string;
     enrolledBy: number;

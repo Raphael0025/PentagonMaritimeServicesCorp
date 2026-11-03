@@ -34,6 +34,11 @@ export default function Certification() {
     const [certTitleHtml, setCertTitleHtml] = useState('')
     const [certContentHtml, setCertContentHtml] = useState('')
     const [trainingDate, setTrainingDate] = useState<string>('')
+    const [start_date, setStartDate] = useState<string>('')
+    const [end_date, setEndDate] = useState<string>('')
+
+    const [numOfDays, setNumOfDays] = useState<number>(0)
+    const [conductOn, setConducted] = useState<boolean>(false)
 
     const [splitMonth, setSplitMonth] = useState<string>('')
     const [nthDay, setNthDay] = useState<string>('')
@@ -82,6 +87,8 @@ export default function Certification() {
             setMN('');
             setLN('');
             setTrainingDate('');
+            setStartDate('');
+            setEndDate('');
             setSplitMonth('');
             setNthDay('');
             setCertContentHtml('');
@@ -311,6 +318,10 @@ export default function Certification() {
                     setMN(trainee.middle_name)
                     setLN(trainee.last_name)
                     setTrainingDate(training_date)
+                    setStartDate(trainingDoc.start_date)
+                    setEndDate(trainingDoc.end_date)
+                    setConducted(trainingDoc.conductedOnline)
+                    setNumOfDays(trainingDoc.numOfDays)
                     setSplitMonth(split_Month)
                     setNthDay(nth_Day)
                     setCertContentHtml(trainingDoc.certContent)
@@ -354,6 +365,30 @@ export default function Certification() {
         return temp.innerHTML
     }
     
+    
+    const formatCertContent = (year: number, trainingYear: number) => {
+        let courseTemplate = certContentHtml
+
+        let processedContent = '';
+
+        const isMoreThanADay = numOfDays > 1
+        const startDate = formatTrainingSchedule(start_date, trainingYear || year)
+        const endDate = formatTrainingSchedule(end_date, trainingYear || year)
+
+        const moreThanADay = isMoreThanADay ? 'from' : 'on'
+        const conductAt = conductOn ? 'online' : ' '
+
+        if(isMoreThanADay){
+            processedContent = courseTemplate.replace('[start_date] to [end_date]', `${startDate} to ${endDate}`).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }else {
+            processedContent = courseTemplate.replace('[start_date]', startDate).replace('[numOfDays]', moreThanADay).replace('[isOnline]', conductAt)
+        }
+
+        const finalHtmlContent = normalizeCertContent(processedContent)
+
+        return finalHtmlContent
+    }
+
     return(
     <>
         {/** Certificate Verification Modal */}
@@ -527,7 +562,8 @@ export default function Certification() {
                                 }}>
                                     <div style={{fontSize: '8pt', display: 'block', lineHeight: '1.2'}}
                                         dangerouslySetInnerHTML={{
-                                            __html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
+                                            //__html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
+                                            __html: `${formatCertContent(getYear, 0)}`
                                         }}
                                     />
                                 </Box>
