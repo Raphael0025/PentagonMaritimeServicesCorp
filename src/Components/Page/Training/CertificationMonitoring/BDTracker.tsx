@@ -1046,7 +1046,6 @@ export default function BDTrackerCertification (){
         }
     }
 
-<<<<<<< HEAD
     const groupedTrainees = () => {
         if (!allTData || allTData.length === 0) return [];
 
@@ -1100,7 +1099,7 @@ export default function BDTrackerCertification (){
 
     const traineesToShow = groupedTrainees();
     const maxTrainingColumns = Math.max(...traineesToShow.map(t => t.entries.length), 1);
-=======
+
     const formatCertContent = (year: number, trainingYear: number, isMoreThanADay: boolean, endDate: string, startDate: string, certContent: string, isOnline: boolean) => {
         let courseTemplate = certContent
 
@@ -1122,7 +1121,6 @@ export default function BDTrackerCertification (){
 
         return finalHtmlContent
     }
->>>>>>> 3cc2c43 (Certification)
 
     return(
         <>
