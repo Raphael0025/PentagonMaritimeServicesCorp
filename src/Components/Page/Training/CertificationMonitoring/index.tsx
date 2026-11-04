@@ -14,6 +14,8 @@ import RFPEW_CERT from "./Certificate_Template/RFPEW_Cert.template"
 import RFPNW_CERT from "./Certificate_Template/RFPNW_Cert.template"
 import BT_Cert from "./Certificate_Template/BT_Cert.template"
 import RBT_Cert from "./Certificate_Template/RBT_Cert.template"
+import STP_Cert from "./Certificate_Template/STP_Cert.template"
+import PSCMT_CERT from "./Certificate_Template/PSCMT_CERT.template";
 
 export {
     SDSDCertTemplate,
@@ -24,6 +26,8 @@ export {
     UBT_PssrCert,
     BT_Cert,
     RBT_Cert,
+    STP_Cert,
+    PSCMT_CERT,
     BatchedDated,
     BDTracker,
     ReleaseLog,
