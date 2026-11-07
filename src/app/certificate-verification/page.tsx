@@ -20,7 +20,7 @@ import { firestore } from '@/lib/certification_controller'
 export default function Certification() {
     const toast = useToast()
     const searchParams = useSearchParams();
-    const token = searchParams.get('token');
+    const token = searchParams.get('t');
 
     const [certNum, setCertNum] = useState<string>('')
     const [regNum, setRegNum] = useState<string>('')
@@ -131,6 +131,7 @@ export default function Certification() {
 
                 if (docSnap.exists()) {
                     setTrainingData(docSnap.data());
+                    console.log('Training record fetched successfully:', docSnap.data());
                 } else {
                     setError('Certificate record not found in the official registry.');
                 }
