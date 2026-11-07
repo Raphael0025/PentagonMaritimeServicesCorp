@@ -1097,7 +1097,6 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                                 const verifyUrl = `${origin}/certificate-verification?t=${qrToken}`;
                                 //const verifyUrl = `${origin}/certification`;
 
-                                console.log(verifyUrl)
                                 if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||

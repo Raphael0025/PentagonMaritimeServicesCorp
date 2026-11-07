@@ -3,6 +3,7 @@
 import NextImage from 'next/image'
 import React from 'react'
 import { Box, Image as ChakraImage, Text} from '@chakra-ui/react';
+import { QRCodeSVG } from 'qrcode.react'
 
 import { useInstructors } from '@/context/InstructorContext'
 import { useCourseBatch } from '@/context/BatchContext'
@@ -125,6 +126,15 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                 : `${formatTrainingSchedule(training.start_date, training.year || getYear)} to ${formatTrainingSchedule(training.end_date, training.year || getYear)}`
             
             const isMoreThanOneDay = training.numOfDays > 1 ? true : false
+
+            const qrToken = btoa(JSON.stringify({
+                regId: registration?.id,
+                trainingId: training?.id,
+                regNo: registration?.reg_no,
+                traineeName: `${trainee?.first_name} ${trainee?.middle_name} ${trainee?.last_name}`,
+            }))
+            const origin = typeof window !== 'undefined' ? window.location.origin : 'https://pentagonmaritime.com';
+            const verifyUrl = `${origin}/certificate-verification?t=${qrToken}`;
 
             if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -270,8 +280,8 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                         <Box pt='0' pb='0' display='flex' gap='1' justifyContent='center' alignItems='center' w='100%'>
                             <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.30in' h='0.70in' objectFit='cover'/>
                             <Box w='0.8in' display='flex' justifyContent='center' alignItems='center' h='0.65in'>
-                                <Box w='0.68in' h='0.7in'>
-                                    <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
+                                <Box w='0.90in' h='0.85in'>
+                                    <QRCodeSVG value={verifyUrl} size={82} level={'L'} />
                                 </Box>
                             </Box>
                             <Box fontWeight='bold' display='block' lineHeight={1.35} fontSize='9pt' ps='7' pr='7' py='2' borderLeft='1px solid black'>
