@@ -12,6 +12,7 @@ export default function NavBarV2(){
 
     const shouldHideNavbar = pathname?.startsWith('/certification') || 
                                 pathname?.startsWith('/certificate-releasing') || 
+                                pathname?.startsWith('/certificate-verification') || 
                                 pathname?.startsWith('/Tester') || 
                                 pathname?.startsWith('/forms') || 
                                 pathname?.startsWith('/admissions') || 

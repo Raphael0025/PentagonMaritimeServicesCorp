@@ -28,6 +28,7 @@ export default function Certification() {
     const [firstName, setFN] = useState<string>('')
     const [middleName, setMN] = useState<string>('')
     const [lastName, setLN] = useState<string>('')
+    const [traineeName, setTName] = useState<string>('')
 
     const [showVerification, setShowVerification] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
@@ -59,7 +60,7 @@ export default function Certification() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!verifiedCertNum || isPreparingCert) return;
+        if (isPreparingCert) return;
 
         setCountdown(TOTAL_TIME);
         setProgress(100);
@@ -89,9 +90,7 @@ export default function Certification() {
             setVerifiedCert(false);
             setCertNum('');
             setRegNum('');
-            setFN('');
-            setMN('');
-            setLN('');
+            setTName('');
             setTrainingDate('');
             setStartDate('');
             setEndDate('');
@@ -106,42 +105,99 @@ export default function Certification() {
             clearInterval(interval);
             clearTimeout(timeout);
         };
-    }, [verifiedCertNum, isPreparingCert]);
+    }, [isPreparingCert]);
 
     useEffect(() => {
         async function fetchRecord() {
-        if (!token) {
-            setError('No verification token provided.');
-            setLoading(false);
-            return;
-        }
+            if (!token) {
+                setError('No verification token provided.');
+                setLoading(false);
+                return;
+            }
 
             try {
-                // 1. Decode the token to retrieve the training ID
+                // 1. Decode the token to get the payload
                 const decodedString = atob(decodeURIComponent(token));
                 const payload = JSON.parse(decodedString);
 
-                if (!payload?.id) {
-                throw new Error('Invalid token structure.');
+                // Extract the target value from your token payload 
+                // (matching what your admin generates, e.g., regNo or trainingID)
+                const targetValue = payload?.regId
+                const targetTrainingId = payload?.trainingId;
+                setTName(payload?.traineeName)
+                
+                if (!targetValue) {
+                    throw new Error('Invalid token structure or missing lookup value.');
                 }
 
-                // 2. Fetch the full training document live from Firestore (where long certContent lives)
-                const docRef = doc(training, 'TRAINING', payload.id);
-                const docSnap = await getDoc(docRef);
+                setIsPreparingCert(true)
+                // 2. Query Firestore safely using collection(db, 'TRAINING')
+                const q = query(training, where('reg_ref_id', '==', targetValue));
+                const snapshot = await getDocs(q);
 
-                console.log('Training record fetched successfully:', docSnap.data());
-                if (docSnap.exists()) {
-                    setTrainingData(docSnap.data());
-                    console.log('Training record fetched successfully:', docSnap.data());
-                } else {
+                if (snapshot.empty) {
                     setError('Certificate record not found in the official registry.');
+                    setLoading(false);
+                    return;
                 }
+
+                let docSnap = snapshot.docs[0];
+
+                if (targetTrainingId) {
+                    const matchedDoc = snapshot.docs.find(
+                        (doc) => doc.id === targetTrainingId || doc.data().id === targetTrainingId
+                    );
+                    if (matchedDoc) {
+                        docSnap = matchedDoc;
+                    }
+                }
+
+                const result = {
+                    id: docSnap.id,
+                    ...docSnap.data(),
+                } as TRAINING_BY_ID;
+
+                const batchRec = await GET_BATCH_RECORD(result.batch)
+
+                let year = 0
+                if(result.batch === '1'){
+                    year = result.date_enrolled?.toDate()?.getFullYear();
+                }else if (batchRec?.createdAt?.toDate) {
+                    year = batchRec.createdAt.toDate().getFullYear()
+                }
+                setYear(year)
+
+                const split_Month = formatTrainingSchedule((result.end_date === '' ? result.start_date : result.end_date), year || result?.trainingYear).split(' ')[0]
+                const split_Day = formatTrainingSchedule((result.end_date === '' ? result.start_date : result.end_date), year || result?.trainingYear).split(' ')[1].replace(/\D/g, '')
+
+                const nth_Day = getOrdinalHTML(Number(split_Day))
+                const view_count: number = (Number(result?.viewCount || 0) + 1)
+
+                setCertNum(result.cert_no)
+                setRegNum(payload?.regNo)
+                setTrainingData(result);
+                setStartDate(result.start_date)
+                setEndDate(result.end_date)
+                setCertContentHtml(result.certContent)
+                setCertTitleHtml(result.certTitle)
+
+                setConducted(result.conductedOnline)
+                setNumOfDays(result.numOfDays)
+                setSplitMonth(split_Month)
+                setNthDay(nth_Day)
+
+                await UPDATE_VIEW_CERT_ACCESS(targetTrainingId, view_count, '')
+                toast({
+                    title: 'Certificate Verified',
+                    status: 'success',
+                    duration: 3000,
+                })
             } catch (err) {
                 console.error('Verification error:', err);
                 setError('Failed to verify certificate. The QR code may be invalid or corrupted.');
             } finally {
-                setLoading(false);
-        }
+                setIsPreparingCert(false)
+            }
         }
 
         fetchRecord();
@@ -347,12 +403,12 @@ export default function Certification() {
                     //     trainingDoc.end_date || trainingDoc.start_date,
                     //     year
                     // ).split(' ')[0]
-                    const split_Month = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), year || 0).split(' ')[0]
-
+                    
                     // const split_Day = formatTrainingSchedule(
-                    //     trainingDoc.end_date || trainingDoc.start_date,
-                    //     year
-                    // ).split(' ')[1].replace(/\D/g, '')
+                        //     trainingDoc.end_date || trainingDoc.start_date,
+                        //     year
+                        // ).split(' ')[1].replace(/\D/g, '')
+                    const split_Month = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), year || 0).split(' ')[0]
                     const split_Day = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), year || 0).split(' ')[1].replace(/\D/g, '')
 
                     const nth_Day = getOrdinalHTML(Number(split_Day))
@@ -371,7 +427,7 @@ export default function Certification() {
                     setNthDay(nth_Day)
                     setCertContentHtml(trainingDoc.certContent)
                     setCertTitleHtml(trainingDoc.certTitle)
-                    await UPDATE_VIEW_CERT_ACCESS(trainingDoc.id, view_count, '')
+                    //await UPDATE_VIEW_CERT_ACCESS(trainingDoc.id, view_count, '')
                     toast({
                         title: 'Certificate Verified',
                         status: 'success',
@@ -434,42 +490,17 @@ export default function Certification() {
         return finalHtmlContent
     }
 
-    if (loading) {
-        return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="text-center space-y-2">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-700 mx-auto"></div>
-            <p className="text-sm font-medium text-gray-600">Verifying certificate against official registry...</p>
-            </div>
-        </div>
-        );
-    }
-
-    if (error || !trainingData) {
-        return (
-        <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
-            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-red-200 text-center space-y-3">
-            <div className="text-red-600 text-3xl font-bold">⚠️</div>
-            <h1 className="text-lg font-bold text-red-700">Verification Failed</h1>
-            <p className="text-sm text-gray-600">{error || 'Certificate could not be verified.'}</p>
-            </div>
-        </div>
-        );
-    }
-
     return(
     <>
         {/** Certificate Verification Modal */}
-        <main className="min-h-screen bg-gray-100 py-10 px-4 flex items-center justify-center">
+        {/* <main className="min-h-screen bg-gray-100 py-10 px-4 flex items-center justify-center">
             <div className="max-w-2xl w-full bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
                 
-                {/* Header Banner */}
                 <div className="bg-sky-800 text-white p-6 text-center">
                 <h1 className="text-xl font-bold uppercase tracking-wider">Pentagon Maritime Services</h1>
                 <p className="text-xs text-sky-200 mt-1">Official Certificate Verification System</p>
                 </div>
 
-                {/* Certificate Details Container */}
                 <div className="p-6 space-y-6">
                 
                 <div className="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3 rounded-lg">
@@ -479,7 +510,6 @@ export default function Certification() {
                     </span>
                 </div>
 
-                {/* Core Info Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                     <p className="text-xs text-gray-500 uppercase">Certificate No.</p>
@@ -493,7 +523,6 @@ export default function Certification() {
                     </div>
                 </div>
 
-                {/* Long Form Certificate Content (Fetched securely from database) */}
                 <div className="space-y-2">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
                     Official Compliance & Course Details
@@ -505,13 +534,109 @@ export default function Certification() {
 
                 </div>
 
-                {/* Footer */}
                 <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 text-center text-xs text-gray-500">
                 This record is cryptographically linked to the Pentagon Maritime database.
                 </div>
 
             </div>
-        </main>
+        </main> */}
+        {isPreparingCert ? (
+            // 🟡 LOADING CERT VIEW
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center space-y-2">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-700 mx-auto"></div>
+                <p className="text-sm font-medium text-gray-600">Verifying Digital Certificate...</p>
+                </div>
+            </div>
+        ) : (
+            // 🟢 FINAL CERTIFICATE VIEW
+            <>
+                <Box w="100%" mt="4">
+                    <Progress
+                        value={progress}
+                        size="sm"
+                        colorScheme={getColor()}
+                        borderRadius="md"
+                        transition="all 1s linear"
+                    />
+                    
+                    <Text fontSize="xs" color="gray.500" textAlign="center" mt="1">
+                        Returning in {countdown}s...
+                    </Text>
+                </Box>
+                <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' pt='5'>
+                    <Box w='95%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
+                        <Image src={'/CompanyLogo2-dark.png'} alt='header image' w='2in' h='1.5in'  />
+                        <Box pt='6' pr='12' pb='5' display='flex' justifyContent='end' w='100%'>
+                            <Box fontWeight='bold' fontSize='10pt' textAlign='start'>
+                                <Text>
+                                    Certificate No.: 
+                                    <Text as='span' fontWeight={'normal'}>
+                                        {`${certNum}`}
+                                    </Text>
+                                </Text>
+                                <Text>
+                                    Registration No.: 
+                                    <Text as='span' fontWeight={'normal'}>
+                                        {`REG-${regNum}`}
+                                    </Text>
+                                </Text>
+                            </Box>
+                        </Box>
+                        <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
+                            <Text fontWeight='bold' fontSize='16pt'>Certificate of Completion</Text>
+                            <Text fontSize='10pt'>This Certificate is issued to</Text>
+                            <Text fontWeight='bold' fontSize='14pt' textTransform='uppercase'>{`${traineeName}`}</Text>
+                            <Text textAlign='center' fontSize='10pt'>for having successfully completed the training course in</Text>
+                            <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html: `${certTitleHtml}`
+                                    }}
+                                />
+                            </Text>
+                            <Box w='110%' mt='3' textAlign='center' sx={{
+                                '& ul': {
+                                    listStyleType: 'disc',
+                                    listStylePosition: 'inside',
+                                    paddingLeft: '1.5rem',
+                                    margin: '0.5rem 0',
+                                },
+                                '& ol': {
+                                    listStyleType: 'decimal',
+                                    listStylePosition: 'inside',
+                                    paddingLeft: '1.5rem',
+                                    margin: '0.5rem 0',
+                                },
+                                '& li': {
+                                    marginBottom: '0.25rem',
+                                },
+                                '& p, & div': {
+                                    display: 'inline',
+                                    lineHeight: '1.2',
+                                    margin: 0,
+                                },
+                                '& br': {
+                                    display: 'inline',
+                                },
+                            }}>
+                                <div style={{fontSize: '8pt', display: 'block', lineHeight: '1.2'}}
+                                    dangerouslySetInnerHTML={{
+                                        //__html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
+                                        __html: `${formatCertContent(getYear, 0)}`
+                                    }}
+                                />
+                            </Box>
+                            <div style={{marginTop: '15px', textAlign:'center', fontSize: '10pt'}}
+                                dangerouslySetInnerHTML={{
+                                    __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
+                                }}
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+            </>
+        )}
     </>
     )
 }

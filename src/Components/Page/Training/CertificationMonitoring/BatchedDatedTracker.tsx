@@ -1087,7 +1087,8 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                                 const isMoreThanOneDay = training.numOfDays > 1 ? true : false
 
                                 const qrToken = btoa(JSON.stringify({
-                                    trainingID: training.id,
+                                    regId: registration?.id,
+                                    trainingId: training?.id,
                                     regNo: registration?.reg_no,
                                     traineeName: `${trainee?.first_name} ${trainee?.middle_name} ${trainee?.last_name}`,
                                 }))
@@ -1096,6 +1097,7 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                                 const verifyUrl = `${origin}/certificate-verification?t=${qrToken}`;
                                 //const verifyUrl = `${origin}/certification`;
 
+                                console.log(verifyUrl)
                                 if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
