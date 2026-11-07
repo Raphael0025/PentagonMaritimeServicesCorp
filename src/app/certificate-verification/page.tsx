@@ -126,7 +126,7 @@ export default function Certification() {
                 }
 
                 // 2. Fetch the full training document live from Firestore (where long certContent lives)
-                const docRef = doc(training, 'trainings', payload.id);
+                const docRef = doc(training, 'TRAINING', payload.id);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
