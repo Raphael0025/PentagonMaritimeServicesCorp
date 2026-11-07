@@ -191,6 +191,7 @@ export interface TRAINING {
     webCertTitle: string;
     webCertContent: string;
     conductedOnline: boolean;
+    trainingYear: number;
 
     attendance: boolean;
     ccr: boolean;

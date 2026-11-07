@@ -1260,8 +1260,8 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                                                             <ChakraImage src={'/cert_ISO_Label.png'} alt='header image' w='1.49in'  objectFit='cover'/>
                                                             <Box w='0.9in' display='flex' justifyContent='center' alignItems='center' h='1.2in'>
                                                                 <Box w='0.90in' h='0.85in'>
-                                                                    <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/>
-                                                                    {/* <QRCodeSVG value={verifyUrl} size={82} level={'L'} /> */}
+                                                                    {/* <ChakraImage src={'/GenericQRCode.jpg'} alt='QR Code' w='100%'  objectFit='cover'/> */}
+                                                                    <QRCodeSVG value={verifyUrl} size={82} level={'L'} />
                                                                 </Box>
                                                             </Box>
                                                             <Box fontWeight='bold' display='block' lineHeight={1.45} fontSize='9pt' ps='7' pr='7' py='3' borderLeft='1px solid black'>
