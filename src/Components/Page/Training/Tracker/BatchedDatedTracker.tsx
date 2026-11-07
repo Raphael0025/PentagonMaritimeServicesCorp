@@ -8,6 +8,7 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleRegStatus } from '@/handlers/trainee_handler'
 import { backgroundColor, trainingModeFontColor, trainingModeColor } from '@/handlers/util_handler'
+import * as XLSX from 'xlsx'
 
 import { useRank } from '@/context/RankContext'
 import { useCourses } from '@/context/CourseContext'
@@ -32,7 +33,7 @@ interface BatchedDatedProps {
 
 export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedProps){
     const toast = useToast()
-    const { courseCodes } = useClients()
+    const { data: allClients, courseCodes } = useClients()
     const { data: allRanks } = useRank()
     const { data: allCourses } = useCourses()
     const { data: allTrainee } = useTrainees()
@@ -293,12 +294,65 @@ export default function BatchedDated ({ searchTerm, trainings }: BatchedDatedPro
         })
     }
 
+    
+    // Place this function INSIDE your React component
+    const exportToExcel = (data: any[], regData: any[],filename = 'Certificate_Batch_Export.xlsx') => {
+    
+        // Map through each training item using component-scoped data
+        const formattedData = data.map((item: any, index: number) => {
+            const registration = regData?.find((r) => r.id === item?.reg_ref_id);
+            const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id);
+    
+            const course_code = 
+            allCourses?.find((course) => course.id === item.course)?.course_code || 
+            courseCodes?.find((course) => course.id === item.course)?.company_course_code || 
+            item.courseCode || 
+            '';
+    
+            const company = allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company || '';
+            const rank = allRanks?.find((r) => r.code === trainee?.rank)?.rank || trainee?.rank || '';
+    
+            const traineeName = trainee 
+            ? `${trainee.last_name || ''}, ${trainee.first_name || ''}`.trim() 
+            : (item.traineeName || '');
+    
+            return {
+            'No.': index + 1,
+            'Trainee Name': traineeName.toUpperCase(),
+            'Rank': rank.toUpperCase(),
+            'Course': course_code.toUpperCase(),
+            'Training Date': `${item.start_date} ${item.end_date !== '' ? `- ${item.end_date}` : ''}`,
+            };
+        });
+    
+        // 1. Create a new workbook and worksheet
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Certificates');
+    
+        // 2. Set auto-fit column widths
+        const colWidths = [
+            { wch: 5 },  // No.
+            { wch: 18 }, // Client.
+            { wch: 25 }, // Trainee Name
+            { wch: 18 }, // Rank
+            { wch: 30 }, // Course
+            { wch: 22 }, // Certificate Number
+            { wch: 15 }, // Training Date
+        ];
+        worksheet['!cols'] = colWidths;
+    
+        // 3. Trigger browser download
+        XLSX.writeFile(workbook, filename);
+    };
+
     return(
         <>
         <Box mb='3' display='flex' justifyContent={'end'}>
             {selectedTrainings.length > 0 && 
                 <Button onClick={generateCertForSelected} isLoading={loading} loadingText='Processing...' colorScheme='green' shadow='md' size='sm' >Graduate</Button>
             }
+            {/* <Button onClick={() => exportToExcel('Pentagon_Certificates.xlsx')}>Export to Excel</Button> */}
         </Box>
         <Box h='650px' style={{maxHeight: '700px', overflowY: 'auto', scrollbarWidth: 'thin'}} >
             {/** Headers */}

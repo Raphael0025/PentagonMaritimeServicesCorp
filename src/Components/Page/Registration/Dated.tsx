@@ -5,6 +5,7 @@ import { Box, Text, Input, Textarea, Button, IconButton, HStack, Flex, InputLeft
 import { SearchIcon } from '@/Components/Icons';
 import { ChevronDownIcon, EditIcon, DownloadIcon, CopyIcon, } from '@chakra-ui/icons'
 import { Timestamp } from 'firebase/firestore'
+import * as XLSX from 'xlsx'
 
 import { useRegistrations } from '@/context/RegistrationContext'
 import { useClients } from '@/context/ClientCompanyContext'
@@ -462,6 +463,115 @@ export default function Page(){
         }
     }
 
+    // Place this function INSIDE your React component
+    const exportToExcel = (data: TRAINING_BY_ID[], regData: any[],filename = 'Certificate_Batch_Export.xlsx') => {
+    
+        // Map through each training item using component-scoped data
+        const formattedData = data.map((item: any, index: number) => {
+            const registration = regData?.find((r) => r.id === item?.reg_ref_id);
+            const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id);
+    
+            const course_code = 
+            allCourses?.find((course) => course.id === item.course)?.course_code || 
+            courseCodes?.find((course) => course.id === item.course)?.company_course_code || 
+            item.courseCode || 
+            '';
+    
+            const company = allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company || '';
+            const rank = allRanks?.find((r) => r.code === trainee?.rank)?.rank || trainee?.rank || '';
+    
+            const traineeName = trainee 
+            ? `${trainee.last_name || ''}, ${trainee.first_name || ''}`.trim() 
+            : (item.traineeName || '');
+    
+            return {
+            'No.': index + 1,
+            'Trainee Name': traineeName.toUpperCase(),
+            'Rank': rank.toUpperCase(),
+            'Course': course_code.toUpperCase(),
+            'Training Date': `${item.start_date} ${item.end_date !== '' ? `- ${item.end_date}` : ''}`,
+            };
+        });
+    
+        // 1. Create a new workbook and worksheet
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Certificates');
+    
+        // 2. Set auto-fit column widths
+        const colWidths = [
+            { wch: 5 },  // No.
+            { wch: 18 }, // Client.
+            { wch: 25 }, // Trainee Name
+            { wch: 18 }, // Rank
+            { wch: 30 }, // Course
+            { wch: 22 }, // Certificate Number
+            { wch: 15 }, // Training Date
+        ];
+        worksheet['!cols'] = colWidths;
+    
+        // 3. Trigger browser download
+        XLSX.writeFile(workbook, filename);
+        };
+
+        // 1. Extract your entire chained filter/sort logic into a reusable variable
+const filteredTrainings = allTraining
+  ?.sort((a, b) => b.date_enrolled.toMillis() - a.date_enrolled.toMillis())
+  .filter((t) => t.reg_status >= 3 && t.regType === 0)
+  .filter((t) => {
+    const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
+    const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
+    if (!trainee) return false;
+    if (filterCompany === '') return true;
+    return trainee.company === filterCompany;
+  })
+  .filter((t) => {
+    if (!filterCourse || filterCourse === '') return true;
+    return (
+      allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
+      courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
+    );
+  })
+  .filter((t) => {
+    if (!filterDate) return true;
+    const selectedDate = new Date(filterDate);
+    selectedDate.setHours(0, 0, 0, 0);
+    const activeYear = selectedDate.getFullYear();
+
+    const rawStart = t.start_date ? `${t.start_date} ${activeYear}` : null;
+    const startDate = rawStart ? new Date(rawStart) : null;
+    const rawEnd = (t.end_date && t.end_date !== '--') ? `${t.end_date} ${activeYear}` : rawStart;
+    const endDate = rawEnd ? new Date(rawEnd) : null;
+    
+    if (!startDate || isNaN(startDate.getTime()) || !endDate || isNaN(endDate.getTime())) return false;
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+    
+    return selectedDate >= startDate && selectedDate <= endDate;
+  })
+  .filter((t) => {
+    const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
+    const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
+    if (!trainee) return false;
+    if (filterMarket === "") return true;
+    return trainee.marketing?.toUpperCase() === filterMarket;
+  })
+  .filter((training) => {
+    const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id);
+    const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id);
+    if (!trainee || !registration) return false;
+
+    // Search term matching check
+    return (
+      trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trainee.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trainee.rank?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trainee.srn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
     return(
         <>
             <main className="w-full space-y-3">
@@ -521,6 +631,12 @@ export default function Page(){
                                     <MenuItem onClick={onOpenSForm}>Registration Form</MenuItem>
                                 )}
                                 <MenuItem onClick={onOpenDR}>Daily Report</MenuItem>
+                                <MenuItem 
+                                        onClick={() => exportToExcel(filteredTrainings || [], allRegistrations || [], 'Training_Records_Export.xlsx')}
+                                        
+                                >
+                                    Export to Excel
+                                </MenuItem>
                             </MenuList>
                         </Menu>
                     </Box>
@@ -567,59 +683,7 @@ export default function Page(){
                                 <Text w="80px" className="text-center">Vessel</Text>
                                 <Text w="200px" className="text-center pr-5">Remarks</Text>
                             </Box>
-                            {allTraining && allTraining.sort((a, b) => {
-                                    return b.date_enrolled.toMillis() - a.date_enrolled.toMillis();
-                                }).filter((t) => t.reg_status >= 3 && t.regType === 0 )
-                                .filter((t) => {
-                                    const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
-                                    const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
-                                    if (!trainee) return false;
-                                    if (filterCompany === '') return true;
-
-                                    return trainee.company === filterCompany
-                                    //allClients?.find((client) => client.id === trainee.company)?.company || trainee.company
-                                })
-                                .filter((t) => {
-                                    if (!filterCourse || filterCourse === '') return true;
-
-                                    return (
-                                        allCourses?.find((course) => course.id === t.course)?.course_code.toUpperCase() === filterCourse.toUpperCase() || 
-                                        courseCodes?.find((course) => course.id === t.course)?.company_course_code.toUpperCase() === filterCourse.toUpperCase()
-                                    )
-                                })
-                                .filter((t) => {
-                                    if (!filterDate) return true; // Assuming 'filterDate' state holds your YYYY-MM-DD input string
-                                    
-                                    const selectedDate = new Date(filterDate);
-                                    selectedDate.setHours(0, 0, 0, 0);
-                                    const activeYear = selectedDate.getFullYear();
-
-                                    const rawStart = t.start_date ? `${t.start_date} ${activeYear}` : null;
-                                    const startDate = rawStart ? new Date(rawStart) : null;
-                                    
-                                    const rawEnd = (t.end_date && t.end_date !== '--') ? `${t.end_date} ${activeYear}` : rawStart;
-                                    const endDate = rawEnd ? new Date(rawEnd) : null;
-                                    
-                                    if (!startDate || isNaN(startDate.getTime())) return false;
-                                    if (!endDate || isNaN(endDate.getTime())) return false;
-                                    
-                                    startDate.setHours(0, 0, 0, 0);
-                                    endDate.setHours(0, 0, 0, 0);
-                                    
-                                    return selectedDate >= startDate && selectedDate <= endDate;
-                                })
-                                .filter((t) => {
-                                    const registration = allRegistrations?.find((r) => r.id === t.reg_ref_id);
-                                    const trainee = allTrainee?.find((tr) => tr.id === registration?.trainee_ref_id);
-                                    if (!trainee) return false;
-                            
-                                    // if filter is 'ALL', show all trainees
-                                    if (filterMarket === "") return true;
-                                    
-                                    // otherwise match marketing field
-                                    return trainee.marketing?.toUpperCase() === filterMarket;
-                                })
-                                .map((training) => {
+                            {filteredTrainings?.map((training) => {
                                 
                                 const registration = allRegistrations?.find((r) => r.id === training.reg_ref_id)
                                 const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id)
@@ -697,7 +761,8 @@ export default function Page(){
                                                 <Text noOfLines={1} w='200px' fontWeight='normal' className={`${training.train_remarks === '' ? 'text-gray-500' : 'text-blue-600'}`}>
                                                     {training.train_remarks === '' ? 'Add Remarks' : training.train_remarks}
                                                 </Text>
-                                            </Button>                                     
+                                            </Button>  
+                                                                          
                                         </Box>
                                     )
                                 }

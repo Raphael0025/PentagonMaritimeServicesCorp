@@ -8,6 +8,7 @@ Accordion, AccordionButton, AccordionIcon, IconButton, AccordionItem, AccordionP
 Table, Thead, Tbody, Tr, Th, Td, TableContainer, Badge, 
 } from '@chakra-ui/react';
 import { ArrowBackIcon, RepeatIcon, AddIcon, MinusIcon, ChevronDownIcon } from '@chakra-ui/icons'
+import * as XLSX from 'xlsx'
 import { SearchIcon, PinIcon, MailIcon, PhoneIcon, FacebookIcon } from '@/Components/Icons';
 
 import { writeBatch, doc, setDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
@@ -1122,6 +1123,63 @@ export default function BDTrackerCertification (){
         return finalHtmlContent
     }
 
+// Place this function INSIDE your React component
+    const exportToExcel = (filename = 'Certificate_Batch_Export.xlsx') => {
+    if (!allTData || allTData.length === 0) {
+        console.warn("No training records available to export.");
+        return;
+    }
+
+    // Map through each training item using component-scoped data
+    const formattedData = allTData.map((item: any, index: number) => {
+        const registration = allRegData?.find((r) => r.id === item?.reg_ref_id);
+        const trainee = allTrainee?.find((t) => t.id === registration?.trainee_ref_id);
+
+        const course_code = 
+        allCourses?.find((course) => course.id === item.course)?.course_code || 
+        courseCodes?.find((course) => course.id === item.course)?.company_course_code || 
+        item.courseCode || 
+        '';
+
+        const company = allClients?.find((client) => client.id === trainee?.company)?.alias || trainee?.company || '';
+        const rank = allRanks?.find((r) => r.code === trainee?.rank)?.rank || trainee?.rank || '';
+
+        const traineeName = trainee 
+        ? `${trainee.last_name || ''}, ${trainee.first_name || ''}`.trim() 
+        : (item.traineeName || '');
+
+        return {
+        'No.': index + 1,
+        'Client.': company.toUpperCase(),
+        'Trainee Name': traineeName.toUpperCase(),
+        'Rank': rank.toUpperCase(),
+        'Course': course_code.toUpperCase(),
+        'Certificate Number': item.cert_no || '',
+        'Training Date': `${item.start_date} ${item.end_date !== '' ? `- ${item.end_date}` : ''}`,
+        };
+    });
+
+    // 1. Create a new workbook and worksheet
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Certificates');
+
+    // 2. Set auto-fit column widths
+    const colWidths = [
+        { wch: 5 },  // No.
+        { wch: 18 }, // Client.
+        { wch: 25 }, // Trainee Name
+        { wch: 18 }, // Rank
+        { wch: 30 }, // Course
+        { wch: 22 }, // Certificate Number
+        { wch: 15 }, // Training Date
+    ];
+    worksheet['!cols'] = colWidths;
+
+    // 3. Trigger browser download
+    XLSX.writeFile(workbook, filename);
+    };
+
     return(
         <>
         <Box ref={listRef} w="100%" h='auto' overflowX="visible"
@@ -1348,6 +1406,12 @@ export default function BDTrackerCertification (){
                     <MenuList>
                         <MenuItem onClick={handlePrintCompanyList}>Issued Certificates</MenuItem>
                         <MenuItem onClick={handlePrintList}>Company Trainee Summary</MenuItem>
+                        <MenuItem 
+                                onClick={() => exportToExcel('Training_Records_Export.xlsx')}
+                                
+                        >
+                            Export to Excel
+                        </MenuItem>
                     </MenuList>
                 </Menu>
             </Box>
