@@ -129,6 +129,7 @@ export default function Certification() {
                 const docRef = doc(training, 'TRAINING', payload.id);
                 const docSnap = await getDoc(docRef);
 
+                console.log('Training record fetched successfully:', docSnap.data());
                 if (docSnap.exists()) {
                     setTrainingData(docSnap.data());
                     console.log('Training record fetched successfully:', docSnap.data());
