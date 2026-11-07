@@ -164,6 +164,8 @@ export default function Certification() {
                     year = result.date_enrolled?.toDate()?.getFullYear();
                 }else if (batchRec?.createdAt?.toDate) {
                     year = batchRec.createdAt.toDate().getFullYear()
+                }else{
+                    year = result.trainingYear || new Date().getFullYear()
                 }
                 setYear(year)
 
@@ -186,7 +188,7 @@ export default function Certification() {
                 setSplitMonth(split_Month)
                 setNthDay(nth_Day)
 
-                await UPDATE_VIEW_CERT_ACCESS(targetTrainingId, view_count, '')
+                //await UPDATE_VIEW_CERT_ACCESS(targetTrainingId, view_count, '')
                 toast({
                     title: 'Certificate Verified',
                     status: 'success',
