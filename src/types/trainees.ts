@@ -236,6 +236,7 @@ export const initTraining = {
     cert_no: '',
     releasedBy: '',
     releasingProof: '',
+    trainingYear: 0,
 
     transmittalID: '',
     certTitle: '',
