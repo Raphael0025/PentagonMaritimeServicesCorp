@@ -228,7 +228,7 @@ export default function PSCMT_CERT({selectedTrainings, trainingID, searchTerm}: 
                                 lineHeight='1.2'    // Increased slightly; '1' often causes letters to touch
                                 fontFamily='Arial, Helvetica, sans-serif'
                             >
-                                {`In compliance with Regulation V/2, paragraph 8, Section A-V/2,`}
+                                {`In compliance with Regulation V/2, paragraph 7, Section A-V/2,`}
                             </Box>
                             <Box w='615px'
                                 mx='auto'
@@ -237,7 +237,7 @@ export default function PSCMT_CERT({selectedTrainings, trainingID, searchTerm}: 
                                 lineHeight='1.2'    // Increased slightly; '1' often causes letters to touch
                                 fontFamily='Arial, Helvetica, sans-serif'
                             >
-                                {`paragraph 4, Table A-V/2-2 of the STCW Convention, 1978, as amended.`}
+                                {`paragraph 3, Table A-V/2-1 of the STCW Convention, 1978, as amended.`}
                             </Box>
                             <Box w='615px'
                                 mt='5'
