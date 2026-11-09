@@ -16,8 +16,10 @@ import BT_Cert from "./Certificate_Template/BT_Cert.template"
 import RBT_Cert from "./Certificate_Template/RBT_Cert.template"
 import STP_Cert from "./Certificate_Template/STP_Cert.template"
 import PSCMT_CERT from "./Certificate_Template/PSCMT_CERT.template";
+import PSCMHBT_CERT from "./Certificate_Template/PSCMHBT_CERT.template";
 
 export {
+    PSCMHBT_CERT,
     SDSDCertTemplate,
     CCMD_CERT,
     RFPEW_CERT,

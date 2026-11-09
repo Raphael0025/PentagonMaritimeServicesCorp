@@ -179,47 +179,7 @@ export default function PSCMT_CERT({selectedTrainings, trainingID, searchTerm}: 
                                 }}
                             />
                         </Text>
-                        <Box display='flex' flexDir='column' justifyContent='center'
-                        //w='60%' mt='3' textAlign='center' 
-                        // sx={{
-                        //     '& ul': {
-                        //         listStyleType: 'disc',
-                        //         listStylePosition: 'inside',
-                        //         paddingLeft: '1.5rem',
-                        //         margin: '0.5rem 0',
-                        //     },
-                        //     '& ol': {
-                        //         listStyleType: 'decimal',
-                        //         listStylePosition: 'inside',
-                        //         paddingLeft: '1.5rem',
-                        //         margin: '0.5rem 0',
-                        //     },
-                        //     '& li': {
-                        //         marginBottom: '0.25rem',
-                        //     },
-                        //     '& p, & div': {
-                        //         display: 'inline',
-                        //         lineHeight: '0.8',
-                        //         margin: 0,
-                        //     },
-                        //     '& br': {
-                        //         display: 'inline',
-                        //     },
-                        // }}
-                        >
-                            {/* {training?.conductedOnline ? (
-                                <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
-                                    dangerouslySetInnerHTML={{
-                                        __html: `<span>Conducted online on ${trainingDate} </span>${normalizeCertContent(training.certContent)}`
-                                    }}
-                                />
-                            ) : (
-                                <div style={{fontSize: '12pt', display: 'block', lineHeight: '1.2'}}
-                                    dangerouslySetInnerHTML={{
-                                        __html: `${normalizeCertContent(training.certContent)}`
-                                    }}
-                                />
-                            )} */}
+                        <Box display='flex' flexDir='column' justifyContent='center'>
                             <Box w='615px'
                                 mt='5'
                                 mx='auto'

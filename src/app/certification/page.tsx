@@ -255,15 +255,15 @@ export default function Certification() {
                 return
             }
             
-            if (trainingDoc?.hasViewed) {
-                toast({
-                    title: 'View Limit Reached',
-                    description: `You have already used your allocated view access for this certificate. Please contact the training center for further assistance.`,
-                    status: 'error',
-                    duration: 5000,
-                })
-                return
-            }
+            // if (trainingDoc?.hasViewed) {
+            //     toast({
+            //         title: 'View Limit Reached',
+            //         description: `You have already used your allocated view access for this certificate. Please contact the training center for further assistance.`,
+            //         status: 'error',
+            //         duration: 5000,
+            //     })
+            //     return
+            // }
 
             const trainee = await GET_TRAINEE_RECORD(regExists.trainee_ref_id)
             if (!trainee) {

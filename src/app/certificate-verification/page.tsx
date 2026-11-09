@@ -33,7 +33,7 @@ export default function Certification() {
     const [showVerification, setShowVerification] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [isPreparingCert, setIsPreparingCert] = useState<boolean>(false)
-    const [verifiedCertNum, setVerifiedCert] = useState<boolean>(false)
+    const [verifiedCertNum, setVerifiedCert] = useState<boolean>(true)
     
     const [certTitleHtml, setCertTitleHtml] = useState('')
     const [certContentHtml, setCertContentHtml] = useState('')
@@ -287,12 +287,6 @@ export default function Certification() {
         }
     }
 
-    // const formatTrainingSchedule = (dateStr: string, year: number) => {
-    //     if (!dateStr) return ''
-    //     const dateConvert = new Date(dateStr).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
-    //     return `${dateConvert}, ${year}` // "February 11"
-    // }
-
     const formatTrainingSchedule = (dateStr: string, year: number) => {
         if (!dateStr) return '';
 
@@ -401,15 +395,6 @@ export default function Certification() {
                             ? formatTrainingSchedule(trainingDoc.start_date, year)
                             : `${formatTrainingSchedule(trainingDoc.start_date, year)} to ${formatTrainingSchedule(trainingDoc.end_date, year)}`
 
-                    // const split_Month = formatTrainingSchedule(
-                    //     trainingDoc.end_date || trainingDoc.start_date,
-                    //     year
-                    // ).split(' ')[0]
-                    
-                    // const split_Day = formatTrainingSchedule(
-                        //     trainingDoc.end_date || trainingDoc.start_date,
-                        //     year
-                        // ).split(' ')[1].replace(/\D/g, '')
                     const split_Month = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), year || 0).split(' ')[0]
                     const split_Day = formatTrainingSchedule((trainingDoc.end_date === '' ? trainingDoc.start_date : trainingDoc.end_date), year || 0).split(' ')[1].replace(/\D/g, '')
 
@@ -430,11 +415,7 @@ export default function Certification() {
                     setCertContentHtml(trainingDoc.certContent)
                     setCertTitleHtml(trainingDoc.certTitle)
                     //await UPDATE_VIEW_CERT_ACCESS(trainingDoc.id, view_count, '')
-                    toast({
-                        title: 'Certificate Verified',
-                        status: 'success',
-                        duration: 3000,
-                    })
+                    
                 } catch (err) {
                     console.error(err)
                 } finally {
@@ -468,7 +449,6 @@ export default function Certification() {
         return temp.innerHTML
     }
     
-    
     const formatCertContent = (year: number, trainingYear: number) => {
         let courseTemplate = certContentHtml
 
@@ -495,149 +475,137 @@ export default function Certification() {
     return(
     <>
         {/** Certificate Verification Modal */}
-        {/* <main className="min-h-screen bg-gray-100 py-10 px-4 flex items-center justify-center">
-            <div className="max-w-2xl w-full bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
-                
-                <div className="bg-sky-800 text-white p-6 text-center">
-                <h1 className="text-xl font-bold uppercase tracking-wider">Pentagon Maritime Services</h1>
-                <p className="text-xs text-sky-200 mt-1">Official Certificate Verification System</p>
-                </div>
-
-                <div className="p-6 space-y-6">
-                
-                <div className="flex justify-between items-center bg-emerald-50 border border-emerald-200 p-3 rounded-lg">
-                    <span className="text-xs font-semibold text-emerald-800 uppercase">Status</span>
-                    <span className="text-xs font-bold text-emerald-700 bg-emerald-200 px-2 py-1 rounded">
-                    ✓ VALID & VERIFIED
-                    </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                    <p className="text-xs text-gray-500 uppercase">Certificate No.</p>
-                    <p className="font-semibold text-gray-800">{trainingData.certNo || 'N/A'}</p>
-                    </div>
-                    <div>
-                    <p className="text-xs text-gray-500 uppercase">Training Dates</p>
-                    <p className="font-semibold text-gray-800">
-                        {trainingData.start_date} {trainingData.end_date && trainingData.end_date !== '--' ? `- ${trainingData.end_date}` : ''}
-                    </p>
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                    Official Compliance & Course Details
-                    </h3>
-                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs md:text-sm text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">
-                    {trainingData.certContent || 'No additional compliance content recorded for this training.'}
-                    </div>
-                </div>
-
-                </div>
-
-                <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 text-center text-xs text-gray-500">
-                This record is cryptographically linked to the Pentagon Maritime database.
-                </div>
-
-            </div>
-        </main> */}
-        {isPreparingCert ? (
-            // 🟡 LOADING CERT VIEW
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center space-y-2">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-700 mx-auto"></div>
-                <p className="text-sm font-medium text-gray-600">Verifying Digital Certificate...</p>
-                </div>
-            </div>
-        ) : (
-            // 🟢 FINAL CERTIFICATE VIEW
-            <>
-                <Box w="100%" mt="4">
-                    <Progress
-                        value={progress}
-                        size="sm"
-                        colorScheme={getColor()}
-                        borderRadius="md"
-                        transition="all 1s linear"
-                    />
-                    
-                    <Text fontSize="xs" color="gray.500" textAlign="center" mt="1">
-                        Returning in {countdown}s...
-                    </Text>
+        {!verifiedCertNum ? (
+            <Box w={{ base: '95%', md: '450px' }} h='450px' position='relative' zIndex={2} bgColor='#D4D4D4 ' shadow='md' display='flex' flexDirection='column' alignItems='center' justifyContent='center' border='1px solid gray'  borderRadius='md' textAlign='center'>
+                {/** Header */}
+                <Box bgColor='blue.900' placeItems='center' w='100%' borderBottom='3px solid #D2AC47' pt='3' pb='4' borderTopLeftRadius={'5'} borderTopRightRadius={'5'} >
+                    <Image src='/landscape_logo_white_text.png' width='50%' height='100%' alt='company logo' />
                 </Box>
-                <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' pt='5'>
-                    <Box w='95%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
-                        <Image src={'/CompanyLogo2-dark.png'} alt='header image' w='2in' h='1.5in'  />
-                        <Box pt='6' pr='12' pb='5' display='flex' justifyContent='end' w='100%'>
-                            <Box fontWeight='bold' fontSize='10pt' textAlign='start'>
-                                <Text>
-                                    Certificate No.: 
-                                    <Text as='span' fontWeight={'normal'}>
-                                        {`${certNum}`}
-                                    </Text>
-                                </Text>
-                                <Text>
-                                    Registration No.: 
-                                    <Text as='span' fontWeight={'normal'}>
-                                        {`REG-${regNum}`}
-                                    </Text>
-                                </Text>
+                <Box display='flex' position='relative' zIndex={2} flexDir='column' gap='3' p='5' h='100%' w='100%'>
+                    <Text fontWeight='bold' fontSize='12pt' borderBottom='1px solid gray' w='100%' pb='4'>{`What do you like to do?`}</Text>
+                    <Box display='flex' flexDir='column' py='3' gap='3'>
+                        <Button as='a' href='https://www.pentagonmaritime.com' role='group' position='relative' overflow={'hidden'} px='12' py='6' fontWeight='normal' size='md' _hover={{ bgColor: 'blue.700', color: 'white', borderBottom: '3px solid #d2ac47'}} borderBottom='3px solid white' >
+                            <Box position='absolute' left='40px' top='50%' transform='translateY(-50%)' transition='all 0.25s ease' _groupHover={{transform: 'translateY(160%)  scale(0.8)'}} >
+                                <BsGlobe2 size='35px' />
                             </Box>
-                        </Box>
-                        <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
-                            <Text fontWeight='bold' fontSize='16pt'>Certificate of Completion</Text>
-                            <Text fontSize='10pt'>This Certificate is issued to</Text>
-                            <Text fontWeight='bold' fontSize='14pt' textTransform='uppercase'>{`${traineeName}`}</Text>
-                            <Text textAlign='center' fontSize='10pt'>for having successfully completed the training course in</Text>
-                            <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
-                                <div
-                                    dangerouslySetInnerHTML={{
-                                        __html: `${certTitleHtml}`
-                                    }}
-                                />
-                            </Text>
-                            <Box w='110%' mt='3' textAlign='center' sx={{
-                                '& ul': {
-                                    listStyleType: 'disc',
-                                    listStylePosition: 'inside',
-                                    paddingLeft: '1.5rem',
-                                    margin: '0.5rem 0',
-                                },
-                                '& ol': {
-                                    listStyleType: 'decimal',
-                                    listStylePosition: 'inside',
-                                    paddingLeft: '1.5rem',
-                                    margin: '0.5rem 0',
-                                },
-                                '& li': {
-                                    marginBottom: '0.25rem',
-                                },
-                                '& p, & div': {
-                                    display: 'inline',
-                                    lineHeight: '1.2',
-                                    margin: 0,
-                                },
-                                '& br': {
-                                    display: 'inline',
-                                },
-                            }}>
-                                <div style={{fontSize: '8pt', display: 'block', lineHeight: '1.2'}}
-                                    dangerouslySetInnerHTML={{
-                                        //__html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
-                                        __html: `${formatCertContent(getYear, 0)}`
-                                    }}
-                                />
+                            <Text textAlign='center'>Visit Our Website</Text>
+                            <Box position='absolute' right='-5px' top='65%' transform='translateY(50%) translateX(10px)' opacity={0} transition='all 0.25s ease' _groupHover={{opacity: 0.5, transform: 'translateY(-50%) translateX(0)'}} >
+                                <BsGlobe2 size='80px' />
                             </Box>
-                            <div style={{marginTop: '15px', textAlign:'center', fontSize: '10pt'}}
-                                dangerouslySetInnerHTML={{
-                                    __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
-                                }}
-                            />
-                        </Box>
+                        </Button>
+                        <Button as='a' href='https://www.facebook.com/Pentagonmaritimeservicescorp' role='group' position='relative' overflow={'hidden'} px='12' py='6' fontWeight='normal' size='md' _hover={{ bgColor: 'blue.700', color: 'white', borderBottom: '3px solid #d2ac47'}} borderBottom='3px solid white' >
+                            <Box position='absolute' left='40px' top='50%' transform='translateY(-50%)' transition='all 0.25s ease' _groupHover={{transform: 'translateY(160%)  scale(0.8)'}} >
+                                <FaFacebook size='35px' />
+                            </Box>
+                            <Text textAlign='center'>View Our Social Media</Text>
+                            <Box position='absolute' right='-5px' top='65%' transform='translateY(50%) translateX(10px)' opacity={0} transition='all 0.25s ease' _groupHover={{opacity: 0.5, transform: 'translateY(-50%) translateX(0)'}} >
+                                <FaFacebook size='80px' />
+                            </Box>
+                        </Button>
+                    </Box>
+                    <Box h='100%' display='flex' alignItems='end' justifyContent='center'>
+                        <Text fontWeight='normal' h='100%'  fontSize='2xs' color='white' borderTop='1px solid gray' w='100%' pt='8'>{`For authenticity, you can verify the certificate digitally.`}</Text>
                     </Box>
                 </Box>
-            </>
+            </Box>
+        ):(
+            isPreparingCert ? (
+                // 🟡 LOADING CERT VIEW
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                    <div className="text-center space-y-2">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-700 mx-auto"></div>
+                    <p className="text-sm font-medium text-gray-600">Verifying Digital Certificate...</p>
+                    </div>
+                </div>
+            ) : (
+                // 🟢 FINAL CERTIFICATE VIEW
+                <>
+                    <Box w="100%" mt="4">
+                        <Progress
+                            value={progress}
+                            size="sm"
+                            colorScheme={getColor()}
+                            borderRadius="md"
+                            transition="all 1s linear"
+                        />
+                        
+                        <Text fontSize="xs" color="gray.500" textAlign="center" mt="1">
+                            Returning in {countdown}s...
+                        </Text>
+                    </Box>
+                    <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' pt='5'>
+                        <Box w='95%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
+                            <Image src={'/CompanyLogo2-dark.png'} alt='header image' w='2in' h='1.5in'  />
+                            <Box pt='6' pr='12' pb='5' display='flex' justifyContent='end' w='100%'>
+                                <Box fontWeight='bold' fontSize='10pt' textAlign='start'>
+                                    <Text>
+                                        Certificate No.: 
+                                        <Text as='span' fontWeight={'normal'}>
+                                            {`${certNum}`}
+                                        </Text>
+                                    </Text>
+                                    <Text>
+                                        Registration No.: 
+                                        <Text as='span' fontWeight={'normal'}>
+                                            {`REG-${regNum}`}
+                                        </Text>
+                                    </Text>
+                                </Box>
+                            </Box>
+                            <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
+                                <Text fontWeight='bold' fontSize='16pt'>Certificate of Completion</Text>
+                                <Text fontSize='10pt'>This Certificate is issued to</Text>
+                                <Text fontWeight='bold' fontSize='14pt' textTransform='uppercase'>{`${traineeName}`}</Text>
+                                <Text textAlign='center' fontSize='10pt'>for having successfully completed the training course in</Text>
+                                <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: `${certTitleHtml}`
+                                        }}
+                                    />
+                                </Text>
+                                <Box w='110%' mt='3' textAlign='center' sx={{
+                                    '& ul': {
+                                        listStyleType: 'disc',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& ol': {
+                                        listStyleType: 'decimal',
+                                        listStylePosition: 'inside',
+                                        paddingLeft: '1.5rem',
+                                        margin: '0.5rem 0',
+                                    },
+                                    '& li': {
+                                        marginBottom: '0.25rem',
+                                    },
+                                    '& p, & div': {
+                                        display: 'inline',
+                                        lineHeight: '1.2',
+                                        margin: 0,
+                                    },
+                                    '& br': {
+                                        display: 'inline',
+                                    },
+                                }}>
+                                    <div style={{fontSize: '8pt', display: 'block', lineHeight: '1.2'}}
+                                        dangerouslySetInnerHTML={{
+                                            //__html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
+                                            __html: `${formatCertContent(getYear, 0)}`
+                                        }}
+                                    />
+                                </Box>
+                                <div style={{marginTop: '15px', textAlign:'center', fontSize: '10pt'}}
+                                    dangerouslySetInnerHTML={{
+                                        __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
+                                    }}
+                                />
+                            </Box>
+                        </Box>
+                    </Box>
+                </>
+            )
         )}
     </>
     )

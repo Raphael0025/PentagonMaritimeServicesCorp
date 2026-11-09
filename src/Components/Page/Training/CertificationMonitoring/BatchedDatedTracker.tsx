@@ -15,7 +15,7 @@ import { TRAINING_BY_ID } from '@/types/trainees'
 import { CERTIFICATION_BY_ID, CERTIFICATION, certVersion } from '@/types/certification'
 
 import { CourseBatchByID, initCourseBatch } from '@/types/course-batches'
-import { InHouseCert, UBT_PssrCert, BT_Cert, RBT_Cert, CCMD_CERT, RFPEW_CERT, RFPNW_CERT, STP_Cert, PSCMT_CERT, SDSDCertTemplate } from '@/Components/Page/Training/CertificationMonitoring'
+import { InHouseCert, UBT_PssrCert, BT_Cert, RBT_Cert, CCMD_CERT, RFPEW_CERT, RFPNW_CERT, STP_Cert, PSCMT_CERT, PSCMHBT_CERT, SDSDCertTemplate } from '@/Components/Page/Training/CertificationMonitoring'
 
 import { parsingTimestamp, ToastStatus } from '@/types/handling'
 import { handleCertStatus } from '@/handlers/trainee_handler'
@@ -564,6 +564,8 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                 return <STP_Cert selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
             case 'PSCMT':
                 return <PSCMT_CERT selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
+            case 'PSCMHBT':
+                return <PSCMHBT_CERT selectedTrainings={trainings} searchTerm={searchTerm} trainingID={trainingID} />
             default:
                 return <></>;
         }
