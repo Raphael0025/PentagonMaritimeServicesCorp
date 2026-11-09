@@ -188,7 +188,7 @@ export default function PSCMHBT_CERT({selectedTrainings, trainingID, searchTerm}
                                 lineHeight='1.2'    // Increased slightly; '1' often causes letters to touch
                                 fontFamily='Arial, Helvetica, sans-serif'
                             >
-                                {`In compliance with Regulation V/2, paragraph 7, Section A-V/2, paragraph 3, Table A-V/2-1 of the STCW Convention, 1978, as amended.`}
+                                {`In compliance with Regulation V/2, paragraph 8, of the STCW Convention, 1978, as amended.`}
                             </Box>
                             <Box w='615px'
                                 mt='5'
@@ -198,7 +198,7 @@ export default function PSCMHBT_CERT({selectedTrainings, trainingID, searchTerm}
                                 lineHeight='1.2'    // Increased slightly; '1' often causes letters to touch
                                 fontFamily='Arial, Helvetica, sans-serif'
                             >
-                                {`Conducted from ${trainingDate}, as approved by the Maritime Industry Authority pursuant to the provisions of Republic Act No. 10635, MARINA Circular No. 2013-01, STCW Circular No. 2018-02 and STCW Advisory 2019-05, and after having been assessed by the accredited Assessor in accordance with the approved methods and criteria.`}
+                                {`Conducted from ${trainingDate}, as approved by the Maritime Industry Authority pursuant to the provisions of Republic Act No. 10635, Marina Circular No. SC-2021-09, Marina Circular No. SC-2022-05, and after having been assessed by the accredited Training Course Assessor in accordance with the approved methods and criteria.`}
                             </Box>
                         </Box>
                         <div style={{marginTop: '40px'}}

@@ -101,30 +101,6 @@ export default function Certification() {
             clearTimeout(timeout);
         };
     }, [verifiedCertNum, isPreparingCert]);
-
-    const GET_TRAINING_RECORD = async (certNo: string): Promise<TRAINING_BY_ID | null> => {
-        try {
-            const q = query(training, where('cert_no', '==', certNo))
-            const snapshot = await getDocs(q)
-
-            if (snapshot.empty) {
-                return null
-            }
-
-            const docSnap = snapshot.docs[0]
-
-            const result = {
-                id: docSnap.id,
-                ...docSnap.data(),
-            } as TRAINING_BY_ID
-
-            return result
-
-        } catch (error) {
-            console.error('Error fetching training record:', error)
-            throw error
-        }
-    }
     
     const GET_TRAINEE_RECORD = async ( traineeID: string ): Promise<TRAINEE_BY_ID | null> => {
         try {
@@ -139,6 +115,38 @@ export default function Certification() {
 
         } catch (error) {
             console.error('Error fetching trainee record:', error)
+            throw error
+        }
+    }
+    
+    const GET_TRAINING_RECORD = async (certNo: string, regVar: string): Promise<TRAINING_BY_ID | null> => {
+        try {
+            const q = query(training, where('reg_ref_id', '==', regVar))
+            const snapshot = await getDocs(q)
+
+            if (snapshot.empty) {
+                return null
+            }
+
+            let docSnap: any
+            if(certNo){
+                const matchedDoc = snapshot.docs.find(
+                    (doc) => doc.data().cert_no === certNo
+                );
+                docSnap = matchedDoc || docSnap; // Use the matched document if found, otherwise fallback to the first document
+            }
+            console.log(docSnap)
+            console.log(certNo)
+            console.log(regVar)
+            const result = {
+                id: docSnap.id,
+                ...docSnap.data(),
+            } as TRAINING_BY_ID
+
+            return result
+
+        } catch (error) {
+            console.error('Error fetching training record:', error)
             throw error
         }
     }
@@ -243,7 +251,7 @@ export default function Certification() {
             const normalizedCertNum = certNum.trim().toUpperCase()
 
             const regExists = await GET_REGISTRATION_RECORD(normalizedRegNum)
-            const trainingDoc = await GET_TRAINING_RECORD(normalizedCertNum)
+            const trainingDoc = await GET_TRAINING_RECORD(normalizedCertNum, regExists?.id || '')
             
             if (!regExists || !trainingDoc) {
                 toast({

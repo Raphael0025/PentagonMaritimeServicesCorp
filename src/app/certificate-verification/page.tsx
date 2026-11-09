@@ -475,138 +475,144 @@ export default function Certification() {
     return(
     <>
         {/** Certificate Verification Modal */}
-        {!verifiedCertNum ? (
-            <Box w={{ base: '95%', md: '450px' }} h='450px' position='relative' zIndex={2} bgColor='#D4D4D4 ' shadow='md' display='flex' flexDirection='column' alignItems='center' justifyContent='center' border='1px solid gray'  borderRadius='md' textAlign='center'>
-                {/** Header */}
-                <Box bgColor='blue.900' placeItems='center' w='100%' borderBottom='3px solid #D2AC47' pt='3' pb='4' borderTopLeftRadius={'5'} borderTopRightRadius={'5'} >
-                    <Image src='/landscape_logo_white_text.png' width='50%' height='100%' alt='company logo' />
-                </Box>
-                <Box display='flex' position='relative' zIndex={2} flexDir='column' gap='3' p='5' h='100%' w='100%'>
-                    <Text fontWeight='bold' fontSize='12pt' borderBottom='1px solid gray' w='100%' pb='4'>{`What do you like to do?`}</Text>
-                    <Box display='flex' flexDir='column' py='3' gap='3'>
-                        <Button as='a' href='https://www.pentagonmaritime.com' role='group' position='relative' overflow={'hidden'} px='12' py='6' fontWeight='normal' size='md' _hover={{ bgColor: 'blue.700', color: 'white', borderBottom: '3px solid #d2ac47'}} borderBottom='3px solid white' >
-                            <Box position='absolute' left='40px' top='50%' transform='translateY(-50%)' transition='all 0.25s ease' _groupHover={{transform: 'translateY(160%)  scale(0.8)'}} >
-                                <BsGlobe2 size='35px' />
-                            </Box>
-                            <Text textAlign='center'>Visit Our Website</Text>
-                            <Box position='absolute' right='-5px' top='65%' transform='translateY(50%) translateX(10px)' opacity={0} transition='all 0.25s ease' _groupHover={{opacity: 0.5, transform: 'translateY(-50%) translateX(0)'}} >
-                                <BsGlobe2 size='80px' />
-                            </Box>
-                        </Button>
-                        <Button as='a' href='https://www.facebook.com/Pentagonmaritimeservicescorp' role='group' position='relative' overflow={'hidden'} px='12' py='6' fontWeight='normal' size='md' _hover={{ bgColor: 'blue.700', color: 'white', borderBottom: '3px solid #d2ac47'}} borderBottom='3px solid white' >
-                            <Box position='absolute' left='40px' top='50%' transform='translateY(-50%)' transition='all 0.25s ease' _groupHover={{transform: 'translateY(160%)  scale(0.8)'}} >
-                                <FaFacebook size='35px' />
-                            </Box>
-                            <Text textAlign='center'>View Our Social Media</Text>
-                            <Box position='absolute' right='-5px' top='65%' transform='translateY(50%) translateX(10px)' opacity={0} transition='all 0.25s ease' _groupHover={{opacity: 0.5, transform: 'translateY(-50%) translateX(0)'}} >
-                                <FaFacebook size='80px' />
-                            </Box>
-                        </Button>
+        <Box display='flex' justifyContent='center' flexDir='column' alignItems='center' w='100%' minHeight='100vh' p='3'>
+            <Image position='absolute' left={{base: '-80%', md: '-50%'}} transform={{base: "translateX(30%)", md: "translateX(50%)"}} zIndex={1} src={'pentagon_logo.png'} width={{base: '100%', md: '50%'}} h='100%' opacity={'30%'} />
+            {!verifiedCertNum ? (
+                <Box w={{ base: '95%', md: '450px' }} h='400px' position='relative' zIndex={2} bgColor='#D4D4D4 ' shadow='md' display='flex' flexDirection='column' alignItems='center' justifyContent='center' border='1px solid gray'  borderRadius='md' textAlign='center'>
+                    {/** Header */}
+                    <Box bgColor='blue.900' placeItems='center' w='100%' borderBottom='3px solid #D2AC47' pt='3' pb='4' borderTopLeftRadius={'5'} borderTopRightRadius={'5'} >
+                        <Image src='/landscape_logo_white_text.png' width='50%' height='100%' alt='company logo' />
                     </Box>
-                    <Box h='100%' display='flex' alignItems='end' justifyContent='center'>
-                        <Text fontWeight='normal' h='100%'  fontSize='2xs' color='white' borderTop='1px solid gray' w='100%' pt='8'>{`For authenticity, you can verify the certificate digitally.`}</Text>
-                    </Box>
-                </Box>
-            </Box>
-        ):(
-            isPreparingCert ? (
-                // 🟡 LOADING CERT VIEW
-                <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                    <div className="text-center space-y-2">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-700 mx-auto"></div>
-                    <p className="text-sm font-medium text-gray-600">Verifying Digital Certificate...</p>
-                    </div>
-                </div>
-            ) : (
-                // 🟢 FINAL CERTIFICATE VIEW
-                <>
-                    <Box w="100%" mt="4">
-                        <Progress
-                            value={progress}
-                            size="sm"
-                            colorScheme={getColor()}
-                            borderRadius="md"
-                            transition="all 1s linear"
-                        />
-                        
-                        <Text fontSize="xs" color="gray.500" textAlign="center" mt="1">
-                            Returning in {countdown}s...
-                        </Text>
-                    </Box>
-                    <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' pt='5'>
-                        <Box w='95%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
-                            <Image src={'/CompanyLogo2-dark.png'} alt='header image' w='2in' h='1.5in'  />
-                            <Box pt='6' pr='12' pb='5' display='flex' justifyContent='end' w='100%'>
-                                <Box fontWeight='bold' fontSize='10pt' textAlign='start'>
-                                    <Text>
-                                        Certificate No.: 
-                                        <Text as='span' fontWeight={'normal'}>
-                                            {`${certNum}`}
-                                        </Text>
-                                    </Text>
-                                    <Text>
-                                        Registration No.: 
-                                        <Text as='span' fontWeight={'normal'}>
-                                            {`REG-${regNum}`}
-                                        </Text>
-                                    </Text>
+                    <Box display='flex' position='relative' zIndex={2} flexDir='column' gap='3' p='5' h='100%' w='100%'>
+                        <Text fontWeight='bold' fontSize='12pt' borderBottom='1px solid gray' w='100%' pb='4'>{`What do you like to do?`}</Text>
+                        <Box display='flex' flexDir='column' py='3' gap='3'>
+                            <Button as='a' href='https://www.pentagonmaritime.com' role='group' position='relative' overflow={'hidden'} px='12' py='6' fontWeight='normal' fontSize='10pt' size='md' _hover={{ bgColor: 'blue.700', color: 'white', borderBottom: '3px solid #d2ac47'}} borderBottom='3px solid white' >
+                                <Box position='absolute' left='40px' top='50%' transform='translateY(-50%)' transition='all 0.25s ease' _groupHover={{transform: 'translateY(160%)  scale(0.8)'}} >
+                                    <BsGlobe2 size='35px' />
                                 </Box>
-                            </Box>
-                            <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
-                                <Text fontWeight='bold' fontSize='16pt'>Certificate of Completion</Text>
-                                <Text fontSize='10pt'>This Certificate is issued to</Text>
-                                <Text fontWeight='bold' fontSize='14pt' textTransform='uppercase'>{`${traineeName}`}</Text>
-                                <Text textAlign='center' fontSize='10pt'>for having successfully completed the training course in</Text>
-                                <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
-                                    <div
-                                        dangerouslySetInnerHTML={{
-                                            __html: `${certTitleHtml}`
-                                        }}
-                                    />
-                                </Text>
-                                <Box w='110%' mt='3' textAlign='center' sx={{
-                                    '& ul': {
-                                        listStyleType: 'disc',
-                                        listStylePosition: 'inside',
-                                        paddingLeft: '1.5rem',
-                                        margin: '0.5rem 0',
-                                    },
-                                    '& ol': {
-                                        listStyleType: 'decimal',
-                                        listStylePosition: 'inside',
-                                        paddingLeft: '1.5rem',
-                                        margin: '0.5rem 0',
-                                    },
-                                    '& li': {
-                                        marginBottom: '0.25rem',
-                                    },
-                                    '& p, & div': {
-                                        display: 'inline',
-                                        lineHeight: '1.2',
-                                        margin: 0,
-                                    },
-                                    '& br': {
-                                        display: 'inline',
-                                    },
-                                }}>
-                                    <div style={{fontSize: '8pt', display: 'block', lineHeight: '1.2'}}
-                                        dangerouslySetInnerHTML={{
-                                            //__html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
-                                            __html: `${formatCertContent(getYear, 0)}`
-                                        }}
-                                    />
+                                <Text textAlign='center'>Visit Our Website</Text>
+                                <Box position='absolute' right='-5px' top='65%' transform='translateY(50%) translateX(10px)' opacity={0} transition='all 0.25s ease' _groupHover={{opacity: 0.5, transform: 'translateY(-50%) translateX(0)'}} >
+                                    <BsGlobe2 size='80px' />
                                 </Box>
-                                <div style={{marginTop: '15px', textAlign:'center', fontSize: '10pt'}}
-                                    dangerouslySetInnerHTML={{
-                                        __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
-                                    }}
-                                />
-                            </Box>
+                            </Button>
+                            <Button as='a' href='https://www.facebook.com/Pentagonmaritimeservicescorp' role='group' position='relative' overflow={'hidden'} px='12' py='6' fontWeight='normal' fontSize='10pt' size='md' _hover={{ bgColor: 'blue.700', color: 'white', borderBottom: '3px solid #d2ac47'}} borderBottom='3px solid white' >
+                                <Box position='absolute' left='40px' top='50%' transform='translateY(-50%)' transition='all 0.25s ease' _groupHover={{transform: 'translateY(160%)  scale(0.8)'}} >
+                                    <FaFacebook size='35px' />
+                                </Box>
+                                <Text textAlign='center'>View Our Social Media</Text>
+                                <Box position='absolute' right='-5px' top='65%' transform='translateY(50%) translateX(10px)' opacity={0} transition='all 0.25s ease' _groupHover={{opacity: 0.5, transform: 'translateY(-50%) translateX(0)'}} >
+                                    <FaFacebook size='80px' />
+                                </Box>
+                            </Button>
+                        </Box>
+                        <Box h='100%' display='flex' alignItems='end' justifyContent='center'>
+                            <Text fontWeight='normal' h='100%'  fontSize='2xs' color='white' borderTop='1px solid gray' w='100%' pt='8'>{`For authenticity, you can verify the certificate digitally.`}</Text>
                         </Box>
                     </Box>
-                </>
-            )
-        )}
+                    <Box position='absolute' bottom='0' left='0' zIndex={0}>
+                        <Image src='/waves.png' width='100%' alt='company logo' />
+                    </Box>
+                </Box>
+            ):(
+                isPreparingCert ? (
+                    // 🟡 LOADING CERT VIEW
+                    <div className="min-h-screen flex items-center justify-center">
+                        <div className="text-center space-y-2">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-700 mx-auto"></div>
+                        <p className="text-sm font-medium text-gray-600">Verifying Digital Certificate...</p>
+                        </div>
+                    </div>
+                ) : (
+                    // 🟢 FINAL CERTIFICATE VIEW
+                    <>
+                        <Box w="100%" mt="4">
+                            <Progress
+                                value={progress}
+                                size="sm"
+                                colorScheme={getColor()}
+                                borderRadius="md"
+                                transition="all 1s linear"
+                            />
+                            
+                            <Text fontSize="xs" color="gray.500" textAlign="center" mt="1">
+                                Returning in {countdown}s...
+                            </Text>
+                        </Box>
+                        <Box position='relative' display='flex' flexDir='column' justifyContent='center' alignItems='center' pt='5'>
+                            <Box w='95%' h='100%' position='relative' zIndex={2} display='flex' fontSize='12pt' fontWeight='normal' fontFamily='Arial' flexDir='column' alignItems='center' pt='2'>
+                                <Image src={'/CompanyLogo2-dark.png'} alt='header image' w='2in' h='1.5in'  />
+                                <Box pt='6' pr='12' pb='5' display='flex' justifyContent='end' w='100%'>
+                                    <Box fontWeight='bold' fontSize='10pt' textAlign='start'>
+                                        <Text>
+                                            Certificate No.: 
+                                            <Text as='span' fontWeight={'normal'}>
+                                                {`${certNum}`}
+                                            </Text>
+                                        </Text>
+                                        <Text>
+                                            Registration No.: 
+                                            <Text as='span' fontWeight={'normal'}>
+                                                {`REG-${regNum}`}
+                                            </Text>
+                                        </Text>
+                                    </Box>
+                                </Box>
+                                <Box w='100%' display='flex' flexDir='column' alignItems='center' justifyContent='center' gap='3'>
+                                    <Text fontWeight='bold' fontSize='16pt'>Certificate of Completion</Text>
+                                    <Text fontSize='10pt'>This Certificate is issued to</Text>
+                                    <Text fontWeight='bold' fontSize='14pt' textTransform='uppercase'>{`${traineeName}`}</Text>
+                                    <Text textAlign='center' fontSize='10pt'>for having successfully completed the training course in</Text>
+                                    <Text fontSize='14pt' textAlign='center' fontWeight='bold'>
+                                        <div
+                                            dangerouslySetInnerHTML={{
+                                                __html: `${certTitleHtml}`
+                                            }}
+                                        />
+                                    </Text>
+                                    <Box w='110%' mt='3' textAlign='center' sx={{
+                                        '& ul': {
+                                            listStyleType: 'disc',
+                                            listStylePosition: 'inside',
+                                            paddingLeft: '1.5rem',
+                                            margin: '0.5rem 0',
+                                        },
+                                        '& ol': {
+                                            listStyleType: 'decimal',
+                                            listStylePosition: 'inside',
+                                            paddingLeft: '1.5rem',
+                                            margin: '0.5rem 0',
+                                        },
+                                        '& li': {
+                                            marginBottom: '0.25rem',
+                                        },
+                                        '& p, & div': {
+                                            display: 'inline',
+                                            lineHeight: '1.2',
+                                            margin: 0,
+                                        },
+                                        '& br': {
+                                            display: 'inline',
+                                        },
+                                    }}>
+                                        <div style={{fontSize: '8pt', display: 'block', lineHeight: '1.2'}}
+                                            dangerouslySetInnerHTML={{
+                                                //__html: `<span>Conducted on ${trainingDate} </span>${normalizeCertContent(certContentHtml)}`
+                                                __html: `${formatCertContent(getYear, 0)}`
+                                            }}
+                                        />
+                                    </Box>
+                                    <div style={{marginTop: '15px', textAlign:'center', fontSize: '10pt'}}
+                                        dangerouslySetInnerHTML={{
+                                            __html: `Issued this ${nthDay} day of ${splitMonth}, ${getYear} in Manila City, Philippines`
+                                        }}
+                                    />
+                                </Box>
+                            </Box>
+                        </Box>
+                    </>
+                )
+            )}
+        </Box>
     </>
     )
 }
