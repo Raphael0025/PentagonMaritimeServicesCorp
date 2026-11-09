@@ -198,7 +198,7 @@ export default function PSCMT_CERT({selectedTrainings, trainingID, searchTerm}: 
                                 lineHeight='1.2'    // Increased slightly; '1' often causes letters to touch
                                 fontFamily='Arial, Helvetica, sans-serif'
                             >
-                                {`Conducted from ${trainingDate}, as approved by the Maritime Industry Authority pursuant to the provisions of Republic Act No. 10635, Marina Circular No. SC-2021-09 and Marina Circular No. SC-2022-05, and after having been assessed by the accredited Training Course Assessor in accordance with the approved methods and criteria. `}
+                                {`Conducted from ${trainingDate} as approved by the Maritime Industry Authority pursuant to the provisions of Republic Act No. 10635 Marina Circular No. SC-2021-09 and Marina Circular No. SC-2022-05, and after having been assessed by the accredited Training Course Assessor in accordance with the approved methods and criteria. `}
                             </Box>
                         </Box>
                         <div style={{marginTop: '40px'}}
