@@ -1087,8 +1087,12 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                                     : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
                                 
                                 const isMoreThanOneDay = training.numOfDays > 1 ? true : false
-
-                                const qrToken = btoa(JSON.stringify({
+                                
+                                const utf8ToBase64 = (str: string) => {
+                                    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(parseInt(p1, 16))));
+                                };
+                                
+                                const qrToken = utf8ToBase64(JSON.stringify({
                                     regId: registration?.id,
                                     trainingId: training?.id,
                                     regNo: registration?.reg_no,
@@ -1106,7 +1110,7 @@ export default function BatchedDated ({ searchTerm, filterCompany, trainings, tr
                                     `REG-${registration.reg_no}`?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     parsingTimestamp(training.date_enrolled).toLocaleDateString('en-US', {  month: 'short',  day: 'numeric',})?.toLowerCase().includes(searchTerm.toLowerCase())
                                 )){
-
+// MARK DANIEL RAMOS SABUGO
                                 return(
                                     <AccordionItem key={training.id} _hover={{bgColor: 'gray.50', color: 'black'}} borderRadius='5px' fontWeight='normal' >
                                         <AccordionButton fontSize='sm' display='flex' justifyContent='space-between' textTransform='uppercase'>

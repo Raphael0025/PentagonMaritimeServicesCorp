@@ -127,7 +127,11 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
             
             const isMoreThanOneDay = training.numOfDays > 1 ? true : false
 
-            const qrToken = btoa(JSON.stringify({
+            const utf8ToBase64 = (str: string) => {
+                return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(parseInt(p1, 16))));
+            };
+
+            const qrToken = utf8ToBase64(JSON.stringify({
                 regId: registration?.id,
                 trainingId: training?.id,
                 regNo: registration?.reg_no,
