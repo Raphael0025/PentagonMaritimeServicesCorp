@@ -121,70 +121,48 @@ export default function Certification() {
                 const payload = JSON.parse(decodedString);
 
                 // Extract the target value from your token payload 
-                // (matching what your admin generates, e.g., regNo or trainingID)
-                const targetValue = payload?.regId
                 const targetTrainingId = payload?.trainingId;
-                setTName(payload?.traineeName)
-                
-                if (!targetValue) {
-                    throw new Error('Invalid token structure or missing lookup value.');
-                }
 
                 setIsPreparingCert(true)
-                // 2. Query Firestore safely using collection(db, 'TRAINING')
-                const q = query(training, where('reg_ref_id', '==', targetValue));
-                const snapshot = await getDocs(q);
 
-                if (snapshot.empty) {
-                    setError('Certificate record not found in the official registry.');
-                    setLoading(false);
-                    return;
-                }
+                const trainingRec = await GET_TRAIN_RECORD(targetTrainingId)
+                if(!trainingRec) return
+                
+                const regRecord = await GET_REG_RECORD(trainingRec.reg_ref_id)
+                if(!regRecord) return
+                
+                const traineeRec = await GET_TRAINEE_RECORD(regRecord.trainee_ref_id)
+                if(!traineeRec) return
 
-                let docSnap = snapshot.docs[0];
-
-                if (targetTrainingId) {
-                    const matchedDoc = snapshot.docs.find(
-                        (doc) => doc.id === targetTrainingId || doc.data().id === targetTrainingId
-                    );
-                    if (matchedDoc) {
-                        docSnap = matchedDoc;
-                    }
-                }
-
-                const result = {
-                    id: docSnap.id,
-                    ...docSnap.data(),
-                } as TRAINING_BY_ID;
-
-                const batchRec = await GET_BATCH_RECORD(result.batch)
-
+                const batchRec = await GET_BATCH_RECORD(trainingRec.batch)
+                
                 let year = 0
-                if(result.batch === '1'){
-                    year = result.date_enrolled?.toDate()?.getFullYear();
+                if(trainingRec.batch === '1'){
+                    year = trainingRec.date_enrolled?.toDate()?.getFullYear();
                 }else if (batchRec?.createdAt?.toDate) {
                     year = batchRec.createdAt.toDate().getFullYear()
                 }else{
-                    year = result.trainingYear || new Date().getFullYear()
+                    year = trainingRec.trainingYear || new Date().getFullYear()
                 }
                 setYear(year)
 
-                const split_Month = formatTrainingSchedule((result.end_date === '' ? result.start_date : result.end_date), year || result?.trainingYear).split(' ')[0]
-                const split_Day = formatTrainingSchedule((result.end_date === '' ? result.start_date : result.end_date), year || result?.trainingYear).split(' ')[1].replace(/\D/g, '')
+                const split_Month = formatTrainingSchedule((trainingRec.end_date === '' ? trainingRec.start_date : trainingRec.end_date), year || trainingRec?.trainingYear).split(' ')[0]
+                const split_Day = formatTrainingSchedule((trainingRec.end_date === '' ? trainingRec.start_date : trainingRec.end_date), year || trainingRec?.trainingYear).split(' ')[1].replace(/\D/g, '')
 
                 const nth_Day = getOrdinalHTML(Number(split_Day))
-                const view_count: number = (Number(result?.viewCount || 0) + 1)
+                const view_count: number = (Number(trainingRec?.viewCount || 0) + 1)
+                
+                setRegNum(regRecord.reg_no)
+                setTName(`${traineeRec.first_name} ${traineeRec.middle_name || ''} ${traineeRec.last_name}`)
+                setCertNum(trainingRec.cert_no)
+                setTrainingData(trainingRec);
+                setStartDate(trainingRec.start_date)
+                setEndDate(trainingRec.end_date)
+                setCertContentHtml(trainingRec.certContent)
+                setCertTitleHtml(trainingRec.certTitle)
 
-                setCertNum(result.cert_no)
-                setRegNum(payload?.regNo)
-                setTrainingData(result);
-                setStartDate(result.start_date)
-                setEndDate(result.end_date)
-                setCertContentHtml(result.certContent)
-                setCertTitleHtml(result.certTitle)
-
-                setConducted(result.conductedOnline)
-                setNumOfDays(result.numOfDays)
+                setConducted(trainingRec.conductedOnline)
+                setNumOfDays(trainingRec.numOfDays)
                 setSplitMonth(split_Month)
                 setNthDay(nth_Day)
 
@@ -229,6 +207,38 @@ export default function Certification() {
         }
     }
     
+    const GET_REG_RECORD = async (regId: string): Promise<REGISTRATION_BY_ID | null> => {
+        try{
+            const ref = doc(firestore, "REGISTRATION", regId)
+            const snap = await getDoc(ref)
+            if (!snap.exists()) return null
+
+            return {
+                id: snap.id,
+                ...snap.data()
+            } as REGISTRATION_BY_ID
+        }catch(e){
+            console.error('Error fetching registration record:', e)
+            throw e
+        }
+    }
+    
+    const GET_TRAIN_RECORD = async (tId: string): Promise<TRAINING_BY_ID | null> => {
+        try{
+            const ref = doc(firestore, "TRAINING", tId)
+            const snap = await getDoc(ref)
+            if (!snap.exists()) return null
+
+            return {
+                id: snap.id,
+                ...snap.data()
+            } as TRAINING_BY_ID
+        }catch(e){
+            console.error('Error fetching training record:', e)
+            throw e
+        }
+    }
+
     const GET_TRAINEE_RECORD = async ( traineeID: string ): Promise<TRAINEE_BY_ID | null> => {
         try {
             const ref = doc(firestore, "TRAINEES", traineeID)
@@ -431,7 +441,7 @@ export default function Certification() {
     }
     
     const normalizeCertContent = (html: string) => {
-        const temp = document.createElement('div')
+        const temp = document?.createElement('div')
         temp.innerHTML = html
 
         // convert inner divs to spans
