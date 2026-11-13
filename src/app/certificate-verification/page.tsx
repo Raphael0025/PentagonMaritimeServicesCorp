@@ -158,8 +158,8 @@ export default function Certification() {
                 setTrainingData(trainingRec);
                 setStartDate(trainingRec.start_date)
                 setEndDate(trainingRec.end_date)
-                setCertContentHtml(trainingRec.certContent)
-                setCertTitleHtml(trainingRec.certTitle)
+                setCertContentHtml(trainingRec.webCertContent || trainingRec.certContent)
+                setCertTitleHtml(trainingRec.webCertTitle || trainingRec.certTitle)
 
                 setConducted(trainingRec.conductedOnline)
                 setNumOfDays(trainingRec.numOfDays)
@@ -167,11 +167,11 @@ export default function Certification() {
                 setNthDay(nth_Day)
 
                 //await UPDATE_VIEW_CERT_ACCESS(targetTrainingId, view_count, '')
-                toast({
-                    title: 'Certificate Verified',
-                    status: 'success',
-                    duration: 3000,
-                })
+                // toast({
+                //     title: 'Certificate Verified',
+                //     status: 'success',
+                //     duration: 3000,
+                // })
             } catch (err) {
                 console.error('Verification error:', err);
                 setError('Failed to verify certificate. The QR code may be invalid or corrupted.');
@@ -579,7 +579,7 @@ export default function Certification() {
                                             }}
                                         />
                                     </Text>
-                                    <Box w='110%' mt='3' textAlign='center' sx={{
+                                    <Box w='100%' mt='3' textAlign='center' sx={{
                                         '& ul': {
                                             listStyleType: 'disc',
                                             listStylePosition: 'inside',

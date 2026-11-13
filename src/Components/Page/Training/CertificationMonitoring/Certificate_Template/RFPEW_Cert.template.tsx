@@ -71,6 +71,44 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
 
         return `${fullMonth} ${day}, ${year}`; 
     }
+    
+    const getPreviousDayTrainingSchedule = (dateStr: string, year: number) => {
+        if (!dateStr) return '';
+
+        const monthMap: { [key: string]: string } = {
+            // Standard Keys
+            Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April',
+            May: 'May', Jun: 'June', Jul: 'July', Aug: 'August',
+            Sep: 'September', Oct: 'October', Nov: 'November', Dec: 'December',
+            
+            // All-Caps Keys
+            JAN: 'January', FEB: 'February', MAR: 'March', APR: 'April',
+            MAY: 'May', JUN: 'June', JUL: 'July', AUG: 'August',
+            SEP: 'September', OCT: 'October', NOV: 'November', DEC: 'December'
+        };
+
+        // 1. Remove commas and split by space
+        const parts = dateStr.replace(',', '').split(' ');
+
+        const monthAbbr = parts[1]; // e.g., "Apr"
+        const day = parseInt(parts[2], 10); // e.g., 7
+
+        const fullMonth = monthMap[monthAbbr] || monthAbbr;
+
+        // 2. Create a Date object using the provided year, month, and day
+        // Note: JavaScript months are 0-indexed (January is 0, February is 1, etc.)
+        const currentDate = new Date(`${fullMonth} ${day}, ${year}`);
+
+        // 3. Subtract 1 day from the date
+        currentDate.setDate(currentDate.getDate() - 1);
+
+        // 4. Extract the new month, day, and year from the adjusted date object
+        const adjustedMonth = currentDate.toLocaleString('default', { month: 'long' });
+        const adjustedDay = currentDate.getDate();
+        const adjustedYear = currentDate.getFullYear();
+
+        return `${adjustedMonth} ${adjustedDay}, ${adjustedYear}`;
+    }
 
     const formatNextDay = (dateStr: string, year: number) => {
         if (!dateStr) return '';
@@ -136,7 +174,7 @@ export default function RFPEW_CERT({selectedTrainings, trainingID, searchTerm}: 
 
             const trainingDate = training.numOfDays === 1 
                 ? formatTrainingSchedule(training.start_date, getYear || 0) 
-                : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
+                : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${getPreviousDayTrainingSchedule(training.end_date, getYear || 0)}`
             const issuedDate = formatNextDay(training.start_date, getYear || 0)
             
             if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
