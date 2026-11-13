@@ -216,7 +216,7 @@ export default function InHouseCert({selectedTrainings, trainingID, searchTerm}:
                                 __html: `Issued this ${nthDay} day of ${splitMonth}, ${training.year || getYear} in Manila City, Philippines`
                             }}
                         />
-                        <Box pt='12' pb='12' display='flex' alignItems='end' w='85%'>
+                        <Box pt='12' pb='10' display='flex' alignItems='end' w='85%'>
                             <Box w='40%' position='relative' display='flex' flexDirection='column' justifyContent={'center'} alignItems='center' >
                                 {(() => {
                                     const isMentalHelth = training.certTitle?.toUpperCase().trim() === 'MENTAL HEALTH AWARENESS'
