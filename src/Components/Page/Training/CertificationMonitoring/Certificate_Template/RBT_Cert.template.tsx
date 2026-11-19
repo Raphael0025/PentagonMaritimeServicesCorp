@@ -174,7 +174,7 @@ export default function RBT_Cert({selectedTrainings, trainingID, searchTerm}: Co
 
             const trainingDate = training.numOfDays === 1 
                 ? formatTrainingSchedule(training.start_date, getYear || 0) 
-                : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${getPreviousDayTrainingSchedule(training.end_date, getYear || 0)}`
+                : `${formatTrainingSchedule(training.start_date, getYear || 0)} to ${formatTrainingSchedule(training.end_date, getYear || 0)}`
             const issuedDate = formatNextDay(training.end_date, getYear || 0)
             
             if(trainee && registration && (trainee.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
